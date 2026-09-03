@@ -41,7 +41,8 @@ const entrypoints = [
   ...collectExportTargets(manifest.exports),
 ].filter(Boolean);
 
-assert.equal(manifest.version, '0.0.1');
+assert.equal(packed.name, manifest.name);
+assert.equal(packed.version, manifest.version);
 assert.equal(manifest.license, 'MIT');
 assert.deepEqual(manifest.publishConfig, {
   access: 'public',
