@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: release-${{ github.ref }}
+
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nubjs/setup-nub@v0.4.0
+        with:
+          node-version: 24
+          nub-version: 0.8.3
+          registry-url: https://registry.npmjs.org/
+      - run: nub ci
+      - uses: changesets/action@v2.1.1
+        with:
+          version-script: nub run version
+          publish-script: nub run release
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

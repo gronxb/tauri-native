@@ -1,0 +1,3 @@
+[tools]
+node = "24"
+"github:nubjs/nub" = "0.8.3"
