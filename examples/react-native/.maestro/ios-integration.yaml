@@ -16,6 +16,7 @@ appId: tauri.example
     timeout: 10000
 - tapOn:
     point: "40%,83%"
+- eraseText: 100
 - inputText: "18 / (2 + 1)"
 - pressKey: Enter
 - assertVisible: "Rust returned"

@@ -28,6 +28,7 @@ appId: dev.tauri-native.lynx-example
     direction: DOWN
     timeout: 10000
 - tapOn: "7 * (8 - 2)"
+- eraseText: 100
 - inputText: "18 / (2 + 1)"
 - pressKey: Enter
 - assertVisible: "Rust returned"
