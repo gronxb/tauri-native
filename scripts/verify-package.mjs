@@ -48,6 +48,10 @@ assert.deepEqual(manifest.publishConfig, {
   registry: 'https://registry.npmjs.org/',
   tag: 'experimental',
 });
+assert.ok(
+  Array.isArray(manifest.files) && manifest.files.length > 0,
+  `${manifest.name} must declare a non-empty files field`
+);
 assert.ok(files.has('README.md'), `${manifest.name} must include README.md`);
 assert.ok(files.has('LICENSE'), `${manifest.name} must include LICENSE`);
 
