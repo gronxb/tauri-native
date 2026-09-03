@@ -2,7 +2,6 @@ import { useCallback, useState } from '@lynx-js/react';
 import { Button } from '@lynx-js/lynx-ui';
 import type { BaseEvent, InputInputEvent } from '@lynx-js/types';
 import {
-  TauriView,
   invoke,
   type InvokeResponse,
 } from '@tauri-native/lynx';
@@ -109,7 +108,7 @@ export function App() {
             <view className="frameMark" />
             <text className="frameLabel">TAURIVIEW BOUNDARY</text>
           </view>
-          <TauriView className="tauriView" />
+          <tauri-view className="tauriView" />
         </view>
       </view>
     </scroll-view>
