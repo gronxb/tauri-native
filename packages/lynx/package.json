@@ -28,6 +28,8 @@
     "build": "nub run codegen && tsc --noEmit",
     "codegen": "lynx-autolink-codegen",
     "prepack": "lynx-autolink-codegen && tsc --noEmit",
+    "test": "nub run build && nub run test:package",
+    "test:package": "node ../../scripts/verify-package.mjs",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

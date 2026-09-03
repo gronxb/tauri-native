@@ -48,6 +48,38 @@ npm install @tauri-native/react-native@experimental
 # or: npm install @tauri-native/lynx@experimental
 ```
 
+## Bring an existing Tauri project
+
+Keep the Tauri application and the mobile host as independent projects. Install `@tauri-native/cli` in the **React Native or Lynx host**, not in the Tauri project. The package exposes the `tauri-native` executable.
+
+For example, given sibling projects:
+
+```text
+workspace/
+├── mobile-app/
+└── tauri-app/
+    └── src-tauri/
+```
+
+install the CLI from the mobile project:
+
+```sh
+cd workspace/mobile-app
+npm install --save-dev @tauri-native/cli@experimental
+```
+
+Then point `--tauri-dir` at the existing Tauri project's `src-tauri` directory and write the generated local Pod into the mobile iOS project:
+
+```sh
+npx tauri-native build ios \
+  --tauri-dir ../tauri-app/src-tauri \
+  --output-dir ios/tauri-native
+```
+
+The default convention expects the reusable Rust static library at `src-tauri/crates/app-core/Cargo.toml` and its C ABI header at `src-tauri/crates/app-core/include/tauri_native.h`. Existing projects with another layout can pass `--manifest` and `--header` explicitly. The original Tauri project remains runnable as a normal desktop application.
+
+For Expo, install `@tauri-native/react-native` and configure its plugin with the same relative `tauriDir`; `expo prebuild` runs the CLI automatically. For Lynx or bare React Native, run the command above before `pod install` and add `pod 'TauriNativeGenerated', :path => './tauri-native'` to the application target.
+
 ## Architecture
 
 ```mermaid
@@ -97,8 +129,8 @@ Install dependencies and generate the mobile iOS projects and artifacts:
 
 ```sh
 nub install
-nub run prebuild:clean:ios
-nub run pods:lynx:ios
+nub --cwd examples/react-native run prebuild:clean:ios
+nub --cwd examples/lynx run pods
 ```
 
 The Expo prebuild packages the Tauri frontend and Rust core into the generated application's `ios/tauri-native` local Pod before CocoaPods autolinks `@tauri-native/react-native`. Re-run it after changing Expo native configuration or the embedded Tauri project; use `prebuild:clean:ios` when verifying that no generated native state is required.
@@ -116,7 +148,7 @@ nub --cwd examples/react-native run ios
 Build and open the Lynx iOS example:
 
 ```sh
-nub run pods:lynx:ios
+nub --cwd examples/lynx run pods
 open examples/lynx/ios/Hello-Lynx.xcworkspace
 ```
 
@@ -207,17 +239,17 @@ tauri-native build ios [options]
 Workspace example:
 
 ```sh
-nub run build:native:ios
-nub run build:native:lynx:ios
+nub --cwd examples/react-native run build:native:ios
+nub --cwd examples/lynx run build:native:ios
 ```
 
 Equivalent direct invocation:
 
 ```sh
-nub --cwd packages/cli run build
-node packages/cli/dist/index.mjs build ios \
-  --tauri-dir examples/tauri/src-tauri \
-  --output-dir examples/react-native/ios/tauri-native
+cd examples/react-native
+npx tauri-native build ios \
+  --tauri-dir ../tauri/src-tauri \
+  --output-dir ios/tauri-native
 ```
 
 The command reads `build.beforeBuildCommand` and `build.frontendDist` from `tauri.conf.json`, builds the frontend, and produces:

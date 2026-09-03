@@ -31,7 +31,8 @@
   "scripts": {
     "build": "bob build",
     "prepack": "bob build",
-    "test": "node --test test/*.test.js",
+    "test": "node --test test/*.test.js && nub run test:package",
+    "test:package": "node ../../scripts/verify-package.mjs",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

@@ -17,7 +17,8 @@
   "scripts": {
     "build": "tsdown",
     "prepack": "tsdown",
-    "test": "nub run build && node --experimental-strip-types --test test/*.test.ts",
+    "test": "nub run build && node --experimental-strip-types --test test/*.test.ts && nub run test:package",
+    "test:package": "node ../../scripts/verify-package.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
