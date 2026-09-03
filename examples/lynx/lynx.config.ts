@@ -10,7 +10,9 @@ export default defineConfig({
         return `${url}?fullscreen=true`;
       },
     }),
-    pluginReactLynx(),
+    pluginReactLynx({
+      enableNewGesture: true,
+    }),
     pluginTypeCheck(),
   ],
 });

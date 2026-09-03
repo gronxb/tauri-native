@@ -122,6 +122,8 @@ public final class TNTauriLynxWebView: UIView {
     messageHandler.delegate = self
     webView.navigationDelegate = self
     webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    webView.scrollView.isScrollEnabled = false
+    webView.scrollView.bounces = false
     webView.scrollView.pinchGestureRecognizer?.isEnabled = false
     addSubview(webView)
 

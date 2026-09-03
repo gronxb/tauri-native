@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@lynx-js/react": "^0.125.0",
+    "@lynx-js/lynx-ui": "^3.136.0",
     "@tauri-native/lynx": "workspace:*"
   },
   "devDependencies": {

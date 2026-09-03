@@ -1,6 +1,17 @@
 appId: dev.tauri-native.lynx-example
 ---
 - launchApp
+- swipe:
+    start: "50%,85%"
+    end: "50%,25%"
+    duration: 600
+- waitForAnimationToEnd
+- assertVisible: 'invoke("calculate")'
+- scrollUntilVisible:
+    element:
+      id: "lynx-calculator-expression"
+    direction: UP
+    timeout: 10000
 - tapOn:
     id: "lynx-calculator-expression"
     point: "99%,50%"
