@@ -35,7 +35,7 @@ React Native is the sole iOS application and lifecycle owner.
 - A normal Tauri window reaches it through a thin `#[tauri::command]` adapter.
 - React Native JavaScript reaches it synchronously through a generated TurboModule, C++ JSI, and the core's C ABI.
 - `TauriView` is a Fabric component whose `WKWebView` and message handling are implemented in Swift.
-- `@tauri-native/cli build ios` compiles the core into an XCFramework and copies the Tauri `frontendDist` into an asset bundle.
+- `tauri-native export ios` compiles the core into an XCFramework and copies the Tauri `frontendDist` into an asset bundle.
 - The CLI places those application-specific outputs in a generated `TauriNativeGenerated` local Pod owned by the consuming app. Published host packages contain only reusable bridge source and depend on that Pod.
 - The packaged frontend is served by a private `tauri-native://app` `WKURLSchemeHandler`. This gives its Vite ES modules and CSS one origin without rewriting the generated files.
 - At document start, the view installs only the `window.__TAURI_INTERNALS__.invoke` function that `@tauri-apps/api/core.invoke` needs. It forwards allowlisted JSON commands to Rust and resolves the returned promise.

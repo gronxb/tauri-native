@@ -38,9 +38,6 @@ importers:
       '@rsbuild/plugin-type-check':
         specifier: 1.6.0
         version: 1.6.0(@rsbuild/core@2.1.10)(typescript@7.0.2)
-      '@tauri-native/cli':
-        specifier: workspace:*
-        version: link:../../packages/cli
       '@types/react':
         specifier: ^19.2.18
         version: 19.2.18
@@ -66,9 +63,6 @@ importers:
         specifier: 0.86.3
         version: 0.86.3(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.2.3)
     devDependencies:
-      '@tauri-native/cli':
-        specifier: workspace:*
-        version: link:../../packages/cli
       '@types/react':
         specifier: ~19.2.2
         version: 19.2.18
@@ -88,6 +82,9 @@ importers:
       '@tauri-apps/cli':
         specifier: ^2
         version: 2.11.4
+      '@tauri-native/cli':
+        specifier: workspace:*
+        version: link:../../packages/cli
       typescript:
         specifier: 7.0.2
         version: 7.0.2
@@ -115,10 +112,6 @@ importers:
         version: 7.0.2
 
   packages/lynx:
-    dependencies:
-      '@tauri-native/cli':
-        specifier: 0.0.1
-        version: link:../cli
     devDependencies:
       '@lynx-js/autolink-codegen':
         specifier: ^0.4.1
@@ -138,9 +131,6 @@ importers:
       '@babel/runtime':
         specifier: ^7.25.0
         version: 7.29.7
-      '@tauri-native/cli':
-        specifier: 0.0.1
-        version: link:../cli
     devDependencies:
       '@types/react':
         specifier: ^19.2.0

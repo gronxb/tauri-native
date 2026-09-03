@@ -4,12 +4,10 @@
   "private": true,
   "main": "index.ts",
   "scripts": {
-    "build:tauri-native": "nub --cwd ../../packages/cli run build",
-    "build:native:ios": "nub run build:tauri-native && tauri-native build ios --tauri-dir ../tauri/src-tauri --output-dir ios/tauri-native",
     "start": "expo start",
     "ios": "nub run prebuild && expo run:ios",
-    "prebuild": "nub run build:tauri-native && expo prebuild --platform ios",
-    "prebuild:clean:ios": "nub run build:tauri-native && expo prebuild --clean --platform ios",
+    "prebuild": "expo prebuild --platform ios",
+    "prebuild:clean:ios": "expo prebuild --clean --platform ios",
     "test:e2e:ios": "maestro test --platform ios .maestro/ios-integration.yaml",
     "typecheck": "tsc --noEmit"
   },
@@ -21,7 +19,6 @@
     "react-native": "0.86.3"
   },
   "devDependencies": {
-    "@tauri-native/cli": "workspace:*",
     "@types/react": "~19.2.2",
     "typescript": "7.0.2"
   },

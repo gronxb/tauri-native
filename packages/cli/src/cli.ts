@@ -1,25 +1,25 @@
 import { Command } from 'commander';
-import { buildIos, type BuildIosOptions } from './commands/build-ios';
+import { exportIos, type ExportIosOptions } from './commands/export-ios';
 
 export function createProgram(): Command {
   const program = new Command();
   program
     .name('tauri-native')
-    .description('Package a Tauri microfrontend for a native host')
+    .description('Export a Tauri microfrontend for a native host')
     .showHelpAfterError();
 
-  const build = program
-    .command('build')
-    .description('Build native host artifacts');
+  const exportCommand = program
+    .command('export')
+    .description('Export Tauri artifacts for a native host');
 
-  build
+  exportCommand
     .command('ios')
-    .description('Build an XCFramework and a Tauri web asset bundle')
+    .description('Export an XCFramework and a Tauri web asset bundle')
     .option('--tauri-dir <path>', 'Tauri Rust directory', 'src-tauri')
     .option('--manifest <path>', 'native core Cargo.toml')
     .option('--header <path>', 'C ABI header')
     .option('--output-dir <path>', 'generated artifact directory')
-    .action((options: BuildIosOptions) => buildIos(options));
+    .action((options: ExportIosOptions) => exportIos(options));
 
   return program;
 }

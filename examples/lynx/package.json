@@ -6,10 +6,8 @@
   "scripts": {
     "build": "NODE_OPTIONS= rspeedy build --mode production",
     "build:ios": "NODE_OPTIONS= rspeedy build --mode production && cp dist/main.lynx.bundle ios/main.lynx.bundle",
-    "build:tauri-native": "nub --cwd ../../packages/cli run build",
-    "build:native:ios": "nub run build:tauri-native && tauri-native build ios --tauri-dir ../tauri/src-tauri --output-dir ios/tauri-native",
     "dev": "rspeedy dev",
-    "pods": "nub run build:ios && nub run build:native:ios && cd ios && BUNDLE_PATH=vendor/bundle bundle install && BUNDLE_PATH=vendor/bundle bundle exec pod install",
+    "pods": "nub run build:ios && cd ios && BUNDLE_PATH=vendor/bundle bundle install && BUNDLE_PATH=vendor/bundle bundle exec pod install",
     "test:e2e:ios": "maestro test --platform ios .maestro/ios-integration.yaml",
     "typecheck": "tsc --build"
   },
@@ -25,7 +23,6 @@
     "@lynx-js/rspeedy": "^0.16.5",
     "@lynx-js/types": "4.1.0",
     "@rsbuild/plugin-type-check": "1.6.0",
-    "@tauri-native/cli": "workspace:*",
     "@types/react": "^19.2.18",
     "typescript": "7.0.2"
   },

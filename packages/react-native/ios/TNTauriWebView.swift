@@ -131,7 +131,7 @@ public final class TNTauriWebView: UIView {
     } else {
       webView.loadHTMLString(
         "<h2>tauri-native assets are missing</h2>" +
-          "<p>Run tauri-native build ios before pod install.</p>",
+          "<p>Run tauri-native export ios before pod install.</p>",
         baseURL: nil
       )
     }

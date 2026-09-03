@@ -53,7 +53,6 @@
     "tag": "experimental"
   },
   "peerDependencies": {
-    "@tauri-native/cli": "0.0.1",
     "@lynx-js/react": "*",
     "@lynx-js/types": "*"
   },

@@ -6,8 +6,9 @@ Experimental iOS React Native bridge for a Tauri microfrontend and its Rust appl
 
 ```sh
 npm install @tauri-native/react-native@experimental
-npm install --save-dev @tauri-native/cli@experimental
 ```
+
+Install `@tauri-native/cli` in the separate Tauri project and run `tauri-native export ios` there first.
 
 ## Expo CNG
 
@@ -26,16 +27,16 @@ Add the config plugin to `app.json`. The `tauriDir` path is resolved from the Ex
 }
 ```
 
-Run `expo prebuild --platform ios`. The plugin generates an app-owned `ios/tauri-native` local Pod and adds it to the generated Podfile before CocoaPods autolinks this package.
+Run `expo prebuild --platform ios`. The plugin copies the Tauri project's co-located `src-tauri/gen/tauri-native/ios` export into an app-owned `ios/tauri-native` local Pod and adds it to the generated Podfile before CocoaPods autolinks this package.
 
 ## Bare React Native
 
-Build the artifacts into the iOS project:
+Export the artifacts from the Tauri project:
 
 ```sh
-npx tauri-native build ios \
-  --tauri-dir ../tauri/src-tauri \
-  --output-dir ios/tauri-native
+cd ../tauri
+npx tauri-native export ios \
+  --output-dir ../react-native/ios/tauri-native
 ```
 
 Then add the generated Pod before running `pod install`:

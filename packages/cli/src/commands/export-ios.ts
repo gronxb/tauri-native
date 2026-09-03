@@ -13,7 +13,7 @@ import { requireFile } from '../utils/files';
 import { message } from '../utils/output';
 import { run } from '../utils/process';
 
-export interface BuildIosOptions {
+export interface ExportIosOptions {
   tauriDir: string;
   manifest?: string;
   header?: string;
@@ -64,7 +64,7 @@ export function writeGeneratedPodspec(outputDirectory: string): string {
   return podspec;
 }
 
-export function buildIos(options: BuildIosOptions): void {
+export function exportIos(options: ExportIosOptions): void {
   const workingDirectory = process.cwd();
   const tauriDirectory = path.resolve(workingDirectory, options.tauriDir);
   const manifest = options.manifest

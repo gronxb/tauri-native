@@ -97,7 +97,6 @@
     "typescript": "7.0.2"
   },
   "peerDependencies": {
-    "@tauri-native/cli": "0.0.1",
     "react": "*",
     "react-native": "*"
   },

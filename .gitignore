@@ -23,4 +23,5 @@ examples/lynx/ios/main.lynx.bundle
 examples/lynx/ios/Podfile.lock
 examples/lynx/ios/vendor
 examples/tauri/dist
+examples/tauri/src-tauri/gen/tauri-native
 examples/tauri/src-tauri/gen/schemas

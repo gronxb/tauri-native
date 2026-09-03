@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
-import { writeGeneratedPodspec } from '../src/commands/build-ios.ts';
+import { writeGeneratedPodspec } from '../src/commands/export-ios.ts';
 
 describe('writeGeneratedPodspec', () => {
   it('creates the local pod consumed by the React Native and Lynx packages', () => {

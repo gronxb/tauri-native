@@ -21,14 +21,33 @@ function writeFixtureFile(root, relativePath, source) {
 }
 
 describe('@tauri-native/react-native Expo config plugin', () => {
-  it('builds app-owned artifacts and adds the generated pod once', () => {
+  it('copies Tauri-owned exports and adds the generated pod once', () => {
     const fixtureRoot = mkdtempSync(path.join(tmpdir(), 'tauri-native-expo-'));
     const projectRoot = path.join(fixtureRoot, 'app');
     const platformProjectRoot = path.join(projectRoot, 'ios');
     const tauriDirectory = path.join(fixtureRoot, 'tauri', 'src-tauri');
+    const exportDirectory = path.join(
+      tauriDirectory,
+      'gen/tauri-native/ios'
+    );
 
     try {
       mkdirSync(tauriDirectory, { recursive: true });
+      writeFixtureFile(
+        exportDirectory,
+        'TauriNativeGenerated.podspec',
+        'fixture'
+      );
+      writeFixtureFile(
+        exportDirectory,
+        'TauriNativeCore.xcframework/Info.plist',
+        'fixture'
+      );
+      writeFixtureFile(
+        exportDirectory,
+        'TauriNativeAssets.bundle/index.html',
+        'fixture'
+      );
       writeFixtureFile(projectRoot, 'package.json', '{"private":true}\n');
       writeFixtureFile(
         projectRoot,
@@ -48,44 +67,28 @@ exports.withDangerousMod = (config, [, action]) => action({
 });
 `
       );
-      writeFixtureFile(
-        projectRoot,
-        'node_modules/@tauri-native/cli/package.json',
-        '{"bin":{"tauri-native":"./fake-cli.js"}}\n'
-      );
-      writeFixtureFile(
-        projectRoot,
-        'node_modules/@tauri-native/cli/fake-cli.js',
-        `const { mkdirSync, writeFileSync } = require('node:fs');
-const path = require('node:path');
-const args = process.argv.slice(2);
-const outputDirectory = args[args.indexOf('--output-dir') + 1];
-mkdirSync(outputDirectory, { recursive: true });
-writeFileSync(path.join(outputDirectory, 'TauriNativeGenerated.podspec'), 'fixture');
-writeFileSync(path.join(process.cwd(), 'cli-invocation.json'), JSON.stringify(args));
-`
-      );
-
       const config = { _internal: { projectRoot } };
       const options = { tauriDir: '../tauri/src-tauri' };
       withTauriNative(config, options);
       withTauriNative(config, options);
 
-      const invocation = JSON.parse(
-        readFileSync(path.join(projectRoot, 'cli-invocation.json'), 'utf8')
-      );
       const outputDirectory = path.join(platformProjectRoot, 'tauri-native');
-      assert.deepEqual(invocation, [
-        'build',
-        'ios',
-        '--tauri-dir',
-        tauriDirectory,
-        '--output-dir',
-        outputDirectory,
-      ]);
       assert.ok(
         existsSync(
           path.join(outputDirectory, 'TauriNativeGenerated.podspec')
+        )
+      );
+      assert.ok(
+        existsSync(
+          path.join(
+            outputDirectory,
+            'TauriNativeCore.xcframework/Info.plist'
+          )
+        )
+      );
+      assert.ok(
+        existsSync(
+          path.join(outputDirectory, 'TauriNativeAssets.bundle/index.html')
         )
       );
 

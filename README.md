@@ -36,21 +36,24 @@ On desktop, that Tauri frontend fills the native window. On iOS, the same packag
 | --- | --- |
 | `@tauri-native/react-native` | Fabric `TauriView`, synchronous JSI `invoke`, and iOS native integration |
 | `@tauri-native/lynx` | Lynx custom `TauriView`, typed native-module `invoke`, and iOS native integration |
-| `@tauri-native/cli` | Builds the Rust core as an XCFramework and packages the Tauri frontend as an iOS resource bundle |
+| `@tauri-native/cli` | Exports the Rust core as an XCFramework and the Tauri frontend as an iOS resource bundle |
 
 `@tauri-native/react-native` uses React Native Builder Bob to produce ESM and TypeScript declarations. `@tauri-native/lynx` follows Lynx Native Library autolinking and code generation. `@tauri-native/cli` uses Commander for its command interface and `@clack/core` for terminal output.
 
-The `0.0.1` packages are configured to publish under the `experimental` npm dist-tag. Install the CLI first because both host packages use it to generate the consuming application's Rust and web artifacts.
+The `0.0.1` packages are configured to publish under the `experimental` npm dist-tag. Install the CLI in the Tauri project that owns the frontend and Rust code. Install only the matching bridge package in each native host.
 
 ```sh
+# Run in the Tauri project
 npm install --save-dev @tauri-native/cli@experimental
+
+# Run in the React Native or Lynx host
 npm install @tauri-native/react-native@experimental
 # or: npm install @tauri-native/lynx@experimental
 ```
 
 ## Bring an existing Tauri project
 
-Keep the Tauri application and the mobile host as independent projects. Install `@tauri-native/cli` in the **React Native or Lynx host**, not in the Tauri project. The package exposes the `tauri-native` executable.
+Keep the Tauri application and the mobile host as independent projects. Install `@tauri-native/cli` in the **Tauri project**. The package exposes the `tauri-native` executable and exports native artifacts from that project to any host that needs them.
 
 For example, given sibling projects:
 
@@ -61,24 +64,24 @@ workspace/
     └── src-tauri/
 ```
 
-install the CLI from the mobile project:
+install and run the CLI from the Tauri project:
 
 ```sh
-cd workspace/mobile-app
+cd workspace/tauri-app
 npm install --save-dev @tauri-native/cli@experimental
+npx tauri-native export ios
 ```
 
-Then point `--tauri-dir` at the existing Tauri project's `src-tauri` directory and write the generated local Pod into the mobile iOS project:
+The default export stays co-located with its source at `src-tauri/gen/tauri-native/ios`. It contains the XCFramework, packaged frontend, and local podspec. A bare native host can reference that directory directly, or the CLI can export straight into a chosen host:
 
 ```sh
-npx tauri-native build ios \
-  --tauri-dir ../tauri-app/src-tauri \
-  --output-dir ios/tauri-native
+npx tauri-native export ios \
+  --output-dir ../mobile-app/ios/tauri-native
 ```
 
 The default convention expects the reusable Rust static library at `src-tauri/crates/app-core/Cargo.toml` and its C ABI header at `src-tauri/crates/app-core/include/tauri_native.h`. Existing projects with another layout can pass `--manifest` and `--header` explicitly. The original Tauri project remains runnable as a normal desktop application.
 
-For Expo, install `@tauri-native/react-native` and configure its plugin with the same relative `tauriDir`; `expo prebuild` runs the CLI automatically. For Lynx or bare React Native, run the command above before `pod install` and add `pod 'TauriNativeGenerated', :path => './tauri-native'` to the application target.
+For Expo, configure `@tauri-native/react-native` with the relative `tauriDir`. During `expo prebuild`, the plugin copies the existing co-located export into the generated iOS project and registers its Pod; it does not build the Tauri project. For Lynx or bare React Native, reference or copy the exported directory before `pod install` and add `TauriNativeGenerated` to the application target.
 
 ## Architecture
 
@@ -94,7 +97,7 @@ flowchart LR
     LYNXVIEW[tauri-view] --> LYNXWEBVIEW[Swift WKWebView bridge]
   end
 
-  subgraph OUTPUT[tauri-native build ios]
+  subgraph OUTPUT[tauri-native export ios]
     ASSETS[TauriNativeAssets.bundle]
     XC[TauriNativeCore.xcframework]
   end
@@ -129,11 +132,12 @@ Install dependencies and generate the mobile iOS projects and artifacts:
 
 ```sh
 nub install
+nub --cwd examples/tauri run export:ios
 nub --cwd examples/react-native run prebuild:clean:ios
 nub --cwd examples/lynx run pods
 ```
 
-The Expo prebuild packages the Tauri frontend and Rust core into the generated application's `ios/tauri-native` local Pod before CocoaPods autolinks `@tauri-native/react-native`. Re-run it after changing Expo native configuration or the embedded Tauri project; use `prebuild:clean:ios` when verifying that no generated native state is required.
+The Tauri example owns the co-located export under `src-tauri/gen/tauri-native/ios`. Expo prebuild copies it into the generated application's `ios/tauri-native` local Pod, while the Lynx Podfile references the same export directly. Re-run `export:ios` after changing the embedded Tauri frontend or Rust core.
 
 Run the React Native example:
 
@@ -228,7 +232,7 @@ export function Screen() {
 ## CLI
 
 ```text
-tauri-native build ios [options]
+tauri-native export ios [options]
 
 --tauri-dir <path>   Tauri Rust directory              default: src-tauri
 --manifest <path>    Rust core Cargo.toml               default: <tauri-dir>/crates/app-core/Cargo.toml
@@ -239,18 +243,17 @@ tauri-native build ios [options]
 Workspace example:
 
 ```sh
-nub --cwd examples/react-native run build:native:ios
-nub --cwd examples/lynx run build:native:ios
+nub --cwd examples/tauri run export:ios
 ```
 
 Equivalent direct invocation:
 
 ```sh
-cd examples/react-native
-npx tauri-native build ios \
-  --tauri-dir ../tauri/src-tauri \
-  --output-dir ios/tauri-native
+cd examples/tauri
+npx tauri-native export ios
 ```
+
+To place a copy directly in a manually managed native host instead, pass `--output-dir ../react-native/ios/tauri-native` or another destination relative to the Tauri project.
 
 The command reads `build.beforeBuildCommand` and `build.frontendDist` from `tauri.conf.json`, builds the frontend, and produces:
 
@@ -260,7 +263,7 @@ The command reads `build.beforeBuildCommand` and `build.frontendDist` from `taur
 | `TauriNativeAssets.bundle` | The unchanged files from the configured Tauri `frontendDist` |
 | `TauriNativeGenerated.podspec` | A local Pod that exposes those application-specific artifacts to either native host package |
 
-The generated output belongs to the consuming application and is intentionally excluded from the npm packages. Add `pod 'TauriNativeGenerated', :path => './tauri-native'` to a manually managed iOS Podfile. The Expo config plugin and the Lynx example perform this step automatically.
+The generated output belongs to the Tauri project and is intentionally excluded from the npm packages. It can be copied into a native host or referenced as a local Pod. The Expo config plugin copies the co-located export during prebuild; the Lynx example references it directly.
 
 The Rust manifest must produce a `staticlib`. Its header must expose the current C ABI:
 

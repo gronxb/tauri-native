@@ -6,21 +6,20 @@ Experimental Lynx native library for `tauri-native`.
 
 ```sh
 npm install @tauri-native/lynx@experimental
-npm install --save-dev @tauri-native/cli@experimental
 ```
 
-Generate the app-specific iOS artifacts before autolinking:
+Install `@tauri-native/cli` in the separate Tauri project and export the app-specific iOS artifacts there before autolinking:
 
 ```sh
-npx tauri-native build ios \
-  --tauri-dir ../tauri/src-tauri \
-  --output-dir ios/tauri-native
+cd ../tauri
+npx tauri-native export ios
 ```
 
-Add the generated local Pod to the application target before calling `use_lynx_library!`:
+Add the co-located export as a local Pod before calling `use_lynx_library!`:
 
 ```ruby
-pod 'TauriNativeGenerated', :path => './tauri-native'
+export_dir = File.expand_path('../../tauri-app/src-tauri/gen/tauri-native/ios', __dir__)
+pod 'TauriNativeGenerated', :path => export_dir
 ```
 
 ## API
