@@ -28,5 +28,3 @@ jobs:
         with:
           version-script: nub run version
           publish-script: nub run release
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
