@@ -6,7 +6,7 @@
   "scripts": {
     "build:tauri-native-cli": "nub --cwd ../../packages/cli run build",
     "start": "expo start",
-    "ios": "nub run build:tauri-native-cli && expo run:ios",
+    "ios": "nub run prebuild && expo run:ios",
     "prebuild": "nub run build:tauri-native-cli && expo prebuild --platform ios",
     "prebuild:clean:ios": "nub run build:tauri-native-cli && expo prebuild --clean --platform ios",
     "test:e2e:ios": "maestro test --platform ios .maestro/ios-integration.yaml",

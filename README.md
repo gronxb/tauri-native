@@ -26,7 +26,7 @@ export function Screen() {
 
 Adding `tauri-native` packages the Tauri frontend and Rust core for the mobile host without merging scaffolds or starting a second Tauri application runtime.
 
-The examples preserve that boundary on purpose: `examples/react-native`, `examples/lynx`, and `examples/tauri` remain ordinary scaffolded applications. The mobile screens show a native direct-call area and a visibly separate `TauriView` surface; the same Tauri project also runs as the desktop application.
+The examples preserve that boundary on purpose: `examples/react-native`, `examples/lynx`, and `examples/tauri` remain ordinary scaffolded applications. The mobile screens show a native direct-call area and a visibly separate `TauriView` surface; the same Tauri project also runs as the desktop application. The React Native host uses Expo SDK 57 Continuous Native Generation, so its iOS project is regenerated from `app.json` and the `@tauri-native/react-native` config plugin instead of being maintained by hand.
 
 On desktop, that Tauri frontend fills the native window. On iOS, the same packaged frontend appears only inside the labeled `TauriView` boundary, so ownership remains visible in the demo rather than being hidden by matching chrome.
 
@@ -85,13 +85,15 @@ The selected mobile host remains the sole owner of `UIApplication`, rendering, a
 
 ## Run the example workspace
 
-Install dependencies and generate the iOS artifacts:
+Install dependencies and generate the mobile iOS projects and artifacts:
 
 ```sh
 nub install
-nub run pods:ios
+nub run prebuild:clean:ios
 nub run pods:lynx:ios
 ```
+
+The Expo prebuild packages the Tauri frontend and Rust core before CocoaPods autolinks `@tauri-native/react-native`. Re-run it after changing Expo native configuration or the embedded Tauri project; use `prebuild:clean:ios` when verifying that no generated native state is required.
 
 Run the React Native example:
 
