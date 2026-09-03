@@ -1,14 +1,9 @@
 import { useRef, useState } from 'react';
 import {
   Button as ExpoButton,
-  Divider,
-  HStack,
   Host,
-  Label,
-  Spacer,
   Text as SwiftUIText,
   TextField,
-  VStack,
   type TextFieldRef,
   useNativeState,
 } from '@expo/ui/swift-ui';
@@ -20,18 +15,19 @@ import {
   font,
   foregroundStyle,
   frame,
-  labelStyle,
-  monospacedDigit,
-  onSubmit,
   padding,
   shapes,
   strokeBorder,
   textFieldStyle,
   textInputAutocapitalization,
-  textSelection,
-  tint,
 } from '@expo/ui/swift-ui/modifiers';
-import { SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import {
   TauriView,
   invoke,
@@ -44,20 +40,6 @@ interface Calculation {
 }
 
 const DEFAULT_EXPRESSION = '7 * (8 - 2)';
-
-const colors = {
-  canvas: '#F4F1E9',
-  cobalt: '#2E55D4',
-  cobaltWash: '#E9EEFF',
-  error: '#9B4139',
-  errorWash: '#F9EDEA',
-  graphite: '#202126',
-  hairline: '#D8D3C7',
-  muted: '#686A70',
-  paper: '#FFFEFA',
-  paperMuted: '#F0EDE5',
-  white: '#FFFFFF',
-} as const;
 
 export default function App() {
   const inputRef = useRef<TextFieldRef>(null);
@@ -78,407 +60,116 @@ export default function App() {
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
-        <Host
-          colorScheme="light"
-          ignoreSafeArea="all"
-          matchContents={{ vertical: true }}
-          seedColor={colors.cobalt}
-          style={styles.swiftUIHost}
-        >
-          <VStack alignment="leading" spacing={8}>
-            <HStack alignment="center" spacing={8}>
-              <Label
-                modifiers={[
-                  font({ design: 'monospaced', size: 11, weight: 'bold' }),
-                  foregroundStyle(colors.cobalt),
-                  labelStyle('titleAndIcon'),
-                ]}
-                systemImage="terminal.fill"
-                title="TAURI NATIVE"
-              />
-              <Spacer />
-              <SwiftUIText
-                modifiers={[
-                  font({ design: 'monospaced', size: 10, weight: 'semibold' }),
-                  foregroundStyle(colors.muted),
-                ]}
-              >
-                IOS / EXPO 57
-              </SwiftUIText>
-            </HStack>
-            <SwiftUIText
+        <View style={styles.masthead}>
+          <Text style={styles.product}>TAURI-NATIVE · IOS</Text>
+          <Text style={styles.title}>React Native host</Text>
+          <Text style={styles.subtitle}>Two paths to the same Rust command.</Text>
+        </View>
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View>
+              <Text style={styles.sectionIndex}>01 / NATIVE</Text>
+              <Text style={styles.sectionTitle}>Direct bridge</Text>
+            </View>
+            <Text style={styles.route}>JSI → Rust</Text>
+          </View>
+          <Host ignoreSafeArea="all" style={styles.inputHost}>
+            <TextField
               modifiers={[
-                font({ textStyle: 'largeTitle', weight: 'bold' }),
-                foregroundStyle(colors.graphite),
+                font({ family: 'Menlo', size: 14 }),
+                foregroundStyle('#222326'),
+                textFieldStyle('plain'),
+                autocorrectionDisabled(),
+                textInputAutocapitalization('never'),
+                accessibilityLabel('React Native calculator expression'),
+                padding({ horizontal: 14 }),
+                frame({
+                  maxWidth: Infinity,
+                  maxHeight: Infinity,
+                  alignment: 'leading',
+                }),
+                background(
+                  '#fafaf8',
+                  shapes.roundedRectangle({ cornerRadius: 10 }),
+                ),
+                strokeBorder({
+                  color: '#c8c8c2',
+                  style: { lineWidth: 1 },
+                  shape: 'roundedRectangle',
+                  cornerRadius: 10,
+                }),
               ]}
-            >
-              Native workbench
-            </SwiftUIText>
-            <SwiftUIText
-              modifiers={[
-                font({ textStyle: 'body' }),
-                foregroundStyle(colors.muted),
-              ]}
-            >
-              One Rust command, inspected through two host paths.
-            </SwiftUIText>
-            <HStack spacing={8}>
-              <Label
-                modifiers={[
-                  font({ design: 'monospaced', size: 10, weight: 'semibold' }),
-                  foregroundStyle(colors.cobalt),
-                  padding({ horizontal: 10, vertical: 7 }),
-                  background(colors.cobaltWash, shapes.capsule()),
-                ]}
-                systemImage="bolt.horizontal.fill"
-                title="DIRECT / JSI"
-              />
-              <Label
-                modifiers={[
-                  font({ design: 'monospaced', size: 10, weight: 'semibold' }),
-                  foregroundStyle(colors.graphite),
-                  padding({ horizontal: 10, vertical: 7 }),
-                  background(colors.paperMuted, shapes.capsule()),
-                ]}
-                systemImage="macwindow"
-                title="EMBEDDED / WEBVIEW"
-              />
-            </HStack>
-          </VStack>
-        </Host>
-
-        <Host
-          colorScheme="light"
-          ignoreSafeArea="all"
-          matchContents={{ vertical: true }}
-          seedColor={colors.cobalt}
-          style={styles.swiftUIHost}
-        >
-          <VStack
-            alignment="leading"
-            modifiers={[
-              padding({ all: 18 }),
-              background(colors.paper, shapes.roundedRectangle({ cornerRadius: 14 })),
-              strokeBorder({
-                color: colors.hairline,
-                cornerRadius: 14,
-                shape: 'roundedRectangle',
-                style: { lineWidth: 1 },
-              }),
-            ]}
-            spacing={16}
-          >
-            <HStack alignment="top" spacing={12}>
-              <VStack alignment="leading" spacing={4}>
-                <SwiftUIText
-                  modifiers={[
-                    font({ design: 'monospaced', size: 10, weight: 'bold' }),
-                    foregroundStyle(colors.cobalt),
-                  ]}
-                >
-                  01 / NATIVE PATH
-                </SwiftUIText>
-                <SwiftUIText
-                  modifiers={[
-                    font({ textStyle: 'title2', weight: 'bold' }),
-                    foregroundStyle(colors.graphite),
-                  ]}
-                >
-                  Direct module call
-                </SwiftUIText>
-              </VStack>
-              <Spacer />
-              <Label
-                modifiers={[
-                  font({ design: 'monospaced', size: 9, weight: 'bold' }),
-                  foregroundStyle(colors.cobalt),
-                  padding({ horizontal: 9, vertical: 6 }),
-                  background(colors.cobaltWash, shapes.capsule()),
-                ]}
-                systemImage="checkmark.circle.fill"
-                title="ONLINE"
-              />
-            </HStack>
-
-            <SwiftUIText
-              modifiers={[
-                font({ textStyle: 'callout' }),
-                foregroundStyle(colors.muted),
-              ]}
-            >
-              The expression crosses the synchronous JSI boundary and runs in
-              the shared Rust core.
-            </SwiftUIText>
-
-            <Divider />
-
-            <VStack alignment="leading" spacing={8}>
-              <HStack>
-                <SwiftUIText
-                  modifiers={[
-                    font({ design: 'monospaced', size: 10, weight: 'bold' }),
-                    foregroundStyle(colors.muted),
-                  ]}
-                >
-                  EXPRESSION / RUST INPUT
-                </SwiftUIText>
-                <Spacer />
-                <SwiftUIText
-                  modifiers={[
-                    font({ design: 'monospaced', size: 10, weight: 'medium' }),
-                    foregroundStyle(colors.muted),
-                  ]}
-                >
-                  calculate(expression)
-                </SwiftUIText>
-              </HStack>
-              <TextField
-                modifiers={[
-                  font({ design: 'monospaced', size: 15, weight: 'medium' }),
-                  foregroundStyle(colors.graphite),
-                  textFieldStyle('plain'),
-                  autocorrectionDisabled(),
-                  textInputAutocapitalization('never'),
-                  accessibilityLabel('React Native calculator expression'),
-                  onSubmit(calculateThroughJsi),
-                  padding({ horizontal: 14 }),
-                  frame({
-                    maxWidth: Infinity,
-                    minHeight: 54,
-                    alignment: 'leading',
-                  }),
-                  background(
-                    colors.paperMuted,
-                    shapes.roundedRectangle({ cornerRadius: 12 }),
-                  ),
-                  strokeBorder({
-                    color: colors.hairline,
-                    cornerRadius: 12,
-                    shape: 'roundedRectangle',
-                    style: { lineWidth: 1 },
-                  }),
-                ]}
-                placeholder="Enter an arithmetic expression"
-                ref={inputRef}
-                testID="rn-calculator-expression"
-                text={expression}
-              />
-            </VStack>
-
+              placeholder="Enter an arithmetic expression"
+              ref={inputRef}
+              testID="rn-calculator-expression"
+              text={expression}
+            />
+          </Host>
+          <Host ignoreSafeArea="all" style={styles.buttonHost}>
             <ExpoButton
               modifiers={[
-                buttonStyle('borderedProminent'),
-                tint(colors.cobalt),
+                buttonStyle('plain'),
                 accessibilityLabel(
                   'Calculate React Native expression through JSI',
                 ),
+                frame({ maxWidth: Infinity, maxHeight: Infinity }),
               ]}
               onPress={calculateThroughJsi}
               testID="rn-calculator-button"
             >
-              <Label
+              <SwiftUIText
                 modifiers={[
-                  font({ textStyle: 'headline', weight: 'semibold' }),
-                  foregroundStyle(colors.white),
+                  font({ size: 15, weight: 'bold' }),
+                  foregroundStyle('#ffffff'),
                   frame({ maxWidth: Infinity, minHeight: 48 }),
-                ]}
-                systemImage="arrow.right.circle.fill"
-                title="Run through Rust"
-              />
-            </ExpoButton>
-
-            <Divider />
-
-            {nativeResult === null ? (
-              <HStack alignment="center" spacing={12}>
-                <Label
-                  modifiers={[
-                    font({ design: 'monospaced', size: 10, weight: 'bold' }),
-                    foregroundStyle(colors.muted),
-                    labelStyle('iconOnly'),
-                  ]}
-                  systemImage="circle.dotted"
-                  title="Ready"
-                />
-                <VStack alignment="leading" spacing={3}>
-                  <SwiftUIText
-                    modifiers={[
-                      font({ design: 'monospaced', size: 10, weight: 'bold' }),
-                      foregroundStyle(colors.muted),
-                    ]}
-                  >
-                    RUST OUTPUT / READY
-                  </SwiftUIText>
-                  <SwiftUIText
-                    modifiers={[
-                      font({ textStyle: 'headline', weight: 'semibold' }),
-                      foregroundStyle(colors.graphite),
-                    ]}
-                  >
-                    Waiting for a command
-                  </SwiftUIText>
-                </VStack>
-              </HStack>
-            ) : nativeResult.ok ? (
-              <VStack alignment="leading" spacing={5}>
-                <HStack>
-                  <Label
-                    modifiers={[
-                      font({ design: 'monospaced', size: 10, weight: 'bold' }),
-                      foregroundStyle(colors.cobalt),
-                    ]}
-                    systemImage="checkmark.circle.fill"
-                    title="RUST OUTPUT / COMPLETE"
-                  />
-                  <Spacer />
-                  <SwiftUIText
-                    modifiers={[
-                      font({ design: 'monospaced', size: 10, weight: 'medium' }),
-                      foregroundStyle(colors.muted),
-                    ]}
-                  >
-                    SYNC RESPONSE
-                  </SwiftUIText>
-                </HStack>
-                <SwiftUIText
-                  modifiers={[
-                    font({ size: 30, weight: 'bold' }),
-                    foregroundStyle(colors.graphite),
-                    monospacedDigit(),
-                  ]}
-                >
-                  Result: {nativeResult.value.result}
-                </SwiftUIText>
-                <SwiftUIText
-                  modifiers={[
-                    font({ design: 'monospaced', size: 10, weight: 'medium' }),
-                    foregroundStyle(colors.muted),
-                    textSelection(true),
-                  ]}
-                >
-                  {nativeResult.value.source}
-                </SwiftUIText>
-              </VStack>
-            ) : (
-              <VStack
-                alignment="leading"
-                modifiers={[
-                  padding({ all: 12 }),
                   background(
-                    colors.errorWash,
-                    shapes.roundedRectangle({ cornerRadius: 12 }),
+                    '#3659d9',
+                    shapes.roundedRectangle({ cornerRadius: 10 }),
                   ),
                 ]}
-                spacing={5}
               >
-                <Label
-                  modifiers={[
-                    font({ design: 'monospaced', size: 10, weight: 'bold' }),
-                    foregroundStyle(colors.error),
-                  ]}
-                  systemImage="exclamationmark.triangle.fill"
-                  title="CHECK EXPRESSION"
-                />
-                <SwiftUIText
-                  modifiers={[
-                    font({ textStyle: 'callout', weight: 'medium' }),
-                    foregroundStyle(colors.error),
-                    textSelection(true),
-                  ]}
-                >
-                  {nativeResult.error.message}
-                </SwiftUIText>
-              </VStack>
-            )}
-          </VStack>
-        </Host>
-
-        <View style={styles.embeddedFrame}>
-          <Host
-            colorScheme="light"
-            ignoreSafeArea="all"
-            matchContents={{ vertical: true }}
-            seedColor={colors.cobalt}
-            style={styles.swiftUIHost}
-          >
-            <VStack
-              alignment="leading"
-              modifiers={[background(colors.paper)]}
-              spacing={0}
-            >
-              <VStack
-                alignment="leading"
-                modifiers={[padding({ all: 18 })]}
-                spacing={8}
-              >
-                <HStack alignment="top" spacing={12}>
-                  <VStack alignment="leading" spacing={4}>
-                    <SwiftUIText
-                      modifiers={[
-                        font({ design: 'monospaced', size: 10, weight: 'bold' }),
-                        foregroundStyle(colors.cobalt),
-                      ]}
-                    >
-                      02 / EMBEDDED PATH
-                    </SwiftUIText>
-                    <SwiftUIText
-                      modifiers={[
-                        font({ textStyle: 'title2', weight: 'bold' }),
-                        foregroundStyle(colors.graphite),
-                      ]}
-                    >
-                      Tauri surface
-                    </SwiftUIText>
-                  </VStack>
-                  <Spacer />
-                  <Label
-                    modifiers={[
-                      font({ design: 'monospaced', size: 9, weight: 'bold' }),
-                      foregroundStyle(colors.cobalt),
-                      padding({ horizontal: 9, vertical: 6 }),
-                      background(colors.cobaltWash, shapes.capsule()),
-                    ]}
-                    systemImage="macwindow"
-                    title="LIVE"
-                  />
-                </HStack>
-                <SwiftUIText
-                  modifiers={[
-                    font({ textStyle: 'callout' }),
-                    foregroundStyle(colors.muted),
-                  ]}
-                >
-                  The same core rendered inside the native TauriView boundary.
-                </SwiftUIText>
-              </VStack>
-              <Divider />
-              <HStack
-                modifiers={[
-                  padding({ horizontal: 14, vertical: 10 }),
-                  background(colors.paperMuted),
-                ]}
-                spacing={8}
-              >
-                <Label
-                  modifiers={[
-                    font({ design: 'monospaced', size: 9, weight: 'bold' }),
-                    foregroundStyle(colors.graphite),
-                  ]}
-                  systemImage="macwindow"
-                  title="TAURIVIEW BOUNDARY"
-                />
-                <Spacer />
-                <SwiftUIText
-                  modifiers={[
-                    font({ design: 'monospaced', size: 9, weight: 'medium' }),
-                    foregroundStyle(colors.muted),
-                  ]}
-                >
-                  WEBVIEW ↔ RUST
-                </SwiftUIText>
-              </HStack>
-            </VStack>
+                Run expression
+              </SwiftUIText>
+            </ExpoButton>
           </Host>
+
+          {nativeResult === null ? (
+            <View style={styles.output}>
+              <Text style={styles.outputLabel}>RUST OUTPUT</Text>
+              <Text style={styles.outputIdle}>Ready</Text>
+            </View>
+          ) : nativeResult.ok ? (
+            <View style={styles.output}>
+              <Text style={styles.outputLabel}>RUST OUTPUT</Text>
+              <Text style={styles.resultValue}>Result: {nativeResult.value.result}</Text>
+              <Text selectable style={styles.source}>
+                {nativeResult.value.source}
+              </Text>
+            </View>
+          ) : (
+            <View style={[styles.output, styles.errorOutput]}>
+              <Text style={styles.errorLabel}>CHECK EXPRESSION</Text>
+              <Text selectable style={styles.error}>
+                {nativeResult.error.message}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.sectionHeader}>
+          <View>
+            <Text style={styles.sectionIndex}>02 / EMBEDDED</Text>
+            <Text style={styles.sectionTitle}>Tauri surface</Text>
+          </View>
+          <Text style={styles.route}>TauriView</Text>
+        </View>
+
+        <View style={styles.webFrame}>
+          <View style={styles.webFrameBar}>
+            <View style={styles.frameMark} />
+            <Text style={styles.frameLabel}>TAURIVIEW BOUNDARY</Text>
+          </View>
           <TauriView style={styles.webView} />
         </View>
       </ScrollView>
@@ -489,23 +180,147 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.canvas,
+    backgroundColor: '#f4f4f1',
   },
   container: {
-    gap: 20,
-    paddingHorizontal: 18,
-    paddingTop: 12,
+    gap: 24,
+    padding: 20,
     paddingBottom: 40,
   },
-  swiftUIHost: {
-    width: '100%',
+  masthead: {
+    gap: 4,
+    paddingTop: 4,
   },
-  embeddedFrame: {
+  product: {
+    color: '#3659d9',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+  },
+  title: {
+    color: '#222326',
+    fontSize: 26,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    color: '#6b6c70',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  section: {
+    gap: 14,
+    borderWidth: 1,
+    borderColor: '#d9d9d4',
+    borderRadius: 10,
+    padding: 16,
+    backgroundColor: '#ffffff',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  sectionIndex: {
+    marginBottom: 3,
+    color: '#77787c',
+    fontFamily: 'Menlo',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+  },
+  sectionTitle: {
+    color: '#222326',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  route: {
+    color: '#55565a',
+    fontFamily: 'Menlo',
+    fontSize: 11,
+  },
+  inputHost: {
+    width: '100%',
+    height: 52,
+  },
+  buttonHost: {
+    width: '100%',
+    height: 48,
+  },
+  output: {
+    minHeight: 76,
+    justifyContent: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#e6e6e1',
+    paddingTop: 12,
+  },
+  outputLabel: {
+    color: '#77787c',
+    fontFamily: 'Menlo',
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+  },
+  outputIdle: {
+    marginTop: 5,
+    color: '#8b8c90',
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  resultValue: {
+    marginTop: 4,
+    color: '#222326',
+    fontSize: 25,
+    fontWeight: '700',
+  },
+  source: {
+    marginTop: 4,
+    color: '#77787c',
+    fontFamily: 'Menlo',
+    fontSize: 10,
+  },
+  errorOutput: {
+    borderTopColor: '#e9c9c9',
+  },
+  errorLabel: {
+    color: '#a23b3b',
+    fontFamily: 'Menlo',
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+  },
+  error: {
+    marginTop: 5,
+    color: '#7f2f2f',
+    fontSize: 14,
+  },
+  webFrame: {
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: colors.hairline,
-    borderRadius: 14,
-    backgroundColor: colors.paper,
+    borderColor: '#c8c8c2',
+    borderRadius: 10,
+    backgroundColor: '#1b1d21',
+  },
+  webFrameBar: {
+    height: 34,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#e8e8e4',
+  },
+  frameMark: {
+    width: 7,
+    height: 7,
+    borderRadius: 2,
+    backgroundColor: '#3659d9',
+  },
+  frameLabel: {
+    color: '#5f6064',
+    fontFamily: 'Menlo',
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 0.7,
   },
   webView: {
     height: 330,

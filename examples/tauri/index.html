@@ -13,34 +13,15 @@
   <body>
     <main class="shell">
       <header class="topbar">
-        <div class="brand">
-          <div class="brandMark" aria-hidden="true">TN</div>
-          <div>
-            <div class="eyebrow">TAURI NATIVE</div>
-            <h1>Command surface</h1>
-          </div>
+        <div>
+          <div class="eyebrow">TAURI MICROFRONTEND</div>
+          <h1>Rust calculator</h1>
         </div>
         <div class="host" id="host">Loading</div>
       </header>
 
       <section class="workspace">
-        <header class="workspaceHeader">
-          <div>
-            <p class="step">01 / RUST COMMAND</p>
-            <h2>Calculate across the bridge.</h2>
-          </div>
-          <div class="route" aria-label="Tauri invoke routes to Rust">
-            <span>invoke</span>
-            <span aria-hidden="true">→</span>
-            <span>Rust</span>
-          </div>
-        </header>
-
-        <p class="lede">
-          Edit the expression, then send it through the same command contract used by every host.
-        </p>
-
-        <form class="workbench" id="calculate-form">
+        <form id="calculate-form">
           <label for="expression-input">Expression</label>
           <div class="controlRow">
             <input
@@ -51,25 +32,24 @@
               spellcheck="false"
             />
             <button type="submit" aria-label="Calculate Tauri expression in Rust">
-              Run in Rust
+              Run
             </button>
           </div>
-          <p class="format">Supports +, −, ×, ÷, decimals, and parentheses</p>
+          <p class="format">+ &nbsp;−&nbsp; × &nbsp;÷&nbsp; decimals &nbsp;parentheses</p>
         </form>
 
-        <section class="result" data-state="idle" aria-live="polite">
+        <section class="result" aria-live="polite">
           <div>
-            <p class="resultLabel">RUST OUTPUT</p>
-            <p class="status" id="status">Ready to run</p>
+            <p class="resultLabel" id="status">Ready</p>
             <code id="source"></code>
           </div>
           <output id="calculation-result">—</output>
         </section>
 
         <footer class="contract">
-          <span class="contractDot" aria-hidden="true"></span>
-          <span>Shared command contract</span>
-          <code>calculate(expression)</code>
+          <code>invoke("calculate")</code>
+          <span>→</span>
+          <code>Rust</code>
         </footer>
       </section>
     </main>
