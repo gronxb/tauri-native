@@ -2,7 +2,7 @@
 name = "tauri-native-example-core"
 version = "0.0.1"
 edition = "2021"
-license = "MIT OR Apache-2.0"
+license = "MIT"
 
 [lib]
 name = "tauri_native_example_core"
