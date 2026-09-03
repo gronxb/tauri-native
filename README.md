@@ -85,46 +85,91 @@ For Expo, configure `@tauri-native/react-native` with the relative `tauriDir`. D
 
 ## Architecture
 
+The build/distribution phase is separate from runtime. The Tauri project owns
+the frontend, Rust core, and co-located native export. A selected mobile host
+only consumes that export; it does not build or start another Tauri runtime.
+
+### Build and distribution
+
 ```mermaid
 flowchart LR
-  subgraph RN[React Native host]
-    RNJS[React Native JS] -->|TurboModule| JSI[C++ JSI]
-    RNVIEW[TauriView] --> RNWEBVIEW[Swift WKWebView bridge]
+  subgraph TAURI["Tauri project (artifact owner)"]
+    FRONTEND["Tauri frontend / frontendDist"]
+    CORE["shared Rust app-core"]
+    CLI["@tauri-native/cli<br/>tauri-native export ios"]
+    EXPORT["src-tauri/gen/tauri-native/ios<br/>co-located export"]
+    XC["TauriNativeCore.xcframework"]
+    ASSETS["TauriNativeAssets.bundle"]
+    PODSPEC["TauriNativeGenerated.podspec"]
+
+    FRONTEND -->|"beforeBuildCommand + copy frontendDist"| CLI
+    CORE -->|"cargo build --release"| CLI
+    CLI --> EXPORT
+    EXPORT --> XC
+    EXPORT --> ASSETS
+    EXPORT --> PODSPEC
   end
 
-  subgraph LYNX[Lynx host]
-    LYNXJS[Lynx JS] -->|typed Native Module| LYNXBRIDGE[Objective-C++ bridge]
-    LYNXVIEW[tauri-view] --> LYNXWEBVIEW[Swift WKWebView bridge]
+  subgraph RN_DIST["React Native / Expo host"]
+    RN_PLUGIN["@tauri-native/react-native<br/>Expo config plugin"]
+    RN_POD["ios/tauri-native<br/>TauriNativeGenerated local Pod"]
+    RN_PLUGIN -->|"copy export + register Pod"| RN_POD
   end
 
-  subgraph OUTPUT[tauri-native export ios]
-    ASSETS[TauriNativeAssets.bundle]
-    XC[TauriNativeCore.xcframework]
+  subgraph LYNX_DIST["Lynx host"]
+    LYNX_POD["TauriNativeGenerated local Pod"]
   end
 
-  subgraph DESKTOP[Standard Tauri host]
-    WEB[Tauri frontend] -->|invoke| COMMAND[tauri command adapter]
+  EXPORT -->|"expo prebuild reads tauriDir"| RN_PLUGIN
+  EXPORT -->|"Podfile references export directly"| LYNX_POD
+```
+
+### Runtime boundaries
+
+```mermaid
+flowchart LR
+  subgraph GENERATED["Generated iOS artifacts in the selected mobile host"]
+    ASSETS["TauriNativeAssets.bundle<br/>packaged Tauri frontend"]
+    XC["TauriNativeCore.xcframework<br/>C ABI + compiled app-core"]
   end
 
-  ASSETS --> RNVIEW
-  ASSETS --> LYNXVIEW
+  subgraph RN["React Native host (owns UIApplication and lifecycle)"]
+    RNJS["React Native JS"] -->|"generated TurboModule"| JSI["C++ JSI"]
+    RNVIEW["Fabric TauriView"] --> RNWEBVIEW["Swift WKWebView<br/>script-message handler"]
+    RNWEBVIEW --> RNOBJC["Objective-C++ C ABI bridge"]
+  end
+
+  subgraph LYNX["Lynx host (owns UIApplication and lifecycle)"]
+    LYNXJS["Lynx JS"] -->|"typed Native Module"| LYNXBRIDGE["Objective-C / Objective-C++ bridge"]
+    LYNXVIEW["tauri-view custom element"] --> LYNXWEBVIEW["Swift WKWebView<br/>script-message handler"]
+    LYNXWEBVIEW --> LYNXBRIDGE
+  end
+
+  subgraph DESKTOP["Standard Tauri desktop host"]
+    WEB["Tauri frontend"] -->|"invoke"| COMMAND["#[tauri::command] adapter"]
+    COMMAND --> DESKTOP_CORE["shared Rust app-core"]
+  end
+
+  ASSETS -->|"loaded by WKURLSchemeHandler"| RNWEBVIEW
+  ASSETS -->|"loaded by WKURLSchemeHandler"| LYNXWEBVIEW
   JSI -->|C ABI| XC
-  RNWEBVIEW -->|C ABI| XC
   LYNXBRIDGE -->|C ABI| XC
-  LYNXWEBVIEW -->|C ABI| XC
-  COMMAND --> CORE[shared Rust app-core]
-  XC -. contains compiled .-> CORE
+  RNOBJC -->|C ABI| XC
 ```
 
 There are five invocation paths:
 
-1. React Native JS → generated TurboModule → C++ JSI → Rust C ABI.
-2. Packaged Tauri frontend in React Native → Swift `WKWebView` bridge → Rust C ABI.
-3. Lynx JS → generated native module → Objective-C++ bridge → Rust C ABI.
-4. Packaged Tauri frontend in Lynx → Swift `WKWebView` bridge → Rust C ABI.
+1. React Native JS → generated TurboModule → C++ JSI → the Rust C ABI in the XCFramework.
+2. Packaged Tauri frontend in React Native → Swift `WKWebView` message handler → Objective-C++ bridge → the same C ABI.
+3. Lynx JS → typed native module → Objective-C / Objective-C++ bridge → the Rust C ABI in the XCFramework.
+4. Packaged Tauri frontend in Lynx → Swift `WKWebView` message handler → the same Objective-C++ bridge → the same C ABI.
 5. Standard Tauri frontend → `#[tauri::command]` → the same Rust crate.
 
-The selected mobile host remains the sole owner of `UIApplication`, rendering, and lifecycle. `TauriView` is a Swift-owned `WKWebView`; it does not embed or initialize a second `tauri::App`.
+The React Native and Lynx branches are alternative hosts, not two runtimes in
+one application. The selected host remains the sole owner of `UIApplication`,
+rendering, and lifecycle. React Native's Fabric view and Lynx's custom element
+each wrap a Swift-owned `WKWebView`; neither embeds or initializes a second
+`tauri::App`.
 
 ## Run the example workspace
 
