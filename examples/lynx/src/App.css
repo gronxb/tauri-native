@@ -1,0 +1,195 @@
+:root {
+  background: #f4f4f1;
+}
+
+.page {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  background: #f4f4f1;
+}
+
+.masthead,
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.masthead {
+  margin-top: 4px;
+  margin-bottom: 24px;
+}
+
+.product {
+  color: #3659d9;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.title {
+  margin-top: 4px;
+  color: #222326;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin-top: 4px;
+  color: #6b6c70;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.section {
+  padding: 16px;
+  border: 1px solid #d9d9d4;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.sectionIndex {
+  margin-bottom: 3px;
+  color: #77787c;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.sectionTitle {
+  color: #222326;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.route {
+  color: #55565a;
+  font-size: 10px;
+}
+
+.input {
+  height: 52px;
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid #c8c8c2;
+  border-radius: 10px;
+  color: #222326;
+  background: #fafaf8;
+  font-size: 14px;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  margin-top: 14px;
+  border-radius: 10px;
+  background: #3659d9;
+}
+
+.buttonText {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.output {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 76px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #e6e6e1;
+}
+
+.outputLabel,
+.errorLabel {
+  color: #77787c;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.outputIdle {
+  margin-top: 5px;
+  color: #8b8c90;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.resultValue {
+  margin-top: 4px;
+  color: #222326;
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.source {
+  margin-top: 4px;
+  color: #77787c;
+  font-size: 10px;
+}
+
+.errorOutput {
+  border-top-color: #e9c9c9;
+}
+
+.errorLabel {
+  color: #a23b3b;
+}
+
+.error {
+  margin-top: 5px;
+  color: #7f2f2f;
+  font-size: 14px;
+}
+
+.embeddedHeader {
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.tauriFrame {
+  overflow: hidden;
+  border: 1px solid #c8c8c2;
+  border-radius: 10px;
+  background: #1b1d21;
+}
+
+.tauriFrameBar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 34px;
+  padding: 12px;
+  background: #e8e8e4;
+}
+
+.frameMark {
+  width: 7px;
+  height: 7px;
+  margin-right: 8px;
+  border-radius: 2px;
+  background: #3659d9;
+}
+
+.frameLabel {
+  color: #5f6064;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+}
+
+.tauriView {
+  width: 100%;
+  height: 330px;
+}

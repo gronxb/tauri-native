@@ -1,0 +1,24 @@
+node_modules
+.env*
+!.env.example
+*.log
+*.tsbuildinfo
+.DS_Store
+lib
+target
+Pods
+build
+DerivedData
+*.xcworkspace/xcuserdata
+*.xcodeproj/xcuserdata
+packages/react-native/ios/Generated
+packages/lynx/ios/Generated
+examples/react-native/ios/.xcode.env.local
+examples/lynx/dist
+examples/lynx/ios/generated
+examples/lynx/ios/main.lynx.bundle
+# Lynx autolink records workspace-absolute local pod paths.
+examples/lynx/ios/Podfile.lock
+examples/lynx/ios/vendor
+examples/tauri/dist
+examples/tauri/src-tauri/gen/schemas

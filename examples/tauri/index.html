@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <title>tauri-native calculator</title>
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">TAURI MICROFRONTEND</div>
+          <h1>Rust calculator</h1>
+        </div>
+        <div class="host" id="host">Loading</div>
+      </header>
+
+      <section class="workspace">
+        <form id="calculate-form">
+          <label for="expression-input">Expression</label>
+          <div class="controlRow">
+            <input
+              id="expression-input"
+              aria-label="Tauri calculator expression"
+              placeholder="7 * (8 - 2)"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button type="submit" aria-label="Calculate Tauri expression in Rust">
+              Run
+            </button>
+          </div>
+          <p class="format">+ &nbsp;−&nbsp; × &nbsp;÷&nbsp; decimals &nbsp;parentheses</p>
+        </form>
+
+        <section class="result" aria-live="polite">
+          <div>
+            <p class="resultLabel" id="status">Ready</p>
+            <code id="source"></code>
+          </div>
+          <output id="calculation-result">—</output>
+        </section>
+
+        <footer class="contract">
+          <code>invoke("calculate")</code>
+          <span>→</span>
+          <code>Rust</code>
+        </footer>
+      </section>
+    </main>
+  </body>
+</html>

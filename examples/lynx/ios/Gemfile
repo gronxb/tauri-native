@@ -1,0 +1,6 @@
+source "https://rubygems.org"
+
+ruby ">= 2.6.10"
+
+gem "cocoapods", ">= 1.13", "!= 1.15.0", "!= 1.15.1"
+gem "cocoapods-lynx-library", "4.0.1"

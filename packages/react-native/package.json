@@ -1,0 +1,81 @@
+{
+  "name": "@tauri-native/react-native",
+  "version": "0.0.1",
+  "description": "Embed a packaged Tauri microfrontend in React Native with a JSI-to-Rust bridge",
+  "source": "./src/index.ts",
+  "main": "./lib/module/index.js",
+  "types": "./lib/typescript/src/index.d.ts",
+  "exports": {
+    ".": {
+      "tauri-native-source": "./src/index.ts",
+      "types": "./lib/typescript/src/index.d.ts",
+      "default": "./lib/module/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "cpp",
+    "ios",
+    "lib",
+    "src",
+    "*.podspec"
+  ],
+  "scripts": {
+    "build": "bob build",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "react-native",
+    "rust",
+    "tauri",
+    "ios"
+  ],
+  "license": "MIT OR Apache-2.0",
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
+  },
+  "codegenConfig": {
+    "name": "TauriNativeSpec",
+    "type": "all",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.reactnativetauri"
+    },
+    "ios": {
+      "components": {
+        "TauriView": {
+          "className": "TNTauriView"
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "react": "19.2.3",
+    "react-native": "0.87.1",
+    "react-native-builder-bob": "^0.43.0",
+    "typescript": "^7.0.2"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.25.0"
+  }
+}

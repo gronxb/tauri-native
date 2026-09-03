@@ -1,0 +1,20 @@
+{
+  "name": "@tauri-native/cli",
+  "version": "0.0.1",
+  "description": "Package a Tauri microfrontend and its Rust core for native hosts",
+  "type": "module",
+  "bin": {
+    "tauri-native": "./bin/tauri-native.mjs"
+  },
+  "files": [
+    "bin"
+  ],
+  "dependencies": {
+    "@clack/core": "^1.4.3",
+    "commander": "^15.0.0"
+  },
+  "engines": {
+    "node": ">=22.11.0"
+  },
+  "license": "MIT OR Apache-2.0"
+}

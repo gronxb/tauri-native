@@ -1,0 +1,23 @@
+appId: tauri.example
+---
+- launchApp
+- tapOn:
+    id: "rn-calculator-expression"
+    point: "95%,50%"
+- eraseText: 100
+- inputText: "9 * (6 - 2)"
+- tapOn: "Calculate React Native expression through JSI"
+- assertVisible: "Result: 36"
+- assertVisible: "tauri-native-example-core"
+- scrollUntilVisible:
+    element:
+      text: "Calculate Tauri expression in Rust"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    point: "40%,83%"
+- inputText: "18 / (2 + 1)"
+- pressKey: Enter
+- assertVisible: "Rust returned"
+- assertVisible: "= 6"
+- assertVisible: "tauri-native-example-core"

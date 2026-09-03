@@ -1,0 +1,9 @@
+[workspace]
+members = [
+  "examples/tauri/src-tauri",
+  "examples/tauri/src-tauri/crates/app-core",
+]
+resolver = "2"
+
+[profile.release]
+panic = "unwind"

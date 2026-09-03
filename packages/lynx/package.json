@@ -1,0 +1,32 @@
+{
+  "name": "@tauri-native/lynx",
+  "version": "0.0.1",
+  "description": "Embed a packaged Tauri microfrontend in Lynx and invoke its Rust core",
+  "license": "MIT OR Apache-2.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./types/index.d.ts",
+  "files": [
+    "generated",
+    "ios",
+    "src",
+    "types",
+    "lynx.lib.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "nub run codegen && tsc --noEmit",
+    "codegen": "lynx-autolink-codegen",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@lynx-js/react": "*",
+    "@lynx-js/types": "*"
+  },
+  "devDependencies": {
+    "@lynx-js/autolink-codegen": "^0.4.1",
+    "@lynx-js/react": "^0.125.0",
+    "@lynx-js/types": "4.1.0",
+    "typescript": "~6.0.3"
+  }
+}
