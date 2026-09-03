@@ -435,6 +435,66 @@ button:focus-visible {
   font-size: 10px;
 }
 
+:root:not([data-host='desktop']) .topbar {
+  padding: 10px 14px;
+}
+
+:root:not([data-host='desktop']) .brandMark {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+}
+
+:root:not([data-host='desktop']) h1 {
+  font-size: 16px;
+}
+
+:root:not([data-host='desktop']) .workspace {
+  padding: 12px 14px;
+}
+
+:root:not([data-host='desktop']) .lede,
+:root:not([data-host='desktop']) .format,
+:root:not([data-host='desktop']) .contract {
+  display: none;
+}
+
+:root:not([data-host='desktop']) .workspaceHeader {
+  align-items: center;
+}
+
+:root:not([data-host='desktop']) h2 {
+  font-size: 18px;
+}
+
+:root:not([data-host='desktop']) .route {
+  padding: 5px 8px;
+}
+
+:root:not([data-host='desktop']) .workbench {
+  margin-top: 12px;
+  padding: 10px;
+}
+
+:root:not([data-host='desktop']) label {
+  margin-bottom: 6px;
+}
+
+:root:not([data-host='desktop']) input,
+:root:not([data-host='desktop']) button {
+  height: 42px;
+}
+
+:root:not([data-host='desktop']) .result {
+  min-height: 62px;
+  margin-top: 8px;
+  padding: 10px 12px;
+}
+
+:root:not([data-host='desktop']) #calculation-result {
+  font-size: 26px;
+}
+
 @media (max-width: 500px) {
   .topbar,
   .workspace {
