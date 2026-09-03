@@ -1,4 +1,3 @@
-# Changesets does not yet detect Nub workspaces from package.json.
 packages:
-  - "packages/*"
-  - "examples/*"
+- packages/*
+- examples/*
