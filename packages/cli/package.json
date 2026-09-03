@@ -4,17 +4,28 @@
   "description": "Package a Tauri microfrontend and its Rust core for native hosts",
   "type": "module",
   "bin": {
-    "tauri-native": "./bin/tauri-native.mjs"
+    "tauri-native": "./dist/index.mjs"
   },
   "files": [
-    "bin"
+    "dist"
   ],
+  "scripts": {
+    "build": "tsdown",
+    "prepack": "tsdown",
+    "test": "nub run build && node --experimental-strip-types --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {
     "@clack/core": "^1.4.3",
     "commander": "^15.0.0"
   },
   "engines": {
-    "node": ">=22.11.0"
+    "node": ">=22.12.0"
   },
-  "license": "MIT OR Apache-2.0"
+  "license": "MIT OR Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2"
+  }
 }

@@ -8,13 +8,13 @@
     "examples/*"
   ],
   "scripts": {
-    "build": "nub --cwd packages/react-native run build && nub --cwd packages/lynx run build && nub --cwd examples/tauri run build && nub --cwd examples/lynx run build",
-    "build:native:ios": "node packages/cli/bin/tauri-native.mjs build ios --tauri-dir examples/tauri/src-tauri --output-dir packages/react-native/ios/Generated",
-    "build:native:lynx:ios": "node packages/cli/bin/tauri-native.mjs build ios --tauri-dir examples/tauri/src-tauri --output-dir packages/lynx/ios/Generated",
+    "build": "nub --cwd packages/cli run build && nub --cwd packages/react-native run build && nub --cwd packages/lynx run build && nub --cwd examples/tauri run build && nub --cwd examples/lynx run build",
+    "build:native:ios": "nub --cwd packages/cli run build && node packages/cli/dist/index.mjs build ios --tauri-dir examples/tauri/src-tauri --output-dir packages/react-native/ios/Generated",
+    "build:native:lynx:ios": "nub --cwd packages/cli run build && node packages/cli/dist/index.mjs build ios --tauri-dir examples/tauri/src-tauri --output-dir packages/lynx/ios/Generated",
     "pods:ios": "nub --cwd examples/react-native run pods",
     "pods:lynx:ios": "nub --cwd examples/lynx run pods",
-    "test": "nub run test:rust && nub run build && nub run typecheck",
+    "test": "nub run test:rust && nub --cwd packages/cli run test && nub run build && nub run typecheck",
     "test:rust": "cargo test --workspace",
-    "typecheck": "nub --cwd packages/react-native run typecheck && nub --cwd packages/lynx run typecheck && nub --cwd examples/react-native run typecheck && nub --cwd examples/tauri run typecheck && nub --cwd examples/lynx run typecheck"
+    "typecheck": "nub --cwd packages/cli run typecheck && nub --cwd packages/react-native run typecheck && nub --cwd packages/lynx run typecheck && nub --cwd examples/react-native run typecheck && nub --cwd examples/tauri run typecheck && nub --cwd examples/lynx run typecheck"
   }
 }

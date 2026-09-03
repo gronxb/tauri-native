@@ -203,7 +203,8 @@ nub run build:native:lynx:ios
 Equivalent direct invocation:
 
 ```sh
-node packages/cli/bin/tauri-native.mjs build ios \
+nub --cwd packages/cli run build
+node packages/cli/dist/index.mjs build ios \
   --tauri-dir examples/tauri/src-tauri \
   --output-dir packages/react-native/ios/Generated
 ```

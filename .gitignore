@@ -5,6 +5,7 @@ node_modules
 *.tsbuildinfo
 .DS_Store
 lib
+packages/cli/dist
 target
 Pods
 build

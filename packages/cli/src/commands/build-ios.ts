@@ -1,9 +1,6 @@
-#!/usr/bin/env node
-
-import { execFileSync, execSync } from 'node:child_process';
+import { execSync } from 'node:child_process';
 import {
   cpSync,
-  existsSync,
   mkdirSync,
   readFileSync,
   rmSync,
@@ -11,40 +8,42 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import { wrapTextWithPrefix } from '@clack/core';
-import { Command } from 'commander';
+import { readLibraryName } from '../utils/cargo-manifest';
+import { requireFile } from '../utils/files';
+import { message } from '../utils/output';
+import { run } from '../utils/process';
 
-function message(text, startPrefix = '◇ ') {
-  process.stdout.write(
-    `${wrapTextWithPrefix(process.stdout, text, '│ ', startPrefix, '│ ')}\n`
-  );
+export interface BuildIosOptions {
+  tauriDir: string;
+  manifest?: string;
+  header?: string;
+  outputDir?: string;
 }
 
-function run(command, args, options = {}) {
-  message(`${command} ${args.join(' ')}`);
-  execFileSync(command, args, { stdio: 'inherit', ...options });
+interface TauriConfig {
+  build?: {
+    beforeBuildCommand?: unknown;
+    frontendDist?: unknown;
+  };
 }
 
-function requireFile(file) {
-  if (!existsSync(file)) {
-    throw new Error(`Required file does not exist: ${file}`);
-  }
-}
+const IOS_TARGETS = [
+  'aarch64-apple-ios',
+  'aarch64-apple-ios-sim',
+  'x86_64-apple-ios',
+];
 
-function libraryNameFromManifest(manifest) {
-  const source = readFileSync(manifest, 'utf8');
-  const libSection = source.match(/\[lib\]([\s\S]*?)(?=\n\[|$)/)?.[1];
-  const packageSection = source.match(/\[package\]([\s\S]*?)(?=\n\[|$)/)?.[1];
-  const name =
-    libSection?.match(/^name\s*=\s*"([^"]+)"/m)?.[1] ??
-    packageSection?.match(/^name\s*=\s*"([^"]+)"/m)?.[1];
-  if (!name) {
-    throw new Error(`Could not find a package or library name in ${manifest}`);
-  }
-  return name.replaceAll('-', '_');
-}
+const ASSET_BUNDLE_INFO = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>CFBundleIdentifier</key><string>dev.tauri-native.assets</string>
+  <key>CFBundleName</key><string>TauriNativeAssets</string>
+  <key>CFBundlePackageType</key><string>BNDL</string>
+  <key>CFBundleVersion</key><string>1</string>
+</dict></plist>
+`;
 
-function buildIos(options) {
+export function buildIos(options: BuildIosOptions): void {
   const workingDirectory = process.cwd();
   const tauriDirectory = path.resolve(workingDirectory, options.tauriDir);
   const manifest = options.manifest
@@ -64,7 +63,7 @@ function buildIos(options) {
     requireFile(requiredPath);
   }
 
-  const config = JSON.parse(readFileSync(configPath, 'utf8'));
+  const config = JSON.parse(readFileSync(configPath, 'utf8')) as TauriConfig;
   const frontendDirectory = path.dirname(tauriDirectory);
   if (typeof config.build?.beforeBuildCommand === 'string') {
     message(`Building the Tauri microfrontend in ${frontendDirectory}`);
@@ -78,23 +77,21 @@ function buildIos(options) {
     throw new Error(`${configPath} must define build.frontendDist`);
   }
 
-  const frontendDist = path.resolve(tauriDirectory, config.build.frontendDist);
+  const frontendDist = path.resolve(
+    tauriDirectory,
+    config.build.frontendDist
+  );
   requireFile(path.join(frontendDist, 'index.html'));
 
-  const libraryName = libraryNameFromManifest(manifest);
+  const libraryName = readLibraryName(manifest);
   const targetDirectory = path.join(tauriDirectory, 'target/tauri-native');
   const cargoEnvironment = {
     ...process.env,
     CARGO_TARGET_DIR: targetDirectory,
   };
-  const targets = [
-    'aarch64-apple-ios',
-    'aarch64-apple-ios-sim',
-    'x86_64-apple-ios',
-  ];
 
-  run('rustup', ['target', 'add', ...targets]);
-  for (const target of targets) {
+  run('rustup', ['target', 'add', ...IOS_TARGETS]);
+  for (const target of IOS_TARGETS) {
     run(
       'cargo',
       ['build', '--manifest-path', manifest, '--target', target, '--release'],
@@ -149,41 +146,7 @@ function buildIos(options) {
 
   rmSync(assetBundle, { recursive: true, force: true });
   cpSync(frontendDist, assetBundle, { recursive: true });
-  writeFileSync(
-    path.join(assetBundle, 'Info.plist'),
-    `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0"><dict>
-  <key>CFBundleIdentifier</key><string>dev.tauri-native.assets</string>
-  <key>CFBundleName</key><string>TauriNativeAssets</string>
-  <key>CFBundlePackageType</key><string>BNDL</string>
-  <key>CFBundleVersion</key><string>1</string>
-</dict></plist>
-`
-  );
+  writeFileSync(path.join(assetBundle, 'Info.plist'), ASSET_BUNDLE_INFO);
 
   message(`Created ${framework}\nCreated ${assetBundle}`, '◆ ');
 }
-
-const program = new Command();
-program
-  .name('tauri-native')
-  .description('Package a Tauri microfrontend for a native host')
-  .showHelpAfterError();
-
-const build = program.command('build').description('Build native host artifacts');
-build
-  .command('ios')
-  .description('Build an XCFramework and a Tauri web asset bundle')
-  .option('--tauri-dir <path>', 'Tauri Rust directory', 'src-tauri')
-  .option('--manifest <path>', 'native core Cargo.toml')
-  .option('--header <path>', 'C ABI header')
-  .option('--output-dir <path>', 'generated artifact directory')
-  .action(buildIos);
-
-program.parseAsync().catch((error) => {
-  process.stderr.write(
-    `${wrapTextWithPrefix(process.stderr, error.message, '│ ', '■ ', '│ ')}\n`
-  );
-  process.exitCode = 1;
-});
