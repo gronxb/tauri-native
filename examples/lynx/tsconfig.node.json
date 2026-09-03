@@ -1,6 +1,8 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
     "composite": true,
     "module": "node16",
     "moduleResolution": "node16",
@@ -9,5 +11,5 @@
     "target": "es2022",
     "noEmit": true
   },
-  "include": ["./lynx.config.ts"]
+  "include": ["./lynx.config.mjs"]
 }

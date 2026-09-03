@@ -93,7 +93,7 @@
     "react": "19.2.3",
     "react-native": "0.87.1",
     "react-native-builder-bob": "^0.43.0",
-    "typescript": "^7.0.2"
+    "typescript": "7.0.2"
   },
   "peerDependencies": {
     "@tauri-native/cli": "0.0.1",

@@ -25,7 +25,7 @@
     "@rsbuild/plugin-type-check": "1.6.0",
     "@tauri-native/cli": "workspace:*",
     "@types/react": "^19.2.18",
-    "typescript": "~6.0.3"
+    "typescript": "7.0.2"
   },
   "engines": {
     "node": ">=22.12.0"

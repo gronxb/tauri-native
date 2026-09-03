@@ -59,6 +59,6 @@
     "@lynx-js/autolink-codegen": "^0.4.1",
     "@lynx-js/react": "^0.125.0",
     "@lynx-js/types": "4.1.0",
-    "typescript": "~6.0.3"
+    "typescript": "7.0.2"
   }
 }
