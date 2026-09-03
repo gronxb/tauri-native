@@ -17,8 +17,6 @@ export function Screen() {
 }
 ```
 
-> **Project status:** experimental iOS proof of concept. The packages are not published yet. The repository demonstrates the intended package and CLI contracts using workspace dependencies.
-
 ## Why tauri-native?
 
 `tauri-native` is for teams that have ordinary, independently runnable projects:
