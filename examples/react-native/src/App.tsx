@@ -1,12 +1,31 @@
 import { useRef, useState } from 'react';
 import {
-  Pressable,
+  Button as ExpoButton,
+  Host,
+  Text as SwiftUIText,
+  TextField,
+  type TextFieldRef,
+  useNativeState,
+} from '@expo/ui/swift-ui';
+import {
+  accessibilityLabel,
+  autocorrectionDisabled,
+  background,
+  buttonStyle,
+  font,
+  foregroundStyle,
+  frame,
+  padding,
+  shapes,
+  strokeBorder,
+  textFieldStyle,
+  textInputAutocapitalization,
+} from '@expo/ui/swift-ui/modifiers';
+import {
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-  type TextInputInstance,
   View,
 } from 'react-native';
 import {
@@ -23,14 +42,16 @@ interface Calculation {
 const DEFAULT_EXPRESSION = '7 * (8 - 2)';
 
 export default function App() {
-  const inputRef = useRef<TextInputInstance>(null);
-  const [expression, setExpression] = useState(DEFAULT_EXPRESSION);
+  const inputRef = useRef<TextFieldRef>(null);
+  const expression = useNativeState(DEFAULT_EXPRESSION);
   const [nativeResult, setNativeResult] =
     useState<InvokeResponse<Calculation> | null>(null);
 
   const calculateThroughJsi = () => {
-    inputRef.current?.blur();
-    setNativeResult(invoke<Calculation>('calculate', { expression }));
+    void inputRef.current?.blur();
+    setNativeResult(
+      invoke<Calculation>('calculate', { expression: expression.get() }),
+    );
   };
 
   return (
@@ -53,26 +74,65 @@ export default function App() {
             </View>
             <Text style={styles.route}>JSI → Rust</Text>
           </View>
-          <TextInput
-            accessibilityLabel="React Native calculator expression"
-            autoCapitalize="none"
-            autoCorrect={false}
-            onChangeText={setExpression}
-            placeholder="Enter an arithmetic expression"
-            ref={inputRef}
-            style={styles.input}
-            testID="rn-calculator-expression"
-            value={expression}
-          />
-          <Pressable
-            accessibilityLabel="Calculate React Native expression through JSI"
-            accessibilityRole="button"
-            onPress={calculateThroughJsi}
-            style={styles.button}
-            testID="rn-calculator-button"
-          >
-            <Text style={styles.buttonText}>Run expression</Text>
-          </Pressable>
+          <Host ignoreSafeArea="all" style={styles.inputHost}>
+            <TextField
+              modifiers={[
+                font({ family: 'Menlo', size: 14 }),
+                foregroundStyle('#222326'),
+                textFieldStyle('plain'),
+                autocorrectionDisabled(),
+                textInputAutocapitalization('never'),
+                accessibilityLabel('React Native calculator expression'),
+                padding({ horizontal: 14 }),
+                frame({
+                  maxWidth: Infinity,
+                  maxHeight: Infinity,
+                  alignment: 'leading',
+                }),
+                background(
+                  '#fafaf8',
+                  shapes.roundedRectangle({ cornerRadius: 10 }),
+                ),
+                strokeBorder({
+                  color: '#c8c8c2',
+                  style: { lineWidth: 1 },
+                  shape: 'roundedRectangle',
+                  cornerRadius: 10,
+                }),
+              ]}
+              placeholder="Enter an arithmetic expression"
+              ref={inputRef}
+              testID="rn-calculator-expression"
+              text={expression}
+            />
+          </Host>
+          <Host ignoreSafeArea="all" style={styles.buttonHost}>
+            <ExpoButton
+              modifiers={[
+                buttonStyle('plain'),
+                accessibilityLabel(
+                  'Calculate React Native expression through JSI',
+                ),
+                frame({ maxWidth: Infinity, maxHeight: Infinity }),
+              ]}
+              onPress={calculateThroughJsi}
+              testID="rn-calculator-button"
+            >
+              <SwiftUIText
+                modifiers={[
+                  font({ size: 15, weight: 'bold' }),
+                  foregroundStyle('#ffffff'),
+                  frame({ maxWidth: Infinity, minHeight: 48 }),
+                  background(
+                    '#3659d9',
+                    shapes.roundedRectangle({ cornerRadius: 10 }),
+                  ),
+                ]}
+              >
+                Run expression
+              </SwiftUIText>
+            </ExpoButton>
+          </Host>
 
           {nativeResult === null ? (
             <View style={styles.output}>
@@ -179,28 +239,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Menlo',
     fontSize: 11,
   },
-  input: {
-    minHeight: 52,
-    borderWidth: 1,
-    borderColor: '#c8c8c2',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    color: '#222326',
-    backgroundColor: '#fafaf8',
-    fontFamily: 'Menlo',
-    fontSize: 14,
+  inputHost: {
+    width: '100%',
+    height: 52,
   },
-  button: {
-    minHeight: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 10,
-    backgroundColor: '#3659d9',
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontWeight: '700',
+  buttonHost: {
+    width: '100%',
+    height: 48,
   },
   output: {
     minHeight: 76,

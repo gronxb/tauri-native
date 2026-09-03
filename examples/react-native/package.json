@@ -2,33 +2,29 @@
   "name": "tauri-native-react-native-example",
   "version": "0.0.1",
   "private": true,
+  "main": "index.ts",
   "scripts": {
-    "build:ios": "react-native build-ios --mode Debug",
-    "ios": "react-native run-ios",
-    "pods": "cd ios && pod install",
-    "start": "react-native start",
+    "build:tauri-native-cli": "nub --cwd ../../packages/cli run build",
+    "start": "expo start",
+    "ios": "nub run build:tauri-native-cli && expo run:ios",
+    "prebuild": "nub run build:tauri-native-cli && expo prebuild --platform ios",
+    "prebuild:clean:ios": "nub run build:tauri-native-cli && expo prebuild --clean --platform ios",
     "test:e2e:ios": "maestro test --platform ios .maestro/ios-integration.yaml",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@expo/ui": "~57.0.15",
+    "@tauri-native/react-native": "workspace:*",
+    "expo": "~57.0.19",
     "react": "19.2.3",
-    "react-native": "0.87.1",
-    "@tauri-native/react-native": "workspace:*"
+    "react-native": "0.86.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2",
-    "@babel/preset-env": "^7.25.3",
-    "@babel/runtime": "^7.25.0",
-    "@react-native-community/cli": "20.2.0",
-    "@react-native-community/cli-platform-ios": "20.2.0",
-    "@react-native/babel-preset": "0.87.1",
-    "@react-native/metro-config": "0.87.1",
-    "@react-native/typescript-config": "0.87.1",
-    "@types/react": "^19.2.0",
-    "react-native-monorepo-config": "^0.4.0",
-    "typescript": "^7.0.2"
+    "@tauri-native/cli": "workspace:*",
+    "@types/react": "~19.2.2",
+    "typescript": "~6.0.3"
   },
   "engines": {
-    "node": ">=22.11.0"
+    "node": ">=22.13.0"
   }
 }

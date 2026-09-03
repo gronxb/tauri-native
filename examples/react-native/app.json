@@ -1,4 +1,20 @@
 {
-  "name": "TauriNativeExample",
-  "displayName": "TauriNativeExample"
+  "expo": {
+    "name": "TauriNativeExample",
+    "slug": "tauri-native-example",
+    "version": "1.0.0",
+    "platforms": ["ios"],
+    "ios": {
+      "bundleIdentifier": "tauri.example",
+      "deploymentTarget": "16.4"
+    },
+    "plugins": [
+      [
+        "@tauri-native/react-native",
+        {
+          "tauriDir": "../tauri/src-tauri"
+        }
+      ]
+    ]
+  }
 }
