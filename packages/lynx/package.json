@@ -2,13 +2,23 @@
   "name": "@tauri-native/lynx",
   "version": "0.0.1",
   "description": "Embed a packaged Tauri microfrontend in Lynx and invoke its Rust core",
-  "license": "MIT OR Apache-2.0",
+  "license": "MIT",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./lynx.lib.json": "./lynx.lib.json",
+    "./package.json": "./package.json"
+  },
   "files": [
     "generated",
-    "ios",
+    "ios/src",
+    "ios/*.podspec",
+    "LICENSE",
     "src",
     "types",
     "lynx.lib.json",
@@ -17,9 +27,31 @@
   "scripts": {
     "build": "nub run codegen && tsc --noEmit",
     "codegen": "lynx-autolink-codegen",
+    "prepack": "lynx-autolink-codegen && tsc --noEmit",
     "typecheck": "tsc --noEmit"
   },
+  "keywords": [
+    "ios",
+    "lynx",
+    "rust",
+    "tauri"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gronxb/tauri-native.git",
+    "directory": "packages/lynx"
+  },
+  "homepage": "https://github.com/gronxb/tauri-native#readme",
+  "bugs": {
+    "url": "https://github.com/gronxb/tauri-native/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "tag": "experimental"
+  },
   "peerDependencies": {
+    "@tauri-native/cli": "0.0.1",
     "@lynx-js/react": "*",
     "@lynx-js/types": "*"
   },

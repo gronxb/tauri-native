@@ -18,13 +18,20 @@
   "files": [
     "app.plugin.js",
     "cpp",
-    "ios",
+    "ios/*.h",
+    "ios/*.m",
+    "ios/*.mm",
+    "ios/*.swift",
+    "LICENSE",
     "lib",
+    "README.md",
     "src",
     "*.podspec"
   ],
   "scripts": {
     "build": "bob build",
+    "prepack": "bob build",
+    "test": "node --test test/*.test.js",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
@@ -33,7 +40,21 @@
     "tauri",
     "ios"
   ],
-  "license": "MIT OR Apache-2.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gronxb/tauri-native.git",
+    "directory": "packages/react-native"
+  },
+  "homepage": "https://github.com/gronxb/tauri-native#readme",
+  "bugs": {
+    "url": "https://github.com/gronxb/tauri-native/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "tag": "experimental"
+  },
   "react-native-builder-bob": {
     "source": "src",
     "output": "lib",
@@ -75,6 +96,7 @@
     "typescript": "^7.0.2"
   },
   "peerDependencies": {
+    "@tauri-native/cli": "0.0.1",
     "react": "*",
     "react-native": "*"
   },

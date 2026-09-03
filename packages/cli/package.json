@@ -6,8 +6,13 @@
   "bin": {
     "tauri-native": "./dist/index.mjs"
   },
+  "exports": {
+    "./package.json": "./package.json"
+  },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "README.md"
   ],
   "scripts": {
     "build": "tsdown",
@@ -19,10 +24,30 @@
     "@clack/core": "^1.4.3",
     "commander": "^15.0.0"
   },
+  "keywords": [
+    "ios",
+    "react-native",
+    "rust",
+    "tauri"
+  ],
   "engines": {
     "node": ">=22.12.0"
   },
-  "license": "MIT OR Apache-2.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gronxb/tauri-native.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/gronxb/tauri-native#readme",
+  "bugs": {
+    "url": "https://github.com/gronxb/tauri-native/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "tag": "experimental"
+  },
   "devDependencies": {
     "@types/node": "^22.20.1",
     "tsdown": "^0.22.14",

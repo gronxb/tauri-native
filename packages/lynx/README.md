@@ -2,6 +2,29 @@
 
 Experimental Lynx native library for `tauri-native`.
 
+## Install
+
+```sh
+npm install @tauri-native/lynx@experimental
+npm install --save-dev @tauri-native/cli@experimental
+```
+
+Generate the app-specific iOS artifacts before autolinking:
+
+```sh
+npx tauri-native build ios \
+  --tauri-dir ../tauri/src-tauri \
+  --output-dir ios/tauri-native
+```
+
+Add the generated local Pod to the application target before calling `use_lynx_library!`:
+
+```ruby
+pod 'TauriNativeGenerated', :path => './tauri-native'
+```
+
+## API
+
 ```tsx
 import { TauriView, invoke } from '@tauri-native/lynx';
 
@@ -16,4 +39,8 @@ The package follows the official Lynx Native Library layout. It exposes a typed 
 
 The example host initializes `LynxEnv`, loads its local `main.lynx.bundle` through a `LynxTemplateProvider`, and renders a `LynxView` as described by Lynx's [existing-app iOS guide](https://lynxjs.org/guide/start/integrate-with-existing-apps?platform=ios). Its Podfile uses `use_lynx_library!` for [autolinking](https://lynxjs.org/guide/autolink) and includes `XElement` because the example renders a native `<input>`.
 
-This package is not published and currently supports only the repository PoC. See the root README for build and integration instructions.
+This package is experimental and currently supports iOS only. See the root README for the complete build and integration contract.
+
+## License
+
+MIT

@@ -1,16 +1,20 @@
 source 'https://cdn.cocoapods.org/'
 
 plugin 'cocoapods-lynx-library'
+require 'json'
 
 platform :ios, '13.0'
 use_modular_headers!
 
+cli_package_json = `node --print "require.resolve('@tauri-native/cli/package.json')"`.strip
+abort('Could not resolve @tauri-native/cli') unless $?.success?
+cli_package = JSON.parse(File.read(cli_package_json))
 tauri_native_cli = File.expand_path(
-  '../../../packages/cli/bin/tauri-native.mjs',
-  __dir__
+  cli_package.fetch('bin').fetch('tauri-native'),
+  File.dirname(cli_package_json)
 )
 tauri_dir = File.expand_path('../../tauri/src-tauri', __dir__)
-output_dir = File.expand_path('../../../packages/lynx/ios/Generated', __dir__)
+output_dir = File.expand_path('tauri-native', __dir__)
 abort('Failed to package the Tauri microfrontend') unless system(
   'node',
   tauri_native_cli,
@@ -23,6 +27,7 @@ abort('Failed to package the Tauri microfrontend') unless system(
 )
 
 target 'Hello-Lynx' do
+  pod 'TauriNativeGenerated', :path => output_dir
   pod 'Lynx', '4.0.1', :subspecs => ['Framework']
   pod 'PrimJS', '4.0.0', :subspecs => ['quickjs', 'napi']
   pod 'XElement', '4.0.1'

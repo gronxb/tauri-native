@@ -40,6 +40,14 @@ On desktop, that Tauri frontend fills the native window. On iOS, the same packag
 
 `@tauri-native/react-native` uses React Native Builder Bob to produce ESM and TypeScript declarations. `@tauri-native/lynx` follows Lynx Native Library autolinking and code generation. `@tauri-native/cli` uses Commander for its command interface and `@clack/core` for terminal output.
 
+The `0.0.1` packages are configured to publish under the `experimental` npm dist-tag. Install the CLI first because both host packages use it to generate the consuming application's Rust and web artifacts.
+
+```sh
+npm install --save-dev @tauri-native/cli@experimental
+npm install @tauri-native/react-native@experimental
+# or: npm install @tauri-native/lynx@experimental
+```
+
 ## Architecture
 
 ```mermaid
@@ -93,7 +101,7 @@ nub run prebuild:clean:ios
 nub run pods:lynx:ios
 ```
 
-The Expo prebuild packages the Tauri frontend and Rust core before CocoaPods autolinks `@tauri-native/react-native`. Re-run it after changing Expo native configuration or the embedded Tauri project; use `prebuild:clean:ios` when verifying that no generated native state is required.
+The Expo prebuild packages the Tauri frontend and Rust core into the generated application's `ios/tauri-native` local Pod before CocoaPods autolinks `@tauri-native/react-native`. Re-run it after changing Expo native configuration or the embedded Tauri project; use `prebuild:clean:ios` when verifying that no generated native state is required.
 
 Run the React Native example:
 
@@ -209,7 +217,7 @@ Equivalent direct invocation:
 nub --cwd packages/cli run build
 node packages/cli/dist/index.mjs build ios \
   --tauri-dir examples/tauri/src-tauri \
-  --output-dir packages/react-native/ios/Generated
+  --output-dir examples/react-native/ios/tauri-native
 ```
 
 The command reads `build.beforeBuildCommand` and `build.frontendDist` from `tauri.conf.json`, builds the frontend, and produces:
@@ -218,6 +226,9 @@ The command reads `build.beforeBuildCommand` and `build.frontendDist` from `taur
 | --- | --- |
 | `TauriNativeCore.xcframework` | arm64 iOS device plus arm64/x86_64 simulator static libraries and C header |
 | `TauriNativeAssets.bundle` | The unchanged files from the configured Tauri `frontendDist` |
+| `TauriNativeGenerated.podspec` | A local Pod that exposes those application-specific artifacts to either native host package |
+
+The generated output belongs to the consuming application and is intentionally excluded from the npm packages. Add `pod 'TauriNativeGenerated', :path => './tauri-native'` to a manually managed iOS Podfile. The Expo config plugin and the Lynx example perform this step automatically.
 
 The Rust manifest must produce a `staticlib`. Its header must expose the current C ABI:
 
@@ -230,4 +241,4 @@ The returned UTF-8 JSON allocation belongs to Rust and must be released exactly 
 
 ## License
 
-MIT OR Apache-2.0
+MIT. See [LICENSE](./LICENSE).

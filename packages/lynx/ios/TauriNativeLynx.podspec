@@ -6,10 +6,10 @@ Pod::Spec.new do |s|
   s.name = "TauriNativeLynx"
   s.version = package["version"]
   s.summary = package["description"]
-  s.homepage = "https://github.com/gronxb/tauri-native"
+  s.homepage = package["homepage"]
   s.license = package["license"]
   s.authors = "tauri-native contributors"
-  s.source = { :git => "https://github.com/gronxb/tauri-native.git", :tag => s.version.to_s }
+  s.source = { :git => package.dig("repository", "url").delete_prefix("git+"), :tag => "v#{s.version}" }
 
   s.ios.deployment_target = "13.0"
   s.swift_version = "5.0"
@@ -21,9 +21,8 @@ Pod::Spec.new do |s|
     "src/TauriViewElement.h",
     "src/generated/*.h"
   ]
-  s.vendored_frameworks = "Generated/TauriNativeCore.xcframework"
-  s.resources = "Generated/TauriNativeAssets.bundle"
   s.frameworks = "WebKit"
 
   s.dependency "Lynx", ">= 4.0.0", "< 5.0.0"
+  s.dependency "TauriNativeGenerated"
 end

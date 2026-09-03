@@ -23,10 +23,11 @@
     "@lynx-js/rspeedy": "^0.16.5",
     "@lynx-js/types": "4.1.0",
     "@rsbuild/plugin-type-check": "1.6.0",
+    "@tauri-native/cli": "workspace:*",
     "@types/react": "^19.2.18",
     "typescript": "~6.0.3"
   },
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": ">=22.12.0"
   }
 }

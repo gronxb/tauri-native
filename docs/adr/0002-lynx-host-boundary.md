@@ -14,6 +14,7 @@ The same microfrontend model should work when a conventionally scaffolded Lynx a
 - Direct Lynx JavaScript calls use the generated `TauriNative` native module, an Objective-C++ C-ABI adapter, and the same Rust static library.
 - `<TauriView />` renders a registered `tauri-view` custom native element backed by the same Swift `WKWebView` boundary used by the React Native package.
 - `@tauri-native/cli build ios` produces a separate application-consumed XCFramework and asset bundle for the Lynx Pod.
+- The generated XCFramework and bundle live in the consuming application's `TauriNativeGenerated` local Pod rather than in the published Lynx package.
 
 This deliberately does not initialize Tauri's application runtime inside Lynx. The embedded frontend receives only the narrow `invoke` compatibility seam.
 
