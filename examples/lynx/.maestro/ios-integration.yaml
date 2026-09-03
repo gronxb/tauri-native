@@ -6,7 +6,7 @@ appId: dev.tauri-native.lynx-example
     end: "50%,25%"
     duration: 600
 - waitForAnimationToEnd
-- assertVisible: 'invoke("calculate")'
+- assertVisible: "Calculate across the bridge."
 - scrollUntilVisible:
     element:
       id: "lynx-calculator-expression"
@@ -31,6 +31,6 @@ appId: dev.tauri-native.lynx-example
 - eraseText: 100
 - inputText: "18 / (2 + 1)"
 - pressKey: Enter
-- assertVisible: "Rust returned"
+- assertVisible: "Returned from Rust"
 - assertVisible: "= 6"
 - assertVisible: "tauri-native-example-core"

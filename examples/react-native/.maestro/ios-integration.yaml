@@ -19,6 +19,6 @@ appId: tauri.example
 - eraseText: 100
 - inputText: "18 / (2 + 1)"
 - pressKey: Enter
-- assertVisible: "Rust returned"
+- assertVisible: "Returned from Rust"
 - assertVisible: "= 6"
 - assertVisible: "tauri-native-example-core"
