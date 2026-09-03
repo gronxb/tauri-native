@@ -1,204 +1,467 @@
 :root {
-  background: #f4f4f1;
+  background: #f3f0e8;
 }
 
 .page {
   width: 100%;
   height: 100%;
-  background: #f4f4f1;
+  background: #f3f0e8;
 }
 
 .pageContent {
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: 20px;
-  padding-bottom: 40px;
-  background: #f4f4f1;
+  padding: 24px;
+  padding-top: 28px;
+  padding-bottom: 48px;
+  background: #f3f0e8;
 }
 
 .masthead,
-.section {
+.workbenchCard,
+.embeddedSection {
   display: flex;
   flex-direction: column;
 }
 
 .masthead {
-  margin-top: 4px;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
-.product {
-  color: #3659d9;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-}
-
-.title {
-  margin-top: 4px;
-  color: #222326;
-  font-size: 26px;
-  font-weight: 700;
-}
-
-.subtitle {
-  margin-top: 4px;
-  color: #6b6c70;
-  font-size: 14px;
-  line-height: 20px;
-}
-
-.section {
-  padding: 16px;
-  border: 1px solid #d9d9d4;
-  border-radius: 10px;
-  background: #ffffff;
-}
-
-.sectionHeader {
+.mastheadMeta,
+.productChip,
+.routeRail,
+.routeItem,
+.routeStatus,
+.sectionHeader,
+.sectionIdentity,
+.outputHeader,
+.sourceRow,
+.frameIdentity,
+.tauriFrameBar,
+.buttonContent {
   display: flex;
   flex-direction: row;
-  align-items: flex-end;
+  align-items: center;
+}
+
+.mastheadMeta {
   justify-content: space-between;
 }
 
-.sectionIndex {
-  margin-bottom: 3px;
-  color: #77787c;
+.productChip {
+  height: 28px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border: 1px solid #d7d1c5;
+  border-radius: 14px;
+  background: #fffefa;
+}
+
+.productMark {
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 4px;
+  background: #3157d5;
+}
+
+.product {
+  color: #343941;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+}
+
+.edition {
+  color: #74736f;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.eyebrow {
+  margin-top: 24px;
+  color: #3157d5;
   font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+.title {
+  margin-top: 8px;
+  color: #1f2329;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 39px;
+  letter-spacing: -0.8px;
+}
+
+.subtitle {
+  margin-top: 12px;
+  color: #666760;
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.routeRail {
+  height: 48px;
+  margin-top: 24px;
+  padding-left: 14px;
+  padding-right: 14px;
+  border: 1px solid #d7d1c5;
+  border-radius: 12px;
+  background: #eae6dc;
+}
+
+.routeItem {
+  height: 100%;
+}
+
+.routeNumber {
+  color: #3157d5;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.routeRailLabel {
+  margin-left: 6px;
+  color: #4d5055;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+}
+
+.routeDivider {
+  width: 1px;
+  height: 18px;
+  margin-left: 12px;
+  margin-right: 12px;
+  background: #cec8bb;
+}
+
+.routeStatus {
+  margin-left: auto;
+  padding-left: 10px;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 3px;
+  background: #85847e;
+}
+
+.routeStatusText {
+  color: #686963;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+}
+
+.workbenchCard {
+  padding: 20px;
+  border: 1px solid #d7d1c5;
+  border-radius: 14px;
+  background: #fffefa;
+}
+
+.sectionHeader {
+  justify-content: space-between;
+}
+
+.sectionIdentity {
+  flex: 1;
+}
+
+.sectionIndex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  color: #ffffff;
+  background: #3157d5;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.sectionIndexMuted {
+  border: 1px solid #d7d1c5;
+  color: #4e5054;
+  background: #eeeae1;
+}
+
+.sectionCopy {
+  display: flex;
+  flex-direction: column;
+  margin-left: 12px;
+}
+
+.sectionKicker {
+  color: #7a7872;
+  font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.8px;
 }
 
 .sectionTitle {
-  color: #222326;
-  font-size: 18px;
+  margin-top: 3px;
+  color: #22262c;
+  font-size: 17px;
   font-weight: 700;
 }
 
-.route {
-  color: #55565a;
-  font-size: 10px;
+.routeChip {
+  margin-left: 10px;
+  padding: 7px 9px;
+  border-radius: 12px;
+  background: #e8edff;
+}
+
+.routeChipText {
+  color: #3157d5;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.routeChipNeutral {
+  border: 1px solid #d7d1c5;
+  background: #f2efe7;
+}
+
+.routeChipTextNeutral {
+  color: #666760;
+}
+
+.fieldHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 24px;
+}
+
+.fieldLabel {
+  color: #4b4e53;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.fieldHint {
+  color: #92918a;
+  font-size: 9px;
+}
+
+.inputShell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 58px;
+  margin-top: 8px;
+  padding-left: 14px;
+  padding-right: 14px;
+  border: 1px solid #cfc9bd;
+  border-radius: 12px;
+  background: #f7f4ed;
+}
+
+.inputPrompt {
+  width: 28px;
+  color: #3157d5;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .input {
-  height: 52px;
-  margin-top: 14px;
-  padding: 14px;
-  border: 1px solid #c8c8c2;
-  border-radius: 10px;
-  color: #222326;
-  background: #fafaf8;
-  font-size: 14px;
+  flex: 1;
+  height: 100%;
+  color: #22262c;
+  background: #f7f4ed;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .button {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 48px;
-  margin-top: 14px;
-  border-radius: 10px;
-  background: #3659d9;
+  height: 52px;
+  margin-top: 12px;
+  border-radius: 12px;
+  background: #3157d5;
 }
 
 .button.ui-active {
-  background: #2949bd;
+  background: #2447bb;
+}
+
+.buttonContent {
+  justify-content: center;
 }
 
 .buttonText {
   color: #ffffff;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
+}
+
+.buttonArrow {
+  margin-left: 10px;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 600;
 }
 
 .output {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: 76px;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid #e6e6e1;
+  min-height: 112px;
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid #ded9ce;
+  border-radius: 12px;
+  background: #f5f2ea;
+}
+
+.outputHeader {
+  justify-content: space-between;
 }
 
 .outputLabel,
 .errorLabel {
-  color: #77787c;
+  color: #686963;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.8px;
 }
 
+.outputState {
+  color: #878680;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+}
+
+.outputStateSuccess {
+  color: #3157d5;
+}
+
 .outputIdle {
-  margin-top: 5px;
-  color: #8b8c90;
-  font-size: 17px;
+  margin-top: 15px;
+  color: #4c4f54;
+  font-size: 16px;
   font-weight: 600;
 }
 
+.outputNote {
+  margin-top: 5px;
+  color: #85847e;
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.outputSuccess {
+  border-color: #cbd4f1;
+  background: #f4f6fd;
+}
+
 .resultValue {
-  margin-top: 4px;
-  color: #222326;
-  font-size: 25px;
+  margin-top: 10px;
+  color: #1f2329;
+  font-size: 30px;
   font-weight: 700;
 }
 
+.sourceRow {
+  margin-top: 6px;
+}
+
+.sourceLine {
+  width: 16px;
+  height: 2px;
+  margin-right: 7px;
+  background: #3157d5;
+}
+
 .source {
-  margin-top: 4px;
-  color: #77787c;
-  font-size: 10px;
+  color: #74756f;
+  font-size: 9px;
 }
 
 .errorOutput {
-  border-top-color: #e9c9c9;
+  border-color: #e1c7c3;
+  background: #fbf3f1;
 }
 
 .errorLabel {
-  color: #a23b3b;
+  color: #923f38;
+}
+
+.errorState {
+  color: #923f38;
 }
 
 .error {
-  margin-top: 5px;
-  color: #7f2f2f;
+  margin-top: 15px;
+  color: #73352f;
   font-size: 14px;
+  line-height: 20px;
 }
 
-.embeddedHeader {
-  margin-top: 24px;
-  margin-bottom: 12px;
+.embeddedSection {
+  margin-top: 32px;
+}
+
+.embeddedDescription {
+  margin-top: 14px;
+  color: #70716b;
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .tauriFrame {
   overflow: hidden;
-  border: 1px solid #c8c8c2;
-  border-radius: 10px;
-  background: #1b1d21;
+  margin-top: 12px;
+  border: 1px solid #c9c3b7;
+  border-radius: 14px;
+  background: #fffefa;
 }
 
 .tauriFrameBar {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  height: 34px;
-  padding: 12px;
-  background: #e8e8e4;
+  justify-content: space-between;
+  height: 40px;
+  padding-left: 14px;
+  padding-right: 14px;
+  border-bottom: 1px solid #d9d3c8;
+  background: #ece8df;
 }
 
 .frameMark {
-  width: 7px;
-  height: 7px;
-  margin-right: 8px;
-  border-radius: 2px;
-  background: #3659d9;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 4px;
+  background: #3157d5;
 }
 
 .frameLabel {
-  color: #5f6064;
+  color: #4d5055;
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.7px;
+  letter-spacing: 0.8px;
+}
+
+.frameStatus {
+  color: #777771;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
 }
 
 .tauriView {
