@@ -122,6 +122,7 @@ public final class TNTauriWebView: UIView {
     messageHandler.delegate = self
     webView.navigationDelegate = self
     webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    webView.scrollView.pinchGestureRecognizer?.isEnabled = false
     addSubview(webView)
 
     if assetSchemeHandler != nil {

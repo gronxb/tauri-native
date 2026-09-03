@@ -82,18 +82,6 @@ There are five invocation paths:
 
 The selected mobile host remains the sole owner of `UIApplication`, rendering, and lifecycle. `TauriView` is a Swift-owned `WKWebView`; it does not embed or initialize a second `tauri::App`.
 
-## Requirements
-
-- Node.js 22.11 or newer
-- React Native New Architecture
-- Lynx 4 and XElement for the Lynx example
-- Rust and `rustup`
-- Xcode and CocoaPods
-- Nub 0.8.3 for this repository's scripts
-- Maestro CLI only for the optional iOS end-to-end test
-
-The current implementation supports iOS. Android and AAR output are not implemented.
-
 ## Run the example workspace
 
 Install dependencies and generate the iOS artifacts:
@@ -149,6 +137,8 @@ import { TauriView } from '@tauri-native/react-native';
 ```
 
 `TauriView` accepts standard React Native `ViewProps`. In this PoC it loads the single `TauriNativeAssets.bundle` packaged by the CLI. Selecting bundles or remote URLs is intentionally unsupported.
+
+The iOS views disable WebView pinch zoom, and the bundled demo locks viewport scaling so double-tap input focus cannot leave the embedded surface enlarged or horizontally clipped.
 
 ### `invoke<T>(command, payload)`
 
@@ -233,100 +223,6 @@ void tauri_native_string_free(char *value);
 ```
 
 The returned UTF-8 JSON allocation belongs to Rust and must be released exactly once with `tauri_native_string_free`.
-
-## Integrating another workspace
-
-The current PoC has no `init` command. Use the example wiring as the reference integration:
-
-1. Put host-independent commands in a Rust crate built as both `rlib` and `staticlib`.
-2. Keep thin Tauri `#[tauri::command]` functions that delegate to that crate.
-3. Export the C ABI shown above from the same crate.
-4. Run `tauri-native build ios` before CocoaPods resolves the selected host package.
-5. Write the generated artifacts to the selected package's `ios/Generated` directory, which its podspec consumes.
-6. Render `<TauriView />` or call `invoke(...)` from the React Native or Lynx application.
-
-See the concrete files:
-
-- [`examples/react-native/ios/Podfile`](examples/react-native/ios/Podfile)
-- [`examples/lynx/ios/Podfile`](examples/lynx/ios/Podfile)
-- [`examples/tauri/src-tauri/src/lib.rs`](examples/tauri/src-tauri/src/lib.rs)
-- [`examples/tauri/src-tauri/crates/app-core`](examples/tauri/src-tauri/crates/app-core)
-- [`packages/react-native/TauriNativeReactNative.podspec`](packages/react-native/TauriNativeReactNative.podspec)
-- [`packages/lynx/ios/TauriNativeLynx.podspec`](packages/lynx/ios/TauriNativeLynx.podspec)
-
-Writing generated output into an installed package directory is a PoC constraint. A distribution-ready release needs an `init`/configuration flow and an application-owned artifact directory.
-
-## Compatibility boundary
-
-| Capability | Status |
-| --- | --- |
-| iOS device XCFramework | Supported by the CLI |
-| arm64/x86_64 iOS Simulator | Supported by the CLI |
-| React Native New Architecture | Required |
-| React Native Old Architecture | Unsupported |
-| Lynx 4 Native Library autolinking | Supported by the iOS PoC |
-| Direct Lynx native-module invocation | Supported synchronously in background scripting |
-| Tauri core `invoke` used by the packaged frontend | Supported for the fixed command dispatcher |
-| Direct React Native JSI invocation | Supported synchronously |
-| Tauri plugins, events, windows, menus, and capabilities | Unsupported in `TauriView` |
-| Remote web content | Rejected |
-| Android/AAR | Planned |
-
-The injected `window.__TAURI_INTERNALS__.invoke` seam is deliberately narrow and version-sensitive. It makes the example's ordinary `@tauri-apps/api/core.invoke` call portable; it is not a promise that the rest of the Tauri JavaScript API works inside React Native.
-
-## Security model
-
-- `TauriView` serves packaged files through the private `tauri-native://app` scheme.
-- Navigation outside that scheme is rejected.
-- The WebView exposes only the invoke message transport.
-- Rust owns the command allowlist and returns structured JSON success or error values.
-- React Native JavaScript and WebView JavaScript remain isolated runtimes.
-
-Do not use the current bridge to load untrusted or remote HTML.
-
-## Development and verification
-
-```sh
-nub run test
-cargo clippy --workspace --all-targets -- -D warnings
-```
-
-After installing the Release example on a booted simulator:
-
-```sh
-nub --cwd examples/react-native run test:e2e:ios
-nub --cwd examples/lynx run test:e2e:ios
-```
-
-Each saved Maestro flow changes both input fields and verifies two independent calculations:
-
-- Native direct bridge: `9 * (6 - 2) = 36`
-- Packaged Tauri frontend: `18 / (2 + 1) = 6`
-
-## Repository layout
-
-```text
-packages/cli/                              @tauri-native/cli
-packages/react-native/                     @tauri-native/react-native
-packages/lynx/                             @tauri-native/lynx
-examples/react-native/                     React Native host scaffold
-examples/lynx/                             Lynx + Rspeedy host scaffold
-examples/tauri/                            Tauri 2 + Vite scaffold
-examples/tauri/src-tauri/crates/app-core/  shared calculator and C ABI
-docs/adr/0001-ios-runtime-boundary.md       architecture decision record
-docs/adr/0002-lynx-host-boundary.md          Lynx host decision record
-```
-
-## Roadmap
-
-- Asynchronous JSI commands with cancellation and teardown semantics
-- Generated/shared command schemas
-- Application-owned artifact configuration and `init` workflow
-- Supported `@tauri-apps/api` compatibility matrix
-- Signed physical-device CI
-- Android AAR packaging
-
-The architectural tradeoffs and rejected full-runtime embedding approach are documented in [`docs/adr/0001-ios-runtime-boundary.md`](docs/adr/0001-ios-runtime-boundary.md). The Lynx host boundary is recorded in [`docs/adr/0002-lynx-host-boundary.md`](docs/adr/0002-lynx-host-boundary.md).
 
 ## License
 

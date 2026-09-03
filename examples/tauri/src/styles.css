@@ -3,6 +3,7 @@
   background: #efefec;
   font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, sans-serif;
   font-synthesis: none;
+  touch-action: manipulation;
 }
 
 * {
@@ -10,9 +11,11 @@
 }
 
 body {
-  min-width: 320px;
+  width: 100%;
+  min-width: 0;
   min-height: 100vh;
   margin: 0;
+  overflow-x: hidden;
   background: #1b1d21;
 }
 
@@ -161,6 +164,7 @@ label {
 
 input {
   width: 100%;
+  min-width: 0;
   height: 46px;
   padding: 0 13px;
   border: 1px solid #51535a;
@@ -253,10 +257,29 @@ button:active {
 
 @media (max-width: 500px) {
   .topbar {
+    gap: 12px;
     padding: 16px;
   }
 
+  .topbar > div:first-child {
+    min-width: 0;
+  }
+
   .workspace {
+    width: 100%;
     padding: 16px;
+  }
+
+  .controlRow {
+    grid-template-columns: minmax(0, 1fr) 76px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  button {
+    min-width: 0;
+    padding: 0 12px;
   }
 }
