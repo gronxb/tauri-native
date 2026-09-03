@@ -27,6 +27,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const host = element<HTMLDivElement>('#host');
   const status = element<HTMLParagraphElement>('#status');
   const result = element<HTMLOutputElement>('#calculation-result');
+  const resultPanel = element<HTMLElement>('.result');
   const source = element<HTMLElement>('#source');
   const hostType = window.__TAURI_NATIVE_HOST__ ?? 'desktop';
 
@@ -41,6 +42,7 @@ window.addEventListener('DOMContentLoaded', () => {
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     input.blur();
+    resultPanel.dataset.state = 'running';
     status.textContent = 'Running…';
     result.textContent = '—';
     source.textContent = '';
@@ -52,16 +54,19 @@ window.addEventListener('DOMContentLoaded', () => {
       });
     } catch (error) {
       console.error(error);
+      resultPanel.dataset.state = 'error';
       status.textContent = 'Bridge unavailable';
       return;
     }
 
     if (!response.ok) {
+      resultPanel.dataset.state = 'error';
       status.textContent = response.error.message;
       return;
     }
 
-    status.textContent = 'Rust returned';
+    resultPanel.dataset.state = 'success';
+    status.textContent = 'Returned from Rust';
     result.textContent = `= ${response.value.result}`;
     source.textContent = response.value.source;
   });
