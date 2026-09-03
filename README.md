@@ -1,5 +1,8 @@
 # tauri-native
 
+> [!WARNING]
+> This is a proof-of-concept (PoC) project currently under development.
+
 Embed a packaged Tauri microfrontend in a React Native or Lynx application and call the same Rust command implementation from each host.
 
 ```tsx
