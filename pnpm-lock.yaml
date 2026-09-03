@@ -4845,9 +4845,8 @@ packages:
     resolution: {integrity: sha512-u82N74LFzG8ca+dD8puPnplTXoGH4fTPpVGuIbt36G3qvNlkvfD0lEAZSxaly3KX8TS/L1A1gsCEmvKmBcVbkQ==}
     engines: {node: ^10 || ^12 || >=14}
 
-  preact@10.29.1-20260519060144-e6da44c:
-    resolution: {integrity: sha512-h2pRrt5oLK9LT1NkjyprtzJij/AdZGvv3CN6B5edL4chixqvITbxoCSdYy667Hl6+uKOBuxmCNZoDddgRfcLnw==}
-    aliasOf: '@lynx-js/internal-preact'
+  '@lynx-js/internal-preact@10.29.1-20260519060144-e6da44c':
+    resolution: {integrity: sha512-h2pRrt5oLK9LT1NkjyprtzJij/AdZGvv3CN6B5edL4chixqvITbxoCSdYy667Hl6+uKOBuxmCNZoDddgRfcLnw==, tarball: https://registry.npmjs.org/@lynx-js/internal-preact/-/internal-preact-10.29.1-20260519060144-e6da44c.tgz}
 
   presentable-error@0.0.1:
     resolution: {integrity: sha512-E6rsNU1QNJgB3sjj7OANinGncFKuK+164sLXw1/CqBjj/EkXSoSdHCtWQGBNlREIGLnL7IEUEGa08YFVUbrhVg==}
@@ -7613,7 +7612,7 @@ snapshots:
     dependencies:
       '@lynx-js/types': 4.1.0
       '@types/react': 19.2.18
-      preact: 10.29.1-20260519060144-e6da44c
+      preact: '@lynx-js/internal-preact@10.29.1-20260519060144-e6da44c'
 
   '@lynx-js/rsbuild-plugin@0.0.3(@rsbuild/core@2.1.10)(webpack@5.110.3)':
     dependencies:
@@ -10976,7 +10975,7 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  preact@10.29.1-20260519060144-e6da44c: {}
+  '@lynx-js/internal-preact@10.29.1-20260519060144-e6da44c': {}
 
   presentable-error@0.0.1: {}
 
