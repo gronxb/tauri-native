@@ -67,7 +67,7 @@ for (const target of entrypoints) {
 for (const file of files.keys()) {
   assert.doesNotMatch(
     file,
-    /(^|\/)ios\/Generated\/|\.xcframework\/|\.bundle\/|\.a$/,
+    /(^|\/)android\/(?:\.cxx|build)\/|(^|\/)ios\/Generated\/|\.xcframework\/|\.bundle\/|\.a$/,
     `${manifest.name} contains app-specific native output: ${file}`
   );
 }

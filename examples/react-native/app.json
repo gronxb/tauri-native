@@ -3,10 +3,13 @@
     "name": "TauriNativeExample",
     "slug": "tauri-native-example",
     "version": "1.0.0",
-    "platforms": ["ios"],
+    "platforms": ["ios", "android"],
     "ios": {
       "bundleIdentifier": "tauri.example",
       "deploymentTarget": "16.4"
+    },
+    "android": {
+      "package": "tauri.example"
     },
     "plugins": [
       [

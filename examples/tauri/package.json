@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build:tauri-native": "nub --cwd ../../packages/cli run build",
+    "export:android": "nub run build:tauri-native && tauri-native export android",
     "export:ios": "nub run build:tauri-native && tauri-native export ios",
     "test": "cargo test --workspace --manifest-path ../../Cargo.toml",
     "typecheck": "tsc --noEmit",

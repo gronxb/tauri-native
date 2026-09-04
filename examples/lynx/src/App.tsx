@@ -41,7 +41,7 @@ export function App() {
     >
       <view className="pageContent">
         <view className="masthead">
-          <text className="product">TAURI-NATIVE · IOS</text>
+          <text className="product">TAURI-NATIVE · MOBILE</text>
           <text className="title">Lynx host</text>
           <text className="subtitle">Two paths to the same Rust command.</text>
         </view>

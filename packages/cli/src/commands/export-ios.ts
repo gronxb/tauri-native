@@ -8,10 +8,10 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import { readLibraryName } from '../utils/cargo-manifest';
-import { requireFile } from '../utils/files';
-import { message } from '../utils/output';
-import { run } from '../utils/process';
+import { readLibraryName } from '../utils/cargo-manifest.ts';
+import { requireFile } from '../utils/files.ts';
+import { message } from '../utils/output.ts';
+import { run } from '../utils/process.ts';
 
 export interface ExportIosOptions {
   tauriDir: string;

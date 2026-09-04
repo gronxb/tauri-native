@@ -1,0 +1,49 @@
+plugins {
+  id 'com.android.application'
+  id 'org.lynxsdk.lynx.library-build'
+}
+
+android {
+  namespace 'dev.taurinative.lynxexample'
+  compileSdk 35
+  ndkVersion '27.1.12297006'
+
+  defaultConfig {
+    applicationId 'dev.taurinative.lynxexample'
+    minSdk 24
+    targetSdk 35
+    versionCode 1
+    versionName '1.0'
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+
+  sourceSets {
+    main {
+      assets.srcDir '../../dist'
+      assets.srcDir '../../../tauri/src-tauri/gen/tauri-native/android/assets'
+      assets.exclude '.rspeedy/**'
+      jniLibs.srcDir '../../../tauri/src-tauri/gen/tauri-native/android/jniLibs'
+    }
+  }
+}
+
+dependencies {
+  implementation 'androidx.annotation:annotation:1.9.1'
+  implementation 'org.lynxsdk.lynx:lynx:4.0.1'
+  implementation 'org.lynxsdk.lynx:lynx-jssdk:4.0.1'
+  implementation 'org.lynxsdk.lynx:lynx-trace:4.0.1'
+  implementation 'org.lynxsdk.lynx:primjs:4.0.0'
+  implementation 'org.lynxsdk.lynx:xelement:4.0.1'
+  implementation 'org.lynxsdk.lynx:xelement-input:4.0.1'
+}

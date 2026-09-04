@@ -6,7 +6,7 @@ license = "MIT"
 
 [lib]
 name = "tauri_native_example_core"
-crate-type = ["rlib", "staticlib"]
+crate-type = ["rlib", "staticlib", "cdylib"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
