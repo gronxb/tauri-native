@@ -1,5 +1,11 @@
 # @tauri-native/cli
 
+## 0.1.0
+
+### Minor Changes
+
+- 13605b4: Add Android export and React Native and Lynx native host support.
+
 ## 0.0.2
 
 ### Patch Changes

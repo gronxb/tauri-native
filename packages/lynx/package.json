@@ -1,6 +1,6 @@
 {
   "name": "@tauri-native/lynx",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Embed a packaged Tauri microfrontend in Lynx and invoke its Rust core",
   "license": "MIT",
   "type": "module",
