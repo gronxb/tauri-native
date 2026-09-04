@@ -55,7 +55,7 @@ const result = invoke<Calculation>('calculate', {
 <TauriView style={{ height: '420px' }} />;
 ```
 
-The package follows the official Lynx Native Library layout. It exposes a typed native module for direct Rust invocation and a `tauri-view` custom native element backed by Swift `WKWebView` on iOS and Android `WebView` on Android.
+The package follows the official Lynx Native Library layout. It exposes a typed native module for direct Rust invocation and a `tauri-view` custom native element backed by Swift `WKWebView` on iOS and Android `WebView` on Android. On both platforms, the Lynx 4.0.1 runtime exposes the direct module through its JSI-backed `NativeModules` path before continuing through Objective-C++ on iOS or JNI on Android to the shared Rust C ABI. The package itself depends only on Lynx's public Native Module API.
 
 The example hosts initialize `LynxEnv`, load the local `main.lynx.bundle` through a template provider, and render a `LynxView` as described by Lynx's existing-app guides. iOS uses CocoaPods and Android uses the Native Library Gradle plugins for [autolinking](https://lynxjs.org/guide/autolink). Both include `XElement` because the example renders a native `<input>`.
 
