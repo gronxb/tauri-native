@@ -1,6 +1,6 @@
 {
   "name": "@tauri-native/react-native",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Embed a packaged Tauri microfrontend in React Native with a native-to-Rust bridge",
   "source": "./src/index.ts",
   "main": "./lib/module/index.js",
