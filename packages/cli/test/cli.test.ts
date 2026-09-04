@@ -29,4 +29,30 @@ describe('tauri-native CLI', () => {
     assert.match(result.stderr, /Required file does not exist:/);
     assert.match(result.stderr, /missing-project/);
   });
+
+  it('exposes the Android export command from the bundled entry point', () => {
+    const result = spawnSync(
+      process.execPath,
+      [cli, 'export', 'android', '--help'],
+      { encoding: 'utf8' }
+    );
+
+    assert.equal(result.status, 0);
+    assert.equal(result.stderr, '');
+    assert.match(result.stdout, /Usage: tauri-native export android \[options\]/);
+    assert.match(result.stdout, /--tauri-dir <path>/);
+    assert.match(result.stdout, /--output-dir <path>/);
+  });
+
+  it('returns a failing exit code for an Android export without a Tauri project', () => {
+    const result = spawnSync(
+      process.execPath,
+      [cli, 'export', 'android', '--tauri-dir', 'missing-project'],
+      { encoding: 'utf8' }
+    );
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Required file does not exist:/);
+    assert.match(result.stderr, /missing-project/);
+  });
 });

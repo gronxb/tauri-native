@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "NODE_OPTIONS= rspeedy build --mode production",
+    "build:android": "NODE_OPTIONS= rspeedy build --mode production && cd android && ./gradlew assembleDebug",
     "build:ios": "NODE_OPTIONS= rspeedy build --mode production && cp dist/main.lynx.bundle ios/main.lynx.bundle",
+    "android": "NODE_OPTIONS= rspeedy build --mode production && cd android && ./gradlew installDebug",
     "dev": "rspeedy dev",
     "pods": "nub run build:ios && cd ios && BUNDLE_PATH=vendor/bundle bundle install && BUNDLE_PATH=vendor/bundle bundle exec pod install",
     "test:e2e:ios": "maestro test --platform ios .maestro/ios-integration.yaml",

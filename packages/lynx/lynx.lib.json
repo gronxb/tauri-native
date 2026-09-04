@@ -1,5 +1,9 @@
 {
   "platforms": {
+    "android": {
+      "packageName": "dev.taurinative.lynx",
+      "sourceDir": "android"
+    },
     "ios": {
       "sourceDir": "ios",
       "podspecPath": "ios/TauriNativeLynx.podspec"

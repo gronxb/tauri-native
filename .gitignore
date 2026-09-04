@@ -13,6 +13,9 @@ DerivedData
 *.xcworkspace/xcuserdata
 *.xcodeproj/xcuserdata
 packages/react-native/ios/Generated
+packages/react-native/android/.cxx
+packages/lynx/android/.cxx
+examples/lynx/android/.gradle
 packages/lynx/ios/Generated
 examples/lynx/ios/tauri-native
 examples/react-native/ios/.xcode.env.local

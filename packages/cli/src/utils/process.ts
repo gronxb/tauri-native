@@ -1,5 +1,5 @@
 import { execFileSync, type ExecFileSyncOptions } from 'node:child_process';
-import { message } from './output';
+import { message } from './output.ts';
 
 export function run(
   command: string,
