@@ -1,8 +1,8 @@
-import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, renameSync, rmSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { nativeTool } from '../discovery/native-tool.ts';
 
-const generatedRoots = new Set(['manifest.json', 'commands.json', 'TauriNativeCore.xcframework', 'TauriNativeAssets.bundle', 'TauriNativeGenerated.podspec', 'jniLibs', 'assets', 'include']);
+const generatedRoots = new Set(['manifest.json', 'commands.json', 'commands.ts', 'TauriNativeCore.xcframework', 'TauriNativeAssets.bundle', 'TauriNativeGenerated.podspec', 'jniLibs', 'assets', 'include']);
 
 function checkDestination(directory: string): void {
   if (!existsSync(directory)) return;
@@ -14,8 +14,15 @@ function checkDestination(directory: string): void {
 export function publishArtifacts(directory: string, build: (stage: string) => void, validate: (stage: string) => void): void {
   checkDestination(directory);
   mkdirSync(path.dirname(directory), { recursive: true });
-  const stage = mkdtempSync(path.join(path.dirname(directory), `.${path.basename(directory)}-stage-`));
+  const lock = `${directory}.lock`;
+  try { writeFileSync(lock, `${process.pid}\n`, { flag: 'wx' }); }
+  catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+    throw Object.assign(new Error(`Another export owns ${lock}. If its process has stopped after a forced interruption, remove that lock before retrying.`), { code: 'output_busy' });
+  }
+  let stage: string | undefined;
   try {
+    stage = mkdtempSync(path.join(path.dirname(directory), `.${path.basename(directory)}-stage-`));
     build(stage);
     validate(stage);
     checkDestination(directory);
@@ -24,6 +31,7 @@ export function publishArtifacts(directory: string, build: (stage: string) => vo
     if (existsSync(directory)) nativeTool('exchange-directories', stage, directory);
     else renameSync(stage, directory);
   } finally {
-    rmSync(stage, { recursive: true, force: true });
+    try { if (stage) rmSync(stage, { recursive: true, force: true }); }
+    finally { rmSync(lock, { force: true }); }
   }
 }

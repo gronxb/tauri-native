@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/012-doctor-artifact-diagnostics.md`
 - Issue: [#16](https://github.com/gronxb/tauri-native/issues/16)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: IMPLEMENTED AND VERIFIED — read-only diagnostics and shared artifact error codes; pending PR merge.
+- Status: DONE — [PR #33](https://github.com/gronxb/tauri-native/pull/33) merged into main.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 

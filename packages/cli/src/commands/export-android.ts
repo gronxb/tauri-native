@@ -18,11 +18,14 @@ import { ANDROID_ABIS, writeArtifactManifest } from '../artifacts/manifest.ts';
 import { androidTools, validateAndroidArtifacts, type AndroidTools } from '../artifacts/android.ts';
 import { publishArtifacts } from '../artifacts/staging.ts';
 import { assertExportReady } from './doctor.ts';
+import { createExportCache } from '../artifacts/cache.ts';
 
 export interface ExportAndroidOptions {
   tauriDir: string;
   manifest?: string;
   outputDir?: string;
+  incremental?: boolean;
+  force?: boolean;
 }
 
 interface TauriConfig {
@@ -67,13 +70,16 @@ export function exportAndroid(options: ExportAndroidOptions): void {
   let adapter: AdapterWorkspace | undefined;
   let tools: AndroidTools;
   try {
+    if (options.incremental && options.manifest) throw new Error('Incremental export supports ordinary Tauri projects; omit legacy --manifest.');
+    const project = options.manifest ? undefined : discoverProject(options.tauriDir);
+    if (project) assertExportReady(project, 'android');
+    const cache = options.incremental && project ? createExportCache(project, 'android', outputDirectory) : undefined;
+    if (!options.force && cache?.hit()) { message(`Inputs unchanged; reused validated Android artifacts in ${outputDirectory}`, '◆ '); return; }
     publishArtifacts(outputDirectory, stage => {
-      const project = options.manifest ? undefined : discoverProject(options.tauriDir);
-      if (project) assertExportReady(project, 'android');
       tools = androidTools();
-      adapter = project ? prepareAdapter(project) : undefined;
-      exportAndroidArtifacts({ ...options, outputDir: stage }, adapter);
-    }, stage => validateAndroidArtifacts(stage, tools));
+      adapter = project ? prepareAdapter(project, cache?.workspace, cache?.verifyCopy) : undefined;
+      exportAndroidArtifacts({ ...options, outputDir: stage }, path.join(path.resolve(options.tauriDir), 'target/tauri-native/builds', sha256(outputDirectory).slice(0, 20)), adapter);
+    }, stage => { validateAndroidArtifacts(stage, tools); cache?.record(stage); });
     message(`Created validated Android artifacts in ${outputDirectory}`, '◆ ');
   }
   catch (error) {
@@ -83,7 +89,7 @@ export function exportAndroid(options: ExportAndroidOptions): void {
   finally { adapter?.cleanup(); }
 }
 
-function exportAndroidArtifacts(options: ExportAndroidOptions, adapter?: AdapterWorkspace): void {
+function exportAndroidArtifacts(options: ExportAndroidOptions, targetDirectory: string, adapter?: AdapterWorkspace): void {
   const workingDirectory = process.cwd();
   const tauriDirectory = path.resolve(workingDirectory, options.tauriDir);
   const manifest = adapter?.manifest ?? (options.manifest
@@ -120,7 +126,6 @@ function exportAndroidArtifacts(options: ExportAndroidOptions, adapter?: Adapter
   requireFile(path.join(frontendDist, 'index.html'));
 
   const libraryName = adapter?.libraryName ?? readLibraryName(manifest);
-  const targetDirectory = path.join(tauriDirectory, 'target/tauri-native');
   const cargoOutput = path.join(targetDirectory, 'android-jniLibs');
   const cargoEnvironment = {
     ...process.env,

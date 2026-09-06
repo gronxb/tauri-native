@@ -1237,7 +1237,7 @@
       "url": "https://github.com/gronxb/tauri-native/issues/16",
       "number": 16,
       "bodySynced": true,
-      "status": "IMPLEMENTED AND VERIFIED",
+      "status": "DONE",
       "verification": {
         "date": "2026-09-07",
         "docs": "docs/diagnostics.md",
@@ -1258,7 +1258,9 @@
         "exportEvidence": "target/view-events/export-report.json",
         "sourceIntegrity": true,
         "readOnlyChecks": true
-      }
+      },
+      "pr": "https://github.com/gronxb/tauri-native/pull/33",
+      "mergeCommit": "ef8e75672c4edac5e2b26846396bea6794a5d3be"
     },
     {
       "id": 13,
@@ -1338,7 +1340,45 @@
       "file": "plans/013-incremental-export-watch.md",
       "url": "https://github.com/gronxb/tauri-native/issues/17",
       "number": 17,
-      "bodySynced": true
+      "bodySynced": true,
+      "status": "IMPLEMENTED AND VERIFIED",
+      "verification": {
+        "date": "2026-09-07",
+        "docs": "docs/development-loop.md",
+        "cliTests": 46,
+        "typecheck": true,
+        "package": true,
+        "watch": {
+          "debounce": true,
+          "noGeneratedLoop": true,
+          "failureRecovery": true,
+          "concurrentEditPreservedOutput": true,
+          "gracefulStop": true
+        },
+        "independentConcurrentOutputs": true,
+        "timingsMs": {
+          "ordinary-baseline": 37280,
+          "ordinary-repeat": 10210,
+          "incremental-prime": 12447,
+          "no-change": 601,
+          "force": 4194,
+          "frontend-edit": 1656,
+          "rust-edit": 7487,
+          "lock-edit": 2819,
+          "feature-edit": 8447,
+          "cli-edit": 1812,
+          "protocol-mismatch": 1576,
+          "protocol-restored": 655,
+          "platform-ios": 32875,
+          "platform-android": 4016
+        },
+        "watchEvidence": "target/incremental-export/report.json",
+        "iosEvidence": "target/export-ios/report.json",
+        "androidEvidence": "target/export-android/report.json",
+        "refreshedRustObservedInHost": true,
+        "sourceIntegrity": true,
+        "nativeDevices": "arm64 iOS Simulator 26.4.1 and Android API 37 / 16 KB; no physical-device claim"
+      }
     },
     {
       "id": 14,

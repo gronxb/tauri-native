@@ -1,10 +1,11 @@
 import { execSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { commandOutput, DiscoveryError, nativeDirectory, nativeTool } from '../discovery/native-tool.ts';
-import type { ProjectModel, SourceModel } from '../discovery/project.ts';
+import { discoverProject, type ProjectModel, type SourceModel } from '../discovery/project.ts';
 import { sha256 } from '../artifacts/files.ts';
+import { syncAdapter } from './sync.ts';
 
 function within(root: string, file: string): boolean {
   const relative = path.relative(root, file);
@@ -39,14 +40,13 @@ export function projectFingerprints(project: ProjectModel): Record<string, strin
   return Object.fromEntries(Object.entries({ rustEntry: project.source, cargoManifest: project.manifest, cargoLock: path.join(project.workspaceRoot, 'Cargo.lock'), tauriConfig: path.join(project.tauriDirectory, 'tauri.conf.json') }).map(([key, file]) => [`${key}Sha256`, sha256(readFileSync(file))]));
 }
 
-export function prepareAdapter(project: ProjectModel): AdapterWorkspace {
+export function prepareAdapter(project: ProjectModel, cacheDirectory?: string, verifyCopy?: (copy: string) => void): AdapterWorkspace {
   const copyRoot = projectCopyRoot(project);
   const directory = realpathSync(mkdtempSync(path.join(tmpdir(), 'tauri-native-workspace-')));
   const copy = path.join(directory, 'producer');
   const map = (file: string) => path.join(copy, path.relative(copyRoot, file));
   const cleanup = () => rmSync(directory, { recursive: true, force: true });
   try {
-    const fingerprints = projectFingerprints(project);
     const dependencies: [string, string][] = [];
     const generatedRoots = [path.join(project.workspaceRoot, 'target'), path.join(project.tauriDirectory, 'target'), path.join(project.tauriDirectory, 'gen')];
     cpSync(copyRoot, copy, { recursive: true, dereference: true, filter(source) {
@@ -58,9 +58,18 @@ export function prepareAdapter(project: ProjectModel): AdapterWorkspace {
       return true;
     } });
     for (const [source, target] of dependencies) { mkdirSync(path.dirname(target), { recursive: true }); symlinkSync(source, target, 'dir'); }
-    const manifest = map(project.manifest);
-    const model = nativeTool<SourceModel>('generate', project.source, map(project.source));
-    nativeTool('prepare-manifest', project.manifest, manifest);
+    verifyCopy?.(copy);
+    // From this point, discovery, generation and hooks all use one captured
+    // producer. Edits in the original checkout cannot mix into that snapshot.
+    const captured = discoverProject(map(project.tauriDirectory), copy);
+    const fingerprints = projectFingerprints(captured);
+    const manifest = captured.manifest;
+    const generatedSource = path.join(directory, 'generated.rs');
+    const generatedManifest = path.join(directory, 'generated-Cargo.toml');
+    const model = nativeTool<SourceModel>('generate', captured.source, generatedSource);
+    nativeTool('prepare-manifest', manifest, generatedManifest);
+    renameSync(generatedSource, captured.source);
+    renameSync(generatedManifest, manifest);
     // Resolution happens only in the disposable copy; pruning the Tauri build
     // dependency may update this copy's lockfile, never the producer's lockfile.
     const metadata = JSON.parse(commandOutput('cargo', ['metadata', '--format-version', '1', '--manifest-path', manifest], copy)) as {
@@ -84,10 +93,16 @@ export function prepareAdapter(project: ProjectModel): AdapterWorkspace {
     const header = path.join(directory, 'include/tauri_native.h');
     mkdirSync(path.dirname(header), { recursive: true });
     cpSync(path.join(nativeDirectory, 'src/tauri_native.h'), header);
-    if (project.frontend.build) execSync(project.frontend.build.script, { cwd: map(project.frontend.build.cwd), stdio: 'inherit' });
-    const frontendDist = map(project.frontend.dist);
+    if (captured.frontend.build) execSync(captured.frontend.build.script, { cwd: captured.frontend.build.cwd, stdio: 'inherit' });
+    const frontendDist = captured.frontend.dist;
     if (!existsSync(path.join(frontendDist, 'index.html'))) throw new Error(`Frontend build did not create ${project.frontend.dist}/index.html`);
-    return { directory, manifest, header, frontendDist, model, sourceRoot: copyRoot, libraryName: project.libraryName, fingerprints, cleanup };
+    if (cacheDirectory) {
+      syncAdapter(directory, cacheDirectory);
+      const cached = (file: string) => path.join(cacheDirectory, path.relative(directory, file));
+      cleanup();
+      return { directory: cacheDirectory, manifest: cached(manifest), header: cached(header), frontendDist: cached(frontendDist), model, sourceRoot: copyRoot, libraryName: captured.libraryName, fingerprints, cleanup() {} };
+    }
+    return { directory, manifest, header, frontendDist, model, sourceRoot: copyRoot, libraryName: captured.libraryName, fingerprints, cleanup };
   } catch (error) {
     cleanup();
     throw error;

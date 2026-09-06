@@ -20,12 +20,15 @@ import { IOS_LAYOUT, writeArtifactManifest } from '../artifacts/manifest.ts';
 import { iosSlices, validateIosArtifacts } from '../artifacts/ios.ts';
 import { publishArtifacts } from '../artifacts/staging.ts';
 import { assertExportReady } from './doctor.ts';
+import { createExportCache } from '../artifacts/cache.ts';
 
 export interface ExportIosOptions {
   tauriDir: string;
   manifest?: string;
   header?: string;
   outputDir?: string;
+  incremental?: boolean;
+  force?: boolean;
 }
 
 interface TauriConfig {
@@ -76,14 +79,15 @@ export function exportIos(options: ExportIosOptions): void {
   const outputDirectory = path.resolve(options.outputDir ?? path.join(options.tauriDir, 'gen/tauri-native/ios'));
   let adapter: AdapterWorkspace | undefined;
   try {
+    if (options.incremental && (options.manifest || options.header)) throw new Error('Incremental export supports ordinary Tauri projects; omit legacy --manifest/--header.');
+    const project = options.manifest || options.header ? undefined : discoverProject(options.tauriDir);
+    if (project) assertExportReady(project, 'ios');
+    const cache = options.incremental && project ? createExportCache(project, 'ios', outputDirectory) : undefined;
+    if (!options.force && cache?.hit()) { message(`Inputs unchanged; reused validated iOS artifacts in ${outputDirectory}`, '◆ '); return; }
     publishArtifacts(outputDirectory, stage => {
-      if (!options.manifest && !options.header) {
-        const project = discoverProject(options.tauriDir);
-        assertExportReady(project, 'ios');
-        adapter = prepareAdapter(project);
-      }
-      exportIosArtifacts({ ...options, outputDir: stage }, adapter);
-    }, validateIosArtifacts);
+      if (project) adapter = prepareAdapter(project, cache?.workspace, cache?.verifyCopy);
+      exportIosArtifacts({ ...options, outputDir: stage }, path.join(path.resolve(options.tauriDir), 'target/tauri-native/builds', sha256(outputDirectory).slice(0, 20)), adapter);
+    }, stage => { validateIosArtifacts(stage); cache?.record(stage); });
     message(`Created validated iOS artifacts in ${outputDirectory}`, '◆ ');
   }
   catch (error) {
@@ -93,7 +97,7 @@ export function exportIos(options: ExportIosOptions): void {
   finally { adapter?.cleanup(); }
 }
 
-function exportIosArtifacts(options: ExportIosOptions, adapter?: AdapterWorkspace): void {
+function exportIosArtifacts(options: ExportIosOptions, targetDirectory: string, adapter?: AdapterWorkspace): void {
   const workingDirectory = process.cwd();
   const tauriDirectory = path.resolve(workingDirectory, options.tauriDir);
   const manifest = adapter?.manifest ?? (options.manifest
@@ -135,7 +139,6 @@ function exportIosArtifacts(options: ExportIosOptions, adapter?: AdapterWorkspac
   if (existsSync(path.join(frontendDist, 'Info.plist'))) throw new Error('frontendDist/Info.plist conflicts with the iOS resource bundle metadata');
 
   const libraryName = adapter?.libraryName ?? readLibraryName(manifest);
-  const targetDirectory = path.join(tauriDirectory, 'target/tauri-native');
   const cargoEnvironment = {
     ...process.env,
     CARGO_TARGET_DIR: targetDirectory,

@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/013-incremental-export-watch.md`
 - Issue: [#17](https://github.com/gronxb/tauri-native/issues/17)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: TODO.
+- Status: IMPLEMENTED AND VERIFIED — incremental/watch workflow and native refresh gates pass; pending PR merge.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 
@@ -85,12 +85,12 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 
 ## Acceptance criteria
 
-- [ ] Repeatable documented watch flow needs no producer integration code.
-- [ ] Cache validity is tested against real behavior, not only timestamps.
-- [ ] Failures preserve known-good output.
-- [ ] Docs distinguish artifact refresh from host rebuild/install.
-- [ ] Required checks have recorded results; skipped/blocked checks are identified accurately.
-- [ ] Changes stay within this issue's purpose and preserve the producer change budget.
+- [x] Repeatable documented watch flow needs no producer integration code.
+- [x] Cache validity is tested against real behavior, not only timestamps.
+- [x] Failures preserve known-good output.
+- [x] Docs distinguish artifact refresh from host rebuild/install.
+- [x] Required checks have recorded results; skipped/blocked checks are identified accurately.
+- [x] Changes stay within this issue's purpose and preserve the producer change budget.
 
 ## Blockers and maintenance
 
@@ -99,3 +99,13 @@ If faster reload needs production origin-policy changes or an OTA service, defer
 Measure before/after times on the same fixture/toolchain; correct invalidation comes before headline speed.
 
 Use a `codex/incremental-export-watch` branch if creating one, follow the repository's conventional commit style, and do not commit/push/merge/publish changes without the execution task's authorization. Keep this issue and any checked-in plan status aligned.
+
+## Implementation evidence — 2026-09-07
+
+- Added opt-in `--incremental`, `--watch` and `--force`. Result reuse validates the complete artifact and hashes file/dependency contents, Cargo configuration/features, environment, platform/tool identity and CLI/ABI implementation. Receipt provenance is not reused as an incremental cache key.
+- Captured producer discovery, generation and frontend hooks use the same disposable snapshot. Persistent adapter synchronization retains unchanged file timestamps for Cargo. Output locks serialize writers; Cargo products are isolated per output directory. Typed `commands.ts` exports can be replaced normally.
+- CLI typecheck, 46 tests and package checks pass. Focused scenarios cover content changes despite preserved mtimes, linked dependencies, inherited caller Cargo configuration, generated-directory exclusion, synchronization, competing writers and edits immediately after source capture.
+- `test:watch` passes with an installed packed CLI and actual iOS/Android builds. It verifies no-change/force, frontend/Rust/lock/default-feature/CLI/protocol/platform invalidation, debounce, generated-output exclusion, failure recovery, in-flight source changes and graceful stop. Two concurrent outputs compile different environment values and every native slice contains only its intended value.
+- `test:export:ios` and `test:export:android` pass on the final implementation. All three iOS/four Android architectures are compiled/inspected. Relocated artifacts execute an edited Rust response after the producer is removed and the independent host is rebuilt without Rust. Runtime evidence is arm64 iOS Simulator 26.4.1 and Android API 37 with 16 KB pages; the signed Android APK also passes ZIP alignment.
+- Evidence: `target/incremental-export/report.json`, `target/export-ios/report.json`, `target/export-android/report.json`; reproducible commands, measured timings, cache limitations and host rebuild/install steps are in `docs/development-loop.md`.
+- Cache reuse is opt-in for reproducible builds within the documented input boundary. Physical devices, host HMR, OTA and independent-adopter evidence are not claimed by this issue.

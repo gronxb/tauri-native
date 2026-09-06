@@ -81,6 +81,8 @@ The current portable-export producer gates certify macOS. Atomic replacement is 
 
 Frontend bytes are preserved. `frontendDist/Info.plist` is reserved for the iOS bundle metadata and is rejected instead of silently overwritten. Re-run export to change generated content; editing individual files invalidates the manifest.
 
+For repeated development exports, opt into [incremental export or watch](development-loop.md). A result-cache hit validates the whole artifact; a rebuild still uses staged publication. Concurrent writers to one output receive `output_busy`. Ctrl-C in watch waits for its current export, while forced termination can leave an output lock that must be removed after confirming its process has stopped.
+
 ## Verification
 
 On a configured Mac, install the workspace's example frontend dependencies and run:

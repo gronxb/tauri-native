@@ -40,13 +40,15 @@ try {
   run('npm', ['run', 'build'], { cwd: producer });
   const frontend = inventory(path.join(producer, 'dist'));
   const output = path.join(producer, 'src-tauri/gen/tauri-native/ios');
-  run(path.join(cli, 'node_modules/.bin/tauri-native'), ['export', 'ios'], { cwd: producer });
+  run(path.join(cli, 'node_modules/.bin/tauri-native'), ['export', 'ios', '--incremental'], { cwd: producer });
   assert.deepEqual(snapshot(producer), before, 'Export must preserve the ordinary producer');
   validateIosArtifacts(output);
   const assetFiles = inventory(path.join(output, 'TauriNativeAssets.bundle')).filter(file => file.path !== 'Info.plist');
   assert.deepEqual(assetFiles, frontend, 'Frontend file bytes must be unchanged');
   assert.equal(readFileSync(path.join(output, 'manifest.json'), 'utf8').includes(work), false);
   const published = inventory(output);
+  assert.match(run(path.join(cli, 'node_modules/.bin/tauri-native'), ['export', 'ios', '--incremental'], { cwd: producer }), /reused validated/);
+  assert.deepEqual(inventory(output), published);
   const configPath = path.join(producer, 'src-tauri/tauri.conf.json');
   const configBytes = readFileSync(configPath);
   const brokenConfig = JSON.parse(configBytes); brokenConfig.build.beforeBuildCommand = 'node -e "process.exit(23)"';
@@ -71,10 +73,16 @@ try {
       // Keep checksums correct so the actual binary/header check must reject it.
       manifest.files = inventory(stage).filter(file => file.path !== 'manifest.json');
       writeFileSync(path.join(stage, 'manifest.json'), JSON.stringify(manifest));
-    }, validateIosArtifacts), damage === 'architecture' ? /Incorrect binary architectures/ : /Incompatible generated ABI header/);
+    }, validateIosArtifacts), damage === 'architecture' ? /Incorrect binary architectures/ : { code: 'artifact_abi' });
     assert.deepEqual(inventory(output), published);
   }
   assert.deepEqual(snapshot(producer), before);
+
+  const rust = path.join(producer, 'src-tauri/src/lib.rs');
+  writeFileSync(rust, readFileSync(rust, 'utf8').replace('Hello, {display_name}!', 'Hello again, {display_name}!'));
+  const edited = snapshot(producer);
+  run(path.join(cli, 'node_modules/.bin/tauri-native'), ['export', 'ios', '--incremental'], { cwd: producer });
+  assert.deepEqual(snapshot(producer), edited, 'Refreshing after an authored Rust edit must preserve the edited producer');
 
   const relocated = path.join(evidence, 'Independent Host', 'Native Artifacts');
   rmSync(path.dirname(relocated), { recursive: true, force: true });
@@ -102,12 +110,16 @@ try {
   host(['swiftc', '-parse-as-library', '-swift-version', '5', '-sdk', sdk, '-target', `${architecture}-apple-ios13.0-simulator`, '-import-objc-header', path.join(path.dirname(library), 'Headers/tauri_native.h'), hostSource, library, '-o', path.join(app, 'ArtifactHost')]);
   host(['codesign', '--force', '--sign', '-', app]);
   const runtimes = JSON.parse(host(['simctl', 'list', 'runtimes', '--json'])).runtimes;
-  const runtime = runtimes.filter(item => item.isAvailable && item.identifier.includes('iOS')).at(-1);
+  const devices = JSON.parse(host(['simctl', 'list', 'devices', '--json'])).devices;
+  const selectedRuntime = process.env.IOS_SIMULATOR_UDID ? Object.entries(devices).find(([, entries]) => entries.some(item => item.udid === process.env.IOS_SIMULATOR_UDID))?.[0] : undefined;
+  const runtime = runtimes.filter(item => item.isAvailable && item.identifier.includes('iOS') && (!process.env.IOS_SIMULATOR_UDID || item.identifier === selectedRuntime)).at(-1);
   assert.ok(runtime, 'Install an iOS Simulator runtime');
   const type = runtime.supportedDeviceTypes.find(item => item.productFamily === 'iPhone');
   assert.ok(type, 'No iPhone device type for the installed runtime');
-  const devices = JSON.parse(host(['simctl', 'list', 'devices', '--json'])).devices;
-  device = devices[runtime.identifier]?.find(item => item.isAvailable && item.state === 'Booted')?.udid;
+  if (process.env.IOS_SIMULATOR_UDID) {
+    device = devices[runtime.identifier]?.find(item => item.isAvailable && item.udid === process.env.IOS_SIMULATOR_UDID)?.udid;
+    assert.ok(device, 'IOS_SIMULATOR_UDID must select an available simulator on the selected runtime');
+  } else device = devices[runtime.identifier]?.find(item => item.isAvailable && item.state === 'Booted')?.udid;
   if (!device) {
     device = host(['simctl', 'create', 'Tauri Native Artifact Test', type.identifier, runtime.identifier]).trim();
     ownsDevice = true;
@@ -133,14 +145,14 @@ try {
   ]);
   assert.deepEqual(result.frontend, {
     success: { displayName: '한글 🦀', total: 10 }, error: { kind: 'empty_name', message: 'A name is required' },
-    camelCase: 'Hello, Ada!', unregisteredRejected: true, absent: null, explicitNull: null, unit: null,
+    camelCase: 'Hello again, Ada!', unregisteredRejected: true, absent: null, explicitNull: null, unit: null,
     selection: { type: 'display-name', data: '한글' },
   });
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({
     ...result, simulator: { runtime: runtime.version, architecture },
     installedCli: true, producerUnchanged: true, producerDeleted: true, relocatedPathWithSpaces: true,
     hostWithoutRust: true, frontendBytesUnchanged: true, validatedArchitectures: manifest.native,
-    failedBuildPreservedOutput: true, missingBinaryArchitectureRejected: true, incompatibleHeaderRejected: true,
+    incrementalReuse: true, refreshedRustObservedInHost: true, failedBuildPreservedOutput: true, missingBinaryArchitectureRejected: true, incompatibleHeaderRejected: true,
     deviceExecution: 'Not performed; device slice compiled and inspected',
   }, null, 2) + '\n');
   console.log(`PASS: installed CLI → copied artifacts → iOS Simulator native + unchanged frontend. Evidence: ${evidence}/report.json`);

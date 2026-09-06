@@ -51,6 +51,8 @@ test('copied command bindings are covered by the artifact receipt', () => {
   for (const slice of previous.native) writeFileSync(path.join(root, path.dirname(slice.path), 'Headers/tauri_native.h'), '#define TAURI_NATIVE_ABI_VERSION 2\n');
   writeArtifactManifest(root, { ...IOS_LAYOUT, native: previous.native, source: previous.source }, { schemaVersion: 1, abiVersion: 2, commands: [], typeGraph: { definitions: {}, imports: {}, globImports: false } });
   assert.equal(validateArtifactManifest(root).bindings, 'commands.ts');
+  publishArtifacts(root, stage => cpSync(root, stage, { recursive: true }), validateArtifactManifest);
+  assert.equal(validateArtifactManifest(root).bindings, 'commands.ts', 'A typed export must remain a valid replacement destination');
   writeFileSync(path.join(root, 'commands.ts'), 'types copied from a different application');
   assert.throws(() => validateArtifactManifest(root), { code: 'artifact_checksum' });
 });
@@ -83,6 +85,22 @@ test('an export interrupted by SIGTERM leaves the published directory intact', (
   const child = spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '-e', source]);
   assert.equal(child.signal, 'SIGTERM', child.stderr.toString());
   assert.deepEqual(inventory(output), before);
+});
+
+test('a concurrent writer cannot build or publish into an output already being exported', () => {
+  const root = temporary(); const output = path.join(root, 'export'); fixture(output);
+  const before = inventory(output);
+  publishArtifacts(output, stage => {
+    const script = `import { publishArtifacts } from ${JSON.stringify(new URL('../src/artifacts/staging.ts', import.meta.url).href)};
+      try { publishArtifacts(${JSON.stringify(output)}, () => { throw new Error('concurrent build must never start'); }, () => {}); }
+      catch (error) { process.stdout.write(error.code ?? error.message); process.exitCode = 1; }`;
+    const child = spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '-e', script], { encoding: 'utf8' });
+    assert.equal(child.status, 1); assert.equal(child.stdout, 'output_busy');
+    assert.deepEqual(inventory(output), before);
+    fixture(stage, 'serialized replacement');
+  }, validateArtifactManifest);
+  assert.equal(readFileSync(path.join(output, 'TauriNativeAssets.bundle/index.html'), 'utf8'), 'serialized replacement');
+  publishArtifacts(output, stage => fixture(stage, 'next export'), validateArtifactManifest);
 });
 
 test('validated replacement atomically exchanges an existing nonempty directory', { skip: process.platform !== 'darwin' }, () => {
