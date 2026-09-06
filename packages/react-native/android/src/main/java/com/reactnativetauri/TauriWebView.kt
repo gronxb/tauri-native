@@ -3,6 +3,7 @@ package com.reactnativetauri
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
@@ -14,6 +15,11 @@ import java.io.IOException
 @SuppressLint("SetJavaScriptEnabled")
 internal class TauriWebView(context: Context) : WebView(context) {
   private val bridge = TauriJavascriptBridge(this)
+  private val state = TauriViewState(this, bridge)
+
+  fun setLocalPath(value: String?) { state.setPath(value) }
+  fun sendMessage(value: String?) { state.sendMessage(value) }
+  fun setStateListener(listener: TauriViewState.Listener) { state.listener = listener }
 
   init {
     settings.javaScriptEnabled = true
@@ -26,44 +32,22 @@ internal class TauriWebView(context: Context) : WebView(context) {
     settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
 
     addJavascriptInterface(bridge, BRIDGE_NAME)
-    webViewClient = AssetWebViewClient(context)
-  }
-
-  private fun loadPackagedFrontend(context: Context) {
-    val html = try {
-      context.assets.open("$ASSET_DIRECTORY/index.html")
-        .bufferedReader()
-        .use { it.readText() }
-    } catch (_: IOException) {
-      """
-        <h2>tauri-native assets are missing</h2>
-        <p>Run tauri-native export android before Expo prebuild.</p>
-      """.trimIndent()
-    }
-
-
-    loadDataWithBaseURL(
-      ASSET_ORIGIN,
-      bridgeDocument(html),
-      "text/html",
-      "UTF-8",
-      null,
-    )
+    webViewClient = AssetWebViewClient(context, state)
   }
 
   override fun onDetachedFromWindow() {
-    bridge.suspend()
-    evaluateJavascript("window.__RNTauriSuspend?.();", null)
+    state.detached()
     super.onDetachedFromWindow()
   }
 
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
-    bridge.resume()
-    loadPackagedFrontend(context)
+    state.load()
   }
 
   override fun destroy() {
+    state.detached()
+    state.listener = null
     bridge.destroy()
     removeJavascriptInterface(BRIDGE_NAME)
     super.destroy()
@@ -71,20 +55,32 @@ internal class TauriWebView(context: Context) : WebView(context) {
 
   private class AssetWebViewClient(
     private val context: Context,
+    private val state: TauriViewState,
   ) : WebViewClient() {
+    override fun onPageStarted(view: WebView, url: String, favicon: android.graphics.Bitmap?) { state.started(url) }
+
+    override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
+      state.error(state.generation(), request.url.toString(), "navigation_failed", error.description.toString(), request.isForMainFrame)
+    }
+
+    private fun block(url: Uri): Boolean {
+      if (isAssetUrl(url)) return false
+      state.error(state.generation(), url.toString(), "blocked_navigation", "Navigation must stay inside the packaged origin", false)
+      return true
+    }
     override fun shouldOverrideUrlLoading(
       view: WebView,
       request: WebResourceRequest,
-    ): Boolean = !isAssetUrl(request.url)
+    ): Boolean = block(request.url)
 
     @Deprecated("Deprecated in Java")
     override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean =
-      !isAssetUrl(Uri.parse(url))
+      block(Uri.parse(url))
 
     override fun shouldInterceptRequest(
       view: WebView,
       request: WebResourceRequest,
-    ): WebResourceResponse = assetResponse(request.url)
+    ): WebResourceResponse = assetResponse(request.url, request.isForMainFrame)
 
     @Deprecated("Deprecated in Java")
     override fun shouldInterceptRequest(
@@ -92,16 +88,21 @@ internal class TauriWebView(context: Context) : WebView(context) {
       url: String,
     ): WebResourceResponse = assetResponse(Uri.parse(url))
 
-    private fun assetResponse(url: Uri): WebResourceResponse {
+    private fun assetResponse(url: Uri, mainFrame: Boolean = false): WebResourceResponse {
+      val generation = state.generation()
+      fun failure(status: Int, reason: String): WebResourceResponse {
+        state.error(generation, url.toString(), "asset_missing", reason, mainFrame)
+        return errorResponse(status, reason)
+      }
       if (!isAssetUrl(url)) {
-        return errorResponse(403, "Blocked")
+        return failure(403, "Blocked")
       }
 
       val relativePath = url.path.orEmpty()
         .removePrefix("/")
         .ifEmpty { "index.html" }
       if (relativePath.split('/').any { it == "." || it == ".." }) {
-        return errorResponse(403, "Blocked")
+        return failure(403, "Blocked")
       }
 
       return try {
@@ -114,7 +115,7 @@ internal class TauriWebView(context: Context) : WebView(context) {
           } else context.assets.open("$ASSET_DIRECTORY/$relativePath"),
         )
       } catch (_: IOException) {
-        errorResponse(404, "Not Found")
+        failure(404, "Not Found")
       }
     }
 
@@ -147,7 +148,6 @@ internal class TauriWebView(context: Context) : WebView(context) {
   companion object {
     const val BRIDGE_NAME = "TauriNativeBridge"
     private const val ASSET_DIRECTORY = "tauri-native"
-    private const val ASSET_ORIGIN = "https://tauri-native.local/"
     private const val BRIDGE_SOURCE = """
     (() => {
       let documentId;
@@ -156,9 +156,20 @@ internal class TauriWebView(context: Context) : WebView(context) {
       let timer;
       let polling = false;
       const pending = new Map();
+      const eventCallbacks = new Map();
+      const eventListeners = new Map();
+      let nextCallback = 1;
+      let nextListener = 1;
+      let readySent = false;
       const post = (message) => window.TauriNativeBridge.postMessage(JSON.stringify(message));
       const send = (message) => post({ ...message, document: documentId });
       const error = (code) => Object.assign(new Error(code), { code });
+      function reportReady() {
+        if (!active || readySent) return;
+        readySent = true;
+        send({ type: 'ready' });
+      }
+      window.addEventListener('load', reportReady);
 
       function schedule() {
         if (!active || !pending.size || timer !== undefined || polling) return;
@@ -210,12 +221,16 @@ internal class TauriWebView(context: Context) : WebView(context) {
         failAll(Object.assign(error('closed_document'), { name: 'AbortError' }));
         try { send({ type: 'close' }); } catch {}
         active = false;
+        eventCallbacks.clear();
+        eventListeners.clear();
       };
       window.__RNTauriResume = () => {
         if (active) return;
         documentId = String(Date.now()) + ':' + String(Math.random());
         active = true;
+        readySent = false;
         send({ type: 'open' });
+        if (window.document?.readyState === 'complete') Promise.resolve().then(reportReady);
       };
       window.addEventListener('pagehide', window.__RNTauriSuspend);
       window.addEventListener('pageshow', window.__RNTauriResume);
@@ -223,8 +238,77 @@ internal class TauriWebView(context: Context) : WebView(context) {
       window.__TAURI_NATIVE_HOST__ = "react-native";
       globalThis.isTauri = true;
       const internals = window.__TAURI_INTERNALS__ || {};
+      internals.transformCallback = (callback, once = false) => {
+        if (!active) throw error('closed_document');
+        if (eventCallbacks.size >= 64) throw error('event_listener_limit');
+        const id = nextCallback++;
+        eventCallbacks.set(id, { callback, once });
+        return id;
+      };
+      internals.unregisterCallback = (id) => eventCallbacks.delete(id);
+      const unlisten = (event, id) => {
+        const listener = eventListeners.get(id);
+        if (listener?.event !== event) return;
+        eventCallbacks.delete(listener.handler);
+        eventListeners.delete(id);
+      };
+      window.__TAURI_EVENT_PLUGIN_INTERNALS__ = { unregisterListener: unlisten };
+      const validEvent = (event) => {
+        if (typeof event !== 'string' || !/^[a-zA-Z0-9/:_-]*$/.test(event)) throw error('unsupported_event_name');
+        if (event.startsWith('tauri://')) throw error('unsupported_system_event');
+      };
+      const validTarget = (target) => {
+        if (target?.kind !== 'Webview' || target.label !== 'main') throw error('unsupported_event_target: only Webview main is supported');
+      };
+      const dispatchEvent = (event, payload) => {
+        // Delivery is asynchronous, like Tauri's scheduled WebView evaluation.
+        const document = documentId;
+        const ids = [...eventListeners].filter(([, listener]) => listener.event === event).map(([id]) => id);
+        Promise.resolve().then(() => {
+          if (!active || document !== documentId) return;
+          for (const id of ids) {
+            const listener = eventListeners.get(id);
+            const entry = listener && eventCallbacks.get(listener.handler);
+            if (!entry) continue;
+            if (entry.once) eventCallbacks.delete(listener.handler);
+            try { entry.callback({ event, id, payload }); }
+            catch (cause) { setTimeout(() => { throw cause; }, 0); }
+          }
+        });
+      };
+      window.__RNTauriHostEvent = (document, event, payload) => {
+        if (!active || document !== documentId) return 'closed_document';
+        try { validEvent(event); dispatchEvent(event, JSON.parse(JSON.stringify(payload ?? null))); return ''; }
+        catch (cause) { return cause.message; }
+      };
+      function invokeEvent(command, payload) {
+        try {
+          if (!active) throw error('closed_document');
+          validEvent(payload.event);
+          if (command === 'plugin:event|unlisten') { unlisten(payload.event, payload.eventId); return null; }
+          if (command !== 'plugin:event|listen' && command !== 'plugin:event|emit_to') throw error('unsupported_event_operation');
+          validTarget(payload.target);
+          if (command === 'plugin:event|listen') {
+            if (!eventCallbacks.has(payload.handler)) throw error('invalid_event_callback');
+            const id = nextListener++;
+            eventListeners.set(id, { event: payload.event, handler: payload.handler });
+            return id;
+          }
+          const value = JSON.parse(JSON.stringify(payload.payload ?? null));
+          dispatchEvent(payload.event, value);
+          send({ type: 'event', event: payload.event, payload: value });
+          return null;
+        } catch (cause) {
+          if (command === 'plugin:event|listen') eventCallbacks.delete(payload.handler);
+          throw cause;
+        }
+      }
       internals.invoke = (command, payload) => new Promise((resolve, reject) => {
         if (!active) { reject(error('closed_document')); return; }
+        if (command.startsWith('plugin:event|')) {
+          Promise.resolve().then(() => invokeEvent(command, payload ?? {})).then(resolve, reject);
+          return;
+        }
         const id = String(nextId++);
         pending.set(id, { resolve, reject });
         try {

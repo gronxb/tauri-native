@@ -78,6 +78,15 @@ The example hosts initialize `LynxEnv`, load the local `main.lynx.bundle` throug
 
 This package is experimental and supports iOS and Android. See the root README for the complete build and integration contract.
 
+## View lifecycle and local interaction
+
+`TauriView` accepts a local `path` (including query/fragment), `onLoadStart`,
+`onReady`, `onLoadError`, `message` and `onEvent`. A new message ID sends once
+to the ready current document; navigation does not replay the last message.
+The frontend uses the verified standard Tauri `Webview/main` event subset.
+See the [view contract and examples](https://github.com/gronxb/tauri-native/blob/main/docs/view-interaction.md)
+for readiness, payloads, cleanup and unsupported global/window behavior.
+
 ## Generated command types
 
 Current generated artifacts include `commands.ts`. Import its `createCommands` and connect the host SDK's `invoke` to infer command names, inputs, success and error values:

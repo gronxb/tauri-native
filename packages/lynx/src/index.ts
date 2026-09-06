@@ -1,5 +1,3 @@
-import { createElement } from '@lynx-js/react';
-import type { ViewProps } from '@lynx-js/types';
 import { createInvoker, type InvokeResponse } from './async-client';
 export type { InvokeError, InvokeResponse, InvokeOptions, InvokeRequest } from './async-client';
 
@@ -33,6 +31,5 @@ export function invokeSync<T, E = unknown>(
   ) as InvokeResponse<T, E>;
 }
 
-export function TauriView(props: ViewProps) {
-  return createElement('tauri-view', props);
-}
+export { TauriView, type TauriViewProps } from './TauriView';
+export type { ViewMessage } from './view-options';

@@ -6,13 +6,26 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 final class TauriJavascriptBridge {
+  interface Listener { void onMessage(String type, String event, String payload); }
   private final WebView webView;
+  private Listener listener;
   private String document;
   private long session;
   private boolean suspended;
   private boolean destroyed;
 
   TauriJavascriptBridge(WebView webView) { this.webView = webView; }
+  void setListener(Listener listener) { this.listener = listener; }
+  synchronized String currentDocument() { return suspended || destroyed ? null : document; }
+
+  private void notifyHost(String targetDocument, String type, String event, String payload) {
+    webView.post(() -> {
+      synchronized (this) {
+        if (suspended || destroyed || !targetDocument.equals(document)) return;
+      }
+      if (listener != null) listener.onMessage(type, event, payload);
+    });
+  }
 
   private void closeSession() {
     if (session != 0) TauriNativeRust.INSTANCE.closeSession(session);
@@ -30,6 +43,7 @@ final class TauriJavascriptBridge {
   synchronized void destroy() {
     destroyed = true;
     suspend();
+    listener = null;
   }
 
   private void deliver(String targetDocument, String function, Object... arguments) {
@@ -63,6 +77,12 @@ final class TauriJavascriptBridge {
       }
       if (!requestDocument.equals(document)) return;
       switch (type) {
+        case "ready": notifyHost(document, "ready", "", "null"); return;
+        case "event":
+          Object eventPayload = request.opt("payload");
+          String eventJSON = eventPayload instanceof String ? JSONObject.quote((String)eventPayload) : eventPayload == null ? "null" : eventPayload.toString();
+          notifyHost(document, "event", request.getString("event"), eventJSON);
+          return;
         case "close": closeSession(); return;
         case "poll":
           deliver(document, "__RNTauriDrain", session == 0 ? "[]" : TauriNativeRust.INSTANCE.poll(session));

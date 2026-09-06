@@ -15,12 +15,15 @@ for (const [source, destination] of [
   ['artifacts.cjs', host === 'lynx' ? 'artifacts.cjs' : 'artifacts.js'],
   ['artifacts.d.ts', 'artifacts.d.ts'],
   ['async-client.ts', 'src/async-client.ts'],
+  ['view-options.ts', 'src/view-options.ts'],
   ['async-contract.ts', 'test/native-artifacts/async-contract.ts'],
+  ['view-contract.ts', 'test/native-artifacts/view-contract.ts'],
   ['tauri-native-jni.cpp', host === 'lynx' ? 'android/src/main/cpp/TauriNativeJni.cpp' : 'android/src/main/jni/TauriNativeJni.cpp'],
   ['rust-bridge.h', host === 'lynx' ? 'ios/src/TNTauriLynxRustBridge.h' : 'ios/TNTauriRustBridge.h'],
   ['rust-bridge.mm', host === 'lynx' ? 'ios/src/TNTauriLynxRustBridge.mm' : 'ios/TNTauriRustBridge.mm'],
   ['tauri-webview.swift', host === 'lynx' ? 'ios/src/TNTauriLynxWebView.swift' : 'ios/TNTauriWebView.swift'],
   ['webview-bridge.java', host === 'lynx' ? 'android/src/main/java/dev/taurinative/lynx/TauriJavascriptBridge.java' : 'android/src/main/java/com/reactnativetauri/TauriJavascriptBridge.java'],
+  ['android-view-state.java', host === 'lynx' ? 'android/src/main/java/dev/taurinative/lynx/TauriViewState.java' : 'android/src/main/java/com/reactnativetauri/TauriViewState.java'],
 ]) {
   const contents = readFileSync(new URL(source, import.meta.url), 'utf8')
     .replaceAll('__TAURI_NATIVE_JNI_CLASS__', host === 'lynx' ? 'Java_dev_taurinative_lynx_TauriNativeRust' : 'Java_com_reactnativetauri_TauriNativeRust')

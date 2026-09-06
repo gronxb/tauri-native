@@ -1,13 +1,16 @@
-import type { ComponentProps } from 'react';
+import type { ViewProps } from 'react-native';
 
 import NativeTauriView from './TauriViewNativeComponent';
+import { dispatchViewState, type ViewOptions } from './view-options';
 
-export type TauriViewProps = ComponentProps<typeof NativeTauriView>;
+export type TauriViewProps = ViewProps & ViewOptions;
 
 /**
  * A Fabric-owned native WebView that loads the packaged Tauri microfrontend.
- * It does not embed tauri::App or provide Tauri plugin/API compatibility.
+ * It supports only the documented invoke and view-scoped event subset.
  */
 export function TauriView(props: TauriViewProps) {
-  return <NativeTauriView {...props} />;
+  const { message, onLoadStart, onReady, onLoadError, onEvent, ...view } = props;
+  return <NativeTauriView {...view} messageJson={JSON.stringify(message) ?? ''}
+    onTauriState={event => dispatchViewState(props, event.nativeEvent)} />;
 }

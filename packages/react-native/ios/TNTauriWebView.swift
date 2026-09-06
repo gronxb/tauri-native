@@ -18,6 +18,7 @@ private final class WeakScriptMessageHandler: NSObject, WKScriptMessageHandler {
 
 private final class AssetSchemeHandler: NSObject, WKURLSchemeHandler {
   private let rootURL: URL
+  var onError: ((URL) -> Void)?
 
   init(rootURL: URL) {
     self.rootURL = rootURL.standardizedFileURL
@@ -47,6 +48,7 @@ private final class AssetSchemeHandler: NSObject, WKURLSchemeHandler {
       fileURL.path.hasPrefix(rootPath + "/")
 
     guard isInsideRoot, let data = try? Data(contentsOf: fileURL) else {
+      onError?(requestURL)
       urlSchemeTask.didFailWithError(URLError(.fileDoesNotExist))
       return
     }
@@ -89,6 +91,13 @@ public final class TNTauriWebView: UIView {
   private var documentID: String?
   private var session: UInt64 = 0
   private var suspended = false
+  private var ready = false
+  private var lastMessageID: String?
+  private var currentNavigation: WKNavigation?
+  @objc public var onState: (([String: String]) -> Void)?
+  @objc public var localPath = "/index.html" {
+    didSet { if oldValue != localPath && window != nil { loadFrontend() } }
+  }
 
   public override init(frame: CGRect) {
     let controller = WKUserContentController()
@@ -123,6 +132,9 @@ public final class TNTauriWebView: UIView {
     super.init(frame: frame)
 
     messageHandler.delegate = self
+    assetSchemeHandler?.onError = { [weak self] url in
+      self?.emitState("error", url: url.absoluteString, code: "asset_missing", message: "Packaged asset could not be loaded")
+    }
     webView.navigationDelegate = self
     webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
     webView.scrollView.pinchGestureRecognizer?.isEnabled = false
@@ -130,10 +142,24 @@ public final class TNTauriWebView: UIView {
   }
 
   private func loadFrontend() {
+    let route = localPath.isEmpty ? "/index.html" : localPath
+    guard route.hasPrefix("/"), !route.hasPrefix("//"), !route.contains("\\"),
+      !route.unicodeScalars.contains(where: { $0.value < 32 || $0.value == 127 }),
+      let indexURL = URL(string: "tauri-native://app" + route),
+      indexURL.scheme == assetScheme, indexURL.host == assetHost,
+      !indexURL.path.split(separator: "/").contains(where: { $0 == "." || $0 == ".." }) else {
+      emitState("error", url: route, code: "invalid_path", message: "Use a local packaged path starting with /")
+      return
+    }
+    ready = false
+    closeSession()
+    documentID = nil
+    webView.evaluateJavaScript("window.__RNTauriSuspend?.();")
+    webView.stopLoading()
     if assetSchemeHandler != nil {
-      let indexURL = URL(string: "tauri-native://app/index.html")!
-      webView.load(URLRequest(url: indexURL))
+      currentNavigation = webView.load(URLRequest(url: indexURL))
     } else {
+      emitState("error", code: "assets_missing", message: "The copied frontend bundle is missing")
       webView.loadHTMLString(
         "<h2>tauri-native assets are missing</h2>" +
           "<p>Run tauri-native export ios before pod install.</p>",
@@ -157,6 +183,7 @@ public final class TNTauriWebView: UIView {
     super.didMoveToWindow()
     suspended = window == nil
     if suspended {
+      ready = false
       closeSession()
       documentID = nil
       webView.evaluateJavaScript("window.__RNTauriSuspend?.();")
@@ -176,6 +203,36 @@ public final class TNTauriWebView: UIView {
     webView.evaluateJavaScript("window.\(function)?.apply(null, \(json));")
   }
 
+  private func emitState(_ type: String, url: String? = nil, code: String = "", message: String = "", event: String = "", payload: String = "null") {
+    guard window != nil else { return }
+    onState?(["type": type, "url": url ?? webView.url?.absoluteString ?? "", "code": code, "message": message, "event": event, "payload": payload])
+  }
+
+  @objc public func sendMessage(_ json: String) {
+    if json.isEmpty { return }
+    guard let data = json.data(using: .utf8),
+      let message = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+      let id = message["id"] as? String, !id.isEmpty,
+      let event = message["event"] as? String else {
+      emitState("error", code: "invalid_message", message: "A message needs an id and event name")
+      return
+    }
+    if id == lastMessageID { return }
+    lastMessageID = id
+    guard ready, let document = documentID, !suspended else {
+      emitState("error", code: "not_ready", message: "Send messages after the view is ready")
+      return
+    }
+    let arguments: [Any] = [document, event, message["payload"] ?? NSNull()]
+    guard let encoded = try? JSONSerialization.data(withJSONObject: arguments),
+      let argumentsJSON = String(data: encoded, encoding: .utf8) else { return }
+    webView.evaluateJavaScript("window.__RNTauriHostEvent?.apply(null, \(argumentsJSON));") { [weak self] value, error in
+      guard let self, self.documentID == document, !self.suspended else { return }
+      if let error { self.emitState("error", code: "event_delivery_failed", message: error.localizedDescription) }
+      else if (value as? String) != "" { self.emitState("error", code: "event_delivery_failed", message: value as? String ?? "Bridge unavailable") }
+    }
+  }
+
   private static let bridgeSource = """
     (() => {
       let documentId;
@@ -184,9 +241,20 @@ public final class TNTauriWebView: UIView {
       let timer;
       let polling = false;
       const pending = new Map();
+      const eventCallbacks = new Map();
+      const eventListeners = new Map();
+      let nextCallback = 1;
+      let nextListener = 1;
+      let readySent = false;
       const post = (message) => window.webkit.messageHandlers.tauriNative.postMessage(JSON.parse(JSON.stringify(message)));
       const send = (message) => post({ ...message, document: documentId });
       const error = (code) => Object.assign(new Error(code), { code });
+      function reportReady() {
+        if (!active || readySent) return;
+        readySent = true;
+        send({ type: 'ready' });
+      }
+      window.addEventListener('load', reportReady);
 
       function schedule() {
         if (!active || !pending.size || timer !== undefined || polling) return;
@@ -238,12 +306,16 @@ public final class TNTauriWebView: UIView {
         failAll(Object.assign(error('closed_document'), { name: 'AbortError' }));
         try { send({ type: 'close' }); } catch {}
         active = false;
+        eventCallbacks.clear();
+        eventListeners.clear();
       };
       window.__RNTauriResume = () => {
         if (active) return;
         documentId = String(Date.now()) + ':' + String(Math.random());
         active = true;
+        readySent = false;
         send({ type: 'open' });
+        if (window.document?.readyState === 'complete') Promise.resolve().then(reportReady);
       };
       window.addEventListener('pagehide', window.__RNTauriSuspend);
       window.addEventListener('pageshow', window.__RNTauriResume);
@@ -251,8 +323,77 @@ public final class TNTauriWebView: UIView {
       window.__TAURI_NATIVE_HOST__ = "react-native";
       globalThis.isTauri = true;
       const internals = window.__TAURI_INTERNALS__ || {};
+      internals.transformCallback = (callback, once = false) => {
+        if (!active) throw error('closed_document');
+        if (eventCallbacks.size >= 64) throw error('event_listener_limit');
+        const id = nextCallback++;
+        eventCallbacks.set(id, { callback, once });
+        return id;
+      };
+      internals.unregisterCallback = (id) => eventCallbacks.delete(id);
+      const unlisten = (event, id) => {
+        const listener = eventListeners.get(id);
+        if (listener?.event !== event) return;
+        eventCallbacks.delete(listener.handler);
+        eventListeners.delete(id);
+      };
+      window.__TAURI_EVENT_PLUGIN_INTERNALS__ = { unregisterListener: unlisten };
+      const validEvent = (event) => {
+        if (typeof event !== 'string' || !/^[a-zA-Z0-9/:_-]*$/.test(event)) throw error('unsupported_event_name');
+        if (event.startsWith('tauri://')) throw error('unsupported_system_event');
+      };
+      const validTarget = (target) => {
+        if (target?.kind !== 'Webview' || target.label !== 'main') throw error('unsupported_event_target: only Webview main is supported');
+      };
+      const dispatchEvent = (event, payload) => {
+        // Delivery is asynchronous, like Tauri's scheduled WebView evaluation.
+        const document = documentId;
+        const ids = [...eventListeners].filter(([, listener]) => listener.event === event).map(([id]) => id);
+        Promise.resolve().then(() => {
+          if (!active || document !== documentId) return;
+          for (const id of ids) {
+            const listener = eventListeners.get(id);
+            const entry = listener && eventCallbacks.get(listener.handler);
+            if (!entry) continue;
+            if (entry.once) eventCallbacks.delete(listener.handler);
+            try { entry.callback({ event, id, payload }); }
+            catch (cause) { setTimeout(() => { throw cause; }, 0); }
+          }
+        });
+      };
+      window.__RNTauriHostEvent = (document, event, payload) => {
+        if (!active || document !== documentId) return 'closed_document';
+        try { validEvent(event); dispatchEvent(event, JSON.parse(JSON.stringify(payload ?? null))); return ''; }
+        catch (cause) { return cause.message; }
+      };
+      function invokeEvent(command, payload) {
+        try {
+          if (!active) throw error('closed_document');
+          validEvent(payload.event);
+          if (command === 'plugin:event|unlisten') { unlisten(payload.event, payload.eventId); return null; }
+          if (command !== 'plugin:event|listen' && command !== 'plugin:event|emit_to') throw error('unsupported_event_operation');
+          validTarget(payload.target);
+          if (command === 'plugin:event|listen') {
+            if (!eventCallbacks.has(payload.handler)) throw error('invalid_event_callback');
+            const id = nextListener++;
+            eventListeners.set(id, { event: payload.event, handler: payload.handler });
+            return id;
+          }
+          const value = JSON.parse(JSON.stringify(payload.payload ?? null));
+          dispatchEvent(payload.event, value);
+          send({ type: 'event', event: payload.event, payload: value });
+          return null;
+        } catch (cause) {
+          if (command === 'plugin:event|listen') eventCallbacks.delete(payload.handler);
+          throw cause;
+        }
+      }
       internals.invoke = (command, payload) => new Promise((resolve, reject) => {
         if (!active) { reject(error('closed_document')); return; }
+        if (command.startsWith('plugin:event|')) {
+          Promise.resolve().then(() => invokeEvent(command, payload ?? {})).then(resolve, reject);
+          return;
+        }
         const id = String(nextId++);
         pending.set(id, { resolve, reject });
         try {
@@ -280,6 +421,16 @@ extension TNTauriWebView: WKScriptMessageHandler {
       return
     }
     guard document == documentID else { return }
+    if type == "ready" {
+      if !ready { ready = true; emitState("ready") }
+      return
+    }
+    if type == "event", let event = body["event"] as? String,
+      let data = try? JSONSerialization.data(withJSONObject: body["payload"] ?? NSNull(), options: [.fragmentsAllowed]),
+      let payload = String(data: data, encoding: .utf8) {
+      emitState("event", event: event, payload: payload)
+      return
+    }
     if type == "close" {
       closeSession()
       return
@@ -312,6 +463,26 @@ extension TNTauriWebView: WKScriptMessageHandler {
 }
 
 extension TNTauriWebView: WKNavigationDelegate {
+  public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+    currentNavigation = navigation
+    ready = false
+    closeSession()
+    documentID = nil
+    emitState("loadstart")
+  }
+
+  public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+    guard navigation === currentNavigation else { return }
+    ready = false
+    let failure = error as NSError
+    let code = failure.domain == NSURLErrorDomain && failure.code == URLError.fileDoesNotExist.rawValue ? "asset_missing" : "navigation_failed"
+    emitState("error", code: code, message: error.localizedDescription)
+  }
+
+  public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+    self.webView(webView, didFail: navigation, withError: error)
+  }
+
   public func webView(
     _ webView: WKWebView,
     decidePolicyFor navigationAction: WKNavigationAction,
@@ -324,6 +495,7 @@ extension TNTauriWebView: WKNavigationDelegate {
 
     let isBundledDocument = url.absoluteString == "about:blank" ||
       (url.scheme == assetScheme && url.host == assetHost)
+    if !isBundledDocument { emitState("error", url: url.absoluteString, code: "blocked_navigation", message: "Navigation must stay inside the packaged origin") }
     decisionHandler(isBundledDocument ? .allow : .cancel)
   }
 }
