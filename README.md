@@ -90,10 +90,10 @@ For Expo, configure `@tauri-native/react-native` with the relative `tauriDir`. D
 
 ```mermaid
 flowchart LR
-  RN["React Native JS"] <--> JSI["TurboModule / native bridge"]
+  RN["React Native JS"] <--> JSI["TurboModule JSI / native bridge"]
   JSI <--> RUST["shared Rust app-core"]
 
-  LYNX["Lynx JS"] <--> LYNX_BRIDGE["Native Module / native bridge"]
+  LYNX["Lynx JS"] <--> LYNX_BRIDGE["Lynx Native Module JSI / native bridge"]
   LYNX_BRIDGE <--> RUST
 
   TAURI["Tauri frontend"] <--> COMMAND["#[tauri::command]<br/>desktop"]
@@ -216,7 +216,7 @@ export function Screen() {
 }
 ```
 
-`invoke` uses the autolink-generated `TauriNative` native module. Native module callbacks must run in Lynx background scripting (`'background only'`). `TauriView` creates the registered native `tauri-view` element and loads the same packaged assets as the React Native component on iOS and Android.
+`invoke` uses the autolink-generated `TauriNative` native module. On both iOS and Android, the Lynx 4.0.1 runtime exposes that module through its JSI `NativeModules` binding and creates JSI host functions for its methods; the platform module then calls the shared Rust C ABI through Objective-C++ on iOS or JNI on Android. The package relies only on Lynx's public Native Module API, not its private JSI classes. Native module calls must run in Lynx background scripting (`'background only'`) and remain synchronous in this PoC. `TauriView` creates the registered native `tauri-view` element and loads the same packaged assets as the React Native component on iOS and Android.
 
 ## CLI
 

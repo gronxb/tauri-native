@@ -9,7 +9,7 @@ The React Native and Lynx integrations need the same two Android paths already p
 
 - React Native JavaScript calls the shared Rust core directly through the generated `TauriNative` TurboModule.
 - A Fabric `TauriView` loads the packaged Tauri frontend and preserves its existing `@tauri-apps/api/core.invoke` call.
-- Lynx JavaScript calls the core through its generated `TauriNative` module, while the `tauri-view` custom element embeds the same frontend.
+- Lynx JavaScript calls the core through its generated, JSI-backed `TauriNative` module, while the `tauri-view` custom element embeds the same frontend.
 
 Each mobile application must remain a conventional host, while the Tauri project continues to own its web frontend and application-specific Rust core. Android support must not initialize a second Tauri application runtime or publish one application's Rust code inside either reusable npm bridge package.
 
@@ -36,7 +36,7 @@ The React Native or Lynx host is the sole Android application and activity owner
 - The frontend is copied unchanged to `assets/tauri-native`.
 - The Expo config plugin copies the normalized libraries and assets into `android/app/src/main`. It replaces only `libtauri_native_core.so` and the dedicated `tauri-native` asset directory, preserving unrelated host files.
 - The generated Java TurboModule calls a synchronous Kotlin implementation. Kotlin sends UTF-8 byte arrays through a small JNI library, which resolves the existing `tauri_native_invoke` and `tauri_native_string_free` C ABI from `libtauri_native_core.so`.
-- Lynx Autolink discovers the Java native module and custom element from `@tauri-native/lynx`. Its JNI and WebView implementations consume the same normalized core and asset paths without adding Lynx-specific output to the CLI.
+- Lynx Autolink discovers the Java native module and custom element from `@tauri-native/lynx`. In Lynx 4.0.1, `NativeModules.TauriNative` is exposed by Lynx's own JSI `HostObject` and host-function machinery; the resulting Java call continues through the package JNI adapter to Rust. The JNI and WebView implementations consume the same normalized core and asset paths without adding Lynx-specific output to the CLI.
 - The JNI library is linked with 16 KB ELF segment alignment for Android 15 and newer page-size compatibility.
 - `TauriView` is backed by Android `WebView`. It serves only packaged assets from the synthetic `https://tauri-native.local` origin, rejects external navigation and subresources, and injects the narrow `window.__TAURI_INTERNALS__.invoke` seam before application scripts execute.
 
@@ -48,7 +48,7 @@ No generated AAR is introduced. The app-specific export remains owned by the Tau
 - Rust retains the command allowlist; the JavaScript interface cannot select native symbols.
 - Rust requests and responses cross JNI as explicit UTF-8 bytes, avoiding JNI modified-UTF-8 corruption for non-ASCII JSON payloads.
 - The WebView bridge remains an invoke compatibility seam. Tauri plugins, events, windows, capabilities, and full runtime behavior are unsupported.
-- Direct TurboModule and Lynx native-module calls remain synchronous and are suitable only for short, CPU-bounded commands.
+- Direct TurboModule and Lynx JSI native-module calls remain synchronous and are suitable only for short, CPU-bounded commands.
 
 ## Consequences
 
@@ -65,5 +65,5 @@ No generated AAR is introduced. The app-specific export remains owned by the Tau
 - Expo SDK 57 Android prebuild and a four-ABI debug APK build completed successfully.
 - On a 16 KB-page arm64 Android emulator, the React Native direct bridge evaluated `7 * (8 - 2)` to `42` through Rust.
 - The packaged Tauri microfrontend loaded inside `TauriView` and independently evaluated the same expression to `42` through the WebView bridge and Rust.
-- Lynx 4.0.1 Autolink registered the Android native module and `tauri-view` element. On the same emulator, both Lynx paths independently evaluated the expression to `42` through Rust.
+- Lynx 4.0.1 Autolink registered the Android native module and `tauri-view` element. The direct module is exposed through Lynx's JSI binding; on the same emulator, both Lynx paths independently evaluated the expression to `42` through Rust.
 - The Rust core and both host JNI libraries report `0x4000` ELF `LOAD` alignment, and the release APKs pass 16 KB `zipalign` verification.
