@@ -42,3 +42,7 @@ This proves the feasibility of generated adaptation for the demonstrated synchro
 The native/frontend execution proof is on **macOS**. The ordinary desktop binary is built; the automated Tauri IPC comparison uses MockRuntime rather than driving that binary's visible window. No iOS/Android artifact or device claim follows from this result. The later platform milestones remain required.
 
 See [ADR 0004](../../../../docs/adr/0004-source-transparent-export-spike.md) for the approach comparison, decision, and remaining gates.
+
+## iOS artifact relocation gate
+
+`nub --cwd packages/cli run test:export:ios` packs and installs the CLI, exports the ordinary fixture, copies its complete artifacts into a path with spaces and deletes the producer/CLI installation. It builds a host-owned Swift/UIKit/WKWebView app using only copied artifacts, with Rust absent from the host build PATH, and runs native plus unchanged frontend calls on an available iOS Simulator (with only its own test app removed afterward). It also checks failed frontend builds, missing real binary architectures and incompatible headers preserve the previous output. Evidence is written to `target/export-ios/report.json`. See [the artifact contract](../../../../docs/artifacts.md) for prerequisites and integration. Physical-device execution and RN/Lynx package integration remain separate gates.

@@ -1,9 +1,10 @@
 import { execSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { commandOutput, DiscoveryError, nativeDirectory, nativeTool } from '../discovery/native-tool.ts';
 import type { ProjectModel, SourceModel } from '../discovery/project.ts';
+import { sha256 } from '../artifacts/files.ts';
 
 function within(root: string, file: string): boolean {
   const relative = path.relative(root, file);
@@ -18,6 +19,7 @@ export interface AdapterWorkspace {
   model: SourceModel;
   sourceRoot: string;
   libraryName: string;
+  fingerprints: Record<string, string>;
   cleanup(): void;
 }
 
@@ -35,6 +37,7 @@ export function prepareAdapter(project: ProjectModel): AdapterWorkspace {
   const map = (file: string) => path.join(copy, path.relative(copyRoot, file));
   const cleanup = () => rmSync(directory, { recursive: true, force: true });
   try {
+    const fingerprints = Object.fromEntries(Object.entries({ rustEntry: project.source, cargoManifest: project.manifest, cargoLock: path.join(project.workspaceRoot, 'Cargo.lock'), tauriConfig: path.join(project.tauriDirectory, 'tauri.conf.json') }).map(([key, file]) => [`${key}Sha256`, sha256(readFileSync(file))]));
     const dependencies: [string, string][] = [];
     const generatedRoots = [path.join(project.workspaceRoot, 'target'), path.join(project.tauriDirectory, 'target'), path.join(project.tauriDirectory, 'gen')];
     cpSync(copyRoot, copy, { recursive: true, dereference: true, filter(source) {
@@ -75,7 +78,7 @@ export function prepareAdapter(project: ProjectModel): AdapterWorkspace {
     if (project.frontend.build) execSync(project.frontend.build.script, { cwd: map(project.frontend.build.cwd), stdio: 'inherit' });
     const frontendDist = map(project.frontend.dist);
     if (!existsSync(path.join(frontendDist, 'index.html'))) throw new Error(`Frontend build did not create ${project.frontend.dist}/index.html`);
-    return { directory, manifest, header, frontendDist, model, sourceRoot: copyRoot, libraryName: project.libraryName, cleanup };
+    return { directory, manifest, header, frontendDist, model, sourceRoot: copyRoot, libraryName: project.libraryName, fingerprints, cleanup };
   } catch (error) {
     cleanup();
     throw error;
