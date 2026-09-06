@@ -5,6 +5,7 @@ use serde_json::{json, Value};
 use std::{collections::HashSet, env, fs, process};
 use syn::spanned::Spanned;
 mod manifest;
+mod publication;
 use syn::{
     parse::Parser, punctuated::Punctuated, Expr, FnArg, Item, Meta, Pat, ReturnType, Stmt, Token,
     Type,
@@ -441,6 +442,11 @@ fn main() {
             return Err(fail(
                 "usage: tauri-native-adapter <inspect|generate|manifest> <input> [output]",
             ));
+        }
+        if args[1] == "exchange-directories" {
+            let output = args.get(3).ok_or_else(|| fail("missing destination directory"))?;
+            publication::exchange(&args[2], output).map_err(fail)?;
+            return Ok(json!({"published": true}));
         }
         let source = fs::read_to_string(&args[2]).map_err(|e| fail(e.to_string()))?;
         if args[1] == "inspect-build" {

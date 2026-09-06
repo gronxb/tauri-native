@@ -23,7 +23,7 @@ The Tauri project should know as little as possible about tauri-native. The inte
 - Local plan: `plans/005-portable-ios-artifacts.md`
 - Issue: [#9](https://github.com/gronxb/tauri-native/issues/9)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: TODO.
+- Status: DONE — implementation verified on 2026-09-06; PR delivery tracked by #9.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 
@@ -86,12 +86,12 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 
 ## Acceptance criteria
 
-- [ ] npx tauri-native export ios works on the supported ordinary fixture after CLI installation.
-- [ ] One copied export directory suffices for host integration.
-- [ ] Device/simulator slices and manifest integrity are checked.
-- [ ] Failed exports preserve the prior valid output.
-- [ ] Required checks have recorded results; skipped/blocked checks are identified accurately.
-- [ ] Changes stay within this issue's purpose and preserve the producer change budget.
+- [x] npx tauri-native export ios works on the supported ordinary fixture after CLI installation.
+- [x] One copied export directory suffices for host integration.
+- [x] Device/simulator slices and manifest integrity are checked.
+- [x] Failed exports preserve the prior valid output.
+- [x] Required checks have recorded results; skipped/blocked checks are identified accurately.
+- [x] Changes stay within this issue's purpose and preserve the producer change budget.
 
 ## Blockers and maintenance
 
@@ -100,3 +100,14 @@ Reading the source checkout, copying application source into the host, or rebuil
 Resources may be a sibling bundle next to the XCFramework. Describe the entire exportable directory honestly; do not claim resources automatically live inside a framework.
 
 Use a `codex/portable-ios-artifacts` branch if creating one, follow the repository's conventional commit style, and do not commit/push/merge/publish changes without the execution task's authorization. Keep this issue and any checked-in plan status aligned.
+
+## Execution evidence — 2026-09-06
+
+- Installed the packed CLI into a separate temporary npm project and exported the ordinary fixture without custom Rust crate types, ABI/header or source edits.
+- Added format/ABI/CLI/API metadata, command metadata, named source fingerprints and a complete relative file/checksum inventory. Source fingerprints are provenance, not yet a full cache key.
+- Validated device arm64 and simulator arm64/x86_64 archive contents and ABI symbols/headers. Publication uses a same-volume atomic directory exchange on macOS after validation.
+- `test:export:ios` passed on iOS Simulator 26.4.1 arm64: deleted the producer and installed CLI, then compiled/ran an independent Swift/UIKit/WKWebView host from a copy in a path with spaces with Rust absent from the host PATH. Three direct and eight unchanged frontend calls passed; 11 responses had 11 matching frees. Frontend bytes and authored producer files were unchanged.
+- Real frontend build failure, a stripped simulator architecture and an incompatible header preserved the previous export. Package scenarios also covered corrupt/missing output, ABI mismatch, SIGTERM interruption, unrelated host files and invalid manifest paths.
+- CLI: 24 tests, package verification and TypeScript check passed. `test:export:contract` passed again (14 desktop/native parity requests, 14 negative forms, 10,022 responses/frees). Explicit legacy calculator iOS export also passed and reports ABI 0.
+- Local native evidence: `target/export-ios/report.json`; contract evidence: `target/export-contract/report.json`.
+- Physical iPhone execution was not performed; device code was compiled and inspected. RN/Expo and Lynx package integration remain #11/#12. No skipped acceptance gate is represented as passing.

@@ -30,6 +30,10 @@ For iOS, install Xcode and the iOS Rust targets. The default `src-tauri/gen/taur
 - `TauriNativeCore.xcframework` — arm64 device and arm64/x86_64 Simulator slices, with the generated header.
 - `TauriNativeAssets.bundle` — the configured frontend build output.
 - `TauriNativeGenerated.podspec` — local Pod integration for the host.
+- `commands.json` — registered command metadata without producer paths.
+- `manifest.json` — ABI/compatibility versions, native slices, input fingerprints and file checksums.
+
+iOS export validates the complete file inventory, real library architectures and ABI symbols before atomically publishing the directory. Failed builds preserve the previous export. Select a dedicated output folder; unrelated host files are rejected. The sibling asset bundle preserves frontend bytes and reserves its own `Info.plist`. See [portable artifact integration](https://github.com/gronxb/tauri-native/blob/main/docs/artifacts.md) for CocoaPods/manual Xcode setup, manifest details and the installed-CLI relocation gate.
 
 For Android, install the Android NDK and `cargo-ndk`:
 

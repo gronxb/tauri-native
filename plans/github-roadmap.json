@@ -299,7 +299,7 @@
       "file": "plans/003-project-command-discovery.md",
       "url": "https://github.com/gronxb/tauri-native/issues/7",
       "number": 7,
-      "bodySynced": false,
+      "bodySynced": true,
       "status": "DONE",
       "verification": {
         "date": "2026-09-06",
@@ -316,7 +316,9 @@
         "androidJniCompile": true,
         "legacyCoreTests": 8,
         "platformRuntimeGate": "Remaining issues #9–#12"
-      }
+      },
+      "pr": "https://github.com/gronxb/tauri-native/pull/24",
+      "mergeCommit": "83196b97412e52bef451b6e5fec5c069744383ac"
     },
     {
       "id": 4,
@@ -397,7 +399,7 @@
       "file": "plans/004-generated-native-adapter.md",
       "url": "https://github.com/gronxb/tauri-native/issues/8",
       "number": 8,
-      "bodySynced": false,
+      "bodySynced": true,
       "status": "DONE",
       "verification": {
         "date": "2026-09-06",
@@ -414,7 +416,9 @@
         "androidJniCompile": true,
         "legacyCoreTests": 8,
         "platformRuntimeGate": "Remaining issues #9–#12"
-      }
+      },
+      "pr": "https://github.com/gronxb/tauri-native/pull/24",
+      "mergeCommit": "83196b97412e52bef451b6e5fec5c069744383ac"
     },
     {
       "id": 5,
@@ -494,7 +498,25 @@
       "file": "plans/005-portable-ios-artifacts.md",
       "url": "https://github.com/gronxb/tauri-native/issues/9",
       "number": 9,
-      "bodySynced": true
+      "bodySynced": false,
+      "status": "DONE",
+      "verification": {
+        "date": "2026-09-06",
+        "cliTests": 24,
+        "contract": "target/export-contract/report.json",
+        "ios": "target/export-ios/report.json",
+        "simulator": "iOS 26.4.1 arm64",
+        "nativeCalls": 3,
+        "frontendCalls": 8,
+        "responses": 11,
+        "frees": 11,
+        "sourceDeleted": true,
+        "hostWithoutRust": true,
+        "frontendBytesUnchanged": true,
+        "failurePreservesOutput": true,
+        "legacyIosExport": true,
+        "physicalDevice": "compiled/inspected, not executed"
+      }
     },
     {
       "id": 6,

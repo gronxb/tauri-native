@@ -23,7 +23,7 @@ The Tauri project should know as little as possible about tauri-native. The inte
 - Local plan: `plans/004-generated-native-adapter.md`
 - Issue: [#8](https://github.com/gronxb/tauri-native/issues/8)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: DONE — implementation verified on 2026-09-06; PR delivery tracked by #8.
+- Status: DONE — implementation verified on 2026-09-06; merged in [PR #24](https://github.com/gronxb/tauri-native/pull/24), commit `83196b9`.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 

@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process';
 import {
   cpSync,
+  existsSync,
   mkdirSync,
   readFileSync,
   rmSync,
@@ -14,6 +15,10 @@ import { message } from '../utils/output.ts';
 import { run } from '../utils/process.ts';
 import { prepareAdapter, type AdapterWorkspace } from '../adapter/workspace.ts';
 import { discoverProject } from '../discovery/project.ts';
+import { inventory, sha256 } from '../artifacts/files.ts';
+import { writeArtifactManifest } from '../artifacts/manifest.ts';
+import { iosSlices, validateIosArtifacts } from '../artifacts/ios.ts';
+import { publishArtifacts } from '../artifacts/staging.ts';
 
 export interface ExportIosOptions {
   tauriDir: string;
@@ -67,8 +72,15 @@ export function writeGeneratedPodspec(outputDirectory: string): string {
 }
 
 export function exportIos(options: ExportIosOptions): void {
-  const adapter = options.manifest || options.header ? undefined : prepareAdapter(discoverProject(options.tauriDir));
-  try { exportIosArtifacts(options, adapter); }
+  const outputDirectory = path.resolve(options.outputDir ?? path.join(options.tauriDir, 'gen/tauri-native/ios'));
+  let adapter: AdapterWorkspace | undefined;
+  try {
+    publishArtifacts(outputDirectory, stage => {
+      adapter = options.manifest || options.header ? undefined : prepareAdapter(discoverProject(options.tauriDir));
+      exportIosArtifacts({ ...options, outputDir: stage }, adapter);
+    }, validateIosArtifacts);
+    message(`Created validated iOS artifacts in ${outputDirectory}`, '◆ ');
+  }
   catch (error) {
     if (adapter) throw new Error(`${error instanceof Error ? error.message : error}\nGenerated source maps to ${adapter.sourceRoot}; original command line numbers are preserved.`);
     throw error;
@@ -115,6 +127,7 @@ function exportIosArtifacts(options: ExportIosOptions, adapter?: AdapterWorkspac
     config.build.frontendDist
   );
   requireFile(path.join(frontendDist, 'index.html'));
+  if (existsSync(path.join(frontendDist, 'Info.plist'))) throw new Error('frontendDist/Info.plist conflicts with the iOS resource bundle metadata');
 
   const libraryName = adapter?.libraryName ?? readLibraryName(manifest);
   const targetDirectory = path.join(tauriDirectory, 'target/tauri-native');
@@ -180,10 +193,12 @@ function exportIosArtifacts(options: ExportIosOptions, adapter?: AdapterWorkspac
   rmSync(assetBundle, { recursive: true, force: true });
   cpSync(frontendDist, assetBundle, { recursive: true });
   writeFileSync(path.join(assetBundle, 'Info.plist'), ASSET_BUNDLE_INFO);
-  const podspec = writeGeneratedPodspec(outputDirectory);
-
-  message(
-    `Created ${framework}\nCreated ${assetBundle}\nCreated ${podspec}`,
-    '◆ '
-  );
+  writeGeneratedPodspec(outputDirectory);
+  writeArtifactManifest(outputDirectory, {
+    native: iosSlices(outputDirectory),
+    source: {
+      ...(adapter?.fingerprints ?? { cargoManifestSha256: sha256(readFileSync(manifest)), headerSha256: sha256(readFileSync(header)), tauriConfigSha256: sha256(readFileSync(configPath)) }),
+      frontendSha256: sha256(JSON.stringify(inventory(frontendDist))),
+    },
+  }, adapter?.model);
 }

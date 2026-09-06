@@ -75,7 +75,7 @@ npx tauri-native export ios
 npx tauri-native export android
 ```
 
-The default iOS export stays co-located with its source at `src-tauri/gen/tauri-native/ios`. It contains the XCFramework, packaged frontend, and local podspec. The Android equivalent is written to `src-tauri/gen/tauri-native/android`. A bare native host can reference the relevant directory directly, or the CLI can export straight into a chosen host:
+The default iOS export is written to `src-tauri/gen/tauri-native/ios`. It contains the XCFramework, packaged frontend, local podspec, command metadata and integrity manifest. Copy the complete directory to the host; source access is not needed afterward. See the [portable artifact contract](docs/artifacts.md). The Android equivalent is written to `src-tauri/gen/tauri-native/android`. The CLI can also export straight into a chosen host:
 
 ```sh
 npx tauri-native export ios \
