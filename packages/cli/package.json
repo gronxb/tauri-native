@@ -34,7 +34,8 @@
     "test:package": "node ../../scripts/verify-package.mjs",
     "typecheck": "tsc --noEmit",
     "test:external-consumer:export": "nub run build && node --experimental-strip-types test/feature/export.mjs",
-    "test:external-consumer": "nub run build && node --experimental-strip-types test/feature/run.mjs"
+    "test:external-consumer": "nub run build && node --experimental-strip-types test/feature/run.mjs",
+    "test:onboarding": "nub run build && node --experimental-strip-types test/feature/uninstall.mjs"
   },
   "dependencies": {
     "@clack/core": "^1.4.3",

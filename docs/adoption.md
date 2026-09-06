@@ -40,6 +40,14 @@ Complete one record for each independent project. Share only details the evaluat
 
 A walkthrough can fail and still provide useful evidence. Keep its failures visible, fix the responsible issue, and rerun the affected scenario. Do not convert maintainer-assisted or test-owned runs into documentation-only independent adoption.
 
+## Maintainer-owned installation check
+
+`nub --cwd packages/cli run test:onboarding` exercises the installation/removal part of the workflow in a disposable ordinary Fieldnotes project. It installs the packed CLI as a development dependency, inspects and exports both platforms, removes the CLI and generated output, then runs the application's normal desktop Release build. Hash checks permit only the JavaScript manifest and lockfile to change during installation; export preserves the installed producer exactly. The final report records any remaining JavaScript diff.
+
+The local run passed with the prepared 1.0.0-rc.0 CLI. Its report is `target/onboarding/report.json`; the candidate producer CI also runs this gate with its exact CLI tarball. This is automated maintainer evidence, not an independent evaluator record. The CLI exposes version information through its npm package metadata; use `npm ls @tauri-native/cli` when recording the installed version.
+
+For physical-device RC evidence, use the host's normal Release signing and distribution process, record the actual device/OS and package/artifact hashes, and repeat the direct/embedded success, error, pending-navigation and relaunch scenarios. Record failures and signing/distribution conditions. Simulator results do not fill these records.
+
 ## Release decision
 
 A reviewable candidate contains matching CLI/host packages, changesets and migration notes, the bounded support matrix, and linked validation for that exact candidate. Required CI jobs, physical-device RC checks and independent onboarding records must be complete before a stable 1.0 release is represented as ready.
