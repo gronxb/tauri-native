@@ -3,13 +3,15 @@
 const {
   cpSync,
   mkdirSync,
-  statSync,
+  mkdtempSync,
   readFileSync,
   rmSync,
   writeFileSync,
 } = require('node:fs');
 const { createRequire } = require('node:module');
+const { tmpdir } = require('node:os');
 const path = require('node:path');
+const { readArtifacts } = require('./artifacts.js');
 
 const packageName = '@tauri-native/react-native';
 const generatedPodName = 'TauriNativeGenerated';
@@ -30,29 +32,33 @@ function projectRequire(projectRoot) {
   return createRequire(path.join(projectRoot, 'package.json'));
 }
 
-function resolveTauriDir(projectRoot, tauriDir) {
-  if (typeof tauriDir !== 'string' || tauriDir.trim() === '') {
-    throw fail(
-      'The Expo config plugin requires a non-empty "tauriDir" option. ' +
-        'Example: ["@tauri-native/react-native", {"tauriDir":"../tauri/src-tauri"}]'
-    );
+function resolveArtifacts(projectRoot, options, platform) {
+  if (options.artifactsDir && options.tauriDir) {
+    throw fail('Choose "artifactsDir" or the legacy "tauriDir" convenience option, not both.');
   }
-
-  const resolved = path.resolve(projectRoot, tauriDir);
-
-  try {
-    if (statSync(resolved).isDirectory()) {
-      return resolved;
-    }
-  } catch {}
-
-  throw fail(
-    `tauriDir "${resolved}" is not a directory. ` +
-      `The path is resolved relative to the Expo project root "${projectRoot}".`
-  );
+  const selected = options.artifactsDir ?? options.tauriDir;
+  if (typeof selected !== 'string' || selected.trim() === '') {
+    throw fail('Set "artifactsDir" to a host-owned directory containing the copied ios/ and android/ exports. Example: {"artifactsDir":"./tauri-native"}');
+  }
+  const root = path.resolve(projectRoot, selected);
+  const directory = path.join(root, ...(options.artifactsDir ? [] : ['gen/tauri-native']), platform);
+  try { readArtifacts(directory, platform); }
+  catch (error) { throw fail(`${error.message} Supply a complete, matching CLI export before prebuild.`); }
+  return directory;
 }
 
-function addGeneratedPodToPodfile(platformProjectRoot) {
+function withArtifactCopy(source, platform, apply) {
+  const stage = mkdtempSync(path.join(tmpdir(), 'tauri-native-host-'));
+  try {
+    cpSync(source, stage, { recursive: true });
+    // Validate the private copy too: an export/watch process can replace the
+    // input directory between its initial check and this copy operation.
+    readArtifacts(stage, platform);
+    apply(stage);
+  } finally { rmSync(stage, { recursive: true, force: true }); }
+}
+
+function generatedPodfile(platformProjectRoot) {
   const podfile = path.join(platformProjectRoot, 'Podfile');
   let source;
 
@@ -63,7 +69,7 @@ function addGeneratedPodToPodfile(platformProjectRoot) {
   }
 
   if (source.includes(generatedPodMarker)) {
-    return;
+    return { podfile, source };
   }
 
   const target = /^target\s+['"][^'"]+['"]\s+do\s*$/m;
@@ -75,75 +81,34 @@ function addGeneratedPodToPodfile(platformProjectRoot) {
     generatedPodMarker,
     `  pod '${generatedPodName}', :path => './tauri-native'`,
   ].join('\n');
-  writeFileSync(podfile, source.replace(target, (line) => `${line}\n${dependency}`));
+  return { podfile, source: source.replace(target, (line) => `${line}\n${dependency}`) };
 }
 
-function copyExportedArtifacts(projectRoot, platformProjectRoot, tauriDir) {
-  const resolvedTauriDir = resolveTauriDir(projectRoot, tauriDir);
-  const exportDirectory = path.join(
-    resolvedTauriDir,
-    'gen/tauri-native/ios'
-  );
-  const requiredArtifacts = [
-    `${generatedPodName}.podspec`,
-    'TauriNativeCore.xcframework',
-    'TauriNativeAssets.bundle',
-  ];
-
-  for (const artifact of requiredArtifacts) {
-    try {
-      statSync(path.join(exportDirectory, artifact));
-    } catch {
-      throw fail(
-        `Could not find exported iOS artifacts at "${exportDirectory}". ` +
-          `Run "tauri-native export ios" from the Tauri project before Expo prebuild.`
-      );
-    }
-  }
-
+function copyExportedArtifacts(projectRoot, platformProjectRoot, options) {
+  const exportDirectory = resolveArtifacts(projectRoot, options, 'ios');
+  // Read/validate the Podfile before modifying any integration output.
+  const pod = generatedPodfile(platformProjectRoot);
   const outputDir = path.join(platformProjectRoot, 'tauri-native');
-  rmSync(outputDir, { recursive: true, force: true });
-  cpSync(exportDirectory, outputDir, { recursive: true });
+  withArtifactCopy(exportDirectory, 'ios', stage => {
+    rmSync(outputDir, { recursive: true, force: true });
+    cpSync(stage, outputDir, { recursive: true });
+    writeFileSync(pod.podfile, pod.source);
+  });
 }
 
-function copyAndroidArtifacts(projectRoot, platformProjectRoot, tauriDir) {
-  const resolvedTauriDir = resolveTauriDir(projectRoot, tauriDir);
-  const exportDirectory = path.join(
-    resolvedTauriDir,
-    'gen/tauri-native/android'
-  );
-  const exportedAssets = path.join(
-    exportDirectory,
-    'assets/tauri-native'
-  );
-
-  try {
-    statSync(path.join(exportedAssets, 'index.html'));
-    for (const abi of androidAbis) {
-      statSync(
-        path.join(exportDirectory, 'jniLibs', abi, androidCoreLibrary)
-      );
-    }
-  } catch {
-    throw fail(
-      `Could not find exported Android artifacts at "${exportDirectory}". ` +
-        `Run "tauri-native export android" from the Tauri project before Expo prebuild.`
-    );
-  }
-
+function copyAndroidArtifacts(projectRoot, platformProjectRoot, options) {
+  const exportDirectory = resolveArtifacts(projectRoot, options, 'android');
   const appSource = path.join(platformProjectRoot, 'app/src/main');
-  for (const abi of androidAbis) {
-    const destinationDirectory = path.join(appSource, 'jniLibs', abi);
-    mkdirSync(destinationDirectory, { recursive: true });
-    cpSync(
-      path.join(exportDirectory, 'jniLibs', abi, androidCoreLibrary),
-      path.join(destinationDirectory, androidCoreLibrary)
-    );
-  }
-
-  const destinationAssets = path.join(appSource, 'assets/tauri-native');
-  rmSync(destinationAssets, { recursive: true, force: true });
-  cpSync(exportedAssets, destinationAssets, { recursive: true });
+  withArtifactCopy(exportDirectory, 'android', stage => {
+    for (const abi of androidAbis) {
+      const destinationDirectory = path.join(appSource, 'jniLibs', abi);
+      mkdirSync(destinationDirectory, { recursive: true });
+      cpSync(path.join(stage, 'jniLibs', abi, androidCoreLibrary), path.join(destinationDirectory, androidCoreLibrary));
+    }
+    const destinationAssets = path.join(appSource, 'assets/tauri-native');
+    rmSync(destinationAssets, { recursive: true, force: true });
+    cpSync(path.join(stage, 'assets/tauri-native'), destinationAssets, { recursive: true });
+  });
 }
 
 module.exports = function withTauriNative(config, options = {}) {
@@ -167,9 +132,8 @@ module.exports = function withTauriNative(config, options = {}) {
       copyExportedArtifacts(
         modConfig.modRequest.projectRoot,
         modConfig.modRequest.platformProjectRoot,
-        options?.tauriDir
+        options
       );
-      addGeneratedPodToPodfile(modConfig.modRequest.platformProjectRoot);
       return modConfig;
     },
   ]);
@@ -180,7 +144,7 @@ module.exports = function withTauriNative(config, options = {}) {
       copyAndroidArtifacts(
         modConfig.modRequest.projectRoot,
         modConfig.modRequest.platformProjectRoot,
-        options?.tauriDir
+        options
       );
       return modConfig;
     },

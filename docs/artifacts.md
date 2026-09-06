@@ -28,7 +28,7 @@ For manual Xcode integration, add the XCFramework to the host's linked libraries
 
 A custom native consumer checks `tauri_native_abi_version() == 1`, calls `tauri_native_invoke(command, payloadJson)`, copies the returned UTF-8 JSON, and calls `tauri_native_string_free` exactly once for every non-null result. ABI 1 frames contain `{abiVersion:1,ok:true,value}` or `{abiVersion:1,ok:false,error}`. Serialize arguments as JSON. The host owns lifecycle and does not start another Tauri runtime.
 
-React Native/Expo and Lynx artifact-only configuration is tracked separately in issues [#11](https://github.com/gronxb/tauri-native/issues/11) and [#12](https://github.com/gronxb/tauri-native/issues/12). The native relocation gate below verifies a minimal independent UIKit/WKWebView consumer; it does not certify those host packages or physical-device execution.
+React Native/Expo consumers use a host-owned `artifactsDir` or bare RN local Pod/source sets; see the [host integration guide](../packages/react-native/README.md). Lynx artifact-only configuration is tracked in [#12](https://github.com/gronxb/tauri-native/issues/12). The native relocation gate below verifies a minimal independent UIKit/WKWebView consumer; the [RN/Expo gate](../packages/react-native/test/native-artifacts/README.md) separately exercises the installed host package. Neither certifies physical-device execution.
 
 ## Android
 
@@ -55,7 +55,7 @@ android {
 
 Export uses `cargo-ndk`'s configured NDK and sets the final library's 16 KB link alignment and stable SONAME. It runs the NDK's `llvm-readelf` to verify the machine/class, load-segment alignment, API 24 identification, exported ABI functions, SONAME and system dependencies available at API 24. An additional shared dependency that is not a platform library is rejected rather than leaving a missing library for the host to discover. Producer code must still avoid assumptions about a fixed runtime page size; see the [Android NDK build-system guide](https://android.googlesource.com/platform/ndk/+/ndk-r27-release/docs/BuildSystemMaintainers.md#Page-sizes).
 
-The final host APK needs both compatible native libraries and correct ZIP alignment. The relocation gate verifies the actual signed APK using `zipalign -c -P 16 -v 4` and runs it on an emulator whose `getconf PAGE_SIZE` returns `16384`. See [Android's zipalign documentation](https://developer.android.com/tools/zipalign). RN/Expo and Lynx bridge/package configuration remains in #11/#12.
+The final host APK needs both compatible native libraries and correct ZIP alignment. The relocation gate verifies the actual signed APK using `zipalign -c -P 16 -v 4` and runs it on an emulator whose `getconf PAGE_SIZE` returns `16384`. See [Android's zipalign documentation](https://developer.android.com/tools/zipalign). Host bridge execution has separate RN/Expo and Lynx gates.
 
 ## Manifest contract
 

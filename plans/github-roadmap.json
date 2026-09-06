@@ -8,14 +8,16 @@
       "title": "M0 — Prove source-transparent Tauri export",
       "description": "Gate: prove native execution of existing registered Tauri commands without application-authored bridge code or a second application runtime. Define the supported subset and source-integrity fixtures. If infeasible, block dependent implementation and report the smallest required concession.",
       "number": 1,
-      "url": "https://github.com/gronxb/tauri-native/milestone/1"
+      "url": "https://github.com/gronxb/tauri-native/milestone/1",
+      "state": "closed"
     },
     {
       "key": "M1",
       "title": "M1 — CLI-only portable native artifacts",
       "description": "Gate: install the CLI in an ordinary Tauri project and export relocatable iOS XCFramework/assets and Android libraries/assets. Discovery, adapters, ABI, and metadata are tool-owned. No mandatory app-core, header, custom macros, or host-specific frontend imports.",
       "number": 2,
-      "url": "https://github.com/gronxb/tauri-native/milestone/2"
+      "url": "https://github.com/gronxb/tauri-native/milestone/2",
+      "state": "closed"
     },
     {
       "key": "M2",
@@ -599,7 +601,7 @@
       "file": "plans/006-portable-android-artifacts.md",
       "url": "https://github.com/gronxb/tauri-native/issues/10",
       "number": 10,
-      "bodySynced": false,
+      "bodySynced": true,
       "status": "DONE",
       "verification": {
         "date": "2026-09-06",
@@ -622,7 +624,9 @@
         "apkAlignment": 16384,
         "legacyAndroidExport": true,
         "producerHost": "macOS"
-      }
+      },
+      "pr": "https://github.com/gronxb/tauri-native/pull/26",
+      "mergeCommit": "9499a49ea9d2ea599cdd33076572a05a79b516ae"
     },
     {
       "id": 7,
@@ -708,7 +712,25 @@
       "file": "plans/007-react-native-artifact-consumption.md",
       "url": "https://github.com/gronxb/tauri-native/issues/11",
       "number": 11,
-      "bodySynced": true
+      "bodySynced": true,
+      "status": "IMPLEMENTED",
+      "verification": {
+        "date": "2026-09-06",
+        "report": "target/react-native-artifacts/report.json",
+        "packageTests": 6,
+        "packageFiles": 56,
+        "reactNative": "0.86.3",
+        "expo": "57.0.20",
+        "nativeHostBuilds": 4,
+        "directCasesPerHost": 8,
+        "frontendCasesPerHost": 8,
+        "realCngRuns": 3,
+        "calculatorIos": true,
+        "calculatorAndroid": true,
+        "producerDeleted": true,
+        "hostWithoutRust": true,
+        "physicalDeviceExecution": false
+      }
     },
     {
       "id": 8,

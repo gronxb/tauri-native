@@ -23,7 +23,7 @@ The Tauri project should know as little as possible about tauri-native. The inte
 - Local plan: `plans/007-react-native-artifact-consumption.md`
 - Issue: [#11](https://github.com/gronxb/tauri-native/issues/11)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: TODO.
+- Status: IMPLEMENTED — all required gates passed; PR merge pending.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 
@@ -86,12 +86,12 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 
 ## Acceptance criteria
 
-- [ ] Main quickstart config uses artifacts, not mandatory tauriDir.
-- [ ] Expo and bare integrations reproduce without source/Rust access.
-- [ ] Both transports pass on iOS/Android.
-- [ ] Repeat prebuild is idempotent and unrelated host files survive.
-- [ ] Required checks have recorded results; skipped/blocked checks are identified accurately.
-- [ ] Changes stay within this issue's purpose and preserve the producer change budget.
+- [x] Main quickstart config uses artifacts, not mandatory tauriDir.
+- [x] Expo and bare integrations reproduce without source/Rust access.
+- [x] Both transports pass on iOS/Android.
+- [x] Repeat prebuild is idempotent and unrelated host files survive.
+- [x] Required checks have recorded results; skipped/blocked checks are identified accurately.
+- [x] Changes stay within this issue's purpose and preserve the producer change budget.
 
 ## Blockers and maintenance
 
@@ -100,3 +100,13 @@ Secretly rebuilding producer code or needing sibling source paths means the arti
 The host can know about tauri-native; the producer should not. Keep build diagnostics separate from end-user product UI.
 
 Use a `codex/react-native-artifact-consumption` branch if creating one, follow the repository's conventional commit style, and do not commit/push/merge/publish changes without the execution task's authorization. Keep this issue and any checked-in plan status aligned.
+
+## Implementation evidence — 2026-09-06
+
+- Added host-relative `artifactsDir`, a shipped Node-only manifest/inventory validator and optional legacy-path normalization. Validation occurs before host edits and again on a private staged copy. Expo and bare hosts need neither the CLI nor producer source/Rust.
+- Package tests: **6 passed**, including repeat prebuild, artifact upgrade, preserved host files, corrupt/missing/ABI/platform/format rejection, invalid Podfile and symlinks. Package verification: **56 files**; SDK and example typechecks passed. Fixtures use the actual CLI manifest writer.
+- Installed the packed SDK into two fresh hosts outside the workspace: **bare RN 0.86.3 (no Expo)** and **Expo 57.0.20 / RN 0.86.3**. Both received byte-identical platform exports from the M1 gates, whose producer/CLI installations were deleted. Host builds used a PATH without Cargo/Rust.
+- All four Release builds and Maestro flows passed: bare RN and Expo on **iOS Simulator 26.4.1 arm64** and **Android API 37 arm64-v8a / 16 KB pages**. Each checked **8 direct + 8 unchanged-frontend calls**, including structured errors, Unicode, null and tagged enums. Both Android APKs passed `zipalign -c -P 16 -v 4`. This does not claim physical-device or other-architecture execution.
+- Real Expo CNG: **three `--no-clean` prebuilds** verified repetition, whole-artifact replacement and preservation of unrelated Podfile/library/asset files. Replacing an iOS archive with a different library name requires `pod install` to refresh link flags; documented and verified through the calculator upgrade.
+- Existing iOS calculator flow and new Android flow passed against the copied legacy exports in an isolated QA bundle ID. Fixed the old iOS JSI label/fixed-screen tap and Android HTML input selection/duplicate keyboard dismissal. The source flows were unchanged apart from the isolated bundle ID for execution.
+- Reproduction: `packages/react-native/test/native-artifacts/README.md`; local evidence: `target/react-native-artifacts/report.json` and six JUnit reports. These test-owned hosts do not count as external adopters.
