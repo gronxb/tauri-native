@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, test } from 'node:test';
 import { inventory, sha256 } from '../src/artifacts/files.ts';
-import { validateArtifactManifest, writeArtifactManifest } from '../src/artifacts/manifest.ts';
+import { ANDROID_ABIS, IOS_LAYOUT, validateArtifactManifest, writeArtifactManifest } from '../src/artifacts/manifest.ts';
 import { publishArtifacts } from '../src/artifacts/staging.ts';
 
 const roots: string[] = [];
@@ -19,6 +19,7 @@ function fixture(root: string, greeting = 'Hello'): void {
     'TauriNativeGenerated.podspec': 'relative local pod',
   })) { mkdirSync(path.dirname(path.join(root, file)), { recursive: true }); writeFileSync(path.join(root, file), content); }
   writeArtifactManifest(root, {
+    ...IOS_LAYOUT,
     native: [
       { path: 'TauriNativeCore.xcframework/device/core.a', architectures: ['arm64'], variant: 'device' },
       { path: 'TauriNativeCore.xcframework/simulator/core.a', architectures: ['arm64', 'x86_64'], variant: 'simulator' },
@@ -98,4 +99,50 @@ test('manifest rejects traversal and duplicate inventory records', () => {
   writeFileSync(path.join(root, 'manifest.json'), original);
   editManifest(root, m => m.files.push(m.files[0]));
   assert.throws(() => validateArtifactManifest(root), /Duplicate/);
+});
+
+function androidFixture(root: string, text = 'Android frontend'): void {
+  for (const [file, content] of Object.entries({
+    ...Object.fromEntries(ANDROID_ABIS.map(abi => [`jniLibs/${abi}/libtauri_native_core.so`, abi])),
+    'assets/tauri-native/index.html': text,
+    'include/tauri_native.h': '#define TAURI_NATIVE_ABI_VERSION 1\n',
+  })) { mkdirSync(path.dirname(path.join(root, file)), { recursive: true }); writeFileSync(path.join(root, file), content); }
+  writeArtifactManifest(root, {
+    platform: 'android', minimumApiLevel: 24, pageSize: 16384,
+    native: ANDROID_ABIS.map(abi => ({ abi, path: `jniLibs/${abi}/libtauri_native_core.so` })),
+    assets: 'assets/tauri-native', integration: null, header: 'include/tauri_native.h',
+    source: { rustEntrySha256: sha256('ordinary source') },
+  }, { schemaVersion: 1, abiVersion: 1, commands: [] });
+}
+
+test('Android artifacts relocate with the same complete inventory contract', () => {
+  const root = temporary(); const source = path.join(root, 'export'); androidFixture(source);
+  const copy = path.join(root, 'Independent Host', 'Native Artifacts');
+  cpSync(source, copy, { recursive: true }); rmSync(source, { recursive: true });
+  const manifest = validateArtifactManifest(copy);
+  assert.equal(manifest.platform, 'android');
+  assert.equal(manifest.integration, null);
+  assert.equal(manifest.native.length, 4);
+  assert.equal(readFileSync(path.join(copy, manifest.assets, 'index.html'), 'utf8'), 'Android frontend');
+});
+
+test('Android missing ABIs, incompatible API/page size and loader paths preserve the last export', () => {
+  const output = path.join(temporary(), 'export'); androidFixture(output);
+  const before = inventory(output);
+  for (const damage of [
+    (manifest: any) => manifest.native.pop(),
+    (manifest: any) => { manifest.minimumApiLevel = 26; },
+    (manifest: any) => { manifest.pageSize = 4096; },
+    (manifest: any) => { manifest.native[0].path = 'jniLibs/arm64-v8a/application.so'; },
+  ]) {
+    assert.throws(() => publishArtifacts(output, stage => { androidFixture(stage); editManifest(stage, damage); }, validateArtifactManifest), /Android/);
+    assert.deepEqual(inventory(output), before);
+  }
+});
+
+test('validated Android replacement owns only its dedicated artifact directory', { skip: process.platform !== 'darwin' }, () => {
+  const output = path.join(temporary(), 'export'); androidFixture(output);
+  publishArtifacts(output, stage => androidFixture(stage, 'Updated Android frontend'), validateArtifactManifest);
+  validateArtifactManifest(output);
+  assert.equal(readFileSync(path.join(output, 'assets/tauri-native/index.html'), 'utf8'), 'Updated Android frontend');
 });

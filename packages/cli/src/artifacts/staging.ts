@@ -2,7 +2,7 @@ import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, renameSync,
 import path from 'node:path';
 import { nativeTool } from '../discovery/native-tool.ts';
 
-const generatedRoots = new Set(['manifest.json', 'commands.json', 'TauriNativeCore.xcframework', 'TauriNativeAssets.bundle', 'TauriNativeGenerated.podspec']);
+const generatedRoots = new Set(['manifest.json', 'commands.json', 'TauriNativeCore.xcframework', 'TauriNativeAssets.bundle', 'TauriNativeGenerated.podspec', 'jniLibs', 'assets', 'include']);
 
 function checkDestination(directory: string): void {
   if (!existsSync(directory)) return;
