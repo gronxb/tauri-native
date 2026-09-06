@@ -90,8 +90,8 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 
 - [ ] At least two evidenced independent integrations need no bridge-specific producer code.
 - [ ] Required native/compatibility/package checks pass for the RC.
-- [ ] Unsupported APIs and migration from PoC are documented.
-- [ ] A reviewable 1.0 candidate exists; stable publication uses the authorized release process.
+- [x] Unsupported APIs and migration from PoC are documented.
+- [x] A reviewable 1.0 candidate exists; stable publication uses the authorized release process.
 - [ ] Required checks have recorded results; skipped/blocked checks are identified accurately.
 - [ ] Changes stay within this issue's purpose and preserve the producer change budget.
 
@@ -102,3 +102,7 @@ If adoption needs manual core extraction, custom annotations, source access in h
 Do not invent user quotes, metrics, dates or market demand. Stars/downloads do not replace successful integrations.
 
 Use a `codex/onboarding-1-0-release` branch if creating one, follow the repository's conventional commit style, and do not commit/push/merge/publish changes without the execution task's authorization. Keep this issue and any checked-in plan status aligned.
+
+## Candidate preparation
+
+The `codex/onboarding-1-0-release` branch prepares matching 1.0.0-rc.0 packages, Changesets prerelease state, changelogs, migration guidance and an evidence-based onboarding procedure. CLI/RN/Lynx unit/package checks and release-receipt rejection scenarios passed locally. The installation gate also passed: install the packed CLI into an ordinary producer, export both platforms, remove the CLI/generated output, then complete the ordinary desktop Release build with no remaining authored-source diff. This is maintainer-owned evidence. Required CI for the final RC, two independent evaluator records and physical iOS/Android RC checks remain open; neither stable readiness nor publication is claimed.
