@@ -19,6 +19,7 @@ import { inventory, sha256 } from '../artifacts/files.ts';
 import { IOS_LAYOUT, writeArtifactManifest } from '../artifacts/manifest.ts';
 import { iosSlices, validateIosArtifacts } from '../artifacts/ios.ts';
 import { publishArtifacts } from '../artifacts/staging.ts';
+import { assertExportReady } from './doctor.ts';
 
 export interface ExportIosOptions {
   tauriDir: string;
@@ -76,13 +77,17 @@ export function exportIos(options: ExportIosOptions): void {
   let adapter: AdapterWorkspace | undefined;
   try {
     publishArtifacts(outputDirectory, stage => {
-      adapter = options.manifest || options.header ? undefined : prepareAdapter(discoverProject(options.tauriDir));
+      if (!options.manifest && !options.header) {
+        const project = discoverProject(options.tauriDir);
+        assertExportReady(project, 'ios');
+        adapter = prepareAdapter(project);
+      }
       exportIosArtifacts({ ...options, outputDir: stage }, adapter);
     }, validateIosArtifacts);
     message(`Created validated iOS artifacts in ${outputDirectory}`, '◆ ');
   }
   catch (error) {
-    if (adapter) throw new Error(`${error instanceof Error ? error.message : error}\nGenerated source maps to ${adapter.sourceRoot}; original command line numbers are preserved.`);
+    if (adapter) throw Object.assign(new Error(`${error instanceof Error ? error.message : error}\nGenerated source maps to ${adapter.sourceRoot}; original command line numbers are preserved.`), { code: (error as { code?: string }).code });
     throw error;
   }
   finally { adapter?.cleanup(); }

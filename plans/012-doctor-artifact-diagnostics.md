@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/012-doctor-artifact-diagnostics.md`
 - Issue: [#16](https://github.com/gronxb/tauri-native/issues/16)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: TODO.
+- Status: IMPLEMENTED AND VERIFIED — read-only diagnostics and shared artifact error codes; pending PR merge.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 
@@ -87,12 +87,12 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 
 ## Acceptance criteria
 
-- [ ] Both producer and artifact-only consumer have useful diagnostic flows.
-- [ ] Failures happen before destructive copy/compilation.
-- [ ] JSON is stable and checks do not mutate/install.
-- [ ] Staleness claims match observable evidence.
-- [ ] Required checks have recorded results; skipped/blocked checks are identified accurately.
-- [ ] Changes stay within this issue's purpose and preserve the producer change budget.
+- [x] Both producer and artifact-only consumer have useful diagnostic flows.
+- [x] Failures happen before destructive copy/compilation.
+- [x] JSON is stable and checks do not mutate/install.
+- [x] Staleness claims match observable evidence.
+- [x] Required checks have recorded results; skipped/blocked checks are identified accurately.
+- [x] Changes stay within this issue's purpose and preserve the producer change budget.
 
 ## Blockers and maintenance
 
@@ -101,3 +101,12 @@ Do not require source access for copied-artifact validation or turn doctor into 
 The prior review observed root-directory CLI assertions sensitive to wrapped paths; test diagnostic semantics separately from terminal formatting while touching this code.
 
 Use a `codex/doctor-artifact-diagnostics` branch if creating one, follow the repository's conventional commit style, and do not commit/push/merge/publish changes without the execution task's authorization. Keep this issue and any checked-in plan status aligned.
+
+## Implementation evidence — 2026-09-07
+
+- Added producer and artifact-only `doctor`, schema-versioned JSON, stable failure codes and evidence-limited source comparison. The shared Node reader ships in both host packages and is bundled in the CLI; Expo preserves its codes before copying.
+- Source checks use the actual Rust inspector with automatic toolchain installation disabled and Cargo offline. A cold inspector cache produces a preparation diagnostic without compiling. Export shares tool preflight before frontend hooks; its existing Rust-target installation behavior remains explicit.
+- `test:doctor`: 8 passing scenarios cover relocation without tools, corrupt/missing/incompatible members, tool/target/NDK/compiler failures, secret stderr suppression, unsupported source locations, cold-cache preservation, source/built-frontend changes, preflight output preservation and packed CLI/SDK consumption outside the checkout.
+- CLI, RN and Lynx typechecks/package verification pass; CLI package suite 41 tests, RN 9, Lynx 2. Actual producer doctor passes both platforms on the configured Mac; artifact-only doctor passes with Rust absent from PATH.
+- `test:events:export` passes using the installed packed CLI: actual ordinary Tauri desktop frontend, all three iOS and four Android architectures, complete native validation, unchanged producer Git diff and frontend bytes, then producer deletion. Evidence: `target/view-events/export-report.json`.
+- No host-native implementation changed. The four host view and four async Release flows recorded for #15 remain the native lifecycle evidence; this issue does not claim new device or independent-adopter execution.

@@ -64,7 +64,8 @@ test('corrupt, missing, incompatible and wrong-platform input cannot change an i
       if (damage === 'frontend') write(source, `${manifest.assets}/index.html`, 'damaged');
       else if (damage === 'missing') rmSync(path.join(source, manifest.native[0].path));
       else { manifest[damage === 'abi' ? 'abiVersion' : damage === 'format' ? 'formatVersion' : 'platform'] = damage === 'platform' ? 'other' : 99; writeFileSync(file, JSON.stringify(manifest)); }
-      assert.throws(() => f.run(platform), /Invalid .* artifacts/); assert.deepEqual(f.snapshot(platform), before);
+      const code = { frontend: 'artifact_checksum', missing: 'artifact_missing_file', abi: 'artifact_abi', platform: 'artifact_platform', format: 'artifact_format' }[damage];
+      assert.throws(() => f.run(platform), { code, message: /Invalid .* artifacts/ }); assert.deepEqual(f.snapshot(platform), before);
     }
   }
 });

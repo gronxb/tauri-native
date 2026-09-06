@@ -5,10 +5,10 @@ import { validateArtifactManifest, type AndroidArtifacts } from './manifest.ts';
 
 export interface AndroidTools { bin: string; readelf: string; systemLibraries: string }
 
-export function androidTools(): AndroidTools {
+export function androidTools(readOnly = false): AndroidTools {
   // Use cargo-ndk's own selection, including its supported NDK/SDK environment
   // variables. Never evaluate the shell exports from ndk-env.
-  const environment = JSON.parse(commandOutput('cargo', ['ndk-env', '--json', '--target', 'arm64-v8a', '--platform', '24'])) as Record<string, string>;
+  const environment = JSON.parse(commandOutput('cargo', ['ndk-env', '--json', '--target', 'arm64-v8a', '--platform', '24'], undefined, readOnly)) as Record<string, string>;
   if (!environment.CLANG_PATH) throw new Error('cargo ndk-env did not report its NDK compiler');
   const bin = path.dirname(environment.CLANG_PATH);
   return { bin, readelf: path.join(bin, `llvm-readelf${process.platform === 'win32' ? '.exe' : ''}`), systemLibraries: path.resolve(bin, '../../../../../meta/system_libs.json') };

@@ -13,7 +13,7 @@ const client = (android) => webViewClient
     : 'window.webkit.messageHandlers.tauriNative.postMessage(JSON.parse(JSON.stringify(message)))');
 for (const [source, destination] of [
   ['artifacts.cjs', host === 'lynx' ? 'artifacts.cjs' : 'artifacts.js'],
-  ['artifacts.d.ts', 'artifacts.d.ts'],
+  ['artifacts.d.cts', 'artifacts.d.ts'],
   ['async-client.ts', 'src/async-client.ts'],
   ['view-options.ts', 'src/view-options.ts'],
   ['async-contract.ts', 'test/native-artifacts/async-contract.ts'],

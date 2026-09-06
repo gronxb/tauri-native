@@ -15,6 +15,9 @@ function fixture(root: string, greeting = 'Hello'): void {
   for (const [file, content] of Object.entries({
     'TauriNativeCore.xcframework/device/core.a': 'device binary',
     'TauriNativeCore.xcframework/simulator/core.a': 'simulator binary',
+    'TauriNativeCore.xcframework/Info.plist': 'fixture framework metadata',
+    'TauriNativeCore.xcframework/device/Headers/tauri_native.h': '#define TAURI_NATIVE_ABI_VERSION 1\n',
+    'TauriNativeCore.xcframework/simulator/Headers/tauri_native.h': '#define TAURI_NATIVE_ABI_VERSION 1\n',
     'TauriNativeAssets.bundle/index.html': greeting,
     'TauriNativeGenerated.podspec': 'relative local pod',
   })) { mkdirSync(path.dirname(path.join(root, file)), { recursive: true }); writeFileSync(path.join(root, file), content); }
@@ -45,24 +48,25 @@ test('copied command bindings are covered by the artifact receipt', () => {
   const previous = validateArtifactManifest(root);
   assert.ok(previous.platform === 'ios');
   rmSync(path.join(root, 'manifest.json'));
+  for (const slice of previous.native) writeFileSync(path.join(root, path.dirname(slice.path), 'Headers/tauri_native.h'), '#define TAURI_NATIVE_ABI_VERSION 2\n');
   writeArtifactManifest(root, { ...IOS_LAYOUT, native: previous.native, source: previous.source }, { schemaVersion: 1, abiVersion: 2, commands: [], typeGraph: { definitions: {}, imports: {}, globImports: false } });
   assert.equal(validateArtifactManifest(root).bindings, 'commands.ts');
   writeFileSync(path.join(root, 'commands.ts'), 'types copied from a different application');
-  assert.throws(() => validateArtifactManifest(root), /integrity/);
+  assert.throws(() => validateArtifactManifest(root), { code: 'artifact_checksum' });
 });
 
 test('missing slices, incompatible ABI, corruption and partial builds preserve the previous export', () => {
   const root = temporary(); const output = path.join(root, 'export'); fixture(output);
   const before = inventory(output);
   const failures: [string, (stage: string) => void][] = [
-    ['Missing required iOS slice', stage => editManifest(stage, m => m.native[1].architectures.pop())],
-    ['Unsupported artifact', stage => editManifest(stage, m => { m.abiVersion = 99; })],
-    ['integrity', stage => writeFileSync(path.join(stage, 'TauriNativeAssets.bundle/index.html'), 'corrupt')],
-    ['integrity', stage => rmSync(path.join(stage, 'TauriNativeCore.xcframework/device/core.a'))],
+    ['artifact_slice', stage => editManifest(stage, m => m.native[1].architectures.pop())],
+    ['artifact_abi', stage => editManifest(stage, m => { m.abiVersion = 99; })],
+    ['artifact_checksum', stage => writeFileSync(path.join(stage, 'TauriNativeAssets.bundle/index.html'), 'corrupt')],
+    ['artifact_missing_file', stage => rmSync(path.join(stage, 'TauriNativeCore.xcframework/device/core.a'))],
     ['frontend build failed', () => { throw new Error('frontend build failed'); }],
   ];
   for (const [message, damage] of failures) {
-    assert.throws(() => publishArtifacts(output, stage => { fixture(stage, 'New'); damage(stage); }, validateArtifactManifest), new RegExp(message));
+    assert.throws(() => publishArtifacts(output, stage => { fixture(stage, 'New'); damage(stage); }, validateArtifactManifest), message.startsWith('artifact_') ? { code: message } : new RegExp(message));
     assert.deepEqual(inventory(output), before);
     validateArtifactManifest(output);
   }
@@ -96,7 +100,7 @@ test('publication refuses unrelated host files and artifact symlinks', () => {
   assert.equal(built, false);
   rmSync(path.join(root, 'Podfile'));
   symlinkSync('/etc/hosts', path.join(root, 'TauriNativeAssets.bundle/escape'));
-  assert.throws(() => validateArtifactManifest(root), /not links/);
+  assert.throws(() => validateArtifactManifest(root), { code: 'artifact_symlink' });
 });
 
 test('manifest rejects traversal and duplicate inventory records', () => {
@@ -105,11 +109,11 @@ test('manifest rejects traversal and duplicate inventory records', () => {
   for (const file of ['../secret', '/absolute', 'C:/absolute', 'assets/../../secret', 'assets\\secret']) {
     writeFileSync(path.join(root, 'manifest.json'), original);
     editManifest(root, m => { m.files[0].path = file; });
-    assert.throws(() => validateArtifactManifest(root), /Invalid artifact file/);
+    assert.throws(() => validateArtifactManifest(root), { code: 'artifact_inventory' });
   }
   writeFileSync(path.join(root, 'manifest.json'), original);
   editManifest(root, m => m.files.push(m.files[0]));
-  assert.throws(() => validateArtifactManifest(root), /Duplicate/);
+  assert.throws(() => validateArtifactManifest(root), { code: 'artifact_inventory' });
 });
 
 function androidFixture(root: string, text = 'Android frontend'): void {
@@ -140,13 +144,14 @@ test('Android artifacts relocate with the same complete inventory contract', () 
 test('Android missing ABIs, incompatible API/page size and loader paths preserve the last export', () => {
   const output = path.join(temporary(), 'export'); androidFixture(output);
   const before = inventory(output);
-  for (const damage of [
-    (manifest: any) => manifest.native.pop(),
-    (manifest: any) => { manifest.minimumApiLevel = 26; },
-    (manifest: any) => { manifest.pageSize = 4096; },
-    (manifest: any) => { manifest.native[0].path = 'jniLibs/arm64-v8a/application.so'; },
-  ]) {
-    assert.throws(() => publishArtifacts(output, stage => { androidFixture(stage); editManifest(stage, damage); }, validateArtifactManifest), /Android/);
+  const failures: [string, (manifest: any) => void][] = [
+    ['artifact_layout', manifest => manifest.native.pop()],
+    ['artifact_api', manifest => { manifest.minimumApiLevel = 26; }],
+    ['artifact_alignment', manifest => { manifest.pageSize = 4096; }],
+    ['artifact_slice', manifest => { manifest.native[0].path = 'jniLibs/arm64-v8a/application.so'; }],
+  ];
+  for (const [code, damage] of failures) {
+    assert.throws(() => publishArtifacts(output, stage => { androidFixture(stage); editManifest(stage, damage); }, validateArtifactManifest), { code });
     assert.deepEqual(inventory(output), before);
   }
 });

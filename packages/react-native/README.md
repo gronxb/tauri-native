@@ -17,6 +17,8 @@ npx tauri-native export android
 
 ## Expo CNG
 
+The package's Node-only artifact reader and Expo plugin expose stable error codes for missing, corrupt or incompatible exports. Optional CLI `doctor --artifacts` uses the same checks without Rust or producer access. See [diagnostics](https://github.com/gronxb/tauri-native/blob/main/docs/diagnostics.md).
+
 Receive the whole `ios/` and `android/` export directories in a host-owned folder:
 
 ```text
