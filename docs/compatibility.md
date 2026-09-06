@@ -1,6 +1,6 @@
 # Export compatibility contract v1
 
-This is the versioned acceptance contract for source-transparent export, established by [M0](adr/0004-source-transparent-export-spike.md). The public 0.1.0 exporter still uses the legacy application-owned core/header. Passing this test contract does not make those prerequisites disappear from the published CLI; M1 implements that workflow.
+This is the versioned acceptance contract for source-transparent export, established by [M0](adr/0004-source-transparent-export-spike.md). The source implementation now uses ordinary project discovery and tool-owned adapter generation by default. The previously published 0.1.0 release used the legacy core/header route.
 
 The producer remains an ordinary Tauri application. Install the CLI, export, and hand the resulting platform directory to a host. The CLI owns generated Rust adaptation and the ABI. The host owns its application lifecycle. Export must not start the producer's `run()` or create a second application event loop.
 
@@ -25,7 +25,7 @@ The [ordinary fixture](../packages/cli/test/fixtures/standard-tauri/) has a sing
 | Supported fixture case | Required behavior |
 | --- | --- |
 | `describe` success | Camel-case struct fields, arrays and Unicode survive the native boundary. |
-| `describe` domain error | `Result::Err` rejects `invoke` with the original tagged error object. |
+| `describe` domain error | `Result::Err` rejects `invoke` with the original tagged error object, including when Result is imported under another name. |
 | `greet` argument names | Rust `display_name` receives JSON `displayName`. |
 | `greet` invalid number / explicit null | Reject with the same invalid-argument error as the Tauri handler. |
 | `greet` missing key | Reject with Tauri's missing-required-key error; absence is distinct from explicit null. |
@@ -36,7 +36,7 @@ The [ordinary fixture](../packages/cli/test/fixtures/standard-tauri/) has a sing
 
 The unchanged frontend imports `invoke` from `@tauri-apps/api/core`. It has no host detection, bridge SDK or transport envelope. The host shim resolves with a success value or rejects with an error; `{ok, value, error}` is private transport data. A promise resolving to an error envelope violates this contract.
 
-The test compares fourteen native requests exactly with the original Tauri handler and executes the ordinary frontend through WKWebView. These examples establish the stated subset, not arbitrary macro expansion, custom serializers, transitive runtime helpers or Cargo dependency initialization.
+The test checks ABI version 1, compares fourteen native requests with the original Tauri handler after removing the internal protocol version field, and verifies matching frees across 10,000 additional responses and executes the ordinary frontend through WKWebView. These examples establish the stated subset, not arbitrary macro expansion, custom serializers, transitive runtime helpers or Cargo dependency initialization.
 
 ## Explicit rejection corpus
 
@@ -77,4 +77,14 @@ nub --cwd packages/cli run test
 
 Successful evidence is written to ignored `target/export-contract/report.json`, including tool versions, native and frontend results, desktop parity, every rejection and source hashes. A new run removes the previous success report. Missing toolchains fail the gate rather than skipping it.
 
-Later milestones reuse this command, move execution to the production exporter, and add platform/host evidence. The support table must always distinguish demonstrated behavior, explicit rejection and unverified combinations. [ADR 0004](adr/0004-source-transparent-export-spike.md) supersedes the mandatory producer-owned core/header direction in ADR 0001 while preserving its single-owner lifecycle boundary.
+The gate now executes the production discovery/workspace adapter. Later milestones add platform/host and copied-artifact evidence. The support table must always distinguish demonstrated behavior, explicit rejection and unverified combinations. [ADR 0004](adr/0004-source-transparent-export-spike.md) supersedes the mandatory producer-owned core/header direction in ADR 0001 while preserving its single-owner lifecycle boundary.
+
+## M1 discovery and ABI extension
+
+`inspect` uses read-only Cargo metadata, preserves ordinary dependency ranges and checks the resolved Tauri lockfile version. Tests cover workspace members, custom library names/paths, object build hooks, deterministic JSON, all rejection fixtures, multiple command diagnostics and runtime helpers. The tool preserves original Rust source line positions in its generated copy. Native crate types are generated even when the ordinary fixture has only a plain library target.
+
+Generated builds remove the standard Tauri application build/runtime dependency in the disposable copy and reject domain dependencies that would retain Tauri runtime ownership. Custom build scripts, target-specific Tauri dependencies, configuration overlays, application ACLs and external workspace paths are explicitly unsupported. The Rust parser is shipped in the CLI package and compiled in its own temporary cache; inspection never builds or starts the application.
+
+ABI v1 has an explicit version function and an internal versioned response frame. React Native and Lynx unwrap it for the unchanged Tauri frontend; the explicit legacy route keeps its prior envelope. The contract compiles both actual Objective-C++ host bridges on macOS and proves version mismatch rejection before invocation, UTF-8 handling and rejection of embedded NUL command names. Platform compilation and packaged mobile execution have separate gates.
+
+The native gate also changes only the existing `generate_handler!` registry and confirms the newly registered command executes through native and frontend calls. A separate Rust type error proves that failed compilation preserves producer hashes and the original error line.

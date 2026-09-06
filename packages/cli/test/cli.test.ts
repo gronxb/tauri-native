@@ -26,7 +26,7 @@ describe('tauri-native CLI', () => {
     );
 
     assert.equal(result.status, 1);
-    assert.match(result.stderr, /Required file does not exist:/);
+    assert.match(result.stderr, /Required file does not exist/);
     assert.match(result.stderr, /missing-project/);
   });
 
@@ -52,7 +52,7 @@ describe('tauri-native CLI', () => {
     );
 
     assert.equal(result.status, 1);
-    assert.match(result.stderr, /Required file does not exist:/);
+    assert.match(result.stderr, /Required file does not exist/);
     assert.match(result.stderr, /missing-project/);
   });
 });

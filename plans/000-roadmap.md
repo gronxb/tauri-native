@@ -54,7 +54,7 @@ M0 must produce a **go/no-go** result. Do not promise automatic export of arbitr
 ### M0 — Prove source-transparent Tauri export
 
 - [x] [#5 — [M0] Prove export from an unmodified Tauri project](https://github.com/gronxb/tauri-native/issues/5)
-- [ ] [#6 — [M0] Define compatibility and source-integrity acceptance fixtures](https://github.com/gronxb/tauri-native/issues/6)
+- [x] [#6 — [M0] Define compatibility and source-integrity acceptance fixtures](https://github.com/gronxb/tauri-native/issues/6)
 
 ### M1 — CLI-only portable native artifacts
 

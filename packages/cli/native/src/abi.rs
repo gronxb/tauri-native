@@ -1,3 +1,7 @@
+// ABI v1: owned UTF-8 JSON responses; callers free every non-null result once.
+#[no_mangle]
+pub extern "C" fn tauri_native_abi_version() -> u32 { 1 }
+
 // Tool-owned ABI appended to the disposable build copy, never the producer.
 #[no_mangle]
 pub unsafe extern "C" fn tauri_native_invoke(
@@ -16,12 +20,12 @@ pub unsafe extern "C" fn tauri_native_invoke(
             .map_err(|e| serde_json::Value::String(e.to_string()))?;
         let payload =
             serde_json::from_str(payload).map_err(|e| serde_json::Value::String(e.to_string()))?;
-        __tauri_native_spike_dispatch(command, payload)
+        __tauri_native_dispatch(command, payload)
     })
     .unwrap_or_else(|_| Err(serde_json::Value::String("Rust command panicked".into())));
     let envelope = match result {
-        Ok(value) => serde_json::json!({"ok": true, "value": value}),
-        Err(error) => serde_json::json!({"ok": false, "error": error}),
+        Ok(value) => serde_json::json!({"abiVersion": 1, "ok": true, "value": value}),
+        Err(error) => serde_json::json!({"abiVersion": 1, "ok": false, "error": error}),
     };
     std::ffi::CString::new(envelope.to_string())
         .unwrap()

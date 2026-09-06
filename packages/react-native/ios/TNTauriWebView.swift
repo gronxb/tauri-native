@@ -155,7 +155,11 @@ public final class TNTauriWebView: UIView {
         const callbacks = pending.get(id);
         if (!callbacks) return;
         pending.delete(id);
-        callbacks.resolve(response);
+        if (response.abiVersion === 1) {
+          response.ok ? callbacks.resolve(response.value) : callbacks.reject(response.error);
+        } else {
+          callbacks.resolve(response);
+        }
       };
       window.__TAURI_NATIVE_HOST__ = 'react-native';
       globalThis.isTauri = true;

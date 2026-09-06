@@ -39,9 +39,9 @@ No due dates or assignees are invented. M0 is a go/no-go gate. A failed proof bl
 | Plan | Title | Priority | Effort | Depends on | Status |
 | --- | --- | --- | --- | --- | --- |
 | [001](001-source-transparent-export-spike.md) | [#5 — [M0] Prove export from an unmodified Tauri project](https://github.com/gronxb/tauri-native/issues/5) | P1 | L | — | DONE · PR #22 merged |
-| [002](002-compatibility-source-integrity.md) | [#6 — [M0] Define compatibility and source-integrity acceptance fixtures](https://github.com/gronxb/tauri-native/issues/6) | P1 | M | 001 | DONE (verified implementation) |
-| [003](003-project-command-discovery.md) | [#7 — [M1] Discover ordinary Tauri projects and registered commands](https://github.com/gronxb/tauri-native/issues/7) | P1 | L | 001, 002 | TODO |
-| [004](004-generated-native-adapter.md) | [#8 — [M1] Generate the native command adapter and own the C ABI](https://github.com/gronxb/tauri-native/issues/8) | P1 | L | 003 | TODO |
+| [002](002-compatibility-source-integrity.md) | [#6 — [M0] Define compatibility and source-integrity acceptance fixtures](https://github.com/gronxb/tauri-native/issues/6) | P1 | M | 001 | DONE · PR #23 merged |
+| [003](003-project-command-discovery.md) | [#7 — [M1] Discover ordinary Tauri projects and registered commands](https://github.com/gronxb/tauri-native/issues/7) | P1 | L | 001, 002 | DONE (verified implementation) |
+| [004](004-generated-native-adapter.md) | [#8 — [M1] Generate the native command adapter and own the C ABI](https://github.com/gronxb/tauri-native/issues/8) | P1 | L | 003 | DONE (verified implementation) |
 | [005](005-portable-ios-artifacts.md) | [#9 — [M1] Export a relocatable iOS XCFramework and frontend bundle](https://github.com/gronxb/tauri-native/issues/9) | P1 | L | 004 | TODO |
 | [006](006-portable-android-artifacts.md) | [#10 — [M1] Export equivalent portable Android libraries and assets](https://github.com/gronxb/tauri-native/issues/10) | P1 | L | 004, 005 | TODO |
 | [007](007-react-native-artifact-consumption.md) | [#11 — [M2] Let React Native and Expo consume copied artifacts only](https://github.com/gronxb/tauri-native/issues/11) | P1 | L | 005, 006 | TODO |

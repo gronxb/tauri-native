@@ -23,9 +23,15 @@ The Tauri project should know as little as possible about tauri-native. The inte
 - Local plan: `plans/003-project-command-discovery.md`
 - Issue: [#7](https://github.com/gronxb/tauri-native/issues/7)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: TODO.
+- Status: DONE — implementation verified on 2026-09-06; PR delivery tracked by #7.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
+
+## Execution result
+
+Read-only `inspect` now uses Cargo metadata plus the shipped Rust parser. Both default exporters use the same discovered model and generated workspace; the application-owned core/header path is explicit legacy only. Tests cover ordinary dependency ranges, custom library names/paths, workspace members, build-hook objects, deterministic JSON, the complete rejection corpus, multiple diagnostics and runtime helpers. Producer hashes remain unchanged. Modules/cfg registration, custom initialization/build scripts and unsupported configuration remain explicit diagnostics.
+
+Validation: CLI tests (18), CLI/host package checks and typechecks, both host example typechecks, Rust legacy core tests (8), macOS native contract, iOS Simulator Swift typechecks and Android arm64 JNI compilation pass. Evidence: ignored `target/export-contract/report.json`. The CLI also built the ordinary fixture into an iOS XCFramework without source changes. Relocation manifests, atomic publication, platform runtime execution and independent host packaging remain #9–#12 gates.
 
 ## Current state and evidence
 
@@ -86,12 +92,12 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 
 ## Acceptance criteria
 
-- [ ] Ordinary fixture is discovered without app-core/header arguments.
-- [ ] Diagnostics explain every unsupported command.
-- [ ] Both exporters share the discovered command model.
-- [ ] No authored producer file changes.
-- [ ] Required checks have recorded results; skipped/blocked checks are identified accurately.
-- [ ] Changes stay within this issue's purpose and preserve the producer change budget.
+- [x] Ordinary fixture is discovered without app-core/header arguments.
+- [x] Diagnostics explain every unsupported command.
+- [x] Both exporters share the discovered command model.
+- [x] No authored producer file changes.
+- [x] Required checks have recorded results; skipped/blocked checks are identified accurately.
+- [x] Changes stay within this issue's purpose and preserve the producer change budget.
 
 ## Blockers and maintenance
 

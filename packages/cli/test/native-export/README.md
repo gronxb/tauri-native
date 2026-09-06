@@ -1,13 +1,13 @@
 # Source-transparent export spike
 
-This opt-in M0 experiment verifies [issue #5](https://github.com/gronxb/tauri-native/issues/5). It does **not** change the published `tauri-native export` commands.
+This gate began as the M0 experiment in [issue #5](https://github.com/gronxb/tauri-native/issues/5). It now executes the same discovery and workspace adapter used by the CLI.
 
 ## Run
 
 Prerequisites: macOS with Xcode/Swift, a working Rust toolchain on `PATH`, and the repository's installed JS dependencies (`nub ci`). The checked-in fixture pins Tauri 2.11.5, `@tauri-apps/api` 2.11.1, and Vite 8.2.2. Cargo runs offline and locked, so the two fixture/generator lockfiles' dependencies must already be available. On a fresh machine, fetch them first:
 
 ```sh
-cargo fetch --locked --manifest-path packages/cli/test/native-export/generator/Cargo.toml
+cargo fetch --locked --manifest-path packages/cli/native/Cargo.toml
 cargo fetch --locked --manifest-path packages/cli/test/fixtures/standard-tauri/src-tauri/Cargo.toml
 nub --cwd packages/cli run test:export:spike
 nub --cwd packages/cli run test:export:contract
@@ -15,20 +15,21 @@ nub --cwd packages/cli run test:export:contract
 
 The runner fails on missing prerequisites; it does not skip native checks. It uses the installed Tauri example JS dependencies to build a temporary copy of the ordinary fixture and verifies the pinned versions first. This is a repository-level experiment, not the later independent-package-consumer test.
 
-Successful evidence is written to ignored `target/export-spike/report.json`, with source hashes, versions, native/frontend values, desktop IPC parity, and blocked probe names. The generated `.dylib` and Swift consumer are retained there. Temporary producer/build copies are removed. A failed run removes the previous success report before starting.
+Successful evidence is written to ignored `target/export-spike/report.json`, with source hashes, versions, native/frontend values, desktop IPC parity, ABI ownership counts and host-bridge results. The generated `.dylib` and Swift consumer are retained there. Temporary producer/build copies are removed. A failed run removes the previous success report before starting.
 
 ## What actually runs
 
 1. Hash the ordinary producer's authored files, including Cargo manifests/lockfile, frontend, and Tauri config.
 2. Build its unchanged frontend with Vite. The frontend imports only `@tauri-apps/api/core`.
-3. Use `syn` to read its one ordinary `run()` / `generate_handler!` registration and generate a temporary `lib.rs`. Only registered root commands get ABI dispatch; the producer owns no dispatcher/header.
+3. Discover the project with Cargo metadata and `syn`, then prepare the same disposable workspace used by production export. Only registered root commands get ABI dispatch; the producer owns no dispatcher/header or native crate-type configuration.
 4. Delete the entire generated copy, regenerate it, and check deterministic generated source.
 5. The contract runner additionally checks the complete negative fixture corpus for unsupported source forms. These are **diagnostic** checks, not native implementations of those capabilities.
-6. Compile the generated native library and load it through a small Swift C ABI consumer. Run its frontend in a real `WKWebView` with a tool-owned invoke shim; the shim unwraps transport envelopes into ordinary Tauri promise values/rejections.
+6. Compile the generated native library and load it through a Swift C ABI consumer. Check ABI 1, exercise 10,000 additional calls and assert every response has a matching free. Run the frontend in a real WKWebView. Compile and execute the actual RN/Lynx Objective-C++ bridges against valid and incompatible libraries; check UTF-8, errors and NUL-command rejection.
 7. Build the original desktop application without changing its source.
 8. Compile a separate public-API experiment: calling the private ordinary command produces Rust E0603, and accessing `InvokeMessage::new` produces E0624.
-9. In a separate test-only copy, run the same requests through Tauri's real command macros and IPC with `tauri::test::MockRuntime`. Compare responses exactly to the generated ABI. MockRuntime is never part of the exported adapter.
-10. Assert that producer/fixture hashes still match.
+9. In a separate test-only copy, run the same requests through Tauri's real command macros and IPC with `tauri::test::MockRuntime`. Compare responses exactly after removing the internal ABI-version field. MockRuntime is never part of the exported adapter.
+10. Change only the producer registry in another fixture copy and execute the newly registered command. Force a Rust type error in a separate copy and check the original source line and unchanged hashes.
+11. Assert that producer/fixture hashes still match.
 
 The scenarios cover a serde-renamed structured input/output, a tagged domain error, Unicode, default camelCase argument names, invalid/missing/null arguments, optional and unit results, adjacent-tagged enums, and an annotated but unregistered command.
 
@@ -36,7 +37,7 @@ The scenarios cover a serde-renamed structured input/output, a tagged domain err
 
 ## Boundaries
 
-This proves the feasibility of generated adaptation for the demonstrated synchronous root commands in an ordinary scaffold. It is not a production Rust program analyzer and does not establish compatibility for arbitrary transitive helpers, serializers, macros, workspaces, configuration, or runtime initialization. It deliberately leaves general discovery and compatibility classification to the following roadmap issues.
+This proves the feasibility of generated adaptation for the demonstrated synchronous root commands in an ordinary scaffold. The analyzer remains conservative: custom macros/attributes, conditional registration and runtime-dependent helpers are rejected. It does not claim arbitrary Rust/Tauri runtime compatibility. Workspace discovery has separate CLI tests; full platform/host certification remains a later gate.
 
 The native/frontend execution proof is on **macOS**. The ordinary desktop binary is built; the automated Tauri IPC comparison uses MockRuntime rather than driving that binary's visible window. No iOS/Android artifact or device claim follows from this result. The later platform milestones remain required.
 

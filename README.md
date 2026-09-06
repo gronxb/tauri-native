@@ -82,7 +82,7 @@ npx tauri-native export ios \
   --output-dir ../mobile-app/ios/tauri-native
 ```
 
-The default convention expects the reusable Rust library at `src-tauri/crates/app-core/Cargo.toml` and its C ABI header at `src-tauri/crates/app-core/include/tauri_native.h`. The library produces a `staticlib` for iOS and a `cdylib` for Android. Existing projects with another layout can pass `--manifest` and, on iOS, `--header` explicitly. The original Tauri project remains runnable as a normal desktop application.
+The default source implementation reads the ordinary `src-tauri/Cargo.toml` and registered commands, then owns adapter, native crate-type and header generation in a disposable copy. No app-core extraction or producer SDK is required. Run `tauri-native inspect` to see the verified commands and source diagnostics. The earlier published 0.1.0 release and current calculator example use the explicit legacy `--manifest` route. See the [CLI guide](packages/cli/README.md) and [bounded compatibility contract](docs/compatibility.md).
 
 For Expo, configure `@tauri-native/react-native` with the relative `tauriDir`. During `expo prebuild`, the plugin copies the existing co-located export into the generated iOS or Android project; it does not build the Tauri project. For Lynx or bare React Native, reference or copy the platform export explicitly.
 
@@ -91,7 +91,7 @@ For Expo, configure `@tauri-native/react-native` with the relative `tauriDir`. D
 ```mermaid
 flowchart LR
   RN["React Native JS"] <--> JSI["TurboModule JSI / native bridge"]
-  JSI <--> RUST["shared Rust app-core"]
+  JSI <--> RUST["shared Rust commands"]
 
   LYNX["Lynx JS"] <--> LYNX_BRIDGE["Lynx Native Module JSI / native bridge"]
   LYNX_BRIDGE <--> RUST
@@ -220,15 +220,16 @@ export function Screen() {
 
 ## CLI
 
-The [source-transparent export roadmap](plans/README.md) is underway. Its [versioned compatibility contract](docs/compatibility.md) records the exact native proof, source-integrity budget and unsupported cases. The current published CLI still uses the core/header workflow below.
+The [source-transparent export roadmap](plans/README.md) is underway. Its [versioned compatibility contract](docs/compatibility.md) records the exact native proof, source-integrity budget and unsupported cases. The source CLI now defaults to ordinary project discovery and generated adaptation; the previously published 0.1.0 release used the legacy core/header route.
 
 ```text
+tauri-native inspect [--tauri-dir <path>] [--json]
 tauri-native export ios [options]
 tauri-native export android [options]
 
 --tauri-dir <path>   Tauri Rust directory              default: src-tauri
---manifest <path>    Rust core Cargo.toml               default: <tauri-dir>/crates/app-core/Cargo.toml
---header <path>      C ABI header (iOS only)            default: <manifest-dir>/include/tauri_native.h
+--manifest <path>    Optional legacy application-owned core Cargo.toml
+--header <path>      Optional legacy C ABI header (iOS only)
 --output-dir <path>  Generated platform artifact directory
 ```
 
@@ -243,8 +244,8 @@ Equivalent direct invocation:
 
 ```sh
 cd examples/tauri
-npx tauri-native export ios
-# or: npx tauri-native export android
+npx tauri-native export ios --manifest src-tauri/crates/app-core/Cargo.toml
+# or: npx tauri-native export android --manifest src-tauri/crates/app-core/Cargo.toml
 ```
 
 To place a copy directly in a manually managed native host instead, pass `--output-dir ../react-native/ios/tauri-native` or another destination relative to the Tauri project.
@@ -259,11 +260,12 @@ The command reads `build.beforeBuildCommand` and `build.frontendDist` from `taur
 
 The generated output belongs to the Tauri project and is intentionally excluded from the npm packages. It can be copied into a native host or referenced as a local Pod. The Expo config plugin copies the co-located export during prebuild; the Lynx example references it directly.
 
-Android export uses `cargo-ndk` at API level 24. It produces normalized Rust libraries for `arm64-v8a`, `armeabi-v7a`, `x86`, and `x86_64` under `gen/tauri-native/android/jniLibs`, plus the unchanged frontend under `gen/tauri-native/android/assets/tauri-native`. The Rust manifest must include `cdylib` in its `crate-type` list.
+Android export uses `cargo-ndk` at API level 24. It produces normalized Rust libraries for `arm64-v8a`, `armeabi-v7a`, `x86`, and `x86_64` under `gen/tauri-native/android/jniLibs`, plus the unchanged frontend under `gen/tauri-native/android/assets/tauri-native`. The CLI configures the required crate types in its generated copy.
 
-The Rust manifest must produce a `staticlib` for iOS and a `cdylib` for Android. Its header must expose the current C ABI:
+The CLI generates native crate types and this versioned C ABI; producers do not author the header:
 
 ```c
+uint32_t tauri_native_abi_version(void);
 char *tauri_native_invoke(const char *command, const char *payload_json);
 void tauri_native_string_free(char *value);
 ```

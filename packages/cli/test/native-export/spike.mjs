@@ -5,15 +5,14 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { snapshot } from './source-integrity.mjs';
+import { discoverProject } from '../../src/discovery/project.ts';
+import { prepareAdapter } from '../../src/adapter/workspace.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../../../..');
 const fixture = path.resolve(here, '../fixtures/standard-tauri');
 const target = path.join(root, 'target');
 const evidenceDirectory = path.join(target, 'export-spike');
-const generatorManifest = path.join(here, 'generator/Cargo.toml');
-const generatorTarget = path.join(target, 'export-spike-generator');
-const generator = path.join(generatorTarget, 'debug/tauri-native-export-spike');
 
 function run(command, args, options = {}) {
   console.log(`> ${command} ${args.join(' ')}`);
@@ -28,6 +27,7 @@ const reportPath = path.join(evidenceDirectory, 'report.json');
 rmSync(reportPath, { force: true });
 const work = mkdtempSync(path.join(tmpdir(), 'tauri native export spike '));
 const originalSnapshot = snapshot(fixture);
+let adapter;
 try {
   const producer = path.join(work, 'producer');
   cpSync(fixture, producer, { recursive: true });
@@ -42,22 +42,18 @@ try {
   }
   symlinkSync(exampleModules, path.join(producer, 'node_modules'), 'dir');
   run(process.execPath, [path.join(exampleModules, 'vite/bin/vite.js'), 'build'], { cwd: producer });
-  run('cargo', ['build', '--locked', '--offline', '--manifest-path', generatorManifest, '--target-dir', generatorTarget]);
 
   const source = path.join(producer, 'src-tauri/src/lib.rs');
   const sourceText = readFileSync(source, 'utf8');
-  const generated = path.join(work, 'generated');
-  cpSync(producer, generated, { recursive: true, filter: (name) => path.basename(name) !== 'node_modules' });
-  const generatedSource = path.join(generated, 'src-tauri/src/lib.rs');
-  run(generator, [source, generatedSource]);
+  const project = discoverProject('src-tauri', producer);
+  adapter = prepareAdapter(project);
+  const generatedSource = path.join(path.dirname(adapter.manifest), 'src/lib.rs');
   const firstGeneration = readFileSync(generatedSource, 'utf8');
-  rmSync(generated, { recursive: true });
-  cpSync(producer, generated, { recursive: true, filter: (name) => path.basename(name) !== 'node_modules' });
-  run(generator, [source, generatedSource]);
-  assert.equal(readFileSync(generatedSource, 'utf8'), firstGeneration, 'Regeneration must not depend on maintained intermediates.');
+  adapter.cleanup();
+  adapter = prepareAdapter(project);
+  assert.equal(readFileSync(path.join(path.dirname(adapter.manifest), 'src/lib.rs'), 'utf8'), firstGeneration, 'Regeneration must not depend on maintained intermediates.');
   assert.deepEqual(snapshot(producer), producerSnapshot);
-
-  const manifest = path.join(generated, 'src-tauri/Cargo.toml');
+  const manifest = adapter.manifest;
   run('cargo', ['build', '--locked', '--offline', '--lib', '--manifest-path', manifest, '--target-dir', target]);
   const nativeLibrary = path.join(evidenceDirectory, 'libordinary_tauri_fixture_lib.dylib');
   cpSync(path.join(target, 'debug/libordinary_tauri_fixture_lib.dylib'), nativeLibrary);
@@ -81,8 +77,57 @@ try {
   writeFileSync(requestFile, JSON.stringify(requests));
   const nativeHost = path.join(evidenceDirectory, 'NativeHost');
   run('xcrun', ['swiftc', '-swift-version', '5', path.join(here, 'NativeHost.swift'), '-o', nativeHost]);
-  const output = run(nativeHost, [nativeLibrary, path.join(generated, 'dist'), requestFile], { timeout: 45000 });
+  const output = run(nativeHost, [nativeLibrary, adapter.frontendDist, requestFile], { timeout: 45000 });
   const native = JSON.parse(output.trim());
+  assert.equal(native.responses, native.frees, 'Every native response must have exactly one matching free');
+  assert.ok(native.responses >= 10000, 'The native ownership stress loop must execute');
+  native.direct = native.direct.map(({ abiVersion, ...response }) => {
+    assert.equal(abiVersion, 1, 'Every generated response must identify its ABI');
+    return response;
+  });
+  const bridgeSources = [path.join(root, 'packages/react-native/ios/TNTauriRustBridge.mm'), path.join(root, 'packages/lynx/ios/src/TNTauriLynxRustBridge.mm')];
+  const bridgeArgs = ['clang++', '-std=c++17', '-fobjc-arc', '-framework', 'Foundation', '-I', path.dirname(adapter.header), ...bridgeSources.flatMap(file => ['-I', path.dirname(file)]), ...bridgeSources, path.join(here, 'BridgeHost.mm')];
+  const bridgeHost = path.join(work, 'BridgeHost');
+  run('xcrun', [...bridgeArgs, nativeLibrary, '-o', bridgeHost]);
+  run(bridgeHost, []);
+  const incompatible = path.join(work, 'incompatible.c');
+  const incompatibleLibrary = path.join(work, 'libincompatible.dylib');
+  writeFileSync(incompatible, '#include <stdint.h>\n#include <stdlib.h>\nuint32_t tauri_native_abi_version(void) { return 2; }\nchar *tauri_native_invoke(const char *a, const char *b) { abort(); }\nvoid tauri_native_string_free(char *p) { abort(); }\n');
+  run('xcrun', ['clang', '-dynamiclib', incompatible, '-o', incompatibleLibrary]);
+  run('xcrun', [...bridgeArgs, incompatibleLibrary, '-o', bridgeHost]);
+  run(bridgeHost, ['--incompatible']);
+  const changedRegistry = path.join(work, 'changed-registry');
+  cpSync(fixture, changedRegistry, { recursive: true });
+  symlinkSync(exampleModules, path.join(changedRegistry, 'node_modules'), 'dir');
+  const registeredText = sourceText.replace('tauri::generate_handler![', 'tauri::generate_handler![unregistered, ');
+  assert.notEqual(registeredText, sourceText);
+  writeFileSync(path.join(changedRegistry, 'src-tauri/src/lib.rs'), registeredText);
+  const registeredSnapshot = snapshot(changedRegistry);
+  const changedAdapter = prepareAdapter(discoverProject('src-tauri', changedRegistry));
+  try {
+    run('cargo', ['build', '--lib', '--locked', '--offline', '--manifest-path', changedAdapter.manifest, '--target-dir', target]);
+    const changedLibrary = path.join(work, 'libchanged.dylib');
+    cpSync(path.join(target, 'debug/libordinary_tauri_fixture_lib.dylib'), changedLibrary);
+    const changed = JSON.parse(run(nativeHost, [changedLibrary, changedAdapter.frontendDist, requestFile], { timeout: 45000 }).trim());
+    assert.deepEqual(changed.direct[3], { abiVersion: 1, ok: true, value: 'This function is deliberately not registered' });
+    assert.equal(changed.frontend.unregisteredRejected, undefined, 'The ordinary frontend must see the registration change too');
+    assert.deepEqual(snapshot(changedRegistry), registeredSnapshot);
+  } finally { changedAdapter.cleanup(); }
+  const broken = path.join(work, 'compiler-failure');
+  cpSync(fixture, broken, { recursive: true });
+  symlinkSync(exampleModules, path.join(broken, 'node_modules'), 'dir');
+  const brokenText = sourceText + '\nfn invalid_return() -> u32 { "not a number" }\n';
+  const brokenLine = brokenText.split('\n').findIndex(line => line.startsWith('fn invalid_return')) + 1;
+  writeFileSync(path.join(broken, 'src-tauri/src/lib.rs'), brokenText);
+  const brokenSnapshot = snapshot(broken);
+  const brokenAdapter = prepareAdapter(discoverProject('src-tauri', broken));
+  try {
+    const failure = spawnSync('cargo', ['build', '--lib', '--locked', '--offline', '--manifest-path', brokenAdapter.manifest, '--target-dir', target], { encoding: 'utf8' });
+    assert.equal(failure.status, 101, 'The invalid Rust body must fail actual compilation');
+    assert.match(failure.stderr, /E0308/);
+    assert.ok(failure.stderr.includes(`src/lib.rs:${brokenLine}:`), 'Compiler errors must retain the original source line');
+    assert.deepEqual(snapshot(broken), brokenSnapshot, 'Compilation failure must preserve authored source');
+  } finally { brokenAdapter.cleanup(); }
   assert.deepEqual(native.direct[0], { ok: true, value: { displayName: '한글 🦀', total: 10 } });
   assert.deepEqual(native.direct[1], { ok: false, error: { kind: 'empty_name', message: 'A name is required' } });
   assert.deepEqual(native.frontend, {
@@ -130,11 +175,15 @@ try {
     publicApiProbe: { privateCommand: 'E0603', invokeMessageConstructor: 'E0624' },
     producerUnchanged: true, regeneratedFromSource: true,
     sourceHashes: originalSnapshot,
-    limits: ['macOS native/WKWebView proof; iOS/Android export remains unverified', 'No public CLI behavior changed; generator is opt-in test tooling', 'Desktop IPC parity uses Tauri MockRuntime only in the test copy'],
+    abiVersion: 1, responses: native.responses, frees: native.frees,
+    objcConsumers: ['react-native', 'lynx'], incompatibleAbiRejected: true,
+    compilerFailureSourceUnchanged: true, compilerFailureOriginalLine: brokenLine,
+    registrationChangeExecuted: true,
+    limits: ['This command verifies macOS; mobile export has separate platform gates', 'Desktop IPC parity uses Tauri MockRuntime only in the test copy'],
   };
   writeFileSync(reportPath, JSON.stringify(report, null, 2) + '\n');
   console.log(`PASS: native calls, unchanged frontend, Tauri handler parity and source integrity. Evidence: ${reportPath}`);
 } finally {
   try { assert.deepEqual(snapshot(fixture), originalSnapshot); }
-  finally { rmSync(work, { recursive: true, force: true }); }
+  finally { adapter?.cleanup(); rmSync(work, { recursive: true, force: true }); }
 }

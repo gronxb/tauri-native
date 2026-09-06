@@ -1,65 +1,57 @@
 # @tauri-native/cli
 
-Experimental CLI for packaging a Tauri microfrontend and its Rust application core for iOS and Android hosts.
+Export existing Tauri commands and a web frontend for React Native and Lynx hosts. The CLI owns the generated Rust workspace, dispatcher, C ABI and header. The producer does not need an application-specific core crate, new macros, a Rust SDK or a second command registry.
 
-## Install
+## Install and inspect
 
 ```sh
 npm install --save-dev @tauri-native/cli@experimental
+npx tauri-native inspect
+npx tauri-native inspect --json
 ```
 
-Node.js 22.12 or newer and Rust are required. iOS exports require Xcode and the iOS Rust targets. Android exports require the Android NDK and [`cargo-ndk`](https://github.com/bbqsrc/cargo-ndk):
+Run from the Tauri project root, or select its Rust directory with `--tauri-dir`. Inspection uses Cargo metadata and the existing literal `generate_handler!` registration; it does not build or start the application or run frontend hooks. The JSON result includes registered commands, argument keys/types, original source locations, frontend build inputs and ABI version. Unsupported forms produce source diagnostics and a failing exit code.
+
+Node.js 22.12+ and Rust are required. The package includes its Rust parser sources and a lockfile. On first use, the CLI compiles that small tool into the system temporary cache; subsequent calls reuse it. The producer gets no new Cargo dependency.
+
+The current verified subset is synchronous root commands on resolved Tauri 2.11.5 with an existing Cargo.lock, ordinary Builder/build-script setup and local JSON configuration. Cargo workspace members, custom library names/paths and string or `{script, cwd}` frontend hooks are discovered. Module/cfg registration, runtime objects, plugins, custom initialization/build scripts, configuration overlays and application ACLs fail explicitly. The producer's dependency version range can remain unchanged: verification reads the resolved lockfile. See the repository's [compatibility contract](https://github.com/gronxb/tauri-native/blob/main/docs/compatibility.md).
+
+## Export
+
+```sh
+npx tauri-native export ios
+npx tauri-native export android
+```
+
+Both commands default to the ordinary `src-tauri/Cargo.toml`. The CLI copies the project into a disposable workspace, generates the adapter beside the existing private command functions, and runs the configured frontend hook in that copy. It owns native crate types and header generation. Authored source, Cargo manifests/lockfiles and Tauri configuration remain unchanged. Local workspace dependencies keep their relative paths; dependencies that would retain a second Tauri runtime or escape the copied project are rejected.
+
+For iOS, install Xcode and the iOS Rust targets. The default `src-tauri/gen/tauri-native/ios` output contains:
+
+- `TauriNativeCore.xcframework` — arm64 device and arm64/x86_64 Simulator slices, with the generated header.
+- `TauriNativeAssets.bundle` — the configured frontend build output.
+- `TauriNativeGenerated.podspec` — local Pod integration for the host.
+
+For Android, install the Android NDK and `cargo-ndk`:
 
 ```sh
 cargo install cargo-ndk --locked
 ```
 
-Install the package in the Tauri project that owns the frontend and Rust core. React Native and Lynx hosts consume its exported artifacts and do not need the CLI as a dependency.
+The default `src-tauri/gen/tauri-native/android` output contains `jniLibs/<abi>/libtauri_native_core.so` for arm64-v8a, armeabi-v7a, x86 and x86_64, plus `assets/tauri-native`. Android export targets API level 24.
 
-## Export for iOS
-
-```sh
-npx tauri-native export ios
-```
-
-Run this from the Tauri project root. By default, the command reads `src-tauri/tauri.conf.json`, builds `src-tauri/crates/app-core/Cargo.toml`, uses `src-tauri/crates/app-core/include/tauri_native.h`, and writes the co-located export to `src-tauri/gen/tauri-native/ios`. Use `--tauri-dir`, `--manifest`, or `--header` when the project uses another layout.
-
-Pass `--output-dir` to export directly into a native host instead:
+Copy the platform directory to its host, or write it there directly:
 
 ```sh
-npx tauri-native export ios \
-  --output-dir ../mobile-app/ios/tauri-native
+npx tauri-native export ios --output-dir ../mobile-app/ios/tauri-native
 ```
 
-The output directory contains:
+Hosts install the matching React Native or Lynx bridge package. They consume native artifacts and frontend assets; the CLI belongs in the producer project. Full copied-artifact onboarding and platform release certification are tracked by the remaining roadmap milestones.
 
-- `TauriNativeCore.xcframework`
-- `TauriNativeAssets.bundle`
-- `TauriNativeGenerated.podspec`
+## Protocol and legacy integration
 
-Copy or reference the exported directory from the native host, then add its generated local Pod before installing native dependencies.
+Generated ABI v1 exports `tauri_native_abi_version`, `tauri_native_invoke` and `tauri_native_string_free`. Every non-null response is owned UTF-8 JSON and must be freed exactly once. The private frame identifies `abiVersion: 1`. WebViews resolve ordinary Tauri `invoke` with the success value or reject it with the original serialized error. Host SDK errors default to `unknown`; `invoke<Value, DomainError>` can provide an explicit domain contract until generated typing is available.
 
-## Export for Android
-
-The Rust library must include both mobile crate types:
-
-```toml
-[lib]
-crate-type = ["staticlib", "cdylib"]
-```
-
-Run the Android export from the Tauri project root:
-
-```sh
-npx tauri-native export android
-```
-
-The default output is `src-tauri/gen/tauri-native/android` and contains:
-
-- `jniLibs/<abi>/libtauri_native_core.so` for `arm64-v8a`, `armeabi-v7a`, `x86`, and `x86_64`
-- `assets/tauri-native` containing the unchanged frontend distribution
-
-The React Native Expo config plugin installs these files during Android prebuild. Bare React Native and Lynx hosts can copy both directories into `android/app/src/main` or reference them from the app source set.
+The explicit `--manifest <core/Cargo.toml>` option retains the old application-owned ABI path; iOS also accepts `--header`. Existing calculator example scripts select this legacy path while their host migration is pending. Neither option is needed for ordinary source export. Legacy envelopes remain supported by the updated host packages.
 
 ## License
 

@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::result::Result as Outcome;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -21,7 +22,7 @@ enum Problem {
 }
 
 #[tauri::command]
-fn describe(request: Request) -> Result<Reply, Problem> {
+fn describe(request: Request) -> Outcome<Reply, Problem> {
     if request.display_name.is_empty() {
         return Err(Problem::EmptyName {
             message: "A name is required".into(),

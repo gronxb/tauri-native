@@ -4,6 +4,7 @@ import type { BaseEvent, InputInputEvent } from '@lynx-js/types';
 import {
   invoke,
   type InvokeResponse,
+  type InvokeError,
 } from '@tauri-native/lynx';
 
 import './App.css';
@@ -18,7 +19,7 @@ const DEFAULT_EXPRESSION = '7 * (8 - 2)';
 export function App() {
   const [expression, setExpression] = useState(DEFAULT_EXPRESSION);
   const [response, setResponse] =
-    useState<InvokeResponse<Calculation> | null>(null);
+    useState<InvokeResponse<Calculation, InvokeError> | null>(null);
 
   const onInput = useCallback(
     (event: BaseEvent<'bindinput', InputInputEvent>) => {
@@ -30,7 +31,7 @@ export function App() {
 
   const calculate = useCallback(() => {
     'background only';
-    setResponse(invoke<Calculation>('calculate', { expression }));
+    setResponse(invoke<Calculation, InvokeError>('calculate', { expression }));
   }, [expression]);
 
   return (

@@ -13,9 +13,9 @@ export interface InvokeError {
   message: string;
 }
 
-export type InvokeResponse<T> =
+export type InvokeResponse<T, E = unknown> =
   | { ok: true; value: T }
-  | { ok: false; error: InvokeError };
+  | { ok: false; error: E };
 
 export const TauriNative = {
   invoke(command: string, payloadJson: string) {
@@ -23,13 +23,13 @@ export const TauriNative = {
   },
 } satisfies GeneratedTauriNative;
 
-export function invoke<T>(
+export function invoke<T, E = unknown>(
   command: string,
   payload: Record<string, unknown>
-): InvokeResponse<T> {
+): InvokeResponse<T, E> {
   return JSON.parse(
     TauriNative.invoke(command, JSON.stringify(payload))
-  ) as InvokeResponse<T>;
+  ) as InvokeResponse<T, E>;
 }
 
 export function TauriView(props: ViewProps) {

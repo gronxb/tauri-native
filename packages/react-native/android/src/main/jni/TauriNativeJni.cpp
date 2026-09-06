@@ -2,6 +2,8 @@
 
 #include <dlfcn.h>
 
+#include <algorithm>
+#include <cstdint>
 #include <cstring>
 #include <memory>
 #include <stdexcept>
@@ -39,6 +41,12 @@ const RustApi& rustApi() {
       throw std::runtime_error(dlerror());
     }
 
+    auto version = reinterpret_cast<std::uint32_t (*)()>(dlsym(library, "tauri_native_abi_version"));
+    if (version && version() != 1) {
+      dlclose(library);
+      throw std::runtime_error("Expected tauri-native ABI 1");
+    }
+
     return RustApi{
       library,
       loadSymbol<InvokeFunction>(library, "tauri_native_invoke"),
@@ -57,6 +65,9 @@ std::vector<char> utf8Bytes(JNIEnv* env, jbyteArray value) {
     length,
     reinterpret_cast<jbyte*>(bytes.data())
   );
+  if (std::find(bytes.begin(), bytes.end() - 1, '\0') != bytes.end() - 1) {
+    throw std::runtime_error("Command or JSON text contains NUL");
+  }
   return bytes;
 }
 
