@@ -30,6 +30,10 @@ jobs:
       - uses: ./.github/actions/native-tools
         with:
           producer: 'true'
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: xcode-26.4.1-ndk-27.1
+          cache-on-failure: true
       - run: nub ci
       - run: node scripts/ci/producer.mjs
       - uses: actions/upload-artifact@v4
@@ -104,7 +108,8 @@ jobs:
           sudo udevadm trigger --name-match=kvm
       - uses: reactivecircus/android-emulator-runner@v2.38.0
         with:
-          api-level: 37
+          api-level: 36
+          system-image-api-level: '37.0'
           target: google_apis_ps16k
           arch: x86_64
           profile: pixel_7
