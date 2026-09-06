@@ -114,6 +114,13 @@ for (const profile of profiles) {
         run(`${label}-alignment`, process.env.ZIPALIGN ?? 'zipalign', ['-c', '-P', '16', '-v', '4', profile.app], host, hostEnv);
         run(`${label}-install-app`, 'adb', ['-s', android, 'install', '-r', profile.app], host, hostEnv);
       }
+      if (platform === 'android') {
+        // Background test apps can be frozen while their CDP sockets remain
+        // discoverable. Stop only the other applications owned by this gate.
+        for (const appId of new Set(profiles.map(item => item.appId))) {
+          if (appId !== profile.appId) run(`${label}-stop-previous`, 'adb', ['-s', android, 'shell', 'am', 'force-stop', appId], host, hostEnv);
+        }
+      }
       const debug = path.join(evidence, `${label}-maestro`);
       rmSync(debug, { recursive: true, force: true });
       run(`${label}-flow`, 'maestro', ['--udid', platform === 'ios' ? ios : android, 'test', '-e', `APP_ID=${profile.appId}`, '--format', 'junit', '--output', path.join(evidence, `${label}.xml`), '--debug-output', debug, '--flatten-debug-output', featureFlow], host, hostEnv);
