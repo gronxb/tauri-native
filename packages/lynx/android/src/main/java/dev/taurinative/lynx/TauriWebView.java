@@ -181,6 +181,9 @@ public final class TauriWebView extends WebView {
           Promise.resolve().then(() => invokeEvent(command, payload ?? {})).then(resolve, reject);
           return;
         }
+        if (command.startsWith('plugin:path|') && (command !== 'plugin:path|resolve_directory' || !payload || Object.keys(payload).length !== 1 || payload.directory !== 14)) {
+          reject(error('unsupported_path_operation')); return;
+        }
         const id = String(nextId++);
         pending.set(id, { resolve, reject });
         try {

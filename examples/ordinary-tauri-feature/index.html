@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fieldnotes</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script type="module" src="/src/main.js"></script>
+  </head>
+  <body>
+    <main>
+      <header><p class="eyebrow">YOUR LOCAL NOTEBOOK</p><h1>Fieldnotes</h1><p>Write something worth finding again.</p></header>
+      <form id="editor">
+        <label for="title">Document title</label>
+        <input id="title" name="title" maxlength="120" autocomplete="off" placeholder="A name for your note" />
+        <label for="body">Document text</label>
+        <textarea id="body" name="body" rows="3" placeholder="Ideas, plans, small discoveries…"></textarea>
+        <button id="save" type="submit">Save document</button>
+        <p class="hint">Saving an existing title replaces that document.</p>
+      </form>
+      <p id="status" role="status" aria-live="polite">Opening notebook…</p>
+      <form id="search-form">
+        <label for="query">Search your documents</label>
+        <div class="search"><input id="query" name="query" type="search" placeholder="Find a title or a phrase" /><button type="submit">Search</button></div>
+      </form>
+      <section id="results" aria-label="Saved documents"></section>
+    </main>
+  </body>
+</html>

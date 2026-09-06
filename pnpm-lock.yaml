@@ -164,6 +164,9 @@ importers:
       react-native:
         specifier: 0.86.3
         version: 0.86.3(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.2.3)
+      react-native-safe-area-context:
+        specifier: 5.7.0
+        version: 5.7.0(react-native@0.86.3(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
     devDependencies:
       '@types/react':
         specifier: ~19.2.2
@@ -4716,6 +4719,12 @@ packages:
     resolution: {integrity: sha512-suE1OYf0umMQvzzQ+4Ba+5xMc8jLu60ILQi85x8SCBaBtVUSJfcaGvlv6+34xxXgy+a2PuyNzoOXr9STEweLrQ==}
     engines: {node: ^20.19.0 || ^22.12.0 || >= 23.4.0}
     hasBin: true
+
+  react-native-safe-area-context@5.7.0:
+    resolution: {integrity: sha512-/9/MtQz8ODphjsLdZ+GZAIcC/RtoqW9EeShf7Uvnfgm/pzYrJ75y3PV/J1wuAV1T5Dye5ygq4EAW20RoBq0ABQ==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
 
   react-native@0.86.3:
     resolution: {integrity: sha512-JR5s3bM9ezud+Mw24GlNXNfthqPIKwrQgPPJcam+L97t2sKjjEavhCzBn+fyqZZRcM5+XlhYxpTxVkK7e1n38Q==}
@@ -10675,6 +10684,11 @@ snapshots:
     transitivePeerDependencies:
       - babel-plugin-macros
       - supports-color
+
+  react-native-safe-area-context@5.7.0(react-native@0.86.3(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.2.3))(react@19.2.3):
+    dependencies:
+      react: 19.2.3
+      react-native: 0.86.3(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.2.3)
 
   react-native@0.86.3(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.2.3):
     dependencies:

@@ -1,0 +1,237 @@
+{
+  "date": "2026-09-07",
+  "baselineSourceCommit": "962614f8b6198d9e06803059664044fceaa8613e",
+  "changedRustSourceCommit": "64d9125",
+  "machine": "Apple M4, 24 GiB RAM; warm caches, shared verification workload",
+  "execution": {
+    "ios": "arm64 iOS Simulator 26.4.1",
+    "android": "arm64 Android API 37, 16 KB pages",
+    "physicalDevices": false,
+    "independentAdopters": false
+  },
+  "baseline": {
+    "passed": true,
+    "manualIntervention": false,
+    "results": [
+      {
+        "host": "rn",
+        "platform": "ios",
+        "appId": "dev.taurinative.rnartifacttest",
+        "passed": true,
+        "packageSha256": "6176ab02b1c276885de52c32fa326e622a8a0dca8ebcf02a537b40b3bea38fed",
+        "manifestSha256": "1ee4239ed36793b3ae9f5c68d6bdb0a82290bfb65929b5d0c1c02c606c779ef0",
+        "distributionDiskBytes": 21241856,
+        "buildMs": 66074,
+        "observedRelaunchToReadyMs": 4679,
+        "abandonment": [],
+        "startupMeasurement": "Maestro launch command plus first library assertion; includes automation/settling overhead, not a first-frame benchmark"
+      },
+      {
+        "host": "rn",
+        "platform": "android",
+        "appId": "dev.taurinative.rnartifacttest",
+        "passed": true,
+        "packageSha256": "6176ab02b1c276885de52c32fa326e622a8a0dca8ebcf02a537b40b3bea38fed",
+        "manifestSha256": "279030bda38f49f8d2488ab39357ffed88bbf36f169dda214b2589b4b1f02e4d",
+        "distributionDiskBytes": 56578048,
+        "buildMs": 71747,
+        "observedRelaunchToReadyMs": 8562,
+        "abandonment": [],
+        "startupMeasurement": "Maestro launch command plus first library assertion; includes automation/settling overhead, not a first-frame benchmark"
+      },
+      {
+        "host": "lynx",
+        "platform": "ios",
+        "appId": "dev.taurinative.lynxartifacttest",
+        "passed": true,
+        "packageSha256": "b6705441306161ff38c296e8a400869ca59eab176af13eae1af4d75e6203ef73",
+        "manifestSha256": "1ee4239ed36793b3ae9f5c68d6bdb0a82290bfb65929b5d0c1c02c606c779ef0",
+        "distributionDiskBytes": 20561920,
+        "buildMs": 66822,
+        "observedRelaunchToReadyMs": 4867,
+        "abandonment": [],
+        "startupMeasurement": "Maestro launch command plus first library assertion; includes automation/settling overhead, not a first-frame benchmark"
+      },
+      {
+        "host": "lynx",
+        "platform": "android",
+        "appId": "dev.taurinative.lynxartifacttest",
+        "passed": true,
+        "packageSha256": "b6705441306161ff38c296e8a400869ca59eab176af13eae1af4d75e6203ef73",
+        "manifestSha256": "279030bda38f49f8d2488ab39357ffed88bbf36f169dda214b2589b4b1f02e4d",
+        "distributionDiskBytes": 47415296,
+        "buildMs": 26242,
+        "observedRelaunchToReadyMs": 9664,
+        "abandonment": [],
+        "startupMeasurement": "Maestro launch command plus first library assertion; includes automation/settling overhead, not a first-frame benchmark"
+      },
+      {
+        "host": "expo",
+        "platform": "ios",
+        "appId": "dev.taurinative.rnartifacttest",
+        "passed": true,
+        "packageSha256": "6176ab02b1c276885de52c32fa326e622a8a0dca8ebcf02a537b40b3bea38fed",
+        "manifestSha256": "1ee4239ed36793b3ae9f5c68d6bdb0a82290bfb65929b5d0c1c02c606c779ef0",
+        "distributionDiskBytes": 28389376,
+        "buildMs": 76519,
+        "observedRelaunchToReadyMs": 2604,
+        "abandonment": [],
+        "startupMeasurement": "Maestro launch command plus first library assertion; includes automation/settling overhead, not a first-frame benchmark"
+      },
+      {
+        "host": "expo",
+        "platform": "android",
+        "appId": "dev.taurinative.rnartifacttest",
+        "passed": true,
+        "packageSha256": "6176ab02b1c276885de52c32fa326e622a8a0dca8ebcf02a537b40b3bea38fed",
+        "manifestSha256": "279030bda38f49f8d2488ab39357ffed88bbf36f169dda214b2589b4b1f02e4d",
+        "distributionDiskBytes": 72716288,
+        "buildMs": 69688,
+        "observedRelaunchToReadyMs": 6022,
+        "abandonment": [],
+        "startupMeasurement": "Maestro launch command plus first library assertion; includes automation/settling overhead, not a first-frame benchmark"
+      }
+    ]
+  },
+  "changedRust": {
+    "passed": true,
+    "frontendBytesUnchanged": true,
+    "onlyAuthoredChange": "src-tauri/src/lib.rs",
+    "manualIntervention": "Stopped the previous gate-owned Lynx Android application during Expo CDP inspection; subsequent original-code matrix exercised the automatic cleanup.",
+    "results": [
+      {
+        "host": "rn",
+        "platform": "ios",
+        "appId": "dev.taurinative.rnartifacttest",
+        "passed": true,
+        "packageSha256": "6176ab02b1c276885de52c32fa326e622a8a0dca8ebcf02a537b40b3bea38fed",
+        "manifestSha256": "79566baa7223552e5fd2d5ea67354c93dd20814903cae397ff1d8201e11a7a10",
+        "distributionDiskBytes": 21245952,
+        "buildMs": 74757,
+        "observedRelaunchToReadyMs": 4639,
+        "abandonment": [
+          {
+            "elapsedMs": 4931,
+            "injectedSearchDelayMs": 20000
+          },
+          {
+            "elapsedMs": 2302,
+            "injectedSearchDelayMs": 20000
+          }
+        ],
+        "startupMeasurement": "Maestro launch command plus first library assertion; includes automation/settling overhead, not a first-frame benchmark"
+      },
+      {
+        "host": "rn",
+        "platform": "android",
+        "appId": "dev.taurinative.rnartifacttest",
+        "passed": true,
+        "packageSha256": "6176ab02b1c276885de52c32fa326e622a8a0dca8ebcf02a537b40b3bea38fed",
+        "manifestSha256": "9e6fd05f00fafa3f8c62fbe986c2115988ba9cfc0abb68fbd9783c779151e717",
+        "distributionDiskBytes": 56594432,
+        "buildMs": 112890,
+        "observedRelaunchToReadyMs": 4645,
+        "abandonment": [
+          {
+            "elapsedMs": 7518,
+            "injectedSearchDelayMs": 20000
+          },
+          {
+            "elapsedMs": 6068,
+            "injectedSearchDelayMs": 20000
+          }
+        ],
+        "startupMeasurement": "Maestro launch command plus first library assertion; includes automation/settling overhead, not a first-frame benchmark"
+      },
+      {
+        "host": "lynx",
+        "platform": "ios",
+        "appId": "dev.taurinative.lynxartifacttest",
+        "passed": true,
+        "packageSha256": "b6705441306161ff38c296e8a400869ca59eab176af13eae1af4d75e6203ef73",
+        "manifestSha256": "79566baa7223552e5fd2d5ea67354c93dd20814903cae397ff1d8201e11a7a10",
+        "distributionDiskBytes": 20561920,
+        "buildMs": 74726,
+        "observedRelaunchToReadyMs": 3384,
+        "abandonment": [
+          {
+            "elapsedMs": 6032,
+            "injectedSearchDelayMs": 20000
+          },
+          {
+            "elapsedMs": 8378,
+            "injectedSearchDelayMs": 20000
+          }
+        ],
+        "startupMeasurement": "Maestro launch command plus first library assertion; includes automation/settling overhead, not a first-frame benchmark"
+      },
+      {
+        "host": "lynx",
+        "platform": "android",
+        "appId": "dev.taurinative.lynxartifacttest",
+        "passed": true,
+        "packageSha256": "b6705441306161ff38c296e8a400869ca59eab176af13eae1af4d75e6203ef73",
+        "manifestSha256": "9e6fd05f00fafa3f8c62fbe986c2115988ba9cfc0abb68fbd9783c779151e717",
+        "distributionDiskBytes": 47431680,
+        "buildMs": 39410,
+        "observedRelaunchToReadyMs": 2684,
+        "abandonment": [
+          {
+            "elapsedMs": 15055,
+            "injectedSearchDelayMs": 20000
+          },
+          {
+            "elapsedMs": 3907,
+            "injectedSearchDelayMs": 20000
+          }
+        ],
+        "startupMeasurement": "Maestro launch command plus first library assertion; includes automation/settling overhead, not a first-frame benchmark"
+      },
+      {
+        "host": "expo",
+        "platform": "ios",
+        "appId": "dev.taurinative.rnartifacttest",
+        "passed": true,
+        "packageSha256": "6176ab02b1c276885de52c32fa326e622a8a0dca8ebcf02a537b40b3bea38fed",
+        "manifestSha256": "79566baa7223552e5fd2d5ea67354c93dd20814903cae397ff1d8201e11a7a10",
+        "distributionDiskBytes": 29057024,
+        "buildMs": 156242,
+        "observedRelaunchToReadyMs": 4337,
+        "abandonment": [
+          {
+            "elapsedMs": 14157,
+            "injectedSearchDelayMs": 20000
+          },
+          {
+            "elapsedMs": 2078,
+            "injectedSearchDelayMs": 20000
+          }
+        ],
+        "startupMeasurement": "Maestro launch command plus first library assertion; includes automation/settling overhead, not a first-frame benchmark"
+      },
+      {
+        "host": "expo",
+        "platform": "android",
+        "appId": "dev.taurinative.rnartifacttest",
+        "passed": true,
+        "packageSha256": "6176ab02b1c276885de52c32fa326e622a8a0dca8ebcf02a537b40b3bea38fed",
+        "manifestSha256": "9e6fd05f00fafa3f8c62fbe986c2115988ba9cfc0abb68fbd9783c779151e717",
+        "distributionDiskBytes": 72732672,
+        "buildMs": 293747,
+        "observedRelaunchToReadyMs": 9241,
+        "abandonment": [
+          {
+            "elapsedMs": 8013,
+            "injectedSearchDelayMs": 20000
+          },
+          {
+            "elapsedMs": 3720,
+            "injectedSearchDelayMs": 20000
+          }
+        ],
+        "startupMeasurement": "Maestro launch command plus first library assertion; includes automation/settling overhead, not a first-frame benchmark"
+      }
+    ]
+  },
+  "measurementBoundary": "Whole app/APK disk use; native build commands only; Maestro launch plus ready assertion includes automation overhead."
+}

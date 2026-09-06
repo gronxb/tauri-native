@@ -1,28 +1,6 @@
 appId: dev.taurinative.lynxexample
 ---
-- launchApp
-- tapOn: "Lynx calculator expression"
-- eraseText: 20
-- inputText: "9 * (6 - 2)"
-- hideKeyboard
-- tapOn: "Calculate Lynx expression in Rust"
-- assertVisible: "Result: 36"
-- assertVisible: "tauri-native-example-core"
-- scrollUntilVisible:
-    element:
-      id: "expression-input"
-    direction: DOWN
-    timeout: 10000
-- tapOn:
-    id: "expression-input"
-- eraseText: 20
-- inputText: "18 / (2 + 1)"
-- pressKey: Enter
-- scrollUntilVisible:
-    element:
-      text: "Rust returned"
-    direction: DOWN
-    timeout: 10000
-- assertVisible: "Rust returned"
-- assertVisible: "= 6"
-- assertVisible: "tauri-native-example-core"
+- runFlow:
+    file: ../../../scripts/feature-contract.yaml
+    env:
+      APP_ID: dev.taurinative.lynxexample

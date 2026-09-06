@@ -12,6 +12,9 @@ public abstract class TauriNativeSpec extends LynxContextModule {
   }
 
   @LynxMethod
+  public abstract String appDataDir();
+
+  @LynxMethod
   public abstract String invoke(String command, String payloadJson);
 
   @LynxMethod

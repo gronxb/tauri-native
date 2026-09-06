@@ -4,6 +4,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TNTauriLynxRustBridge : NSObject
 
++ (NSString *)appDataDirectory;
+
 + (nullable NSString *)invoke:(NSString *)command
                   payloadJSON:(NSString *)payloadJSON;
 + (uint64_t)createSession;

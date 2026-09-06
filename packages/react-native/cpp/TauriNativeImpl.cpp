@@ -19,9 +19,13 @@ struct RustStringDeleter {
 namespace facebook::react {
 
 TauriNativeImpl::TauriNativeImpl(
-  std::shared_ptr<CallInvoker> jsInvoker
+  std::shared_ptr<CallInvoker> jsInvoker, std::string appDataDirectory
 )
-  : NativeTauriCxxSpec(std::move(jsInvoker)) {}
+  : NativeTauriCxxSpec(std::move(jsInvoker)), appDataDirectory_(std::move(appDataDirectory)) {}
+
+jsi::String TauriNativeImpl::appDataDir(jsi::Runtime& runtime) {
+  return jsi::String::createFromUtf8(runtime, appDataDirectory_);
+}
 
 jsi::String TauriNativeImpl::invoke(
   jsi::Runtime& runtime,

@@ -9,11 +9,16 @@ import java.util.Map;
 
 @LynxNativeModule(name = "TauriNative")
 public final class TauriNative extends TauriNativeSpec {
+  private final String dataDirectory;
   private final Map<String, Long> sessions = new HashMap<>();
   private boolean closed;
   public TauriNative(LynxContext context) {
     super(context);
+    dataDirectory = TauriJavascriptBridge.appDataDir(context);
   }
+
+  @Override @LynxMethod
+  public String appDataDir() { return dataDirectory; }
 
   @Override
   @LynxMethod

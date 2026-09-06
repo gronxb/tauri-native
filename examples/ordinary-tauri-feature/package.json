@@ -1,0 +1,20 @@
+{
+  "name": "ordinary-tauri-documents",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 1420",
+    "build": "vite build",
+    "tauri": "tauri",
+    "test": "cargo test --manifest-path src-tauri/Cargo.toml",
+    "build:desktop": "tauri build --no-bundle"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.11.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.11.4",
+    "vite": "8.2.2"
+  }
+}

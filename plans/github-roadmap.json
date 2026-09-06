@@ -40,7 +40,8 @@
       "title": "M4 \u2014 Short and diagnosable development workflow",
       "description": "Gate: diagnose setup/config/artifact mismatches before expensive builds; refresh exports with correct invalidation and accurate host rebuild instructions. Preserve the portable-artifact boundary.",
       "number": 5,
-      "url": "https://github.com/gronxb/tauri-native/milestone/5"
+      "url": "https://github.com/gronxb/tauri-native/milestone/5",
+      "state": "closed"
     },
     {
       "key": "M5",
@@ -1341,7 +1342,7 @@
       "url": "https://github.com/gronxb/tauri-native/issues/17",
       "number": 17,
       "bodySynced": true,
-      "status": "IMPLEMENTED AND VERIFIED",
+      "status": "DONE",
       "verification": {
         "date": "2026-09-07",
         "docs": "docs/development-loop.md",
@@ -1378,7 +1379,9 @@
         "refreshedRustObservedInHost": true,
         "sourceIntegrity": true,
         "nativeDevices": "arm64 iOS Simulator 26.4.1 and Android API 37 / 16 KB; no physical-device claim"
-      }
+      },
+      "pr": "https://github.com/gronxb/tauri-native/pull/34",
+      "mergeCommit": "5763426bf83502adeb1e7cf81392259ea8471151"
     },
     {
       "id": 14,
@@ -1467,7 +1470,8 @@
       "file": "plans/014-real-feature-independent-consumers.md",
       "url": "https://github.com/gronxb/tauri-native/issues/18",
       "number": 18,
-      "bodySynced": true
+      "bodySynced": true,
+      "status": "DONE"
     },
     {
       "id": 15,

@@ -6,6 +6,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol TauriNativeSpec <LynxModule>
 
+- (NSString *)appDataDir;
 - (NSString *)invoke:(NSString *)command payloadJson:(NSString *)payloadJson;
 - (NSString *)createSession;
 - (NSString *)start:(NSString *)session id:(NSString *)id command:(NSString *)command payload:(NSString *)payload;

@@ -279,6 +279,18 @@ extension __TAURI_NATIVE_SWIFT_VIEW__: WKScriptMessageHandler {
       deliver("__RNTauriResolve", [document, requestID, "", "invalid_argument"])
       return
     }
+    if command.hasPrefix("plugin:path|") {
+      guard command == "plugin:path|resolve_directory",
+        let payload = body["payload"] as? [String: Any], payload.count == 1,
+        let directory = payload["directory"] as? Int, directory == 14 else {
+        deliver("__RNTauriResolve", [document, requestID, "", "unsupported_path_operation"])
+        return
+      }
+      let value = __TAURI_NATIVE_OBJC_BRIDGE__.appDataDirectory()
+      let encoded = try! JSONSerialization.data(withJSONObject: value, options: [.fragmentsAllowed])
+      deliver("__RNTauriResolve", [document, requestID, String(data: encoded, encoding: .utf8)!])
+      return
+    }
     if session == 0 { session = __TAURI_NATIVE_OBJC_BRIDGE__.createSession() }
     if session == 0 {
       // The explicit ABI 0/1 compatibility route retains its blocking behavior.

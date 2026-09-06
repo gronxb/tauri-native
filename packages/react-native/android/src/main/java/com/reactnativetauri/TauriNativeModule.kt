@@ -7,8 +7,11 @@ import com.facebook.react.module.annotations.ReactModule
 internal class TauriNativeModule(
   reactContext: ReactApplicationContext,
 ) : NativeTauriSpec(reactContext) {
+  private val dataDirectory = TauriJavascriptBridge.appDataDir(reactContext)
   private val sessions = mutableMapOf<String, Long>()
   private var closed = false
+
+  override fun appDataDir(): String = dataDirectory
 
   override fun invoke(command: String, payloadJson: String): String =
     TauriNativeRust.invoke(command, payloadJson)

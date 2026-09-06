@@ -1,0 +1,68 @@
+appId: ${APP_ID}
+---
+# Run after feature-contract with the disposable changed-Rust artifacts.
+- stopApp
+- launchApp
+- assertVisible: "Your library"
+- waitForAnimationToEnd:
+    timeout: 5000
+- tapOn: "Native search query"
+- inputText: "__pending__"
+- pressKey: Enter
+- tapOn: "Search library"
+- assertVisible: "Searching…"
+- scrollUntilVisible:
+    element: { text: "Open notebook" }
+    direction: UP
+    timeout: 3000
+- tapOn: "Open notebook"
+- assertVisible: "Fieldnotes"
+- tapOn: "Back to library"
+- assertVisible: "Notes stay on this device."
+- tapOn: "Native search query"
+- eraseText: 50
+- inputText: "cedar"
+- pressKey: Enter
+- tapOn: "Search library"
+- extendedWaitUntil:
+    visible: "1 saved document"
+    timeout: 30000
+- scrollUntilVisible:
+    element: { text: ".*Native storage CEDAR.*" }
+    direction: DOWN
+    timeout: 10000
+- scrollUntilVisible:
+    element: { text: "Open notebook" }
+    direction: UP
+    timeout: 10000
+- tapOn: "Open notebook"
+- assertVisible: "Fieldnotes"
+- scrollUntilVisible:
+    element: { text: "Search your documents" }
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Search your documents"
+- inputText: "__pending__"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn: "Done"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+- tapOn: "Search"
+- assertVisible: "Searching…"
+- tapOn: "Back to library"
+- assertVisible: "Notes stay on this device."
+- tapOn: "Open notebook"
+- assertVisible: "Fieldnotes"
+- scrollUntilVisible:
+    element: { text: ".*Native storage CEDAR.*" }
+    direction: DOWN
+    timeout: 30000
+- assertNotVisible: "No matching documents."
+- tapOn: "Back to library"
+- assertVisible: "Notes stay on this device."

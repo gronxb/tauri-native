@@ -2,6 +2,7 @@
 #import <ReactCommon/CxxTurboModuleUtils.h>
 
 #import "TauriNativeImpl.h"
+#import "TNTauriRustBridge.h"
 
 @interface TauriNativeOnLoad : NSObject
 @end
@@ -15,7 +16,7 @@ using namespace facebook::react;
   registerCxxModuleToGlobalModuleMap(
     std::string(TauriNativeImpl::kModuleName),
     [](std::shared_ptr<CallInvoker> jsInvoker) {
-      return std::make_shared<TauriNativeImpl>(std::move(jsInvoker));
+      return std::make_shared<TauriNativeImpl>(std::move(jsInvoker), [TNTauriRustBridge appDataDirectory].UTF8String);
     }
   );
 }

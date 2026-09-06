@@ -20,6 +20,7 @@
 + (NSDictionary<NSString *, NSString *> *)methodLookup
 {
   return @{
+    @"appDataDir" : NSStringFromSelector(@selector(appDataDir)),
     @"invoke" : NSStringFromSelector(@selector(invoke:payloadJson:)),
     @"createSession" : NSStringFromSelector(@selector(createSession)),
     @"start" : NSStringFromSelector(@selector(start:id:command:payload:)),
@@ -28,6 +29,8 @@
     @"closeSession" : NSStringFromSelector(@selector(closeSession:)),
   };
 }
+
+- (NSString *)appDataDir { return [TNTauriLynxRustBridge appDataDirectory]; }
 
 - (NSString *)invoke:(NSString *)command payloadJson:(NSString *)payloadJson
 {

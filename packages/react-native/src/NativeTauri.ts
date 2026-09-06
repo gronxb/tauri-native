@@ -1,6 +1,7 @@
 import { TurboModuleRegistry, type TurboModule } from 'react-native';
 
 export interface Spec extends TurboModule {
+  appDataDir(): string;
   /** Legacy blocking entry point, exposed publicly as invokeSync. */
   invoke(command: string, payloadJson: string): string;
   createSession(): string;
