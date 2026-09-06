@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/013-incremental-export-watch.md`
 - Issue: [#17](https://github.com/gronxb/tauri-native/issues/17)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: IMPLEMENTED AND VERIFIED — incremental/watch workflow and native refresh gates pass; pending PR merge.
+- Status: DONE — [PR #34](https://github.com/gronxb/tauri-native/pull/34) merged into main.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 

@@ -2,10 +2,15 @@ package com.reactnativetauri;
 
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
+import android.content.Context;
+import java.io.File;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 final class TauriJavascriptBridge {
+  static String appDataDir(Context context) {
+    return new File(context.getFilesDir(), "tauri-native").getAbsolutePath() + "/";
+  }
   interface Listener { void onMessage(String type, String event, String payload); }
   private final WebView webView;
   private Listener listener;
@@ -91,6 +96,14 @@ final class TauriJavascriptBridge {
           id = request.getString("id");
           String command = request.getString("command");
           String payload = request.opt("payload") == null ? "{}" : request.get("payload").toString();
+          if (command.startsWith("plugin:path|")) {
+            JSONObject arguments = request.optJSONObject("payload");
+            Object directory = arguments == null ? null : arguments.opt("directory");
+            if (!command.equals("plugin:path|resolve_directory") || arguments == null || arguments.length() != 1 || !(directory instanceof Number) || ((Number)directory).doubleValue() != 14) {
+              deliver(document, "__RNTauriResolve", id, "", "unsupported_path_operation");
+            } else deliver(document, "__RNTauriResolve", id, JSONObject.quote(appDataDir(webView.getContext())));
+            return;
+          }
           if (session == 0) session = TauriNativeRust.INSTANCE.createSession();
           if (session == 0) {
             // ABI 0/1 retain the legacy bridge-thread execution path.

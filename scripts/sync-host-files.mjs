@@ -31,7 +31,7 @@ for (const [source, destination] of [
     .replaceAll('__TAURI_NATIVE_SWIFT_VIEW__', host === 'lynx' ? 'TNTauriLynxWebView' : 'TNTauriWebView')
     .replaceAll('__TAURI_NATIVE_JAVA_PACKAGE__', host === 'lynx' ? 'dev.taurinative.lynx' : 'com.reactnativetauri')
     .replaceAll('__TAURI_NATIVE_JAVA_RUST__', host === 'lynx' ? 'TauriNativeRust' : 'TauriNativeRust.INSTANCE')
-    .replace('    __TAURI_NATIVE_SCROLL_SETTINGS__\n', host === 'lynx' ? '    webView.scrollView.isScrollEnabled = false\n    webView.scrollView.bounces = false\n' : '')
+    .replace('    __TAURI_NATIVE_SCROLL_SETTINGS__\n', host === 'lynx' ? '    webView.scrollView.bounces = false\n' : '')
     .replace('__TAURI_NATIVE_WEBVIEW_CLIENT__', client(false).trimEnd().split('\n').map(line => line ? '    ' + line : '').join('\n'));
   const output = new URL(`../packages/${host}/${destination}`, import.meta.url);
   if (mode === '--check') assert.equal(readFileSync(output, 'utf8'), contents, `Run node scripts/sync-host-files.mjs ${host}`);

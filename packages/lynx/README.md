@@ -4,6 +4,8 @@ Experimental Lynx native library for `tauri-native`.
 
 ## Install
 
+The published 0.1.0 release predates the source-export and async APIs documented here. For this checkout, install the matching candidate tarball using the [Fieldnotes walkthrough](https://github.com/gronxb/tauri-native/blob/main/docs/examples/fieldnotes.md). The registry command below selects the published experimental release.
+
 ```sh
 npm install @tauri-native/lynx@experimental
 ```
@@ -59,16 +61,17 @@ Run artifact validation before native integration/build. The example's Podfile a
 ## API
 
 ```tsx
-import { TauriView, invoke } from '@tauri-native/lynx';
+import { appDataDir, TauriView, invoke } from '@tauri-native/lynx';
 
-const result = await invoke<Calculation>('calculate', {
-  expression: '(9 + 5) * 3',
-});
+async function searchNotes(query: string) {
+  'background only';
+  return invoke('search_documents', { directory: await appDataDir(), query });
+}
 
 <TauriView style={{ height: '420px' }} />;
 ```
 
-`invoke` returns a Promise of `{ ok: true, value }` or `{ ok: false, error }`. Transport failures reject the Promise. ABI 2 artifacts execute commands on Rust workers; rebuild older artifacts with the CLI to use this API. The previous blocking API is available as `invokeSync`, including for ABI 0/1 migration. The calculator example deliberately uses that legacy path.
+`invoke` returns a Promise of `{ ok: true, value }` or `{ ok: false, error }`. Transport failures reject the Promise. ABI 2 artifacts execute commands on Rust workers; rebuild older artifacts with the CLI to use this API. The previous blocking API is available as `invokeSync`, including for ABI 0/1 migration. The retained calculator fixture requires that legacy path; the example above uses Fieldnotes artifacts.
 
 The returned Promise has a `cancel()` method. You can also pass `{ signal }` as the third argument when your host provides `AbortSignal`. Cancellation rejects with `AbortError`, removes queued work and discards a running request's result; it does not interrupt Rust code or undo side effects. The native module closes outstanding sessions when its runtime is destroyed. Busy clients poll every 16 ms and release their session when idle.
 
@@ -104,3 +107,7 @@ Use command names and inputs from your exported application. Copy the complete a
 ## License
 
 MIT
+
+## Persistent application data
+
+`await appDataDir()` returns the host-private directory also exposed by the embedded frontend's standard Tauri `appDataDir()` call. Import it from this package and pass it to your ordinary Rust commands when they need a persistent location. The application creates its own files and subdirectories. Only this path operation is supported; see the [Fieldnotes storage contract](https://github.com/gronxb/tauri-native/blob/main/docs/examples/fieldnotes.md#application-data-directory-contract) for platform paths, sharing and limitations.

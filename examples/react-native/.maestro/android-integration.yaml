@@ -1,24 +1,6 @@
 appId: tauri.example
 ---
-- launchApp
-- tapOn:
-    id: "rn-calculator-expression"
-- eraseText: 100
-- inputText: "9 * (6 - 2)"
-- pressKey: Enter
-- tapOn: "Calculate React Native expression through TurboModule"
-- assertVisible: "Result: 36"
-- assertVisible: "tauri-native-example-core"
-- scrollUntilVisible:
-    element:
-      id: "expression-input"
-    direction: DOWN
-    timeout: 10000
-- tapOn:
-    id: "expression-input"
-- eraseText: 100
-- inputText: "18 / (2 + 1)"
-- pressKey: Enter
-- assertVisible: "Rust returned"
-- assertVisible: "= 6"
-- assertVisible: "tauri-native-example-core"
+- runFlow:
+    file: ../../../scripts/feature-contract.yaml
+    env:
+      APP_ID: tauri.example

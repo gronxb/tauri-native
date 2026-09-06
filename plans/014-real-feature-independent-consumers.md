@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/014-real-feature-independent-consumers.md`
 - Issue: [#18](https://github.com/gronxb/tauri-native/issues/18)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: TODO.
+- Status: IN PROGRESS — ordinary document persistence/search and independent artifact-only consumers.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 

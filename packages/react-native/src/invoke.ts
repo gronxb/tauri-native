@@ -4,6 +4,9 @@ export type { InvokeError, InvokeResponse, InvokeOptions, InvokeRequest } from '
 
 export const invoke = createInvoker(NativeTauri);
 
+/** Persistent host-private storage, shared with embedded Tauri appDataDir(). */
+export async function appDataDir(): Promise<string> { return NativeTauri.appDataDir(); }
+
 /** Blocking compatibility path for legacy artifacts and short commands. */
 export function invokeSync<T, E = unknown>(
   command: string,

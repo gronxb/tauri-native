@@ -12,8 +12,10 @@ namespace facebook::react {
 class TauriNativeImpl final
   : public NativeTauriCxxSpec<TauriNativeImpl> {
 public:
-  explicit TauriNativeImpl(std::shared_ptr<CallInvoker> jsInvoker);
+  explicit TauriNativeImpl(std::shared_ptr<CallInvoker> jsInvoker, std::string appDataDirectory);
   ~TauriNativeImpl() override;
+
+  jsi::String appDataDir(jsi::Runtime& runtime);
 
   jsi::String invoke(
     jsi::Runtime& runtime,
@@ -27,6 +29,7 @@ public:
   void closeSession(jsi::Runtime& runtime, jsi::String session);
 
 private:
+  std::string appDataDirectory_;
   std::unordered_map<std::string, std::uint64_t> sessions_;
 };
 

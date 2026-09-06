@@ -9,6 +9,7 @@ declare const NativeModules: {
 };
 
 export const TauriNative = {
+  appDataDir() { return NativeModules.TauriNative.appDataDir(); },
   invoke(command: string, payloadJson: string) {
     return NativeModules.TauriNative.invoke(command, payloadJson);
   },
@@ -20,6 +21,9 @@ export const TauriNative = {
 } satisfies GeneratedTauriNative;
 
 export const invoke = createInvoker(TauriNative);
+
+/** Persistent host-private storage, shared with embedded Tauri appDataDir(). */
+export async function appDataDir(): Promise<string> { return TauriNative.appDataDir(); }
 
 /** Blocking compatibility path for legacy artifacts and short commands. */
 export function invokeSync<T, E = unknown>(

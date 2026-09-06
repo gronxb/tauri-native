@@ -15,7 +15,8 @@ cp -R src-tauri/gen/tauri-native/ios ../mobile-app/ios/tauri-native
 | `TauriNativeCore.xcframework` | Static library and generated C header for arm64 iOS devices and arm64/x86_64 simulators. |
 | `TauriNativeAssets.bundle` | The configured frontend output, plus bundle `Info.plist`. Resources are a sibling of the XCFramework. |
 | `TauriNativeGenerated.podspec` | Local CocoaPods integration. |
-| `commands.json` | Registered command names, argument keys/Rust types and source locations; no source path. This is metadata, not yet a generated TypeScript SDK. |
+| `commands.json` | Registered command names, argument keys/Rust types and source locations; no source path. |
+| `commands.ts` | Generated host command contracts and `createCommands(invoke)` bindings; see [type projection limits](command-types.md). |
 | `manifest.json` | Format/ABI/CLI versions, verified API contract, native slices, source fingerprints and relative file checksums. |
 
 For CocoaPods, add this inside the host target in `ios/Podfile`, then run `pod install` in the host:
@@ -26,7 +27,7 @@ pod 'TauriNativeGenerated', :path => './tauri-native'
 
 For manual Xcode integration, add the XCFramework to the host's linked libraries without embedding the static library. Add `TauriNativeAssets.bundle` to Copy Bundle Resources. Import the selected slice's `Headers/tauri_native.h` through the host's bridging header or C/Objective-C includes. The minimum iOS deployment target is 13.0. Keep the whole export directory together so metadata and binary versions move together.
 
-A custom native consumer checks `tauri_native_abi_version() == 1`, calls `tauri_native_invoke(command, payloadJson)`, copies the returned UTF-8 JSON, and calls `tauri_native_string_free` exactly once for every non-null result. ABI 1 frames contain `{abiVersion:1,ok:true,value}` or `{abiVersion:1,ok:false,error}`. Serialize arguments as JSON. The host owns lifecycle and does not start another Tauri runtime.
+Current generated exports use ABI 2 request sessions. Custom native consumers must follow the [session ABI](adr/0005-async-request-sessions.md), including polling, cancellation, teardown and freeing returned Rust strings exactly once. The host owns lifecycle and does not start another Tauri runtime. SDK consumers use the nonblocking `invoke` API rather than implementing this protocol themselves.
 
 React Native/Expo consumers use a host-owned `artifactsDir` or bare RN local Pod/source sets; see the [RN guide](../packages/react-native/README.md). [Lynx consumers](../packages/lynx/README.md) use the same copied artifacts and Node validation through their host package, with public Lynx native modules/autolinking. The native relocation gate below verifies a minimal independent UIKit/WKWebView consumer; the [RN/Expo gate](../packages/react-native/test/native-artifacts/README.md) and [Lynx gate](../packages/lynx/test/native-artifacts/README.md) separately exercise the installed host packages. These simulator gates do not certify physical-device execution.
 
@@ -38,7 +39,7 @@ npx tauri-native export android
 cp -R src-tauri/gen/tauri-native/android ../mobile-app/android/tauri-native
 ```
 
-Android exports `jniLibs/<abi>/libtauri_native_core.so` for `arm64-v8a`, `armeabi-v7a`, `x86` and `x86_64`; `assets/tauri-native` contains the unchanged frontend. Generated ABI 1 exports also include `include/tauri_native.h` and `commands.json`. The shared `manifest.json` records API floor 24, page alignment 16384, every ABI/library path and all file checksums. Android has no generated podspec or host-specific AAR.
+Android exports `jniLibs/<abi>/libtauri_native_core.so` for `arm64-v8a`, `armeabi-v7a`, `x86` and `x86_64`; `assets/tauri-native` contains the unchanged frontend. Generated ABI 2 exports also include `include/tauri_native.h`, `commands.json` and `commands.ts`. The shared `manifest.json` records API floor 24, page alignment 16384, every ABI/library path and all file checksums. Android has no generated podspec or host-specific AAR.
 
 The host adds the copied `jniLibs` and `assets` directories to its Android source sets and builds its own JNI/SDK bridge. For a copied directory at `android/tauri-native`, a conventional `android/app/build.gradle` setup is:
 

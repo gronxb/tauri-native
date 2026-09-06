@@ -4,6 +4,8 @@ Export existing Tauri commands and a web frontend for React Native and Lynx host
 
 ## Install and inspect
 
+The published 0.1.0 release predates ordinary source export. Install the matching candidate from this checkout using the [Fieldnotes walkthrough](https://github.com/gronxb/tauri-native/blob/main/docs/examples/fieldnotes.md) to use the APIs documented here. The registry command below selects the published experimental release.
+
 ```sh
 npm install --save-dev @tauri-native/cli@experimental
 npx tauri-native inspect
@@ -14,7 +16,7 @@ Run from the Tauri project root, or select its Rust directory with `--tauri-dir`
 
 Node.js 22.12+ and Rust are required. The package includes its Rust parser sources and a lockfile. On first use, the CLI compiles that small tool into the system temporary cache; subsequent calls reuse it. The producer gets no new Cargo dependency.
 
-The current verified subset is synchronous root commands on resolved Tauri 2.11.5 with an existing Cargo.lock, ordinary Builder/build-script setup and local JSON configuration. Cargo workspace members, custom library names/paths and string or `{script, cwd}` frontend hooks are discovered. Module/cfg registration, runtime objects, plugins, custom initialization/build scripts, configuration overlays and application ACLs fail explicitly. The producer's dependency version range can remain unchanged: verification reads the resolved lockfile. See the repository's [compatibility contract](https://github.com/gronxb/tauri-native/blob/main/docs/compatibility.md).
+The current verified subset includes synchronous and async root commands on resolved Tauri 2.11.5 with an existing Cargo.lock, ordinary Builder/build-script setup and local JSON configuration. Cargo workspace members, custom library names/paths and string or `{script, cwd}` frontend hooks are discovered. Module/cfg registration, runtime objects, plugins, custom initialization/build scripts, configuration overlays and application ACLs fail explicitly. The producer's dependency version range can remain unchanged: verification reads the resolved lockfile. See the repository's [compatibility contract](https://github.com/gronxb/tauri-native/blob/main/docs/compatibility.md).
 
 ## Diagnose
 
@@ -68,7 +70,7 @@ Add `--incremental` to either export command to reuse a validated result when bu
 
 Generated ABI 2 includes the versioned invoke/free functions and request-session functions for nonblocking execution. Every non-null response is owned UTF-8 JSON and must be freed exactly once. The private frame identifies `abiVersion: 2`. WebViews resolve ordinary Tauri `invoke` with the success value or reject it with the original serialized error. Host SDK `invoke` returns a cancellable Promise of the result envelope; `invokeSync` retains explicit blocking/legacy use. See [the async contract](../../docs/adr/0005-async-request-sessions.md).
 
-The explicit `--manifest <core/Cargo.toml>` option retains the old application-owned ABI path; iOS also accepts `--header`. Existing calculator example scripts select this legacy path while their host migration is pending. Neither option is needed for ordinary source export. Legacy envelopes remain supported by the updated host packages.
+The explicit `--manifest <core/Cargo.toml>` option retains the old application-owned ABI path; iOS also accepts `--header`. The retained calculator fixture selects this legacy path. The canonical Fieldnotes example uses ordinary export. Neither option is needed for ordinary source export. Legacy envelopes remain supported by the updated host packages.
 
 ## Generated host types
 

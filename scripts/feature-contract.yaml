@@ -1,0 +1,98 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Your library"
+    timeout: 60000
+- waitForAnimationToEnd:
+    timeout: 5000
+- tapOn: "Native document title"
+- waitForAnimationToEnd:
+    timeout: 5000
+- eraseText: 10
+- inputText: "Mobile note"
+- tapOn: "Native document text"
+- inputText: "Native storage CEDAR"
+- pressKey: Enter
+- tapOn: "Save quick note"
+- assertVisible: 'Saved.*Mobile note.*'
+- tapOn: "Native search query"
+- inputText: "cedar"
+- pressKey: Enter
+- tapOn: "Search library"
+- assertVisible: "1 saved document"
+- scrollUntilVisible:
+    element: { text: ".*Native storage CEDAR.*" }
+    direction: DOWN
+    timeout: 10000
+- scrollUntilVisible:
+    element: { text: "Open notebook" }
+    direction: UP
+    timeout: 10000
+- tapOn: "Open notebook"
+- extendedWaitUntil:
+    visible: "Fieldnotes"
+    timeout: 30000
+- scrollUntilVisible:
+    element: { text: ".*Native storage CEDAR.*" }
+    direction: DOWN
+    timeout: 10000
+- scrollUntilVisible:
+    element: { text: "Save document" }
+    direction: UP
+    timeout: 10000
+- tapOn: "Save document"
+- scrollUntilVisible:
+    element: { text: "Could not save: Use a title between 1 and 120 characters." }
+    direction: DOWN
+    timeout: 10000
+- scrollUntilVisible:
+    element: { text: "Document title" }
+    direction: UP
+    timeout: 10000
+- tapOn: "Document title"
+- inputText: "Web note"
+- tapOn: "Document text"
+- inputText: "Embedded storage MAPLE"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn: "Done"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+- tapOn: "Save document"
+- assertVisible: 'Saved.*Web note.*'
+- tapOn: "Back to library"
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: "Your library"
+    timeout: 60000
+- tapOn: "Native search query"
+- inputText: "maple"
+- pressKey: Enter
+- tapOn: "Search library"
+- assertVisible: "1 saved document"
+- scrollUntilVisible:
+    element: { text: ".*Embedded storage MAPLE.*" }
+    direction: DOWN
+    timeout: 10000
+- scrollUntilVisible:
+    element: { text: "Open notebook" }
+    direction: UP
+    timeout: 10000
+- tapOn: "Open notebook"
+- extendedWaitUntil:
+    visible: "Fieldnotes"
+    timeout: 30000
+- scrollUntilVisible:
+    element: { text: ".*Embedded storage MAPLE.*" }
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Back to library"
+- assertVisible: "Your library"

@@ -394,6 +394,9 @@ public final class TNTauriWebView: UIView {
           Promise.resolve().then(() => invokeEvent(command, payload ?? {})).then(resolve, reject);
           return;
         }
+        if (command.startsWith('plugin:path|') && (command !== 'plugin:path|resolve_directory' || !payload || Object.keys(payload).length !== 1 || payload.directory !== 14)) {
+          reject(error('unsupported_path_operation')); return;
+        }
         const id = String(nextId++);
         pending.set(id, { resolve, reject });
         try {
@@ -444,6 +447,18 @@ extension TNTauriWebView: WKScriptMessageHandler {
       let payloadData = try? JSONSerialization.data(withJSONObject: body["payload"] ?? [:], options: [.fragmentsAllowed]),
       let payloadJSON = String(data: payloadData, encoding: .utf8) else {
       deliver("__RNTauriResolve", [document, requestID, "", "invalid_argument"])
+      return
+    }
+    if command.hasPrefix("plugin:path|") {
+      guard command == "plugin:path|resolve_directory",
+        let payload = body["payload"] as? [String: Any], payload.count == 1,
+        let directory = payload["directory"] as? Int, directory == 14 else {
+        deliver("__RNTauriResolve", [document, requestID, "", "unsupported_path_operation"])
+        return
+      }
+      let value = TNTauriRustBridge.appDataDirectory()
+      let encoded = try! JSONSerialization.data(withJSONObject: value, options: [.fragmentsAllowed])
+      deliver("__RNTauriResolve", [document, requestID, String(data: encoded, encoding: .utf8)!])
       return
     }
     if session == 0 { session = TNTauriRustBridge.createSession() }

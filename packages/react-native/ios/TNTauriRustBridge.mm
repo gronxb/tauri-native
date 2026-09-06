@@ -18,6 +18,11 @@ struct RustStringDeleter {
 
 @implementation TNTauriRustBridge
 
++ (NSString *)appDataDirectory {
+  NSURL *root = [[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask].firstObject;
+  return [[root URLByAppendingPathComponent:@"tauri-native" isDirectory:YES].path stringByAppendingString:@"/"];
+}
+
 + (nullable NSString *)invoke:(NSString *)command
                   payloadJSON:(NSString *)payloadJSON
 {

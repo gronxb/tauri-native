@@ -15,7 +15,7 @@ const files = [
   'lynx/android/src/main/java/dev/taurinative/lynx/TauriWebView.java',
 ];
 
-async function document(file) {
+async function document(file, api = 'event.js') {
   const source = readFileSync(path.join(root, 'packages', file), 'utf8');
   const script = source.match(/(?:bridgeSource|BRIDGE_SOURCE)\s*=\s*"""([\s\S]*?)"""/)[1];
   const messages = [];
@@ -36,12 +36,33 @@ async function document(file) {
     await module.link((specifier, owner) => load(path.resolve(path.dirname(owner.identifier), specifier)));
     return module;
   }
-  const module = await load(path.join(apiDirectory, 'event.js'));
+  const module = await load(path.join(apiDirectory, api));
   await module.evaluate();
   return { api: module.namespace, window, lifecycle, messages, id: () => messages.findLast(m => m.type === 'open').document };
 }
 
 for (const file of files) {
+  test(`${file}: standard appDataDir uses host storage and rejects other path operations`, async () => {
+    const host = await document(file, 'path.js');
+    const pending = host.api.appDataDir();
+    const request = host.messages.findLast(m => m.type === 'invoke');
+    assert.equal(request.command, 'plugin:path|resolve_directory');
+    assert.deepEqual(JSON.parse(JSON.stringify(request.payload)), { directory: 14 });
+    const directory = '/host private/한글 🦀/tauri-native/';
+    host.window.__RNTauriResolve(host.id(), request.id, JSON.stringify(directory));
+    assert.equal(await pending, directory);
+    for (const unsupported of [() => host.api.appConfigDir(), () => host.api.appCacheDir(), () => host.api.homeDir(), () => host.api.join('a', 'b')]) {
+      await assert.rejects(unsupported(), /unsupported_path_operation/);
+    }
+    await assert.rejects(host.window.__TAURI_INTERNALS__.invoke('plugin:path|resolve_directory', { directory: 14, path: '../elsewhere' }), /unsupported_path_operation/);
+    assert.equal(host.messages.filter(m => m.type === 'invoke').length, 1, 'unsupported path calls never reach Rust');
+    const abandoned = host.api.appDataDir();
+    const last = host.messages.findLast(m => m.type === 'invoke');
+    host.lifecycle.pagehide();
+    await assert.rejects(abandoned, /closed_document/);
+    host.window.__RNTauriResolve(host.id(), last.id, JSON.stringify(directory));
+  });
+
   test(`${file}: actual Tauri event API, payloads, once/unlisten and isolated generations`, async () => {
     const first = await document(file), second = await document(file);
     assert.equal(first.messages.filter(m => m.type === 'ready').length, 0);

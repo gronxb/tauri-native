@@ -1,118 +1,78 @@
-import { useCallback, useState } from '@lynx-js/react';
-import { Button } from '@lynx-js/lynx-ui';
-import type { BaseEvent, InputInputEvent } from '@lynx-js/types';
-import {
-  invokeSync,
-  type InvokeResponse,
-  type InvokeError,
-} from '@tauri-native/lynx';
-
+import { useEffect, useRef, useState } from '@lynx-js/react';
+import { appDataDir, invoke, TauriView } from '@tauri-native/lynx';
+import { createCommands } from '../tauri-native/commands';
 import './App.css';
 
-interface Calculation {
-  result: number;
-  source: 'tauri-native-example-core';
-}
-
-const DEFAULT_EXPRESSION = '7 * (8 - 2)';
+const command = createCommands(invoke);
 
 export function App() {
-  const [expression, setExpression] = useState(DEFAULT_EXPRESSION);
-  const [response, setResponse] =
-    useState<InvokeResponse<Calculation, InvokeError> | null>(null);
+  const [notebook, setNotebook] = useState(false);
+  const [viewError, setViewError] = useState('');
+  const [title, setTitle] = useState('Quick note');
+  const [body, setBody] = useState('');
+  const [query, setQuery] = useState('');
+  const [status, setStatus] = useState('Notes stay on this device.');
+  const [documents, setDocuments] = useState<{ title: string; body: string }[]>([]);
+  const pending = useRef<{ cancel(): void } | null>(null);
+  const generation = useRef(0);
+  const cancel = () => { generation.current++; pending.current?.cancel(); pending.current = null; };
+  useEffect(() => () => cancel(), []);
 
-  const onInput = useCallback(
-    (event: BaseEvent<'bindinput', InputInputEvent>) => {
-      'background only';
-      setExpression(event.detail.value);
-    },
-    []
-  );
-
-  const calculate = useCallback(() => {
+  async function search() {
     'background only';
-    setResponse(invokeSync<Calculation, InvokeError>('calculate', { expression }));
-  }, [expression]);
-
-  return (
-    <scroll-view
-      className="page"
-      scroll-orientation="vertical"
-      enable-scroll={true}
-    >
-      <view className="pageContent">
-        <view className="masthead">
-          <text className="product">TAURI-NATIVE · MOBILE</text>
-          <text className="title">Lynx host</text>
-          <text className="subtitle">Two paths to the same Rust command.</text>
-        </view>
-
-        <view className="section">
-          <view className="sectionHeader">
-            <view>
-              <text className="sectionIndex">01 / NATIVE</text>
-              <text className="sectionTitle">Direct bridge</text>
-            </view>
-            <text className="route">Module → Rust</text>
-          </view>
-          <input
-            className="input"
-            default-value={DEFAULT_EXPRESSION}
-            bindinput={onInput}
-            accessibility-element={true}
-            accessibility-label="Lynx calculator expression"
-            ios-platform-accessibility-id="lynx-calculator-expression"
-            ios-auto-correct={false}
-            ios-spell-check={false}
-          />
-          <Button
-            className="button"
-            onClick={calculate}
-            buttonProps={{
-              flatten: false,
-              'accessibility-element': true,
-              'accessibility-label': 'Calculate Lynx expression in Rust',
-              'ios-platform-accessibility-id': 'lynx-calculator-button',
-            }}
-          >
-            <text className="buttonText">Run expression</text>
-          </Button>
-
-          {response?.ok ? (
-            <view className="output">
-              <text className="outputLabel">RUST OUTPUT</text>
-              <text flatten={false} className="resultValue">Result: {response.value.result}</text>
-              <text flatten={false} className="source">{response.value.source}</text>
-            </view>
-          ) : response ? (
-            <view className="output errorOutput">
-              <text className="errorLabel">CHECK EXPRESSION</text>
-              <text className="error">{response.error.message}</text>
-            </view>
-          ) : (
-            <view className="output">
-              <text className="outputLabel">RUST OUTPUT</text>
-              <text className="outputIdle">Ready</text>
-            </view>
-          )}
-        </view>
-
-        <view className="sectionHeader embeddedHeader">
-          <view>
-            <text className="sectionIndex">02 / EMBEDDED</text>
-            <text className="sectionTitle">Tauri surface</text>
-          </view>
-          <text className="route">tauri-view</text>
-        </view>
-
-        <view className="tauriFrame">
-          <view className="tauriFrameBar">
-            <view className="frameMark" />
-            <text className="frameLabel">TAURIVIEW BOUNDARY</text>
-          </view>
-          <tauri-view className="tauriView" />
-        </view>
+    cancel(); const version = generation.current;
+    setStatus('Searching…');
+    try {
+      const directory = await appDataDir();
+      if (generation.current !== version) return;
+      const request = command('search_documents', { directory, query });
+      pending.current = request;
+      const result = await request;
+      if (generation.current !== version) return;
+      if (!result.ok) throw result.error;
+      setDocuments(result.value);
+      setStatus(`${result.value.length} saved document${result.value.length === 1 ? '' : 's'}`);
+    } catch (error) { if (generation.current === version) setStatus(`Could not search: ${String(error)}`); }
+  }
+  async function save() {
+    'background only';
+    cancel(); const version = generation.current;
+    try {
+      const directory = await appDataDir();
+      if (generation.current !== version) return;
+      const request = command('save_document', { directory, title, body });
+      pending.current = request;
+      const result = await request;
+      if (generation.current !== version) return;
+      if (!result.ok) throw result.error;
+      setStatus(`Saved “${result.value.title}”`);
+    } catch (error) { if (generation.current === version) setStatus(`Could not save: ${String(error)}`); }
+  }
+  const button = (label: string, action: () => void) => <view className="button" flatten={false} accessibility-element={true} accessibility-label={label} bindtap={action}><text className="buttonText">{label}</text></view>;
+  return <view className="page">
+    {notebook ? <>
+      <view className="navigation">{button('Back to library', () => { 'background only'; setNotebook(false); })}</view>
+      {viewError ? <text flatten={false} accessibility-element={true} accessibility-label={viewError} className="status">{viewError}</text> : null}
+      <TauriView className="notebook" onLoadError={error => setViewError(error.message)} />
+    </> : <scroll-view className="scroll" scroll-orientation="vertical" enable-scroll={true}>
+      <view className="content">
+        <text className="eyebrow">ON THIS DEVICE</text>
+        <text flatten={false} accessibility-element={true} accessibility-label="Your library" className="heading">Your library</text>
+        <text className="description">Capture a note here, or open your full notebook.</text>
+        {button('Open notebook', () => { 'background only'; cancel(); setStatus('Notes stay on this device.'); setViewError(''); setNotebook(true); })}
+        <text className="label">Title</text>
+        <input className="input" maxlength={120} default-value={title} accessibility-element={true} accessibility-label="Native document title" bindinput={event => { 'background only'; setTitle(event.detail.value); }} />
+        <text className="label">Quick capture</text>
+        <input className="input" maxlength={65536} default-value={body} placeholder="Something worth keeping" accessibility-element={true} accessibility-label="Native document text" bindinput={event => { 'background only'; setBody(event.detail.value); }} />
+        {button('Save quick note', save)}
+        <text flatten={false} accessibility-element={true} accessibility-label={status} className="status">{status}</text>
+        <text className="label">Find saved text</text>
+        <input className="input" default-value={query} accessibility-element={true} accessibility-label="Native search query" bindinput={event => { 'background only'; setQuery(event.detail.value); }} />
+        {button('Search library', search)}
+        {documents.map(saved => <view key={saved.title} className="document">
+          <text flatten={false} accessibility-element={true} accessibility-label={saved.title} className="documentTitle">{saved.title}</text><text flatten={false} accessibility-element={true} accessibility-label={saved.body} className="description">{saved.body}</text>
+        </view>)}
       </view>
-    </scroll-view>
-  );
+    </scroll-view>}
+  </view>;
 }
