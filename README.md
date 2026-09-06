@@ -220,6 +220,8 @@ export function Screen() {
 
 ## CLI
 
+The [source-transparent export roadmap](plans/README.md) is underway. Its [versioned compatibility contract](docs/compatibility.md) records the exact native proof, source-integrity budget and unsupported cases. The current published CLI still uses the core/header workflow below.
+
 ```text
 tauri-native export ios [options]
 tauri-native export android [options]

@@ -4,7 +4,13 @@ mod export_parity {
     #[test]
     fn original_tauri_handler() {
         let app = tauri::test::mock_builder()
-            .invoke_handler(tauri::generate_handler![super::describe, super::greet])
+            .invoke_handler(tauri::generate_handler![
+                super::describe,
+                super::greet,
+                super::select,
+                super::optional,
+                super::nothing
+            ])
             .build(tauri::test::mock_context(tauri::test::noop_assets()))
             .unwrap();
         let view = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())

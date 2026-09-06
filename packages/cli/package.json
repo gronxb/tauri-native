@@ -19,6 +19,7 @@
     "prepack": "tsdown",
     "test": "nub run build && node --experimental-strip-types --test test/*.test.ts && nub run test:package",
     "test:export:spike": "node test/native-export/spike.mjs",
+    "test:export:contract": "node test/native-export/contract.mjs",
     "test:package": "node ../../scripts/verify-package.mjs",
     "typecheck": "tsc --noEmit"
   },

@@ -117,7 +117,7 @@
       "file": "plans/001-source-transparent-export-spike.md",
       "url": "https://github.com/gronxb/tauri-native/issues/5",
       "number": 5,
-      "bodySynced": false,
+      "bodySynced": true,
       "status": "DONE",
       "verification": {
         "date": "2026-09-06",
@@ -125,8 +125,10 @@
         "adr": "docs/adr/0004-source-transparent-export-spike.md",
         "report": "target/export-spike/report.json",
         "command": "nub --cwd packages/cli run test:export:spike",
-        "githubIssueState": "Delivery tracked by issue #5 and its linked implementation PR"
-      }
+        "githubIssueState": "CLOSED via PR #22"
+      },
+      "pr": "https://github.com/gronxb/tauri-native/pull/22",
+      "mergeCommit": "bb1c3f1fe58155c038e24cc7f786f9f1dd1299bf"
     },
     {
       "id": 2,
@@ -201,7 +203,19 @@
       "file": "plans/002-compatibility-source-integrity.md",
       "url": "https://github.com/gronxb/tauri-native/issues/6",
       "number": 6,
-      "bodySynced": true
+      "bodySynced": false,
+      "status": "DONE",
+      "verification": {
+        "date": "2026-09-06",
+        "command": "nub --cwd packages/cli run test:export:contract",
+        "report": "target/export-contract/report.json",
+        "nativeParityRequests": 14,
+        "desktopCheckedRejectionFixtures": 14,
+        "sourceIntegrity": true,
+        "cliTests": 9,
+        "typecheck": true,
+        "package": true
+      }
     },
     {
       "id": 3,

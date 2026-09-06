@@ -16,6 +16,10 @@ try {
   } catch {
     results.unregisteredRejected = true;
   }
+  results.absent = await invoke('optional');
+  results.explicitNull = await invoke('optional', { displayName: null });
+  results.unit = await invoke('nothing');
+  results.selection = await invoke('select', { selection: { type: 'display-name', data: '한글' } });
   document.querySelector('#result').textContent = JSON.stringify(results);
 } catch (error) {
   document.querySelector('#result').textContent = JSON.stringify({ fatal: String(error) });
