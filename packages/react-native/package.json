@@ -13,10 +13,16 @@
     },
     "./app.plugin": "./app.plugin.js",
     "./app.plugin.js": "./app.plugin.js",
+    "./artifacts": {
+      "types": "./artifacts.d.ts",
+      "default": "./artifacts.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
     "app.plugin.js",
+    "artifacts.js",
+    "artifacts.d.ts",
     "android/build.gradle",
     "android/consumer-rules.pro",
     "android/src",
@@ -34,7 +40,7 @@
   "scripts": {
     "build": "bob build",
     "prepack": "bob build",
-    "test": "node --test test/*.test.js && nub run test:package",
+    "test": "node --experimental-strip-types --test test/*.test.js && nub run test:package",
     "test:package": "node ../../scripts/verify-package.mjs",
     "typecheck": "tsc --noEmit"
   },

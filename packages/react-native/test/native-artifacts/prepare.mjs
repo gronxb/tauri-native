@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+
+const [host, ios, android] = process.argv.slice(2).map(value => path.resolve(value));
+assert(host && ios && android, 'Usage: node prepare.mjs HOST COPIED_IOS COPIED_ANDROID');
+const require = createRequire(path.join(host, 'package.json'));
+const { readArtifacts } = require('@tauri-native/react-native/artifacts');
+readArtifacts(ios, 'ios');
+readArtifacts(android, 'android');
+const podfile = path.join(host, 'ios/Podfile');
+const gradle = path.join(host, 'android/app/build.gradle');
+const pod = readFileSync(podfile, 'utf8');
+const build = readFileSync(gradle, 'utf8');
+assert(pod.includes("target 'TauriArtifactHost' do") && !pod.includes('TauriNativeGenerated'), 'Use a fresh TauriArtifactHost template');
+assert(build.includes('android {') && !build.includes('tauri-native/jniLibs'), 'Use a fresh Android template');
+mkdirSync(path.join(host, 'tauri-native'), { recursive: true });
+cpSync(ios, path.join(host, 'tauri-native/ios'), { recursive: true });
+cpSync(android, path.join(host, 'tauri-native/android'), { recursive: true });
+writeFileSync(podfile, pod.replace("target 'TauriArtifactHost' do", "target 'TauriArtifactHost' do\n  pod 'TauriNativeGenerated', :path => '../tauri-native/ios'"));
+writeFileSync(gradle, build.replace('android {', "android {\n    sourceSets.main {\n        jniLibs.srcDirs += ['../../tauri-native/android/jniLibs']\n        assets.srcDirs += ['../../tauri-native/android/assets']\n    }"));
+cpSync(new URL('./App.tsx', import.meta.url), path.join(host, 'App.tsx'));
+console.log(`Prepared independent bare RN host: ${host}`);

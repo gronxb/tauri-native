@@ -12,6 +12,7 @@
     "prebuild:clean:android": "expo prebuild --clean --platform android",
     "prebuild:clean:ios": "expo prebuild --clean --platform ios",
     "test:e2e:ios": "maestro test --platform ios .maestro/ios-integration.yaml",
+    "test:e2e:android": "maestro test --platform android .maestro/android-integration.yaml",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

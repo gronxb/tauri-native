@@ -15,7 +15,7 @@
       [
         "@tauri-native/react-native",
         {
-          "tauriDir": "../tauri/src-tauri"
+          "artifactsDir": "./tauri-native"
         }
       ]
     ]
