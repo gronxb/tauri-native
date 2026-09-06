@@ -6,7 +6,7 @@ Expo currently requires tauriDir pointing to the source project. Consumers shoul
 
 ## Product contract
 
-The Tauri project should know as little as possible about tauri-native. The intended workflow is **install the CLI → export native artifacts → move/copy them → integrate in the host**. Integration belongs in the CLI and host package.
+tauri-native provides an artifact-based integration workflow for existing Tauri applications. Within the documented compatibility scope, developers install the CLI, export platform binaries and frontend assets, and integrate the resulting artifacts into a native host. The CLI and host packages own the required adaptation, so the Tauri application does not need host-specific dependencies, bridge code, or a custom project layout.
 
 - No mandatory producer `app-core` layout, custom C ABI/header, tauri-native Rust SDK/macros, second command registry, or host-specific frontend globals/imports.
 - CLI installation may update `package.json` and its JS lockfile. Export must preserve authored Rust/frontend files, Cargo manifests/lockfiles, command registration, and Tauri configuration; generated ignored intermediates/artifacts are disposable.
@@ -97,7 +97,7 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 
 Secretly rebuilding producer code or needing sibling source paths means the artifact-only contract is not met.
 
-The host can know about tauri-native; the producer should not. Keep build diagnostics separate from end-user product UI.
+Keep framework-specific dependencies and integration code in the host package and export tooling. Build diagnostics should remain separate from end-user product UI.
 
 Use a `codex/react-native-artifact-consumption` branch if creating one, follow the repository's conventional commit style, and do not commit/push/merge/publish changes without the execution task's authorization. Keep this issue and any checked-in plan status aligned.
 
