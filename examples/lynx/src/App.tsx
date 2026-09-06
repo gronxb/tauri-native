@@ -69,6 +69,7 @@ export function App() {
             className="button"
             onClick={calculate}
             buttonProps={{
+              flatten: false,
               'accessibility-element': true,
               'accessibility-label': 'Calculate Lynx expression in Rust',
               'ios-platform-accessibility-id': 'lynx-calculator-button',
@@ -80,8 +81,8 @@ export function App() {
           {response?.ok ? (
             <view className="output">
               <text className="outputLabel">RUST OUTPUT</text>
-              <text className="resultValue">Result: {response.value.result}</text>
-              <text className="source">{response.value.source}</text>
+              <text flatten={false} className="resultValue">Result: {response.value.result}</text>
+              <text flatten={false} className="source">{response.value.source}</text>
             </view>
           ) : response ? (
             <view className="output errorOutput">

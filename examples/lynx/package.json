@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "build": "NODE_OPTIONS= rspeedy build --mode production",
-    "build:android": "NODE_OPTIONS= rspeedy build --mode production && cd android && ./gradlew assembleDebug",
-    "build:ios": "NODE_OPTIONS= rspeedy build --mode production && cp dist/main.lynx.bundle ios/main.lynx.bundle",
-    "android": "NODE_OPTIONS= rspeedy build --mode production && cd android && ./gradlew installDebug",
+    "build:android": "node scripts/validate-artifacts.mjs android && NODE_OPTIONS= rspeedy build --mode production && cd android && ./gradlew assembleDebug",
+    "build:ios": "node scripts/validate-artifacts.mjs ios && NODE_OPTIONS= rspeedy build --mode production && cp dist/main.lynx.bundle ios/main.lynx.bundle",
+    "android": "node scripts/validate-artifacts.mjs android && NODE_OPTIONS= rspeedy build --mode production && cd android && ./gradlew installDebug",
     "dev": "rspeedy dev",
     "pods": "nub run build:ios && cd ios && BUNDLE_PATH=vendor/bundle bundle install && BUNDLE_PATH=vendor/bundle bundle exec pod install",
     "test:e2e:ios": "maestro test --platform ios .maestro/ios-integration.yaml",
+    "test:e2e:android": "maestro test --platform android .maestro/android-integration.yaml",
     "typecheck": "tsc --build"
   },
   "dependencies": {
@@ -25,8 +26,8 @@
     "@lynx-js/rspeedy": "^0.16.5",
     "@lynx-js/types": "4.1.0",
     "@rsbuild/plugin-type-check": "1.6.0",
-    "@types/react": "^19.2.18",
-    "typescript": "7.0.2"
+    "@types/react": "^18.3.27",
+    "typescript": "6.0.3"
   },
   "engines": {
     "node": ">=22.12.0"

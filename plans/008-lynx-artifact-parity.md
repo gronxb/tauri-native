@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/008-lynx-artifact-parity.md`
 - Issue: [#12](https://github.com/gronxb/tauri-native/issues/12)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: TODO.
+- Status: IMPLEMENTED — all package and native gates passed; PR merge pending.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 
@@ -84,12 +84,12 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 
 ## Acceptance criteria
 
-- [ ] Both platforms need only host package plus copied artifact.
-- [ ] No Lynx-specific producer branch or export variant.
-- [ ] Both transports pass on both platforms.
-- [ ] Docs agree with the shared artifact contract.
-- [ ] Required checks have recorded results; skipped/blocked checks are identified accurately.
-- [ ] Changes stay within this issue's purpose and preserve the producer change budget.
+- [x] Both platforms need only host package plus copied artifact.
+- [x] No Lynx-specific producer branch or export variant.
+- [x] Both transports pass on both platforms.
+- [x] Docs agree with the shared artifact contract.
+- [x] Required checks have recorded results; skipped/blocked checks are identified accurately.
+- [x] Changes stay within this issue's purpose and preserve the producer change budget.
 
 ## Blockers and maintenance
 
@@ -98,3 +98,15 @@ Report private-runtime or producer-coupling requirements instead of forking the 
 Follow current autolink/codegen patterns; regenerate generated files rather than editing bindings manually.
 
 Use a `codex/lynx-artifact-parity` branch if creating one, follow the repository's conventional commit style, and do not commit/push/merge/publish changes without the execution task's authorization. Keep this issue and any checked-in plan status aligned.
+
+## Execution result — 2026-09-06
+
+The Lynx host package now ships a Node-only artifact reader from the same canonical implementation as RN, without a runtime dependency on RN or the CLI. The example validates and consumes its own copied `tauri-native/ios` and `tauri-native/android` directories through a local Pod and Gradle source sets. Public native modules/autolinking and producer code remain unchanged.
+
+A fresh host outside the workspace installed the packed Lynx SDK with npm and consumed the byte-identical M1 artifacts used by the RN/Expo gate. Those export gates deleted the producer and CLI installation. Both Release builds ran with no `cargo` or `rustc` on PATH and no CLI/RN package in the host. Lynx 4.0.1 / ReactLynx 0.125.0 passed on iOS 26.4.1 arm64 simulator and Android API 37 arm64 emulator with 16 KB pages.
+
+Each platform passed eight direct command cases and the unchanged frontend's eight cases, including structured errors, unknown commands, nulls and tagged enums. The same flow verified unmount/remount and app relaunch. Complete replacement with legacy calculator exports, refreshed Pods and Release rebuilds then passed the existing calculator flow on both platforms. Both Android APKs passed `zipalign -c -P 16 -v 4`.
+
+The package's two artifact scenarios cover generated/legacy parity and missing, corrupt, incompatible or linked inputs. RN's six existing artifact/plugin scenarios still pass. Codegen has no drift, SDK/example type checks pass, and isolated package checks verify 30 Lynx and 56 RN files. Fresh npm installation required matching the example's React types and TypeScript version to the declared Lynx UI/Rspeedy peer ranges; a frozen workspace lockfile check also passes.
+
+Reproduction is documented in `packages/lynx/test/native-artifacts/README.md`; local evidence is `target/lynx-artifacts/report.json` plus four JUnit reports. Native flow durations were 18 s (iOS), 28 s (Android), 26 s (calculator iOS) and 39 s (calculator Android). These results do not claim physical-device execution or independent external adoption.

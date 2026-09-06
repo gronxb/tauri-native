@@ -1,35 +1,20 @@
-appId: dev.tauri-native.lynx-example
+appId: dev.taurinative.lynxexample
 ---
 - launchApp
-- swipe:
-    start: "50%,85%"
-    end: "50%,25%"
-    duration: 600
-- waitForAnimationToEnd
-- assertVisible: 'invoke("calculate")'
-- scrollUntilVisible:
-    element:
-      id: "lynx-calculator-expression"
-    direction: UP
-    timeout: 10000
-- tapOn:
-    id: "lynx-calculator-expression"
-    point: "99%,50%"
+- tapOn: "Lynx calculator expression"
 - eraseText: 20
 - inputText: "9 * (6 - 2)"
 - hideKeyboard
-- tapOn:
-    id: "lynx-calculator-button"
+- tapOn: "Calculate Lynx expression in Rust"
 - assertVisible: "Result: 36"
 - assertVisible: "tauri-native-example-core"
 - scrollUntilVisible:
     element:
-      text: "Calculate Tauri expression in Rust"
+      id: "expression-input"
     direction: DOWN
     timeout: 10000
 - tapOn:
-    text: "Tauri calculator expression"
-    point: "95%,50%"
+    id: "expression-input"
 - eraseText: 20
 - inputText: "18 / (2 + 1)"
 - pressKey: Enter

@@ -5,7 +5,8 @@ plugin 'cocoapods-lynx-library'
 platform :ios, '13.0'
 use_modular_headers!
 
-output_dir = File.expand_path('../../tauri/src-tauri/gen/tauri-native/ios', __dir__)
+Pod::Executable.execute_command('node', [File.expand_path('../scripts/validate-artifacts.mjs', __dir__), 'ios'])
+output_dir = File.expand_path('../tauri-native/ios', __dir__)
 
 target 'Hello-Lynx' do
   pod 'TauriNativeGenerated', :path => output_dir

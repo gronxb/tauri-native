@@ -713,7 +713,7 @@
       "url": "https://github.com/gronxb/tauri-native/issues/11",
       "number": 11,
       "bodySynced": true,
-      "status": "IMPLEMENTED",
+      "status": "DONE",
       "verification": {
         "date": "2026-09-06",
         "report": "target/react-native-artifacts/report.json",
@@ -730,7 +730,9 @@
         "producerDeleted": true,
         "hostWithoutRust": true,
         "physicalDeviceExecution": false
-      }
+      },
+      "pr": "https://github.com/gronxb/tauri-native/pull/27",
+      "mergeCommit": "11a218aaa7375f3d595e5644dc1d6d8168f8d449"
     },
     {
       "id": 8,
@@ -811,7 +813,26 @@
       "file": "plans/008-lynx-artifact-parity.md",
       "url": "https://github.com/gronxb/tauri-native/issues/12",
       "number": 12,
-      "bodySynced": true
+      "bodySynced": true,
+      "status": "IMPLEMENTED",
+      "verification": {
+        "date": "2026-09-06",
+        "report": "target/lynx-artifacts/report.json",
+        "packageTests": 2,
+        "reactNativeRegressionTests": 6,
+        "packageFiles": 30,
+        "codegenDrift": false,
+        "ios": "Lynx 4.0.1, iOS 26.4.1 arm64 simulator",
+        "android": "Lynx 4.0.1, API 37 arm64 emulator, 16384-byte pages",
+        "directCasesPerPlatform": 8,
+        "frontendCasesPerPlatform": 8,
+        "mountUnmountRelaunch": true,
+        "calculatorRegressionBothPlatforms": true,
+        "byteIdenticalRnArtifacts": true,
+        "producerDeleted": true,
+        "hostWithoutRustOrCliOrRn": true,
+        "physicalDeviceExecution": false
+      }
     },
     {
       "id": 9,

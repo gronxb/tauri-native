@@ -12,9 +12,15 @@
       "default": "./src/index.ts"
     },
     "./lynx.lib.json": "./lynx.lib.json",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./artifacts": {
+      "types": "./artifacts.d.ts",
+      "default": "./artifacts.cjs"
+    }
   },
   "files": [
+    "artifacts.cjs",
+    "artifacts.d.ts",
     "android/build.gradle",
     "android/consumer-rules.pro",
     "android/src",
@@ -28,10 +34,10 @@
     "README.md"
   ],
   "scripts": {
-    "build": "nub run codegen && tsc --noEmit",
+    "build": "node ../../scripts/sync-artifacts.mjs lynx && nub run codegen && tsc --noEmit",
     "codegen": "lynx-autolink-codegen",
-    "prepack": "lynx-autolink-codegen && tsc --noEmit",
-    "test": "nub run build && nub run test:package",
+    "prepack": "node ../../scripts/sync-artifacts.mjs lynx && lynx-autolink-codegen && tsc --noEmit",
+    "test": "node ../../scripts/sync-artifacts.mjs lynx --check && node --experimental-strip-types --test test/*.test.mjs && nub run build && nub run test:package",
     "test:package": "node ../../scripts/verify-package.mjs",
     "typecheck": "tsc --noEmit"
   },

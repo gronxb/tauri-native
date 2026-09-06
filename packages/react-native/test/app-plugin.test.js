@@ -12,34 +12,9 @@ const roots = [];
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
 function write(root, file, content) { const target = path.join(root, file); mkdirSync(path.dirname(target), { recursive: true }); writeFileSync(target, content); }
 
-async function exported(directory, platform, label = 'version one', legacy = false) {
-  // The real CLI writer supplies receipts to this independent host reader.
-  const { ANDROID_ABIS, IOS_LAYOUT, writeArtifactManifest } = await import('../../cli/src/artifacts/manifest.ts');
-  rmSync(directory, { recursive: true, force: true });
-  const source = { rustEntrySha256: '0'.repeat(64) };
-  const header = legacy ? 'void tauri_native_string_free(char *value);\n' : '#define TAURI_NATIVE_ABI_VERSION 1\n';
-  let metadata;
-  if (platform === 'ios') {
-    const native = [
-      { path: 'TauriNativeCore.xcframework/ios-arm64/core.a', architectures: ['arm64'], variant: 'device' },
-      { path: 'TauriNativeCore.xcframework/ios-arm64_x86_64-simulator/core.a', architectures: ['arm64', 'x86_64'], variant: 'simulator' },
-    ];
-    for (const slice of native) {
-      write(directory, slice.path, `${label} ${slice.variant}`);
-      write(directory, path.posix.join(path.posix.dirname(slice.path), 'Headers/tauri_native.h'), header);
-    }
-    write(directory, 'TauriNativeCore.xcframework/Info.plist', 'fixture framework metadata');
-    write(directory, 'TauriNativeAssets.bundle/index.html', label);
-    write(directory, 'TauriNativeGenerated.podspec', 'fixture local pod');
-    metadata = { ...IOS_LAYOUT, native, source };
-  } else {
-    const native = ANDROID_ABIS.map(abi => ({ abi, path: `jniLibs/${abi}/libtauri_native_core.so` }));
-    for (const slice of native) write(directory, slice.path, `${label} ${slice.abi}`);
-    write(directory, 'assets/tauri-native/index.html', label);
-    if (!legacy) write(directory, 'include/tauri_native.h', header);
-    metadata = { platform, minimumApiLevel: 24, pageSize: 16384, native, assets: 'assets/tauri-native', integration: null, header: legacy ? null : 'include/tauri_native.h', source };
-  }
-  writeArtifactManifest(directory, metadata, legacy ? undefined : { schemaVersion: 1, abiVersion: 1, commands: [] });
+async function exported(...args) {
+  const { writeTestArtifacts } = await import('../../../scripts/test-artifacts.mjs');
+  return writeTestArtifacts(...args);
 }
 
 async function fixture() {

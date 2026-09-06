@@ -1,0 +1,29 @@
+appId: dev.taurinative.lynxartifacttest
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Native contract passed: 8 cases"
+    timeout: 60000
+- extendedWaitUntil:
+    visible: '.*"success":.*"total":10.*'
+    timeout: 30000
+- assertVisible: '.*"error":.*"kind":"empty_name".*"message":"A name is required".*'
+- assertVisible: '.*"camelCase":"Hello, Ada!".*"unregisteredRejected":true.*'
+- assertVisible: '.*"absent":null.*"explicitNull":null.*"unit":null.*'
+- assertVisible: '.*"selection":.*"display-name".*'
+- tapOn: "Unmount embedded view"
+- assertNotVisible: '.*"success":.*"total":10.*'
+- tapOn: "Mount embedded view"
+- extendedWaitUntil:
+    visible: '.*"success":.*"total":10.*'
+    timeout: 30000
+- assertVisible: "Native contract passed: 8 cases"
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: "Native contract passed: 8 cases"
+    timeout: 60000
+- extendedWaitUntil:
+    visible: '.*"success":.*"total":10.*'
+    timeout: 30000

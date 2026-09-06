@@ -3,6 +3,11 @@ plugins {
   id 'org.lynxsdk.lynx.library-build'
 }
 
+providers.exec {
+  workingDir rootProject.projectDir.parentFile
+  commandLine 'node', 'scripts/validate-artifacts.mjs', 'android'
+}.result.get().assertNormalExitValue()
+
 android {
   namespace 'dev.taurinative.lynxexample'
   compileSdk 35
@@ -31,9 +36,9 @@ android {
   sourceSets {
     main {
       assets.srcDir '../../dist'
-      assets.srcDir '../../../tauri/src-tauri/gen/tauri-native/android/assets'
+      assets.srcDir '../../tauri-native/android/assets'
       assets.exclude '.rspeedy/**'
-      jniLibs.srcDir '../../../tauri/src-tauri/gen/tauri-native/android/jniLibs'
+      jniLibs.srcDir '../../tauri-native/android/jniLibs'
     }
   }
 }
