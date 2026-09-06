@@ -23,7 +23,7 @@ The Tauri project should know as little as possible about tauri-native. The inte
 - Local plan: `plans/001-source-transparent-export-spike.md`
 - Issue: [#5](https://github.com/gronxb/tauri-native/issues/5)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: DONE — implemented and verified on 2026-09-06. GitHub #5 tracks PR delivery.
+- Status: DONE — implemented and verified on 2026-09-06. [PR #22](https://github.com/gronxb/tauri-native/pull/22) merged into `main` as `bb1c3f1`; #5 is closed.
 
 ## Execution result
 

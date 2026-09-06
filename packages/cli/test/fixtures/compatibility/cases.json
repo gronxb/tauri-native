@@ -1,0 +1,62 @@
+{
+  "contractVersion": 1,
+  "base": "../standard-tauri",
+  "blocked": [
+    {
+      "name": "async",
+      "diagnostic": "async command"
+    },
+    {
+      "name": "module",
+      "diagnostic": "module command registration"
+    },
+    {
+      "name": "command-options",
+      "diagnostic": "command attribute options"
+    },
+    {
+      "name": "conditional",
+      "diagnostic": "conditional/custom registration"
+    },
+    {
+      "name": "state",
+      "diagnostic": "runtime/state/plugin-dependent"
+    },
+    {
+      "name": "app-handle",
+      "diagnostic": "runtime/state/plugin-dependent"
+    },
+    {
+      "name": "window",
+      "diagnostic": "runtime/state/plugin-dependent"
+    },
+    {
+      "name": "plugin",
+      "diagnostic": "initialization is not supported"
+    },
+    {
+      "name": "initialization",
+      "diagnostic": "initialization is not supported"
+    },
+    {
+      "name": "custom-context",
+      "diagnostic": "custom context initialization"
+    },
+    {
+      "name": "alias",
+      "diagnostic": "aliases and item macros"
+    },
+    {
+      "name": "item-macro",
+      "diagnostic": "aliases and item macros"
+    },
+    {
+      "name": "borrowed",
+      "diagnostic": "borrowed/opaque argument"
+    },
+    {
+      "name": "command-cfg",
+      "diagnostic": "conditional/custom attributes"
+    }
+  ]
+}

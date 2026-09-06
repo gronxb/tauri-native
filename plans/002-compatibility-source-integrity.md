@@ -23,9 +23,15 @@ The Tauri project should know as little as possible about tauri-native. The inte
 - Local plan: `plans/002-compatibility-source-integrity.md`
 - Issue: [#6](https://github.com/gronxb/tauri-native/issues/6)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: TODO.
+- Status: DONE — verified 2026-09-06; delivery tracked by #6.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
+
+## Execution result
+
+`test:export:contract` passes: fourteen compiled native requests exactly match the original Tauri handler; the unchanged frontend runs in WKWebView; fourteen complete negative fixtures compile as ordinary Tauri libraries and reject repeated generation without source changes. Git and SHA-256 checks pass across successful generation, regeneration and failure. The contract caught and fixed missing-key versus explicit-null error parity. CLI tests (9), package verification, typecheck, syntax and whitespace checks pass. Evidence: ignored `target/export-contract/report.json`.
+
+See [contract v1](../docs/compatibility.md). Mobile and production export support remain M1/M2 gates.
 
 ## Current state and evidence
 
@@ -70,7 +76,7 @@ Commands marked **New gate to add** are deliverables of this issue, not commands
 
 | Gate | Command/action | Expected result |
 | --- | --- | --- |
-| New gate to add | `nub --cwd packages/cli run test:export:contract` | Positive/negative compatibility expectations and source-integrity hashes pass. |
+| Implemented gate | `nub --cwd packages/cli run test:export:contract` | Positive/negative compatibility expectations and source-integrity hashes pass. |
 | Existing baseline | `nub --cwd packages/cli run test` | CLI unit/package checks pass. |
 
 ## Meaningful test scenarios
@@ -84,12 +90,12 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 
 ## Acceptance criteria
 
-- [ ] Every documented supported/unsupported category has a fixture.
-- [ ] The source-integrity gate covers success and failure.
-- [ ] Normal Tauri frontend return/error behavior is normative.
-- [ ] The contract makes no blanket runtime/plugin compatibility claim.
-- [ ] Required checks have recorded results; skipped/blocked checks are identified accurately.
-- [ ] Changes stay within this issue's purpose and preserve the producer change budget.
+- [x] Every documented supported/unsupported category has a fixture.
+- [x] The source-integrity gate covers success and failure.
+- [x] Normal Tauri frontend return/error behavior is normative.
+- [x] The contract makes no blanket runtime/plugin compatibility claim.
+- [x] Required checks have recorded results; skipped/blocked checks are identified accurately.
+- [x] Changes stay within this issue's purpose and preserve the producer change budget.
 
 ## Blockers and maintenance
 

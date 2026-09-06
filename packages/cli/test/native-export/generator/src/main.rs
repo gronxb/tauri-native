@@ -184,7 +184,7 @@ fn generate(source: &str) -> Result<String, String> {
             let ty = &arg.ty;
             let key = ident.to_string().to_lower_camel_case();
             decode.push(quote! {
-                let #ident: #ty = serde_json::from_value(payload.get(#key).cloned().unwrap_or(serde_json::Value::Null))
+                let #ident: #ty = serde::Deserialize::deserialize(__TauriNativeArgument { command: #command_name, key: #key, payload: &payload })
                     .map_err(|error| serde_json::Value::String(format!("invalid args `{}` for command `{}`: {}", #key, #command_name, error)))?;
             });
             args.push(ident);
@@ -216,7 +216,11 @@ fn generate(source: &str) -> Result<String, String> {
             }
         }
     };
-    Ok(format!("{generated}\n{}", include_str!("abi.rs")))
+    Ok(format!(
+        "{generated}\n{}\n{}",
+        include_str!("argument.rs"),
+        include_str!("abi.rs")
+    ))
 }
 
 fn main() {

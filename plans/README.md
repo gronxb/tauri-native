@@ -38,8 +38,8 @@ No due dates or assignees are invented. M0 is a go/no-go gate. A failed proof bl
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 | --- | --- | --- | --- | --- | --- |
-| [001](001-source-transparent-export-spike.md) | [#5 — [M0] Prove export from an unmodified Tauri project](https://github.com/gronxb/tauri-native/issues/5) | P1 | L | — | DONE (verified implementation) |
-| [002](002-compatibility-source-integrity.md) | [#6 — [M0] Define compatibility and source-integrity acceptance fixtures](https://github.com/gronxb/tauri-native/issues/6) | P1 | M | 001 | TODO |
+| [001](001-source-transparent-export-spike.md) | [#5 — [M0] Prove export from an unmodified Tauri project](https://github.com/gronxb/tauri-native/issues/5) | P1 | L | — | DONE · PR #22 merged |
+| [002](002-compatibility-source-integrity.md) | [#6 — [M0] Define compatibility and source-integrity acceptance fixtures](https://github.com/gronxb/tauri-native/issues/6) | P1 | M | 001 | DONE (verified implementation) |
 | [003](003-project-command-discovery.md) | [#7 — [M1] Discover ordinary Tauri projects and registered commands](https://github.com/gronxb/tauri-native/issues/7) | P1 | L | 001, 002 | TODO |
 | [004](004-generated-native-adapter.md) | [#8 — [M1] Generate the native command adapter and own the C ABI](https://github.com/gronxb/tauri-native/issues/8) | P1 | L | 003 | TODO |
 | [005](005-portable-ios-artifacts.md) | [#9 — [M1] Export a relocatable iOS XCFramework and frontend bundle](https://github.com/gronxb/tauri-native/issues/9) | P1 | L | 004 | TODO |
@@ -69,6 +69,6 @@ M1 follows the M0 decision. M2 requires portable artifacts. M3 builds real comma
 
 Before this roadmap, Rust core tests (8), CLI tests (9, from its package directory), Expo config-plugin test (1) and package typechecks passed. These were limited baseline results, not native/compatibility certification.
 
-On 2026-09-06, plan 001 was implemented and verified locally. The ordinary producer's synchronous commands pass generated native ABI, real macOS WKWebView, Tauri IPC parity and source-integrity checks. See [ADR 0004](../docs/adr/0004-source-transparent-export-spike.md) and the plan's execution result. CLI tests/package/type checks and Rust core tests also passed. This is a scoped feasibility go; mobile artifacts and general runtime compatibility are still pending. Delivery is tracked in GitHub #5; the implementation PR closes that issue when merged.
+On 2026-09-06, plan 001 was implemented and verified locally. The ordinary producer's synchronous commands pass generated native ABI, real macOS WKWebView, Tauri IPC parity and source-integrity checks. See [ADR 0004](../docs/adr/0004-source-transparent-export-spike.md) and the plan's execution result. CLI tests/package/type checks and Rust core tests also passed. This is a scoped feasibility go; mobile artifacts and general runtime compatibility are still pending. Delivered in [PR #22](https://github.com/gronxb/tauri-native/pull/22), merged into `main` as `bb1c3f1`; GitHub #5 is closed.
 
 Each issue is self-contained. New verification scripts are explicitly marked as future deliverables. `github-roadmap.json` records remote IDs/URLs after publication. Plan statuses: TODO, IN PROGRESS, DONE, BLOCKED, REJECTED.

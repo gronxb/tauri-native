@@ -10,6 +10,7 @@ Prerequisites: macOS with Xcode/Swift, a working Rust toolchain on `PATH`, and t
 cargo fetch --locked --manifest-path packages/cli/test/native-export/generator/Cargo.toml
 cargo fetch --locked --manifest-path packages/cli/test/fixtures/standard-tauri/src-tauri/Cargo.toml
 nub --cwd packages/cli run test:export:spike
+nub --cwd packages/cli run test:export:contract
 ```
 
 The runner fails on missing prerequisites; it does not skip native checks. It uses the installed Tauri example JS dependencies to build a temporary copy of the ordinary fixture and verifies the pinned versions first. This is a repository-level experiment, not the later independent-package-consumer test.
@@ -22,14 +23,16 @@ Successful evidence is written to ignored `target/export-spike/report.json`, wit
 2. Build its unchanged frontend with Vite. The frontend imports only `@tauri-apps/api/core`.
 3. Use `syn` to read its one ordinary `run()` / `generate_handler!` registration and generate a temporary `lib.rs`. Only registered root commands get ABI dispatch; the producer owns no dispatcher/header.
 4. Delete the entire generated copy, regenerate it, and check deterministic generated source.
-5. Reject explicit probes for async, command options, modules, conditional registration/features, State, AppHandle, WebviewWindow, plugins and application initialization. Check that failed generation creates no partial output and does not change its input. These are **diagnostic probes**, not native implementations of these capabilities.
+5. The contract runner additionally checks the complete negative fixture corpus for unsupported source forms. These are **diagnostic** checks, not native implementations of those capabilities.
 6. Compile the generated native library and load it through a small Swift C ABI consumer. Run its frontend in a real `WKWebView` with a tool-owned invoke shim; the shim unwraps transport envelopes into ordinary Tauri promise values/rejections.
 7. Build the original desktop application without changing its source.
 8. Compile a separate public-API experiment: calling the private ordinary command produces Rust E0603, and accessing `InvokeMessage::new` produces E0624.
 9. In a separate test-only copy, run the same requests through Tauri's real command macros and IPC with `tauri::test::MockRuntime`. Compare responses exactly to the generated ABI. MockRuntime is never part of the exported adapter.
 10. Assert that producer/fixture hashes still match.
 
-The scenarios cover a serde-renamed structured input/output, a tagged domain error, Unicode, default camelCase argument names, an invalid argument type, and an annotated but unregistered command.
+The scenarios cover a serde-renamed structured input/output, a tagged domain error, Unicode, default camelCase argument names, invalid/missing/null arguments, optional and unit results, adjacent-tagged enums, and an annotated but unregistered command.
+
+`test:export:contract` also compiles the fourteen complete negative fixture overlays as ordinary Tauri applications, checks their repeated export rejection, and verifies Git/byte-hash integrity. Its versioned support matrix and authored-file budget are in [the compatibility contract](../../../../docs/compatibility.md). It retains aggregate evidence in `target/export-contract/report.json`.
 
 ## Boundaries
 

@@ -82,3 +82,7 @@ The negative cases are generator **diagnostic** probes, not demonstrations that 
 3. [#8](https://github.com/gronxb/tauri-native/issues/8) must own the complete generated adapter/ABI, source diagnostics, and compatibility versioning.
 4. iOS/Android native builds and copied-artifact host execution remain mandatory; a macOS `.dylib` is not evidence for an XCFramework/mobile release.
 5. General async/state/plugin support remains conditional on new evidence. A no-go for one capability must not silently turn into a required producer SDK or core refactor.
+
+## M0 contract follow-up
+
+[Issue #6](https://github.com/gronxb/tauri-native/issues/6) expands this historical proof into [contract v1](../compatibility.md). Run `test:export:contract` for the current combined gate. The original ten string probes are replaced by complete, desktop-checked fixture overlays; native parity additionally covers missing/null arguments, optional/unit results and enum variants.
