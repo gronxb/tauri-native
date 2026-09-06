@@ -498,7 +498,7 @@
       "file": "plans/005-portable-ios-artifacts.md",
       "url": "https://github.com/gronxb/tauri-native/issues/9",
       "number": 9,
-      "bodySynced": false,
+      "bodySynced": true,
       "status": "DONE",
       "verification": {
         "date": "2026-09-06",
@@ -516,7 +516,9 @@
         "failurePreservesOutput": true,
         "legacyIosExport": true,
         "physicalDevice": "compiled/inspected, not executed"
-      }
+      },
+      "pr": "https://github.com/gronxb/tauri-native/pull/25",
+      "mergeCommit": "9237314575a87ec4df5c1f323d7f3b8ab3e14c71"
     },
     {
       "id": 6,
@@ -597,7 +599,30 @@
       "file": "plans/006-portable-android-artifacts.md",
       "url": "https://github.com/gronxb/tauri-native/issues/10",
       "number": 10,
-      "bodySynced": true
+      "bodySynced": false,
+      "status": "DONE",
+      "verification": {
+        "date": "2026-09-06",
+        "cliTests": 27,
+        "android": "target/export-android/report.json",
+        "iosRegression": "target/export-ios/report.json",
+        "emulator": "API 37 arm64-v8a, 16 KB",
+        "compiledAbis": [
+          "arm64-v8a",
+          "armeabi-v7a",
+          "x86",
+          "x86_64"
+        ],
+        "nativeCalls": 3,
+        "frontendCalls": 8,
+        "responses": 11,
+        "frees": 11,
+        "sourceDeleted": true,
+        "hostWithoutRust": true,
+        "apkAlignment": 16384,
+        "legacyAndroidExport": true,
+        "producerHost": "macOS"
+      }
     },
     {
       "id": 7,

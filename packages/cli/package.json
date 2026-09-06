@@ -24,6 +24,7 @@
     "test:export:spike": "node --experimental-strip-types test/native-export/spike.mjs",
     "test:export:contract": "node --experimental-strip-types test/native-export/contract.mjs",
     "test:export:ios": "nub run build && node --experimental-strip-types test/native-export/ios.mjs",
+    "test:export:android": "nub run build && node --experimental-strip-types test/native-export/android.mjs",
     "test:package": "node ../../scripts/verify-package.mjs",
     "typecheck": "tsc --noEmit"
   },

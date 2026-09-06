@@ -41,7 +41,7 @@ For Android, install the Android NDK and `cargo-ndk`:
 cargo install cargo-ndk --locked
 ```
 
-The default `src-tauri/gen/tauri-native/android` output contains `jniLibs/<abi>/libtauri_native_core.so` for arm64-v8a, armeabi-v7a, x86 and x86_64, plus `assets/tauri-native`. Android export targets API level 24.
+The default `src-tauri/gen/tauri-native/android` output contains `jniLibs/<abi>/libtauri_native_core.so` for arm64-v8a, armeabi-v7a, x86 and x86_64, plus `assets/tauri-native`, a generated C header, command metadata and the shared integrity manifest. Android export targets API level 24 and validates every ELF's architecture, API identification, ABI exports, normalized SONAME and 16 KB alignment. Both platforms use staged publication and preserve the prior output on failure. The currently verified producer environment and atomic replacement implementation are macOS; the native host does not need the CLI or Rust.
 
 Copy the platform directory to its host, or write it there directly:
 

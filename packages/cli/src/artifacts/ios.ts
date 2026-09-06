@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { commandOutput } from '../discovery/native-tool.ts';
-import { validateArtifactManifest, type ArtifactManifest } from './manifest.ts';
+import { validateArtifactManifest, type IosArtifacts } from './manifest.ts';
 
-export function iosSlices(directory: string): ArtifactManifest['native'] {
+export function iosSlices(directory: string): IosArtifacts['native'] {
   const info = JSON.parse(commandOutput('plutil', ['-convert', 'json', '-o', '-', path.join(directory, 'TauriNativeCore.xcframework/Info.plist')])) as {
     AvailableLibraries: { LibraryIdentifier: string; LibraryPath: string; SupportedPlatform: string; SupportedPlatformVariant?: string; SupportedArchitectures: string[] }[];
   };
@@ -25,6 +25,7 @@ export function iosSlices(directory: string): ArtifactManifest['native'] {
 
 export function validateIosArtifacts(directory: string): void {
   const manifest = validateArtifactManifest(directory);
+  if (manifest.platform !== 'ios') throw new Error('Expected iOS artifacts');
   const slices = iosSlices(directory);
   if (JSON.stringify(slices) !== JSON.stringify(manifest.native)) throw new Error('XCFramework slices do not match manifest');
   for (const slice of slices) {

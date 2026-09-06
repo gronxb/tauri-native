@@ -13,6 +13,10 @@ import { message } from '../utils/output.ts';
 import { run } from '../utils/process.ts';
 import { prepareAdapter, type AdapterWorkspace } from '../adapter/workspace.ts';
 import { discoverProject } from '../discovery/project.ts';
+import { inventory, sha256 } from '../artifacts/files.ts';
+import { ANDROID_ABIS, writeArtifactManifest } from '../artifacts/manifest.ts';
+import { androidTools, validateAndroidArtifacts, type AndroidTools } from '../artifacts/android.ts';
+import { publishArtifacts } from '../artifacts/staging.ts';
 
 export interface ExportAndroidOptions {
   tauriDir: string;
@@ -27,12 +31,7 @@ interface TauriConfig {
   };
 }
 
-export const ANDROID_ABIS = [
-  'arm64-v8a',
-  'armeabi-v7a',
-  'x86',
-  'x86_64',
-] as const;
+export { ANDROID_ABIS };
 
 const ANDROID_TARGETS = [
   'aarch64-linux-android',
@@ -63,8 +62,18 @@ export function copyAndroidLibraries(
 }
 
 export function exportAndroid(options: ExportAndroidOptions): void {
-  const adapter = options.manifest ? undefined : prepareAdapter(discoverProject(options.tauriDir));
-  try { exportAndroidArtifacts(options, adapter); }
+  const outputDirectory = path.resolve(options.outputDir ?? path.join(options.tauriDir, 'gen/tauri-native/android'));
+  let adapter: AdapterWorkspace | undefined;
+  let tools: AndroidTools;
+  try {
+    publishArtifacts(outputDirectory, stage => {
+      const project = options.manifest ? undefined : discoverProject(options.tauriDir);
+      tools = androidTools();
+      adapter = project ? prepareAdapter(project) : undefined;
+      exportAndroidArtifacts({ ...options, outputDir: stage }, adapter);
+    }, stage => validateAndroidArtifacts(stage, tools));
+    message(`Created validated Android artifacts in ${outputDirectory}`, '◆ ');
+  }
   catch (error) {
     if (adapter) throw new Error(`${error instanceof Error ? error.message : error}\nGenerated source maps to ${adapter.sourceRoot}; original command line numbers are preserved.`);
     throw error;
@@ -127,13 +136,19 @@ function exportAndroidArtifacts(options: ExportAndroidOptions, adapter?: Adapter
       ...ANDROID_ABIS.flatMap((abi) => ['--target', abi]),
       '--output-dir',
       cargoOutput,
-      'build',
       '--manifest-path',
       manifest,
+      'rustc',
       '--release',
-      ...(adapter ? ['--lib', '--locked'] : []),
+      '--lib',
+      ...(adapter ? ['--locked'] : []),
+      '--',
+      '-C', 'link-arg=-Wl,-z,max-page-size=16384',
+      '-C', 'link-arg=-Wl,-z,common-page-size=16384',
+      '-C', `link-arg=-Wl,-soname,${OUTPUT_LIBRARY_NAME}`,
     ],
-    { env: cargoEnvironment }
+    // cargo-ndk also performs initial metadata discovery in its current directory.
+    { env: cargoEnvironment, cwd: path.dirname(manifest) }
   );
 
   mkdirSync(outputDirectory, { recursive: true });
@@ -143,8 +158,17 @@ function exportAndroidArtifacts(options: ExportAndroidOptions, adapter?: Adapter
   rmSync(assets, { recursive: true, force: true });
   cpSync(frontendDist, assets, { recursive: true });
 
-  message(
-    `Created ${path.join(outputDirectory, 'jniLibs')}\nCreated ${assets}`,
-    '◆ '
-  );
+  if (adapter) {
+    mkdirSync(path.join(outputDirectory, 'include'), { recursive: true });
+    cpSync(adapter.header, path.join(outputDirectory, 'include/tauri_native.h'));
+  }
+  writeArtifactManifest(outputDirectory, {
+    platform: 'android', minimumApiLevel: 24, pageSize: 16384,
+    native: ANDROID_ABIS.map(abi => ({ abi, path: `jniLibs/${abi}/${OUTPUT_LIBRARY_NAME}` })),
+    assets: 'assets/tauri-native', integration: null, header: adapter ? 'include/tauri_native.h' : null,
+    source: {
+      ...(adapter?.fingerprints ?? { cargoManifestSha256: sha256(readFileSync(manifest)), tauriConfigSha256: sha256(readFileSync(configPath)) }),
+      frontendSha256: sha256(JSON.stringify(inventory(frontendDist))),
+    },
+  }, adapter?.model);
 }

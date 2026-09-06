@@ -23,7 +23,7 @@ The Tauri project should know as little as possible about tauri-native. The inte
 - Local plan: `plans/006-portable-android-artifacts.md`
 - Issue: [#10](https://github.com/gronxb/tauri-native/issues/10)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: TODO.
+- Status: DONE — implementation verified on 2026-09-06; PR delivery tracked by #10.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 
@@ -85,12 +85,12 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 
 ## Acceptance criteria
 
-- [ ] No custom producer ABI or manifest restructuring required.
-- [ ] Manifest/failure semantics match iOS.
-- [ ] Documented ABIs validate and both transports execute.
-- [ ] No RN/Lynx-specific source is duplicated into application artifacts.
-- [ ] Required checks have recorded results; skipped/blocked checks are identified accurately.
-- [ ] Changes stay within this issue's purpose and preserve the producer change budget.
+- [x] No custom producer ABI or manifest restructuring required.
+- [x] Manifest/failure semantics match iOS.
+- [x] Documented ABIs validate and both transports execute.
+- [x] No RN/Lynx-specific source is duplicated into application artifacts.
+- [x] Required checks have recorded results; skipped/blocked checks are identified accurately.
+- [x] Changes stay within this issue's purpose and preserve the producer change budget.
 
 ## Blockers and maintenance
 
@@ -99,3 +99,15 @@ Do not introduce a host-specific export fork or fat AAR without revisiting the a
 Reuse the metadata contract, not platform-specific build implementation. Keep architecture support explicit.
 
 Use a `codex/portable-android-artifacts` branch if creating one, follow the repository's conventional commit style, and do not commit/push/merge/publish changes without the execution task's authorization. Keep this issue and any checked-in plan status aligned.
+
+## Execution evidence — 2026-09-06
+
+- Ordinary producer export now writes four normalized libraries, unchanged assets, generated C header, command metadata and the shared versioned checksum manifest. No host JNI/framework source is included in the producer artifacts.
+- Fixed cargo-ndk's initial metadata working directory so export from a normal frontend project root selects the disposable generated Cargo workspace. Final linker options set 16 KB alignment and the normalized library SONAME without changing producer Cargo configuration.
+- The NDK's real `llvm-readelf` validates machine/class, API 24 identification, every LOAD segment, ABI functions, SONAME and platform dependencies. Output uses the same staged/atomic macOS publication as iOS.
+- `test:export:android` passed on API 37 arm64-v8a with `getconf PAGE_SIZE` = 16384. The installed packed CLI exported the ordinary fixture; its producer and CLI installation were then deleted. A separate Java/JNI/WebView host built from copied artifacts in a path with spaces while Rust was absent from its PATH. Three direct and eight unchanged frontend calls passed, with 11 matching frees.
+- All four core and host JNI ABIs were compiled/inspected. The signed APK passed `zipalign -c -P 16 -v 4` and signature verification. Only the named emulator ABI was executed; other CPU/API/physical-device execution is not claimed.
+- A real frontend build failure and actual C libraries with 4 KB alignment, API 26, wrong SONAME, wrong machine and an unbundled shared dependency could not replace the previous export even with refreshed checksums. Metadata tests also cover missing ABIs and incompatible layout/API/page values.
+- CLI: 27 tests, packed package verification and TypeScript passed. The full iOS relocation gate passed again after the shared manifest change. Explicit legacy Android export passed as ABI 0. M0 source/parity code is unchanged from PR #25's passing contract run; Android source integrity is additionally asserted by this platform gate.
+- Local evidence: `target/export-android/report.json`, `target/export-ios/report.json`; unchanged M0 baseline: `target/export-contract/report.json`.
+- Producer publication is currently verified on macOS; Linux/Windows atomic replacement remains unsupported. RN/Expo and Lynx SDK consumption remain #11/#12.

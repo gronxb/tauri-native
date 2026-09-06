@@ -16,7 +16,7 @@ import { run } from '../utils/process.ts';
 import { prepareAdapter, type AdapterWorkspace } from '../adapter/workspace.ts';
 import { discoverProject } from '../discovery/project.ts';
 import { inventory, sha256 } from '../artifacts/files.ts';
-import { writeArtifactManifest } from '../artifacts/manifest.ts';
+import { IOS_LAYOUT, writeArtifactManifest } from '../artifacts/manifest.ts';
 import { iosSlices, validateIosArtifacts } from '../artifacts/ios.ts';
 import { publishArtifacts } from '../artifacts/staging.ts';
 
@@ -195,6 +195,7 @@ function exportIosArtifacts(options: ExportIosOptions, adapter?: AdapterWorkspac
   writeFileSync(path.join(assetBundle, 'Info.plist'), ASSET_BUNDLE_INFO);
   writeGeneratedPodspec(outputDirectory);
   writeArtifactManifest(outputDirectory, {
+    ...IOS_LAYOUT,
     native: iosSlices(outputDirectory),
     source: {
       ...(adapter?.fingerprints ?? { cargoManifestSha256: sha256(readFileSync(manifest)), headerSha256: sha256(readFileSync(header)), tauriConfigSha256: sha256(readFileSync(configPath)) }),

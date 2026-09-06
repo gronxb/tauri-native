@@ -1,0 +1,164 @@
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { setTimeout } from 'node:timers/promises';
+import { inventory } from '../../src/artifacts/files.ts';
+import { androidTools, validateAndroidArtifacts } from '../../src/artifacts/android.ts';
+import { publishArtifacts } from '../../src/artifacts/staging.ts';
+import { snapshot } from './source-integrity.mjs';
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const root = path.resolve(here, '../../../..');
+const evidence = path.join(root, 'target/export-android');
+const work = mkdtempSync(path.join(tmpdir(), 'tauri native android '));
+const bundleId = `dev.taurinative.artifacttest.run${process.pid}`;
+const sdk = process.env.ANDROID_HOME ?? process.env.ANDROID_SDK_ROOT;
+const java = process.env.JAVA_HOME;
+assert.ok(sdk && existsSync(sdk), 'Set ANDROID_HOME to the installed Android SDK');
+assert.ok(java && existsSync(java), 'Set JAVA_HOME to JDK 17+ (Android Studio bundles a suitable JDK)');
+const tools = androidTools();
+const suffix = process.platform === 'win32' ? '.exe' : '';
+const adb = path.join(sdk, 'platform-tools', `adb${suffix}`);
+const newest = directory => readdirSync(directory).sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).at(-1);
+const buildTools = path.join(sdk, 'build-tools', newest(path.join(sdk, 'build-tools')));
+const androidJar = path.join(sdk, 'platforms', newest(path.join(sdk, 'platforms')), 'android.jar');
+const hostEnvironment = { ...process.env, PATH: `${path.join(java, 'bin')}${path.delimiter}/usr/bin${path.delimiter}/bin`, JAVA_HOME: java };
+let serial;
+let installed = false;
+function run(command, args, options = {}) {
+  console.log(`> ${command} ${args.join(' ')}`);
+  const result = spawnSync(command, args, { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024, ...options });
+  assert.equal(result.status, 0, `${command}: ${result.error ?? ''}\n${result.stdout}\n${result.stderr}`);
+  return result.stdout;
+}
+function host(command, args, options = {}) { return run(command, args, { env: hostEnvironment, ...options }); }
+function device(args) { return host(adb, ['-s', serial, ...args]); }
+mkdirSync(evidence, { recursive: true });
+rmSync(path.join(evidence, 'report.json'), { force: true });
+try {
+  const cli = path.join(work, 'cli installation'); mkdirSync(cli);
+  const packed = JSON.parse(run('npm', ['pack', path.join(root, 'packages/cli'), '--ignore-scripts', '--json', '--pack-destination', work]));
+  writeFileSync(path.join(cli, 'package.json'), '{"private":true}');
+  run('npm', ['install', '--prefix', cli, '--ignore-scripts', '--no-audit', '--no-fund', path.join(work, packed[0].filename)]);
+  const producer = path.join(work, 'ordinary producer');
+  cpSync(path.join(here, '../fixtures/standard-tauri'), producer, { recursive: true });
+  const modules = path.join(root, 'examples/tauri/node_modules');
+  const fixturePackage = JSON.parse(readFileSync(path.join(producer, 'package.json'), 'utf8'));
+  for (const name of ['@tauri-apps/api', 'vite']) assert.equal(JSON.parse(readFileSync(path.join(modules, name, 'package.json'))).version, fixturePackage.dependencies[name] ?? fixturePackage.devDependencies[name]);
+  symlinkSync(modules, path.join(producer, 'node_modules'), 'dir');
+  const before = snapshot(producer);
+  run('npm', ['run', 'build'], { cwd: producer });
+  const frontend = inventory(path.join(producer, 'dist'));
+  const output = path.join(producer, 'src-tauri/gen/tauri-native/android');
+  run(path.join(cli, 'node_modules/.bin/tauri-native'), ['export', 'android'], { cwd: producer });
+  assert.deepEqual(snapshot(producer), before);
+  validateAndroidArtifacts(output, tools);
+  assert.deepEqual(inventory(path.join(output, 'assets/tauri-native')), frontend);
+  assert.equal(readFileSync(path.join(output, 'manifest.json'), 'utf8').includes(work), false);
+
+  const published = inventory(output);
+  const configPath = path.join(producer, 'src-tauri/tauri.conf.json');
+  const configBytes = readFileSync(configPath); const broken = JSON.parse(configBytes);
+  broken.build.beforeBuildCommand = 'node -e "process.exit(23)"';
+  writeFileSync(configPath, JSON.stringify(broken)); const failedSource = snapshot(producer);
+  const failure = spawnSync(path.join(cli, 'node_modules/.bin/tauri-native'), ['export', 'android'], { cwd: producer, encoding: 'utf8' });
+  assert.equal(failure.status, 1, failure.stdout + failure.stderr);
+  assert.deepEqual(snapshot(producer), failedSource); assert.deepEqual(inventory(output), published);
+  writeFileSync(configPath, configBytes);
+
+  const damagedSource = path.join(work, 'invalid-core.c');
+  writeFileSync(damagedSource, '#include <stdint.h>\nuint32_t tauri_native_abi_version(void){return 1;}\nchar *tauri_native_invoke(const char*a,const char*b){return 0;}\nvoid tauri_native_string_free(char*p){}\n');
+  run(path.join(tools.bin, `clang${suffix}`), ['--target=aarch64-linux-android24', '-shared', '-fPIC', '-x', 'c', '-', '-o', path.join(work, 'libexternal.so')], { input: 'int external_value(void) { return 1; }\n' });
+  for (const [damage, expected] of [['alignment', /not 16 KB aligned/], ['api', /Expected Android API 24/], ['soname', /Incorrect Android library SONAME/], ['architecture', /Incorrect Android ELF architecture/], ['dependency', /Unbundled or unavailable Android dependency/]]) {
+    assert.throws(() => publishArtifacts(output, stage => {
+      cpSync(output, stage, { recursive: true });
+      const library = path.join(stage, `jniLibs/${damage === 'architecture' ? 'armeabi-v7a' : 'arm64-v8a'}/libtauri_native_core.so`);
+      const page = damage === 'alignment' ? '4096' : '16384';
+      run(path.join(tools.bin, `clang${suffix}`), [`--target=aarch64-linux-android${damage === 'api' ? 26 : 24}`, '-shared', '-fPIC', `-Wl,-z,max-page-size=${page}`, `-Wl,-z,common-page-size=${page}`, `-Wl,-soname,${damage === 'soname' ? 'wrong.so' : 'libtauri_native_core.so'}`, damagedSource, ...(damage === 'dependency' ? ['-L', work, '-Wl,--no-as-needed', '-lexternal'] : []), '-o', library]);
+      const manifest = JSON.parse(readFileSync(path.join(stage, 'manifest.json')));
+      manifest.files = inventory(stage).filter(file => file.path !== 'manifest.json');
+      writeFileSync(path.join(stage, 'manifest.json'), JSON.stringify(manifest));
+    }, stage => validateAndroidArtifacts(stage, tools)), expected);
+    assert.deepEqual(inventory(output), published);
+  }
+  assert.deepEqual(snapshot(producer), before);
+
+  const hostRoot = path.join(evidence, 'Independent Host'); rmSync(hostRoot, { recursive: true, force: true }); mkdirSync(hostRoot);
+  const relocated = path.join(hostRoot, 'Native Artifacts'); cpSync(output, relocated, { recursive: true });
+  rmSync(producer, { recursive: true, force: true }); rmSync(cli, { recursive: true, force: true });
+  host('/bin/sh', ['-c', '! command -v cargo && ! command -v rustc']);
+  validateAndroidArtifacts(relocated, tools);
+  const manifest = JSON.parse(readFileSync(path.join(relocated, 'manifest.json')));
+  const payload = path.join(hostRoot, 'apk contents'); mkdirSync(payload);
+  cpSync(path.join(relocated, 'jniLibs'), path.join(payload, 'lib'), { recursive: true });
+  cpSync(path.join(here, 'android'), path.join(hostRoot, 'src'), { recursive: true });
+  const triples = { 'arm64-v8a': 'aarch64-linux-android', 'armeabi-v7a': 'armv7a-linux-androideabi', x86: 'i686-linux-android', x86_64: 'x86_64-linux-android' };
+  for (const [abi, triple] of Object.entries(triples)) {
+    const library = path.join(payload, 'lib', abi, 'libartifact_host.so');
+    host(path.join(tools.bin, `clang${suffix}`), [`--target=${triple}24`, '-std=c11', '-shared', '-fPIC', '-I', path.join(relocated, 'include'), path.join(hostRoot, 'src/host.c'), '-L', path.join(relocated, 'jniLibs', abi), '-ltauri_native_core', '-Wl,-z,max-page-size=16384', '-Wl,-z,common-page-size=16384', '-Wl,-soname,libartifact_host.so', '-o', library]);
+    const headers = host(tools.readelf, ['--program-headers', library]);
+    const loads = headers.split('\n').filter(line => /^\s*LOAD\s/.test(line));
+    assert.ok(loads.length && loads.every(line => BigInt(line.trim().split(/\s+/).at(-1)) >= 16384n), `${abi} host JNI must also be 16 KB aligned`);
+  }
+  const classes = path.join(hostRoot, 'classes'); mkdirSync(classes);
+  host(path.join(java, 'bin', `javac${suffix}`), ['-encoding', 'UTF-8', '--release', '8', '-classpath', androidJar, '-d', classes, path.join(hostRoot, 'src/MainActivity.java')]);
+  const classFiles = inventory(classes).map(file => path.join(classes, file.path));
+  host(path.join(buildTools, 'd8'), ['--min-api', '24', '--lib', androidJar, '--output', payload, ...classFiles]);
+  const androidManifest = path.join(hostRoot, 'AndroidManifest.xml');
+  writeFileSync(androidManifest, `<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="${bundleId}"><uses-permission android:name="android.permission.INTERNET"/><application android:label="Artifact Test" android:debuggable="true" android:extractNativeLibs="false" android:theme="@android:style/Theme.Material.Light.NoActionBar"><activity android:name="dev.taurinative.artifacttest.MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>`);
+  const unsigned = path.join(hostRoot, 'unsigned.apk');
+  host(path.join(buildTools, `aapt2${suffix}`), ['link', '-I', androidJar, '--manifest', androidManifest, '--min-sdk-version', '24', '--target-sdk-version', '35', '-A', path.join(relocated, 'assets'), '-o', unsigned]);
+  host('zip', ['-q', '-0', '-r', unsigned, 'classes.dex', 'lib'], { cwd: payload });
+  const aligned = path.join(hostRoot, 'aligned.apk');
+  host(path.join(buildTools, `zipalign${suffix}`), ['-P', '16', '-f', '4', unsigned, aligned]);
+  const key = path.join(work, 'test.keystore');
+  host(path.join(java, 'bin', `keytool${suffix}`), ['-genkeypair', '-alias', 'test', '-keyalg', 'RSA', '-validity', '1', '-dname', 'CN=Artifact Test', '-keystore', key, '-storepass', 'android', '-keypass', 'android', '-noprompt']);
+  const apk = path.join(hostRoot, 'ArtifactHost.apk');
+  host(path.join(buildTools, 'apksigner'), ['sign', '--ks', key, '--ks-pass', 'pass:android', '--out', apk, aligned]);
+  host(path.join(buildTools, `zipalign${suffix}`), ['-c', '-P', '16', '-v', '4', apk]);
+  host(path.join(buildTools, 'apksigner'), ['verify', apk]);
+  const devices = host(adb, ['devices']).split('\n').filter(line => /^emulator-\d+\s+device\s*$/.test(line));
+  assert.equal(devices.length, 1, 'Run exactly one Android emulator configured for 16 KB pages');
+  serial = devices[0].split(/\s+/)[0];
+  assert.equal(device(['shell', 'getconf', 'PAGE_SIZE']).trim(), '16384');
+  const api = device(['shell', 'getprop', 'ro.build.version.sdk']).trim();
+  const architecture = device(['shell', 'getprop', 'ro.product.cpu.abi']).trim();
+  device(['install', apk]); installed = true;
+  device(['shell', 'am', 'start', '-W', '-n', `${bundleId}/dev.taurinative.artifacttest.MainActivity`]);
+  let result; const deadline = Date.now() + 50000;
+  while (!result && Date.now() < deadline) {
+    const read = spawnSync(adb, ['-s', serial, 'exec-out', 'run-as', bundleId, 'cat', 'files/report.json'], { env: hostEnvironment, encoding: 'utf8' });
+    // adb exec-out may return status 0 for a remote cat error before the app
+    // atomically publishes its report; only parse an actual JSON response.
+    if (read.status === 0 && read.stdout.trim().startsWith('{')) result = JSON.parse(read.stdout);
+    else await setTimeout(500);
+  }
+  assert.ok(result, 'Android consumer did not finish');
+  writeFileSync(path.join(evidence, 'native-result.json'), JSON.stringify(result, null, 2) + '\n');
+  assert.equal(result.fatal, undefined);
+  assert.equal(result.abiVersion, 1); assert.equal(result.responses, 11); assert.equal(result.responses, result.frees);
+  assert.deepEqual(result.direct, [
+    { abiVersion: 1, ok: true, value: { displayName: '한글 🦀', total: 10 } },
+    { abiVersion: 1, ok: false, error: { kind: 'empty_name', message: 'A name is required' } },
+    { abiVersion: 1, ok: true, value: null },
+  ]);
+  assert.deepEqual(result.frontend, {
+    success: { displayName: '한글 🦀', total: 10 }, error: { kind: 'empty_name', message: 'A name is required' },
+    camelCase: 'Hello, Ada!', unregisteredRejected: true, absent: null, explicitNull: null, unit: null,
+    selection: { type: 'display-name', data: '한글' },
+  });
+  writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({
+    ...result, emulator: { api, architecture, pageSize: 16384 }, installedCli: true,
+    producerUnchanged: true, producerDeleted: true, relocatedPathWithSpaces: true, hostWithoutRust: true,
+    frontendBytesUnchanged: true, validatedAbis: manifest.native, apkAlignment: 16384,
+    failedBuildPreservedOutput: true, invalidElfPreservedOutput: ['4 KB alignment', 'API 26', 'wrong SONAME', 'wrong machine', 'unbundled shared dependency'],
+    executionMatrix: 'All four ABIs built/inspected; only the named emulator ABI executed',
+  }, null, 2) + '\n');
+  console.log(`PASS: installed CLI → copied artifacts → 16 KB Android native + unchanged frontend. Evidence: ${evidence}/report.json`);
+} finally {
+  if (installed) spawnSync(adb, ['-s', serial, 'uninstall', bundleId]);
+  rmSync(work, { recursive: true, force: true });
+}
