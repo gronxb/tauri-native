@@ -1,6 +1,6 @@
 {
   "name": "@tauri-native/cli",
-  "version": "0.1.0",
+  "version": "1.0.0-rc.0",
   "description": "Export a Tauri microfrontend and its Rust core for native hosts",
   "type": "module",
   "bin": {

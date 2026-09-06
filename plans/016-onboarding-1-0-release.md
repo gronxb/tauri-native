@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/016-onboarding-1-0-release.md`
 - Issue: [#20](https://github.com/gronxb/tauri-native/issues/20)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: TODO.
+- Status: IN PROGRESS — candidate versioning, migration and onboarding records are prepared; independent evaluator and physical-device evidence remain open.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 
