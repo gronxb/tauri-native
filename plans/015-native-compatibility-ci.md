@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/015-native-compatibility-ci.md`
 - Issue: [#19](https://github.com/gronxb/tauri-native/issues/19)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: IN PROGRESS — required native/package validation and publication of the same candidate; #18 is awaiting its final native matrix.
+- Status: IN PROGRESS — required native/package validation and publication of the same candidate; #18 is merged and the hosted matrix is under acceptance.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 
@@ -107,3 +107,7 @@ Use a `codex/native-compatibility-ci` branch if creating one, follow the reposit
 ## Known integration check from #13
 
 The ABI 2 Release lifecycle gates pass on all four host/platform combinations. R8 preserves JNI names and the annotated WebView entry point in both compiled SDK bridges. A full Lynx independent-host minification attempt fails on missing optional XElement/Fresco/Gson/ServalMarkdown classes. Establish a minimal, properly declared minified host dependency set and run that full-app gate here; do not treat the scoped bridge check as full-app minification evidence.
+
+## Acceptance progress
+
+The first [hosted producer job](https://github.com/gronxb/tauri-native/actions/runs/34065191262/job/101572600905) passed its Rust, package, type, source-contract, watch, desktop and export gates. Its receiving iOS/Android jobs are still under acceptance; a successful producer does not certify native consumption. The final rebased commit requires its own complete run. Local checks passed for candidate-receipt failures, the transferred standalone Android APK on a 16 KB arm64 emulator, and the full minified Lynx Fieldnotes success/error/relaunch and pending-navigation flows. The changed-run native/web abandonment observations were 9.126 and 4.223 seconds during a 20-second Rust delay.

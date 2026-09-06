@@ -2,7 +2,7 @@
 
 The `Validate` workflow runs on pull requests and manual dispatch. The main-branch release workflow calls the same workflow and requires its candidate job to succeed before Changesets can publish. A missing, cancelled or failed native job prevents creation of a release candidate. There is no skip-to-success path for unavailable runners or devices.
 
-**Implementation status:** the workflow is under acceptance in #19. The table below defines its required matrix; it is not evidence that a hosted run has already passed. Link the successful run for the final commit here before closing the issue.
+**Implementation status:** the workflow is under acceptance in #19. The table below defines its required matrix; it is not evidence that a hosted run has already passed. The first [hosted producer job](https://github.com/gronxb/tauri-native/actions/runs/34065191262/job/101572600905) passed; native jobs and a complete run for the final rebased commit remain required before closing the issue.
 
 ## Bounded matrix
 
