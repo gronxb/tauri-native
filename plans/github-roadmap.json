@@ -203,7 +203,7 @@
       "file": "plans/002-compatibility-source-integrity.md",
       "url": "https://github.com/gronxb/tauri-native/issues/6",
       "number": 6,
-      "bodySynced": false,
+      "bodySynced": true,
       "status": "DONE",
       "verification": {
         "date": "2026-09-06",
@@ -215,7 +215,9 @@
         "cliTests": 9,
         "typecheck": true,
         "package": true
-      }
+      },
+      "pr": "https://github.com/gronxb/tauri-native/pull/23",
+      "mergeCommit": "8e08893e9f50d46a97f2d1b9957c39c904f13c62"
     },
     {
       "id": 3,
@@ -297,7 +299,24 @@
       "file": "plans/003-project-command-discovery.md",
       "url": "https://github.com/gronxb/tauri-native/issues/7",
       "number": 7,
-      "bodySynced": true
+      "bodySynced": false,
+      "status": "DONE",
+      "verification": {
+        "date": "2026-09-06",
+        "contract": "target/export-contract/report.json",
+        "cliTests": 18,
+        "nativeParityRequests": 14,
+        "abiResponses": 10022,
+        "abiFrees": 10022,
+        "objcBridges": [
+          "react-native",
+          "lynx"
+        ],
+        "iosSwiftTypecheck": true,
+        "androidJniCompile": true,
+        "legacyCoreTests": 8,
+        "platformRuntimeGate": "Remaining issues #9–#12"
+      }
     },
     {
       "id": 4,
@@ -378,7 +397,24 @@
       "file": "plans/004-generated-native-adapter.md",
       "url": "https://github.com/gronxb/tauri-native/issues/8",
       "number": 8,
-      "bodySynced": true
+      "bodySynced": false,
+      "status": "DONE",
+      "verification": {
+        "date": "2026-09-06",
+        "contract": "target/export-contract/report.json",
+        "cliTests": 18,
+        "nativeParityRequests": 14,
+        "abiResponses": 10022,
+        "abiFrees": 10022,
+        "objcBridges": [
+          "react-native",
+          "lynx"
+        ],
+        "iosSwiftTypecheck": true,
+        "androidJniCompile": true,
+        "legacyCoreTests": 8,
+        "platformRuntimeGate": "Remaining issues #9–#12"
+      }
     },
     {
       "id": 5,

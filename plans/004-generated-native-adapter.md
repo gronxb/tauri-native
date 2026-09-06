@@ -23,9 +23,15 @@ The Tauri project should know as little as possible about tauri-native. The inte
 - Local plan: `plans/004-generated-native-adapter.md`
 - Issue: [#8](https://github.com/gronxb/tauri-native/issues/8)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: TODO.
+- Status: DONE — implementation verified on 2026-09-06; PR delivery tracked by #8.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
+
+## Execution result
+
+The CLI owns native crate types, dispatcher, header and versioned ABI. Generated copies preserve source line positions. Rust selects semantic Result behavior, including an imported Result alias. The contract executes fourteen native/Tauri-handler comparisons, the unchanged frontend, a changed registration, a compiler failure with original line mapping, and 10,022 responses with matching frees. Actual RN/Lynx Objective-C++ bridges reject incompatible ABI before invocation and handle UTF-8/NUL commands. All four WebView shims preserve values/errors; legacy examples select the prior ABI explicitly.
+
+Validation: CLI tests (18), CLI/host package checks and typechecks, both host example typechecks, Rust legacy core tests (8), macOS native contract, iOS Simulator Swift typechecks and Android arm64 JNI compilation pass. Evidence: ignored `target/export-contract/report.json`. The CLI also built the ordinary fixture into an iOS XCFramework without source changes. Relocation manifests, atomic publication, platform runtime execution and independent host packaging remain #9–#12 gates.
 
 ## Current state and evidence
 
@@ -89,12 +95,12 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 
 ## Acceptance criteria
 
-- [ ] Ordinary fixture executes without author-written bridge code.
-- [ ] Direct and WebView callers receive correct value/error semantics.
-- [ ] Generated intermediates can be removed and reproduced.
-- [ ] ABI versioning is explicit and consumers check it.
-- [ ] Required checks have recorded results; skipped/blocked checks are identified accurately.
-- [ ] Changes stay within this issue's purpose and preserve the producer change budget.
+- [x] Ordinary fixture executes without author-written bridge code.
+- [x] Direct and WebView callers receive correct value/error semantics.
+- [x] Generated intermediates can be removed and reproduced.
+- [x] ABI versioning is explicit and consumers check it.
+- [x] Required checks have recorded results; skipped/blocked checks are identified accurately.
+- [x] Changes stay within this issue's purpose and preserve the producer change budget.
 
 ## Blockers and maintenance
 

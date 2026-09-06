@@ -13,6 +13,7 @@ import {
   TauriView,
   invoke,
   type InvokeResponse,
+  type InvokeError,
 } from '@tauri-native/react-native';
 
 interface Calculation {
@@ -26,11 +27,11 @@ const MONOSPACE = Platform.select({ ios: 'Menlo', android: 'monospace' });
 export default function App() {
   const [expression, setExpression] = useState(DEFAULT_EXPRESSION);
   const [nativeResult, setNativeResult] =
-    useState<InvokeResponse<Calculation> | null>(null);
+    useState<InvokeResponse<Calculation, InvokeError> | null>(null);
 
   const calculateThroughNativeModule = () => {
     setNativeResult(
-      invoke<Calculation>('calculate', { expression }),
+      invoke<Calculation, InvokeError>('calculate', { expression }),
     );
   };
 

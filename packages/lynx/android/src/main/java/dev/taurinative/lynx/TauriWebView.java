@@ -30,7 +30,12 @@ public final class TauriWebView extends WebView {
         const callbacks = pending.get(id);
         if (!callbacks) return;
         pending.delete(id);
-        callbacks.resolve(JSON.parse(responseJson));
+        const response = JSON.parse(responseJson);
+        if (response.abiVersion === 1) {
+          response.ok ? callbacks.resolve(response.value) : callbacks.reject(response.error);
+        } else {
+          callbacks.resolve(response);
+        }
       };
       window.__RNTauriReject = (id, message) => {
         const callbacks = pending.get(id);

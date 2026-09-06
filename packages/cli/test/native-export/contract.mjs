@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { snapshot } from './source-integrity.mjs';
+import { nativeTool, DiscoveryError } from '../../src/discovery/native-tool.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../../../..');
@@ -12,7 +13,6 @@ const corpus = path.resolve(here, '../fixtures/compatibility');
 const contract = JSON.parse(readFileSync(path.join(corpus, 'cases.json'), 'utf8'));
 const fixture = path.resolve(corpus, contract.base);
 const target = path.join(root, 'target');
-const generator = path.join(target, 'export-spike-generator/debug/tauri-native-export-spike');
 const reportPath = path.join(target, 'export-contract/report.json');
 const before = snapshot(corpus);
 const baseBefore = snapshot(fixture);
@@ -28,7 +28,7 @@ rmSync(reportPath, { force: true });
 try {
   // Includes actual native/WKWebView and desktop-handler parity, successful
   // export, deleting/recreating intermediates and git/hash source checks.
-  run(process.execPath, [path.join(here, 'spike.mjs')], { stdio: 'inherit' });
+  run(process.execPath, ['--experimental-strip-types', path.join(here, 'spike.mjs')], { stdio: 'inherit' });
   const positive = JSON.parse(readFileSync(path.join(target, 'export-spike/report.json'), 'utf8'));
   const blocked = [];
   for (const test of contract.blocked) {
@@ -45,9 +45,11 @@ try {
     run('cargo', ['check', '--lib', '--locked', '--offline', '--manifest-path', path.join(producer, 'src-tauri/Cargo.toml'), '--target-dir', target]);
     const output = path.join(work, `${test.name}-generated.rs`);
     for (let attempt = 0; attempt < 2; attempt++) {
-      const result = spawnSync(generator, [path.join(producer, 'src-tauri/src/lib.rs'), output], { encoding: 'utf8' });
-      assert.equal(result.status, 1, `${test.name} must reject export`);
-      assert.ok(result.stderr.includes(test.diagnostic), result.stderr);
+      assert.throws(() => nativeTool('generate', path.join(producer, 'src-tauri/src/lib.rs'), output), error => {
+        assert.ok(error instanceof DiscoveryError);
+        assert.ok(error.message.includes(test.diagnostic), error.message);
+        return true;
+      });
       assert.equal(existsSync(output), false, 'A rejection must not publish a valid-looking artifact.');
       assert.deepEqual(snapshot(producer), hashes, `${test.name} changed source`);
       run('git', ['diff', '--exit-code'], { cwd: producer });

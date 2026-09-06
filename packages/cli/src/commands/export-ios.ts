@@ -12,6 +12,8 @@ import { readLibraryName } from '../utils/cargo-manifest.ts';
 import { requireFile } from '../utils/files.ts';
 import { message } from '../utils/output.ts';
 import { run } from '../utils/process.ts';
+import { prepareAdapter, type AdapterWorkspace } from '../adapter/workspace.ts';
+import { discoverProject } from '../discovery/project.ts';
 
 export interface ExportIosOptions {
   tauriDir: string;
@@ -65,15 +67,25 @@ export function writeGeneratedPodspec(outputDirectory: string): string {
 }
 
 export function exportIos(options: ExportIosOptions): void {
+  const adapter = options.manifest || options.header ? undefined : prepareAdapter(discoverProject(options.tauriDir));
+  try { exportIosArtifacts(options, adapter); }
+  catch (error) {
+    if (adapter) throw new Error(`${error instanceof Error ? error.message : error}\nGenerated source maps to ${adapter.sourceRoot}; original command line numbers are preserved.`);
+    throw error;
+  }
+  finally { adapter?.cleanup(); }
+}
+
+function exportIosArtifacts(options: ExportIosOptions, adapter?: AdapterWorkspace): void {
   const workingDirectory = process.cwd();
   const tauriDirectory = path.resolve(workingDirectory, options.tauriDir);
-  const manifest = options.manifest
+  const manifest = adapter?.manifest ?? (options.manifest
     ? path.resolve(workingDirectory, options.manifest)
-    : path.join(tauriDirectory, 'crates/app-core/Cargo.toml');
+    : path.join(tauriDirectory, 'crates/app-core/Cargo.toml'));
   const manifestDirectory = path.dirname(manifest);
-  const header = options.header
+  const header = adapter?.header ?? (options.header
     ? path.resolve(workingDirectory, options.header)
-    : path.join(manifestDirectory, 'include/tauri_native.h');
+    : path.join(manifestDirectory, 'include/tauri_native.h'));
   const outputDirectory = path.resolve(
     workingDirectory,
     options.outputDir ?? path.join(tauriDirectory, 'gen/tauri-native/ios')
@@ -86,7 +98,7 @@ export function exportIos(options: ExportIosOptions): void {
 
   const config = JSON.parse(readFileSync(configPath, 'utf8')) as TauriConfig;
   const frontendDirectory = path.dirname(tauriDirectory);
-  if (typeof config.build?.beforeBuildCommand === 'string') {
+  if (!adapter && typeof config.build?.beforeBuildCommand === 'string') {
     message(`Building the Tauri microfrontend in ${frontendDirectory}`);
     execSync(config.build.beforeBuildCommand, {
       cwd: frontendDirectory,
@@ -98,13 +110,13 @@ export function exportIos(options: ExportIosOptions): void {
     throw new Error(`${configPath} must define build.frontendDist`);
   }
 
-  const frontendDist = path.resolve(
+  const frontendDist = adapter?.frontendDist ?? path.resolve(
     tauriDirectory,
     config.build.frontendDist
   );
   requireFile(path.join(frontendDist, 'index.html'));
 
-  const libraryName = readLibraryName(manifest);
+  const libraryName = adapter?.libraryName ?? readLibraryName(manifest);
   const targetDirectory = path.join(tauriDirectory, 'target/tauri-native');
   const cargoEnvironment = {
     ...process.env,
@@ -115,7 +127,7 @@ export function exportIos(options: ExportIosOptions): void {
   for (const target of IOS_TARGETS) {
     run(
       'cargo',
-      ['build', '--manifest-path', manifest, '--target', target, '--release'],
+      ['build', '--manifest-path', manifest, '--target', target, '--release', ...(adapter ? ['--lib', '--locked'] : [])],
       { env: cargoEnvironment }
     );
   }

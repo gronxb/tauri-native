@@ -23,7 +23,7 @@ The Tauri project should know as little as possible about tauri-native. The inte
 - Local plan: `plans/002-compatibility-source-integrity.md`
 - Issue: [#6](https://github.com/gronxb/tauri-native/issues/6)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: DONE — verified 2026-09-06; delivery tracked by #6.
+- Status: DONE — verified 2026-09-06; [PR #23](https://github.com/gronxb/tauri-native/pull/23) merged into `main` as `8e08893`; #6 is closed.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 

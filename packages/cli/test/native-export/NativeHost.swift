@@ -4,18 +4,23 @@ import WebKit
 final class NativeCore {
   typealias Invoke = @convention(c) (UnsafePointer<CChar>?, UnsafePointer<CChar>?) -> UnsafeMutablePointer<CChar>?
   typealias Free = @convention(c) (UnsafeMutablePointer<CChar>?) -> Void
+  typealias Version = @convention(c) () -> UInt32
   let handle: UnsafeMutableRawPointer
   let invoke: Invoke
   let free: Free
+  var responses = 0
+  var frees = 0
 
   init(_ path: String) {
     guard let handle = dlopen(path, RTLD_NOW | RTLD_LOCAL),
       let invoke = dlsym(handle, "tauri_native_invoke"),
-      let free = dlsym(handle, "tauri_native_string_free")
+      let free = dlsym(handle, "tauri_native_string_free"),
+      let version = dlsym(handle, "tauri_native_abi_version")
     else { fatalError("Cannot load generated native ABI") }
     self.handle = handle
     self.invoke = unsafeBitCast(invoke, to: Invoke.self)
     self.free = unsafeBitCast(free, to: Free.self)
+    precondition(unsafeBitCast(version, to: Version.self)() == 1, "Expected ABI 1")
   }
 
   func call(_ command: String, _ payload: Any) throws -> String {
@@ -24,7 +29,8 @@ final class NativeCore {
     return command.withCString { command in
       json.withCString { payload in
         guard let result = invoke(command, payload) else { fatalError("Null Rust result") }
-        defer { free(result) }
+        responses += 1
+        defer { free(result); frees += 1 }
         return String(cString: result)
       }
     }
@@ -109,7 +115,7 @@ final class FrontendHost: NSObject, WKScriptMessageHandler, WKNavigationDelegate
         guard let text = value as? String, text.hasPrefix("{") else { return }
         do {
           let frontend = try JSONSerialization.jsonObject(with: Data(text.utf8))
-          let output = try JSONSerialization.data(withJSONObject: ["direct": self.direct, "frontend": frontend])
+          let output = try JSONSerialization.data(withJSONObject: ["direct": self.direct, "frontend": frontend, "responses": self.core.responses, "frees": self.core.frees])
           print(String(decoding: output, as: UTF8.self))
           exit(0)
         } catch { fatalError("Frontend result: \(error)") }
@@ -131,6 +137,10 @@ let requests = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileU
 let direct = try requests.map { request -> Any in
   let response = try core.call(request["command"] as! String, request["payload"] ?? [:])
   return try JSONSerialization.jsonObject(with: Data(response.utf8))
+}
+for index in 0..<10000 {
+  let request = requests[index % requests.count]
+  _ = try core.call(request["command"] as! String, request["payload"] ?? [:])
 }
 let host = FrontendHost(core: core, assets: URL(fileURLWithPath: args[2]), direct: direct)
 let timeout = Timer.scheduledTimer(withTimeInterval: 30, repeats: false) { _ in

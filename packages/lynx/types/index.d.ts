@@ -11,15 +11,15 @@ export interface InvokeError {
   message: string;
 }
 
-export type InvokeResponse<T> =
+export type InvokeResponse<T, E = unknown> =
   | { ok: true; value: T }
-  | { ok: false; error: InvokeError };
+  | { ok: false; error: E };
 
 export { TauriNative } from '../generated/TauriNative';
-export declare function invoke<T>(
+export declare function invoke<T, E = unknown>(
   command: string,
   payload: Record<string, unknown>
-): InvokeResponse<T>;
+): InvokeResponse<T, E>;
 export declare function TauriView(
   props: ViewProps
 ): ReturnType<typeof import('@lynx-js/react').createElement>;

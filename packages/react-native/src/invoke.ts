@@ -5,15 +5,15 @@ export interface InvokeError {
   message: string;
 }
 
-export type InvokeResponse<T> =
+export type InvokeResponse<T, E = unknown> =
   | { ok: true; value: T }
-  | { ok: false; error: InvokeError };
+  | { ok: false; error: E };
 
-export function invoke<T>(
+export function invoke<T, E = unknown>(
   command: string,
   payload: Record<string, unknown>
-): InvokeResponse<T> {
+): InvokeResponse<T, E> {
   return JSON.parse(
     NativeTauri.invoke(command, JSON.stringify(payload))
-  ) as InvokeResponse<T>;
+  ) as InvokeResponse<T, E>;
 }
