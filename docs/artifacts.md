@@ -28,7 +28,7 @@ For manual Xcode integration, add the XCFramework to the host's linked libraries
 
 A custom native consumer checks `tauri_native_abi_version() == 1`, calls `tauri_native_invoke(command, payloadJson)`, copies the returned UTF-8 JSON, and calls `tauri_native_string_free` exactly once for every non-null result. ABI 1 frames contain `{abiVersion:1,ok:true,value}` or `{abiVersion:1,ok:false,error}`. Serialize arguments as JSON. The host owns lifecycle and does not start another Tauri runtime.
 
-React Native/Expo consumers use a host-owned `artifactsDir` or bare RN local Pod/source sets; see the [host integration guide](../packages/react-native/README.md). Lynx artifact-only configuration is tracked in [#12](https://github.com/gronxb/tauri-native/issues/12). The native relocation gate below verifies a minimal independent UIKit/WKWebView consumer; the [RN/Expo gate](../packages/react-native/test/native-artifacts/README.md) separately exercises the installed host package. Neither certifies physical-device execution.
+React Native/Expo consumers use a host-owned `artifactsDir` or bare RN local Pod/source sets; see the [RN guide](../packages/react-native/README.md). [Lynx consumers](../packages/lynx/README.md) use the same copied artifacts and Node validation through their host package, with public Lynx native modules/autolinking. The native relocation gate below verifies a minimal independent UIKit/WKWebView consumer; the [RN/Expo gate](../packages/react-native/test/native-artifacts/README.md) and [Lynx gate](../packages/lynx/test/native-artifacts/README.md) separately exercise the installed host packages. These simulator gates do not certify physical-device execution.
 
 ## Android
 

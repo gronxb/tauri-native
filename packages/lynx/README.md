@@ -8,18 +8,27 @@ Experimental Lynx native library for `tauri-native`.
 npm install @tauri-native/lynx@experimental
 ```
 
-Install `@tauri-native/cli` in the separate Tauri project and export the app-specific artifacts there before building the host:
+The producer installs `@tauri-native/cli` in its ordinary Tauri project and exports there:
 
 ```sh
-cd ../tauri
 npx tauri-native export ios
 npx tauri-native export android
 ```
 
-For iOS, add the co-located export as a local Pod before calling `use_lynx_library!`:
+Transfer the **whole** `ios/` and `android/` export directories into the Lynx host's `tauri-native/` folder. These are the same platform artifacts consumed by RN; there is no Lynx-specific export. The host needs neither the CLI, RN package, producer checkout nor Rust. Manifest format 1 requires the corresponding CLI/host implementation; the earlier experimental 0.1.0 release predates artifact-only configuration.
+
+Validate received files with the Node-only reader shipped in this package:
+
+```sh
+node --input-type=module -e "import {readArtifacts} from '@tauri-native/lynx/artifacts'; readArtifacts('./tauri-native/ios','ios'); readArtifacts('./tauri-native/android','android')"
+```
+
+The reader checks platform, ABI, layout and the complete file inventory/checksums. Missing, changed, linked or incompatible files fail without a source fallback. The reader shares its implementation with RN, but each package contains its own copy. The manifest is an integrity receipt, not a publisher signature.
+
+For iOS, add the host-owned export as a local Pod before calling `use_lynx_library!`, then run `pod install` from the host's `ios/` directory:
 
 ```ruby
-export_dir = File.expand_path('../../tauri-app/src-tauri/gen/tauri-native/ios', __dir__)
+export_dir = File.expand_path('../tauri-native/ios', __dir__)
 pod 'TauriNativeGenerated', :path => export_dir
 ```
 
@@ -38,10 +47,12 @@ plugins {
 }
 
 android.sourceSets.main {
-  assets.srcDir '../../../tauri-app/src-tauri/gen/tauri-native/android/assets'
-  jniLibs.srcDir '../../../tauri-app/src-tauri/gen/tauri-native/android/jniLibs'
+  assets.srcDir '../../tauri-native/android/assets'
+  jniLibs.srcDir '../../tauri-native/android/jniLibs'
 }
 ```
+
+Run artifact validation before native integration/build. The example's Podfile and Gradle configuration call its `scripts/validate-artifacts.mjs` directly; npm build commands validate first too. Keep the complete directory together when upgrading, replace the received platform directory rather than merging stale files, and run `pod install` after iOS replacement so CocoaPods refreshes the contained archive's link settings.
 
 ## API
 

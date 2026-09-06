@@ -84,7 +84,7 @@ npx tauri-native export ios \
 
 The default source implementation reads the ordinary `src-tauri/Cargo.toml` and registered commands, then owns adapter, native crate-type and header generation in a disposable copy. No app-core extraction or producer SDK is required. Run `tauri-native inspect` to see the verified commands and source diagnostics. The earlier published 0.1.0 release and current calculator example use the explicit legacy `--manifest` route. See the [CLI guide](packages/cli/README.md) and [bounded compatibility contract](docs/compatibility.md).
 
-For Expo, copy both complete platform exports into a host-owned `tauri-native/` directory and configure `@tauri-native/react-native` with `{ "artifactsDir": "./tauri-native" }`. During `expo prebuild`, the plugin validates and copies the selected platform into the generated host project. The host needs neither producer source nor Rust. See the [React Native integration guide](packages/react-native/README.md) for Expo and bare RN setup. Lynx artifact-only configuration is tracked in [#12](https://github.com/gronxb/tauri-native/issues/12).
+For Expo, copy both complete platform exports into a host-owned `tauri-native/` directory and configure `@tauri-native/react-native` with `{ "artifactsDir": "./tauri-native" }`. During `expo prebuild`, the plugin validates and copies the selected platform into the generated host project. The host needs neither producer source nor Rust. See the [React Native integration guide](packages/react-native/README.md) for Expo and bare RN setup, and the [Lynx integration guide](packages/lynx/README.md) for the same copied-artifact contract through public Lynx native modules/autolinking.
 
 ## Architecture
 
@@ -114,13 +114,16 @@ nub --cwd examples/tauri run export:android
 mkdir -p examples/react-native/tauri-native
 cp -R examples/tauri/src-tauri/gen/tauri-native/ios examples/react-native/tauri-native/
 cp -R examples/tauri/src-tauri/gen/tauri-native/android examples/react-native/tauri-native/
+mkdir -p examples/lynx/tauri-native
+cp -R examples/tauri/src-tauri/gen/tauri-native/ios examples/lynx/tauri-native/
+cp -R examples/tauri/src-tauri/gen/tauri-native/android examples/lynx/tauri-native/
 nub --cwd examples/react-native run prebuild:clean:ios
 nub --cwd examples/react-native run prebuild:clean:android
 nub --cwd examples/lynx run pods
 nub --cwd examples/lynx run build:android
 ```
 
-The Tauri example owns exports under `src-tauri/gen/tauri-native`. Transfer them to the RN host's dedicated `tauri-native` folder before prebuild. The Lynx example currently references the producer's iOS export directly. Re-export and transfer the whole platform directory after changing the embedded Tauri frontend or Rust core; replace an existing received directory rather than merging stale files into it.
+The Tauri example owns exports under `src-tauri/gen/tauri-native`. Transfer them to each host's dedicated `tauri-native` folder before integration. Re-export and transfer the whole platform directory after changing the embedded Tauri frontend or Rust core; replace an existing received directory rather than merging stale files into it. Run `pod install` after iOS artifact replacement to refresh CocoaPods link settings.
 
 Run the React Native example:
 

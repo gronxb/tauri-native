@@ -63,7 +63,7 @@ M0 must produce a **go/no-go** result. Do not promise automatic export of arbitr
 
 ### M2 — Drop-in artifacts for React Native and Lynx
 
-- [ ] [#11 — [M2] Let React Native and Expo consume copied artifacts only](https://github.com/gronxb/tauri-native/issues/11)
+- [x] [#11 — [M2] Let React Native and Expo consume copied artifacts only](https://github.com/gronxb/tauri-native/issues/11)
 - [ ] [#12 — [M2] Bring Lynx to the same artifact-only integration contract](https://github.com/gronxb/tauri-native/issues/12)
 
 ### M3 — Real commands and host interaction

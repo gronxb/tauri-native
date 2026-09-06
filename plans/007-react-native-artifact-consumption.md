@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/007-react-native-artifact-consumption.md`
 - Issue: [#11](https://github.com/gronxb/tauri-native/issues/11)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: IMPLEMENTED — all required gates passed; PR merge pending.
+- Status: DONE — [PR #27](https://github.com/gronxb/tauri-native/pull/27) merged to main.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 
