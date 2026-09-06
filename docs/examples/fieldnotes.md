@@ -66,3 +66,24 @@ The Rust tests cover content search after launching a new process, replacement b
 The export gate installs a packed CLI, checks all iOS slices and Android ABIs, compares source and frontend hashes, copies the complete outputs, and removes its producer before host compilation. Mobile execution and build measurements are separate required evidence; a successful export alone does not certify them. Test-owned hosts are not independent external adopters.
 
 Run `nub --cwd packages/cli run test:external-consumer` with the disposable hosts and native-only PATH described in the [gate instructions](../../packages/cli/test/feature/README.md). It records all six Release builds and save/search/relaunch flows, including package hashes, artifact inventories and timing/size measurement boundaries. For producer-only iteration, use `test:external-consumer:export`. The gate instructions also cover a controlled Rust edit and delayed-search cancellation run; its injected delay exists only in a disposable test copy.
+
+## Recorded local results (2026-09-07)
+
+Both the original producer and the controlled Rust-only variant passed the six installed RN/Expo/Lynx Release consumers on arm64 iOS Simulator 26.4.1 and arm64 Android API 37 with 16 KB pages. The desktop frontend passed save/search and process relaunch for both variants, and all three iOS slices and four Android ABIs were built and inspected. The final original-code run completed without manual intervention.
+
+The changed-Rust run also passed all twelve pending-navigation cases. Each returned to the idle library in under 18 seconds while a 20-second Rust search was running. Its Expo Android feature flow required manually stopping the previous, background Lynx test application after Maestro CDP discovery timed out on that application's socket. The runner now stops the other gate-owned Android application before each consumer; the final original-code matrix verified that cleanup. This intervention is retained in the evidence and is not represented as an unattended changed-Rust run.
+
+The original-code measurements below were recorded on an Apple M4 Mac with 24 GiB RAM. Build caches were warm and other verification work shared the machine. Native build time covers the xcodebuild/Gradle command, excluding npm installation, CocoaPods and separately invoked bundle tasks. Size is `du -sk` for the whole simulator app or universal APK; it is neither incremental SDK overhead nor installed-device size. Relaunch time adds Maestro's launch and first library-assertion durations, including automation/settling overhead. These are reproducible observations, not first-frame benchmarks or isolated performance comparisons.
+
+| Host | Platform | Native Release build (s) | App/APK disk size (MiB) | Observed relaunch to library (s) |
+| --- | --- | ---: | ---: | ---: |
+| React Native | ios | 66.07 | 20.26 | 4.68 |
+| React Native | android | 71.75 | 53.96 | 8.56 |
+| Lynx | ios | 66.82 | 19.61 | 4.87 |
+| Lynx | android | 26.24 | 45.22 | 9.66 |
+| Expo CNG | ios | 76.52 | 27.07 | 2.60 |
+| Expo CNG | android | 69.69 | 69.35 | 6.02 |
+
+The original producer's iOS and Android exports took 42.43 and 66.97 seconds in that run. Complete exported inventories were 51.75 MiB for all iOS slices and 2.87 MiB for all Android ABIs/assets. Refreshing packaged artifacts still requires replacing the received directory and rebuilding/reinstalling the host. Storage is local to each host sandbox; the example does not implement cross-app synchronization.
+
+The [compact evidence record](../evidence/fieldnotes-local-2026-09-07.json) retains package/manifest hashes, both native result sets and measurement boundaries. Full local reports and JUnit/Maestro logs are under `target/document-feature/` and `target/document-feature-changed/`. Automated CI, full minified host acceptance, physical devices and independent adopters are separate M5 gates.

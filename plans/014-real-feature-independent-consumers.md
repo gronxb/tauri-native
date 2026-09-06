@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/014-real-feature-independent-consumers.md`
 - Issue: [#18](https://github.com/gronxb/tauri-native/issues/18)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: IN PROGRESS — ordinary document persistence/search and independent artifact-only consumers.
+- Status: DONE — ordinary Fieldnotes producer, six packed Release consumers and controlled Rust-change/pending-navigation evidence in [PR #35](https://github.com/gronxb/tauri-native/pull/35).
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 
@@ -87,12 +87,12 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 
 ## Acceptance criteria
 
-- [ ] Example demonstrates useful reuse beyond arithmetic.
-- [ ] No producer bridge-specific code is needed.
-- [ ] Packed external consumers pass on both hosts/platforms.
-- [ ] Measurements and integration tradeoffs are recorded honestly.
-- [ ] Required checks have recorded results; skipped/blocked checks are identified accurately.
-- [ ] Changes stay within this issue's purpose and preserve the producer change budget.
+- [x] Example demonstrates useful reuse beyond arithmetic.
+- [x] No producer bridge-specific code is needed.
+- [x] Packed external consumers pass on both hosts/platforms.
+- [x] Measurements and integration tradeoffs are recorded honestly.
+- [x] Required checks have recorded results; skipped/blocked checks are identified accurately.
+- [x] Changes stay within this issue's purpose and preserve the producer change budget.
 
 ## Blockers and maintenance
 
@@ -101,3 +101,7 @@ Unsupported state/plugin requirements must feed back into compatibility scope, n
 Remove obsolete tailored demo scaffolding only when this replacement makes it unnecessary. Focus on one feature.
 
 Use a `codex/real-feature-independent-consumers` branch if creating one, follow the repository's conventional commit style, and do not commit/push/merge/publish changes without the execution task's authorization. Keep this issue and any checked-in plan status aligned.
+
+## Recorded completion
+
+The [Fieldnotes walkthrough and measurements](../docs/examples/fieldnotes.md#recorded-local-results-2026-09-07) record both native matrices, the changed-run harness intervention and the final unattended original-code run. All native consumers used copied artifacts and independently installed packages with Rust absent from their build PATH. Desktop Release build, three document scenarios, package/unit/type checks and actual Tauri path/event protocol checks passed. Physical execution and independent adoption are not claimed by this example gate.

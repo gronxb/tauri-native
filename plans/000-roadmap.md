@@ -79,7 +79,7 @@ M0 must produce a **go/no-go** result. Do not promise automatic export of arbitr
 
 ### M5 — Validate adoption and ship 1.0
 
-- [ ] [#18 — [M5] Demonstrate a useful Tauri feature in independent mobile hosts](https://github.com/gronxb/tauri-native/issues/18)
+- [x] [#18 — [M5] Demonstrate a useful Tauri feature in independent mobile hosts](https://github.com/gronxb/tauri-native/issues/18)
 - [ ] [#19 — [M5] Gate changes with native, compatibility, and package verification](https://github.com/gronxb/tauri-native/issues/19)
 - [ ] [#20 — [M5] Validate independent onboarding and prepare the 1.0 release](https://github.com/gronxb/tauri-native/issues/20)
 
