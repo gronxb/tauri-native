@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -45,10 +45,7 @@ try {
   run('npm', ['install', '--prefix', cli, '--ignore-scripts', '--no-audit', '--no-fund', path.join(work, packed[0].filename)]);
   const producer = path.join(work, 'ordinary producer');
   cpSync(path.join(here, '../fixtures/standard-tauri'), producer, { recursive: true });
-  const modules = path.join(root, 'examples/tauri/node_modules');
-  const fixturePackage = JSON.parse(readFileSync(path.join(producer, 'package.json'), 'utf8'));
-  for (const name of ['@tauri-apps/api', 'vite']) assert.equal(JSON.parse(readFileSync(path.join(modules, name, 'package.json'))).version, fixturePackage.dependencies[name] ?? fixturePackage.devDependencies[name]);
-  symlinkSync(modules, path.join(producer, 'node_modules'), 'dir');
+  run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: producer });
   const before = snapshot(producer);
   run('npm', ['run', 'build'], { cwd: producer });
   const frontend = inventory(path.join(producer, 'dist'));
@@ -70,7 +67,7 @@ try {
   writeFileSync(configPath, configBytes);
 
   const damagedSource = path.join(work, 'invalid-core.c');
-  writeFileSync(damagedSource, '#include <stdint.h>\nuint32_t tauri_native_abi_version(void){return 1;}\nchar *tauri_native_invoke(const char*a,const char*b){return 0;}\nvoid tauri_native_string_free(char*p){}\n');
+  writeFileSync(damagedSource, '#include <stdint.h>\nuint32_t tauri_native_abi_version(void){return 2;}\nchar *tauri_native_invoke(const char*a,const char*b){return 0;}\nvoid tauri_native_string_free(char*p){}\nuint64_t tauri_native_session_create(void){return 0;}\nchar *tauri_native_session_start(uint64_t s,const char*i,const char*c,const char*p){return 0;}\nchar *tauri_native_session_poll(uint64_t s){return 0;}\nvoid tauri_native_session_cancel(uint64_t s,const char*i){}\nvoid tauri_native_session_destroy(uint64_t s){}\n');
   run(path.join(tools.bin, `clang${suffix}`), ['--target=aarch64-linux-android24', '-shared', '-fPIC', '-x', 'c', '-', '-o', path.join(work, 'libexternal.so')], { input: 'int external_value(void) { return 1; }\n' });
   for (const [damage, expected] of [['alignment', /not 16 KB aligned/], ['api', /Expected Android API 24/], ['soname', /Incorrect Android library SONAME/], ['architecture', /Incorrect Android ELF architecture/], ['dependency', /Unbundled or unavailable Android dependency/]]) {
     assert.throws(() => publishArtifacts(output, stage => {
@@ -139,11 +136,11 @@ try {
   assert.ok(result, 'Android consumer did not finish');
   writeFileSync(path.join(evidence, 'native-result.json'), JSON.stringify(result, null, 2) + '\n');
   assert.equal(result.fatal, undefined);
-  assert.equal(result.abiVersion, 1); assert.equal(result.responses, 11); assert.equal(result.responses, result.frees);
+  assert.equal(result.abiVersion, 2); assert.equal(result.responses, 11); assert.equal(result.responses, result.frees);
   assert.deepEqual(result.direct, [
-    { abiVersion: 1, ok: true, value: { displayName: '한글 🦀', total: 10 } },
-    { abiVersion: 1, ok: false, error: { kind: 'empty_name', message: 'A name is required' } },
-    { abiVersion: 1, ok: true, value: null },
+    { abiVersion: 2, ok: true, value: { displayName: '한글 🦀', total: 10 } },
+    { abiVersion: 2, ok: false, error: { kind: 'empty_name', message: 'A name is required' } },
+    { abiVersion: 2, ok: true, value: null },
   ]);
   assert.deepEqual(result.frontend, {
     success: { displayName: '한글 🦀', total: 10 }, error: { kind: 'empty_name', message: 'A name is required' },

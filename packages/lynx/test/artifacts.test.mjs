@@ -12,12 +12,12 @@ afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: 
 function root() { const directory = mkdtempSync(path.join(tmpdir(), 'tauri-native-lynx-artifacts-')); roots.push(directory); return directory; }
 
 test('Lynx and RN accept identical relocated generated and legacy exports after producer deletion', async () => {
-  for (const platform of ['ios', 'android']) for (const legacy of [false, true]) {
+  for (const platform of ['ios', 'android']) for (const abi of [0, 1, 2]) {
     const directory = root(), producer = path.join(directory, 'producer'), host = path.join(directory, 'Independent Host');
-    await writeTestArtifacts(producer, platform, 'shared frontend', legacy);
+    await writeTestArtifacts(producer, platform, 'shared frontend', abi === 0, abi || 1);
     cpSync(producer, host, { recursive: true }); rmSync(producer, { recursive: true });
     assert.deepEqual(readArtifacts(host, platform), rn.readArtifacts(host, platform));
-    assert.equal(readArtifacts(host, platform).abiVersion, legacy ? 0 : 1);
+    assert.equal(readArtifacts(host, platform).abiVersion, abi);
   }
 });
 

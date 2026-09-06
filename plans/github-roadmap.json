@@ -24,7 +24,8 @@
       "title": "M2 — Drop-in artifacts for React Native and Lynx",
       "description": "Gate: RN/Expo and Lynx consume only copied platform artifacts plus their host package. No access to the producer source or Rust build toolchain is needed for the host build. Verify direct and embedded calls on iOS and Android.",
       "number": 3,
-      "url": "https://github.com/gronxb/tauri-native/milestone/3"
+      "url": "https://github.com/gronxb/tauri-native/milestone/3",
+      "state": "closed"
     },
     {
       "key": "M3",
@@ -814,7 +815,7 @@
       "url": "https://github.com/gronxb/tauri-native/issues/12",
       "number": 12,
       "bodySynced": true,
-      "status": "IMPLEMENTED",
+      "status": "DONE",
       "verification": {
         "date": "2026-09-06",
         "report": "target/lynx-artifacts/report.json",
@@ -832,7 +833,9 @@
         "producerDeleted": true,
         "hostWithoutRustOrCliOrRn": true,
         "physicalDeviceExecution": false
-      }
+      },
+      "pr": "https://github.com/gronxb/tauri-native/pull/29",
+      "mergeCommit": "e05a47227310701db29e8acddf25b93eb377be7e"
     },
     {
       "id": 9,
@@ -920,7 +923,21 @@
       "file": "plans/009-async-lifecycle-protocol.md",
       "url": "https://github.com/gronxb/tauri-native/issues/13",
       "number": 13,
-      "bodySynced": true
+      "bodySynced": true,
+      "status": "IMPLEMENTED",
+      "verification": {
+        "date": "2026-09-07",
+        "exportReport": "target/async-protocol/export-report.json",
+        "hostReport": "target/async-protocol/host-report.json",
+        "abiVersion": 2,
+        "lifecycleFlows": 4,
+        "legacyFlows": 4,
+        "producerDeleted": true,
+        "hostWithoutRust": true,
+        "nativeRuntimeReplacement": true,
+        "physicalDeviceExecution": false,
+        "fullLynxAppR8": false
+      }
     },
     {
       "id": 10,

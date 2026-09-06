@@ -34,10 +34,10 @@
     "README.md"
   ],
   "scripts": {
-    "build": "node ../../scripts/sync-artifacts.mjs lynx && nub run codegen && tsc --noEmit",
+    "build": "node ../../scripts/sync-host-files.mjs lynx && nub run codegen && tsc --noEmit",
     "codegen": "lynx-autolink-codegen",
-    "prepack": "node ../../scripts/sync-artifacts.mjs lynx && lynx-autolink-codegen && tsc --noEmit",
-    "test": "node ../../scripts/sync-artifacts.mjs lynx --check && node --experimental-strip-types --test test/*.test.mjs && nub run build && nub run test:package",
+    "prepack": "node ../../scripts/sync-host-files.mjs lynx && lynx-autolink-codegen && tsc --noEmit",
+    "test": "node ../../scripts/sync-host-files.mjs lynx --check && node --experimental-strip-types --test test/*.test.mjs && nub run build && nub run test:package",
     "test:package": "node ../../scripts/verify-package.mjs",
     "typecheck": "tsc --noEmit"
   },

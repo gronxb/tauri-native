@@ -33,12 +33,12 @@ export function validateIosArtifacts(directory: string): void {
     const architectures = commandOutput('lipo', ['-archs', library]).trim().split(/\s+/).sort();
     if (architectures.join(',') !== slice.architectures.join(',')) throw new Error(`Incorrect binary architectures: ${slice.path}`);
     const header = readFileSync(path.join(path.dirname(library), 'Headers/tauri_native.h'), 'utf8');
-    if (manifest.abiVersion === 1 && !/^#define TAURI_NATIVE_ABI_VERSION 1\b/m.test(header)) throw new Error('Incompatible generated ABI header');
+    if (manifest.abiVersion !== 0 && !new RegExp(`^#define TAURI_NATIVE_ABI_VERSION ${manifest.abiVersion}\\b`, 'm').test(header)) throw new Error('Incompatible generated ABI header');
     for (const arch of architectures) {
       // Inspect linked machine-code symbols. Rust's embedded LLVM bitcode can
       // be newer than Xcode's reader and is not a host link input.
       const symbols = commandOutput('nm', ['--no-llvm-bc', '-arch', arch!, '-gU', library]);
-      for (const name of ['tauri_native_invoke', 'tauri_native_string_free', ...(manifest.abiVersion === 1 ? ['tauri_native_abi_version'] : [])]) {
+      for (const name of ['tauri_native_invoke', 'tauri_native_string_free', ...(manifest.abiVersion !== 0 ? ['tauri_native_abi_version'] : []), ...(manifest.abiVersion === 2 ? ['create', 'start', 'poll', 'cancel', 'destroy'].map(name => `tauri_native_session_${name}`) : [])]) {
         if (!new RegExp(`\\bT _${name}\\s*$`, 'm').test(symbols)) throw new Error(`Missing ${name} in ${slice.path} (${arch})`);
       }
     }

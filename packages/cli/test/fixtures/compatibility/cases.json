@@ -3,10 +3,6 @@
   "base": "../standard-tauri",
   "blocked": [
     {
-      "name": "async",
-      "diagnostic": "async command"
-    },
-    {
       "name": "module",
       "diagnostic": "module command registration"
     },

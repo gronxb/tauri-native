@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/009-async-lifecycle-protocol.md`
 - Issue: [#13](https://github.com/gronxb/tauri-native/issues/13)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: TODO.
+- Status: IMPLEMENTED — native and package gates passed; merge pending.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 
@@ -87,12 +87,12 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 
 ## Acceptance criteria
 
-- [ ] Actual work executes without blocking UI/JS call paths.
-- [ ] Supported ordinary async commands need no custom producer APIs.
-- [ ] Cancellation/teardown semantics are documented and tested on all hosts/platforms.
-- [ ] Incompatible ABI versions fail deterministically.
-- [ ] Required checks have recorded results; skipped/blocked checks are identified accurately.
-- [ ] Changes stay within this issue's purpose and preserve the producer change budget.
+- [x] Actual work executes without blocking UI/JS call paths.
+- [x] Supported ordinary async commands need no custom producer APIs.
+- [x] Cancellation/teardown semantics are documented and tested on all hosts/platforms.
+- [x] Incompatible ABI versions fail deterministically.
+- [x] Required checks have recorded results; skipped/blocked checks are identified accurately.
+- [x] Changes stay within this issue's purpose and preserve the producer change budget.
 
 ## Blockers and maintenance
 
@@ -101,3 +101,11 @@ Promise.resolve around a synchronous native call is insufficient. New producer r
 Host AbortSignal controls can live in host packages. Ordinary Tauri frontend calls may initially cancel only through teardown; do not require custom cancellation imports.
 
 Use a `codex/async-lifecycle-protocol` branch if creating one, follow the repository's conventional commit style, and do not commit/push/merge/publish changes without the execution task's authorization. Keep this issue and any checked-in plan status aligned.
+
+## Execution result — 2026-09-07
+
+ABI 2 executes owned root sync/async commands on artifact-owned workers and adds bounded request sessions. Both host `invoke` APIs return cancellable Promises; `invokeSync` preserves explicit blocking/legacy use. The ordinary producer frontend retains its Tauri value/rejection API. Host teardown closes sessions and rejects delivery to retired documents/runtimes; running Rust work may still finish with side effects.
+
+The shared native gate replaces the calculator-only M2 flows for async acceptance: `nub --cwd packages/cli run test:export:async`, followed by [the independent-host lifecycle instructions](../docs/testing-async.md). All four Release flows pass, including interaction during delayed work, cancellation, remount, page reload and real native runtime replacement. The original ABI 0 calculator flows also pass on all four host/platform combinations. Package/type checks, Rust protocol tests, portable artifact exports and macOS Tauri/native parity pass. The producer source/frontend hashes are preserved, and independent host builds use no Rust toolchain.
+
+[ADR 0005](../docs/adr/0005-async-request-sessions.md) records versions, report paths and the scoped R8 result. Full Lynx example minification remains a separate #19 check because optional framework dependencies are absent; neither physical-device execution nor external adoption is claimed.

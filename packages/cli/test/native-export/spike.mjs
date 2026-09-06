@@ -31,16 +31,16 @@ let adapter;
 try {
   const producer = path.join(work, 'producer');
   cpSync(fixture, producer, { recursive: true });
+  run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: producer });
   const producerSnapshot = snapshot(producer);
   run('git', ['init', '--quiet'], { cwd: producer });
-  run('git', ['add', '.'], { cwd: producer });
-  const exampleModules = path.join(root, 'examples/tauri/node_modules');
+  run('git', ['add', '--', ...Object.keys(producerSnapshot)], { cwd: producer });
+  const exampleModules = path.join(producer, 'node_modules');
   const expected = JSON.parse(readFileSync(path.join(fixture, 'package.json'), 'utf8'));
   for (const name of ['@tauri-apps/api', 'vite']) {
     const installed = JSON.parse(readFileSync(path.join(exampleModules, name, 'package.json'), 'utf8'));
     assert.equal(installed.version, expected.dependencies[name] ?? expected.devDependencies[name], `Install the fixture's pinned ${name} version before running this proof.`);
   }
-  symlinkSync(exampleModules, path.join(producer, 'node_modules'), 'dir');
   run(process.execPath, [path.join(exampleModules, 'vite/bin/vite.js'), 'build'], { cwd: producer });
 
   const source = path.join(producer, 'src-tauri/src/lib.rs');
@@ -82,7 +82,7 @@ try {
   assert.equal(native.responses, native.frees, 'Every native response must have exactly one matching free');
   assert.ok(native.responses >= 10000, 'The native ownership stress loop must execute');
   native.direct = native.direct.map(({ abiVersion, ...response }) => {
-    assert.equal(abiVersion, 1, 'Every generated response must identify its ABI');
+    assert.equal(abiVersion, 2, 'Every generated response must identify its ABI');
     return response;
   });
   const bridgeSources = [path.join(root, 'packages/react-native/ios/TNTauriRustBridge.mm'), path.join(root, 'packages/lynx/ios/src/TNTauriLynxRustBridge.mm')];
@@ -92,7 +92,7 @@ try {
   run(bridgeHost, []);
   const incompatible = path.join(work, 'incompatible.c');
   const incompatibleLibrary = path.join(work, 'libincompatible.dylib');
-  writeFileSync(incompatible, '#include <stdint.h>\n#include <stdlib.h>\nuint32_t tauri_native_abi_version(void) { return 2; }\nchar *tauri_native_invoke(const char *a, const char *b) { abort(); }\nvoid tauri_native_string_free(char *p) { abort(); }\n');
+  writeFileSync(incompatible, '#include <stdint.h>\n#include <stdlib.h>\nuint32_t tauri_native_abi_version(void) { return 99; }\nchar *tauri_native_invoke(const char *a, const char *b) { abort(); }\nvoid tauri_native_string_free(char *p) { abort(); }\nuint64_t tauri_native_session_create(void) { abort(); }\nchar *tauri_native_session_start(uint64_t s,const char*i,const char*c,const char*p) { abort(); }\nchar *tauri_native_session_poll(uint64_t s) { abort(); }\nvoid tauri_native_session_cancel(uint64_t s,const char*i) { abort(); }\nvoid tauri_native_session_destroy(uint64_t s) { abort(); }\n');
   run('xcrun', ['clang', '-dynamiclib', incompatible, '-o', incompatibleLibrary]);
   run('xcrun', [...bridgeArgs, incompatibleLibrary, '-o', bridgeHost]);
   run(bridgeHost, ['--incompatible']);
@@ -109,7 +109,7 @@ try {
     const changedLibrary = path.join(work, 'libchanged.dylib');
     cpSync(path.join(target, 'debug/libordinary_tauri_fixture_lib.dylib'), changedLibrary);
     const changed = JSON.parse(run(nativeHost, [changedLibrary, changedAdapter.frontendDist, requestFile], { timeout: 45000 }).trim());
-    assert.deepEqual(changed.direct[3], { abiVersion: 1, ok: true, value: 'This function is deliberately not registered' });
+    assert.deepEqual(changed.direct[3], { abiVersion: 2, ok: true, value: 'This function is deliberately not registered' });
     assert.equal(changed.frontend.unregisteredRejected, undefined, 'The ordinary frontend must see the registration change too');
     assert.deepEqual(snapshot(changedRegistry), registeredSnapshot);
   } finally { changedAdapter.cleanup(); }
@@ -175,7 +175,7 @@ try {
     publicApiProbe: { privateCommand: 'E0603', invokeMessageConstructor: 'E0624' },
     producerUnchanged: true, regeneratedFromSource: true,
     sourceHashes: originalSnapshot,
-    abiVersion: 1, responses: native.responses, frees: native.frees,
+    abiVersion: 2, responses: native.responses, frees: native.frees,
     objcConsumers: ['react-native', 'lynx'], incompatibleAbiRejected: true,
     compilerFailureSourceUnchanged: true, compilerFailureOriginalLine: brokenLine,
     registrationChangeExecuted: true,

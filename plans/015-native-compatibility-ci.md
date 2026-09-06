@@ -103,3 +103,7 @@ If runner/signing/device access is unavailable, deliver reviewable configuration
 Scenario tests and a bounded matrix are sufficient. Avoid meaningless snapshots/coverage percentages. No new secrets or infrastructure purchases are authorized by writing this ticket.
 
 Use a `codex/native-compatibility-ci` branch if creating one, follow the repository's conventional commit style, and do not commit/push/merge/publish changes without the execution task's authorization. Keep this issue and any checked-in plan status aligned.
+
+## Known integration check from #13
+
+The ABI 2 Release lifecycle gates pass on all four host/platform combinations. R8 preserves JNI names and the annotated WebView entry point in both compiled SDK bridges. A full Lynx independent-host minification attempt fails on missing optional XElement/Fresco/Gson/ServalMarkdown classes. Establish a minimal, properly declared minified host dependency set and run that full-app gate here; do not treat the scoped bridge check as full-app minification evidence.

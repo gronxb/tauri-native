@@ -82,10 +82,21 @@ describe('ordinary Tauri discovery', () => {
     });
   });
 
+  it('discovers ordinary async commands without changing their source', () => inProducer(producer => {
+    cpSync(path.join(corpus, 'async'), producer, { recursive: true });
+    const before = snapshot(producer);
+    const result = inspect(producer);
+    assert.equal(result.status, 0, result.raw);
+    assert.equal(result.model.abiVersion, 2);
+    assert.equal(result.model.commands[0].name, 'greet');
+    assert.equal(result.model.commands[0].async, true);
+    assert.deepEqual(snapshot(producer), before);
+  }));
+
   it('reports multiple unsupported commands and detects runtime use hidden in a helper', () => inProducer(producer => {
     const source = path.join(producer, 'src-tauri/src/lib.rs');
     const original = readFileSync(source, 'utf8');
-    writeFileSync(source, original.replace('fn greet(', 'async fn greet(').replace('fn optional(', 'async fn optional('));
+    writeFileSync(source, original.replace('fn greet(', 'unsafe fn greet(').replace('fn optional(', 'unsafe fn optional('));
     const multiple = inspect(producer);
     assert.equal(multiple.status, 1);
     assert.equal(multiple.model.diagnostics.length, 2);

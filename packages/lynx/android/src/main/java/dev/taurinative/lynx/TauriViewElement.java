@@ -15,4 +15,10 @@ public final class TauriViewElement extends LynxUI<TauriWebView> {
   protected TauriWebView createView(Context context) {
     return new TauriWebView(context);
   }
+
+  @Override
+  public void destroy() {
+    if (mView != null) mView.destroy();
+    super.destroy();
+  }
 }

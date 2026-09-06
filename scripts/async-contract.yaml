@@ -1,0 +1,47 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Native async contract passed"
+    timeout: 60000
+- extendedWaitUntil:
+    visible: "Frontend async contract passed"
+    timeout: 60000
+- assertVisible: "Frontend order: fast,slow"
+- tapOn: "Start native work"
+- assertVisible: "Native work running"
+- tapOn: "Pulse native"
+- assertVisible: "Native pulse: 1; running: true"
+- tapOn: "Cancel native"
+- assertVisible: "Native cancellation passed"
+- tapOn: "Start frontend work"
+- assertVisible: "Frontend work running"
+- tapOn: "Pulse frontend"
+- assertVisible: "Frontend pulse: 1; running: true"
+- tapOn: "Unmount embedded view"
+- assertVisible: "Unmounted with frontend work pending"
+- tapOn: "Mount embedded view"
+- extendedWaitUntil:
+    visible: "Retired frontend work completed"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "Frontend async contract passed"
+    timeout: 30000
+- assertNotVisible: "Frontend work completed"
+- tapOn: "Reload frontend"
+- extendedWaitUntil:
+    visible: "Frontend async contract passed"
+    timeout: 30000
+- tapOn: "Start runtime work"
+- assertVisible: "Runtime work pending"
+- tapOn: "Reload native runtime"
+- extendedWaitUntil:
+    visible: "Runtime restarted while Rust work is pending"
+    timeout: 10000
+- extendedWaitUntil:
+    visible: "Runtime reload passed"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "Frontend async contract passed"
+    timeout: 30000

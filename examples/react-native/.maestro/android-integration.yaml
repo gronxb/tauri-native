@@ -5,7 +5,7 @@ appId: tauri.example
     id: "rn-calculator-expression"
 - eraseText: 100
 - inputText: "9 * (6 - 2)"
-- hideKeyboard
+- pressKey: Enter
 - tapOn: "Calculate React Native expression through TurboModule"
 - assertVisible: "Result: 36"
 - assertVisible: "tauri-native-example-core"

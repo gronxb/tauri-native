@@ -13,4 +13,19 @@ public abstract class TauriNativeSpec extends LynxContextModule {
 
   @LynxMethod
   public abstract String invoke(String command, String payloadJson);
+
+  @LynxMethod
+  public abstract String createSession();
+
+  @LynxMethod
+  public abstract String start(String session, String id, String command, String payload);
+
+  @LynxMethod
+  public abstract String poll(String session);
+
+  @LynxMethod
+  public abstract void cancel(String session, String id);
+
+  @LynxMethod
+  public abstract void closeSession(String session);
 }

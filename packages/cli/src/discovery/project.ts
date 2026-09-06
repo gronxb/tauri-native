@@ -4,6 +4,7 @@ import { commandOutput, DiscoveryError, nativeTool } from './native-tool.ts';
 
 export interface CommandModel {
   name: string;
+  async?: boolean;
   parameters: { name: string; key: string; type: string }[];
   output: string;
   line: number;
@@ -12,7 +13,7 @@ export interface CommandModel {
 
 export interface SourceModel {
   schemaVersion: number;
-  abiVersion: number;
+  abiVersion: 1 | 2;
   commands: CommandModel[];
 }
 

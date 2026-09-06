@@ -1,15 +1,11 @@
 import NativeTauri from './NativeTauri';
+import { createInvoker, type InvokeResponse } from './async-client';
+export type { InvokeError, InvokeResponse, InvokeOptions, InvokeRequest } from './async-client';
 
-export interface InvokeError {
-  code: string;
-  message: string;
-}
+export const invoke = createInvoker(NativeTauri);
 
-export type InvokeResponse<T, E = unknown> =
-  | { ok: true; value: T }
-  | { ok: false; error: E };
-
-export function invoke<T, E = unknown>(
+/** Blocking compatibility path for legacy artifacts and short commands. */
+export function invokeSync<T, E = unknown>(
   command: string,
   payload: Record<string, unknown>
 ): InvokeResponse<T, E> {

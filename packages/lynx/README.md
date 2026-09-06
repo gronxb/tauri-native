@@ -59,12 +59,18 @@ Run artifact validation before native integration/build. The example's Podfile a
 ```tsx
 import { TauriView, invoke } from '@tauri-native/lynx';
 
-const result = invoke<Calculation>('calculate', {
+const result = await invoke<Calculation>('calculate', {
   expression: '(9 + 5) * 3',
 });
 
 <TauriView style={{ height: '420px' }} />;
 ```
+
+`invoke` returns a Promise of `{ ok: true, value }` or `{ ok: false, error }`. Transport failures reject the Promise. ABI 2 artifacts execute commands on Rust workers; rebuild older artifacts with the CLI to use this API. The previous blocking API is available as `invokeSync`, including for ABI 0/1 migration. The calculator example deliberately uses that legacy path.
+
+The returned Promise has a `cancel()` method. You can also pass `{ signal }` as the third argument when your host provides `AbortSignal`. Cancellation rejects with `AbortError`, removes queued work and discards a running request's result; it does not interrupt Rust code or undo side effects. The native module closes outstanding sessions when its runtime is destroyed. Busy clients poll every 16 ms and release their session when idle.
+
+The embedded frontend keeps using ordinary `@tauri-apps/api/core.invoke`. Removing its view or leaving its document closes its session and suppresses late results. ABI 0/1 WebView compatibility retains the previous execution behavior; nonblocking execution requires ABI 2.
 
 The package follows the official Lynx Native Library layout. It exposes a typed native module for direct Rust invocation and a `tauri-view` custom native element backed by Swift `WKWebView` on iOS and Android `WebView` on Android. On both platforms, the Lynx 4.0.1 runtime exposes the direct module through its JSI-backed `NativeModules` path before continuing through Objective-C++ on iOS or JNI on Android to the shared Rust C ABI. The package itself depends only on Lynx's public Native Module API.
 

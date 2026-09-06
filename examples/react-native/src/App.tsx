@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import {
   TauriView,
-  invoke,
+  invokeSync,
   type InvokeResponse,
   type InvokeError,
 } from '@tauri-native/react-native';
@@ -31,7 +31,7 @@ export default function App() {
 
   const calculateThroughNativeModule = () => {
     setNativeResult(
-      invoke<Calculation, InvokeError>('calculate', { expression }),
+      invokeSync<Calculation, InvokeError>('calculate', { expression }),
     );
   };
 

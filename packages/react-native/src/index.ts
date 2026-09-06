@@ -1,2 +1,2 @@
 export { TauriView, type TauriViewProps } from './TauriView';
-export { invoke, type InvokeError, type InvokeResponse } from './invoke';
+export { invoke, invokeSync, type InvokeError, type InvokeResponse, type InvokeOptions, type InvokeRequest } from './invoke';

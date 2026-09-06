@@ -3,7 +3,6 @@ package com.reactnativetauri
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
-import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
@@ -11,7 +10,6 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import java.io.ByteArrayInputStream
 import java.io.IOException
-import org.json.JSONObject
 
 @SuppressLint("SetJavaScriptEnabled")
 internal class TauriWebView(context: Context) : WebView(context) {
@@ -29,7 +27,6 @@ internal class TauriWebView(context: Context) : WebView(context) {
 
     addJavascriptInterface(bridge, BRIDGE_NAME)
     webViewClient = AssetWebViewClient(context)
-    loadPackagedFrontend(context)
   }
 
   private fun loadPackagedFrontend(context: Context) {
@@ -44,54 +41,32 @@ internal class TauriWebView(context: Context) : WebView(context) {
       """.trimIndent()
     }
 
-    val bridgeScript = "<script>$BRIDGE_SOURCE</script>"
-    val headStart = html.indexOf("<head", ignoreCase = true)
-    val headEnd = if (headStart >= 0) html.indexOf('>', headStart) else -1
-    val document = if (headEnd >= 0) {
-      html.substring(0, headEnd + 1) + bridgeScript + html.substring(headEnd + 1)
-    } else {
-      bridgeScript + html
-    }
 
     loadDataWithBaseURL(
       ASSET_ORIGIN,
-      document,
+      bridgeDocument(html),
       "text/html",
       "UTF-8",
       null,
     )
   }
 
-  internal class TauriJavascriptBridge(
-    private val webView: WebView,
-  ) {
-    @JavascriptInterface
-    fun invoke(requestJson: String) {
-      var requestId: Long? = null
-      try {
-        val request = JSONObject(requestJson)
-        requestId = request.getLong("id")
-        val command = request.getString("command")
-        val payload = request.opt("payload") ?: JSONObject()
-        val response = TauriNativeRust.invoke(command, payload.toString())
-        val quotedResponse = JSONObject.quote(response)
-        webView.post {
-          webView.evaluateJavascript(
-            "window.__RNTauriResolve($requestId, $quotedResponse);",
-            null,
-          )
-        }
-      } catch (error: Exception) {
-        val failedRequestId = requestId ?: return
-        val message = JSONObject.quote(error.message ?: "Native invoke failed")
-        webView.post {
-          webView.evaluateJavascript(
-            "window.__RNTauriReject($failedRequestId, $message);",
-            null,
-          )
-        }
-      }
-    }
+  override fun onDetachedFromWindow() {
+    bridge.suspend()
+    evaluateJavascript("window.__RNTauriSuspend?.();", null)
+    super.onDetachedFromWindow()
+  }
+
+  override fun onAttachedToWindow() {
+    super.onAttachedToWindow()
+    bridge.resume()
+    loadPackagedFrontend(context)
+  }
+
+  override fun destroy() {
+    bridge.destroy()
+    removeJavascriptInterface(BRIDGE_NAME)
+    super.destroy()
   }
 
   private class AssetWebViewClient(
@@ -133,7 +108,10 @@ internal class TauriWebView(context: Context) : WebView(context) {
         WebResourceResponse(
           mimeType(relativePath),
           "UTF-8",
-          context.assets.open("$ASSET_DIRECTORY/$relativePath"),
+          if (mimeType(relativePath) == "text/html") {
+            val html = context.assets.open("$ASSET_DIRECTORY/$relativePath").bufferedReader().use { it.readText() }
+            ByteArrayInputStream(bridgeDocument(html).toByteArray(Charsets.UTF_8))
+          } else context.assets.open("$ASSET_DIRECTORY/$relativePath"),
         )
       } catch (_: IOException) {
         errorResponse(404, "Not Found")
@@ -171,43 +149,103 @@ internal class TauriWebView(context: Context) : WebView(context) {
     private const val ASSET_DIRECTORY = "tauri-native"
     private const val ASSET_ORIGIN = "https://tauri-native.local/"
     private const val BRIDGE_SOURCE = """
-      (() => {
-        let nextId = 1;
-        const pending = new Map();
-        window.__RNTauriResolve = (id, responseJson) => {
-          const callbacks = pending.get(id);
-          if (!callbacks) return;
-          pending.delete(id);
+    (() => {
+      let documentId;
+      let nextId = 1;
+      let active = false;
+      let timer;
+      let polling = false;
+      const pending = new Map();
+      const post = (message) => window.TauriNativeBridge.postMessage(JSON.stringify(message));
+      const send = (message) => post({ ...message, document: documentId });
+      const error = (code) => Object.assign(new Error(code), { code });
+
+      function schedule() {
+        if (!active || !pending.size || timer !== undefined || polling) return;
+        timer = setTimeout(() => {
+          timer = undefined;
+          polling = true;
+          try { send({ type: 'poll' }); } catch (cause) { failAll(cause); }
+        }, 16);
+      }
+
+      function finish(id, responseJson, cause) {
+        const callbacks = pending.get(id);
+        if (!callbacks) return;
+        pending.delete(id);
+        try {
+          if (cause) throw cause;
           const response = JSON.parse(responseJson);
-          if (response.abiVersion === 1) {
+          if (response?.abiVersion === undefined) callbacks.resolve(response);
+          else {
+            if (![1, 2].includes(response.abiVersion) || typeof response.ok !== 'boolean' || !((response.ok ? 'value' : 'error') in response)) throw error('invalid_response');
             response.ok ? callbacks.resolve(response.value) : callbacks.reject(response.error);
-          } else {
-            callbacks.resolve(response);
           }
-        };
-        window.__RNTauriReject = (id, message) => {
-          const callbacks = pending.get(id);
-          if (!callbacks) return;
-          pending.delete(id);
-          callbacks.reject(new Error(message));
-        };
-        window.__TAURI_NATIVE_HOST__ = 'react-native';
-        globalThis.isTauri = true;
-        const internals = window.__TAURI_INTERNALS__ || {};
-        internals.invoke = (command, payload) => {
-          return new Promise((resolve, reject) => {
-            const id = nextId++;
-            pending.set(id, { resolve, reject });
-            window.TauriNativeBridge.invoke(JSON.stringify({
-              id,
-              command,
-              payload: payload ?? {}
-            }));
-          });
-        };
-        window.__TAURI_INTERNALS__ = internals;
-      })();
+        } catch (cause) { callbacks.reject(cause); }
+        if (!pending.size) {
+          clearTimeout(timer); timer = undefined; polling = false;
+          try { send({ type: 'close' }); } catch {}
+        }
+      }
+
+      function failAll(cause) {
+        for (const id of [...pending.keys()]) finish(id, undefined, cause);
+      }
+
+      window.__RNTauriResolve = (document, id, responseJson, failure) => {
+        if (active && document === documentId) finish(id, responseJson, failure ? error(failure) : undefined);
+      };
+      window.__RNTauriDrain = (document, responseJson) => {
+        if (!active || document !== documentId) return;
+        polling = false;
+        try {
+          const batch = JSON.parse(responseJson);
+          if (!Array.isArray(batch)) throw error(batch?.error ?? 'invalid_response');
+          for (const item of batch) finish(item.id, item.response);
+        } catch (cause) { failAll(cause); }
+        schedule();
+      };
+      window.__RNTauriSuspend = () => {
+        if (!active) return;
+        failAll(Object.assign(error('closed_document'), { name: 'AbortError' }));
+        try { send({ type: 'close' }); } catch {}
+        active = false;
+      };
+      window.__RNTauriResume = () => {
+        if (active) return;
+        documentId = String(Date.now()) + ':' + String(Math.random());
+        active = true;
+        send({ type: 'open' });
+      };
+      window.addEventListener('pagehide', window.__RNTauriSuspend);
+      window.addEventListener('pageshow', window.__RNTauriResume);
+      window.__RNTauriResume();
+      window.__TAURI_NATIVE_HOST__ = "react-native";
+      globalThis.isTauri = true;
+      const internals = window.__TAURI_INTERNALS__ || {};
+      internals.invoke = (command, payload) => new Promise((resolve, reject) => {
+        if (!active) { reject(error('closed_document')); return; }
+        const id = String(nextId++);
+        pending.set(id, { resolve, reject });
+        try {
+          send({ type: 'invoke', id, command, payload: payload ?? {} });
+          schedule();
+        } catch (cause) { finish(id, undefined, cause); }
+      });
+      window.__TAURI_INTERNALS__ = internals;
+    })();
     """
+
+    private fun bridgeDocument(html: String): String {
+      val bridgeScript = "<script>$BRIDGE_SOURCE</script>"
+      val headStart = html.indexOf("<head", ignoreCase = true)
+      val headEnd = if (headStart >= 0) html.indexOf('>', headStart) else -1
+      return if (headEnd >= 0) {
+        html.substring(0, headEnd + 1) + bridgeScript + html.substring(headEnd + 1)
+      } else {
+        bridgeScript + html
+      }
+    }
 
     private fun isAssetUrl(url: Uri): Boolean =
       url.scheme == "https" && url.host == "tauri-native.local"
