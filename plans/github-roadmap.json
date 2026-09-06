@@ -1,0 +1,1395 @@
+{
+  "repo": "gronxb/tauri-native",
+  "plannedAt": "117e887977a878aa4734f2df7ab2cca0670014ac",
+  "date": "2026-09-05",
+  "milestones": [
+    {
+      "key": "M0",
+      "title": "M0 — Prove source-transparent Tauri export",
+      "description": "Gate: prove native execution of existing registered Tauri commands without application-authored bridge code or a second application runtime. Define the supported subset and source-integrity fixtures. If infeasible, block dependent implementation and report the smallest required concession.",
+      "number": 1,
+      "url": "https://github.com/gronxb/tauri-native/milestone/1"
+    },
+    {
+      "key": "M1",
+      "title": "M1 — CLI-only portable native artifacts",
+      "description": "Gate: install the CLI in an ordinary Tauri project and export relocatable iOS XCFramework/assets and Android libraries/assets. Discovery, adapters, ABI, and metadata are tool-owned. No mandatory app-core, header, custom macros, or host-specific frontend imports.",
+      "number": 2,
+      "url": "https://github.com/gronxb/tauri-native/milestone/2"
+    },
+    {
+      "key": "M2",
+      "title": "M2 — Drop-in artifacts for React Native and Lynx",
+      "description": "Gate: RN/Expo and Lynx consume only copied platform artifacts plus their host package. No access to the producer source or Rust build toolchain is needed for the host build. Verify direct and embedded calls on iOS and Android.",
+      "number": 3,
+      "url": "https://github.com/gronxb/tauri-native/milestone/3"
+    },
+    {
+      "key": "M3",
+      "title": "M3 — Real commands and host interaction",
+      "description": "Gate: nonblocking commands, explicit cancellation/teardown semantics, generated host TypeScript contracts, and a narrow host/frontend interaction surface. The producer continues using ordinary Tauri APIs.",
+      "number": 4,
+      "url": "https://github.com/gronxb/tauri-native/milestone/4"
+    },
+    {
+      "key": "M4",
+      "title": "M4 — Short and diagnosable development workflow",
+      "description": "Gate: diagnose setup/config/artifact mismatches before expensive builds; refresh exports with correct invalidation and accurate host rebuild instructions. Preserve the portable-artifact boundary.",
+      "number": 5,
+      "url": "https://github.com/gronxb/tauri-native/milestone/5"
+    },
+    {
+      "key": "M5",
+      "title": "M5 — Validate adoption and ship 1.0",
+      "description": "Gate: one useful feature shared by independent desktop/mobile apps, native/compatibility/package CI, and independent onboarding evidence. Stable release covers only the verified support matrix, not arbitrary Tauri runtime/plugin compatibility.",
+      "number": 6,
+      "url": "https://github.com/gronxb/tauri-native/milestone/6"
+    }
+  ],
+  "issues": [
+    {
+      "id": 1,
+      "m": "M0",
+      "slug": "source-transparent-export-spike",
+      "title": "[M0] Prove export from an unmodified Tauri project",
+      "priority": "P1",
+      "effort": "L",
+      "risk": "HIGH",
+      "deps": [],
+      "why": "The current exporter requires a custom app-core crate, JSON dispatcher, and C ABI. Prove that the CLI can own adaptation of existing registered commands before building the rest of the roadmap.",
+      "evidence": [
+        [
+          "packages/cli/src/commands/export-ios.ts",
+          67,
+          "Default export requires crates/app-core/Cargo.toml and a user header."
+        ],
+        [
+          "examples/tauri/src-tauri/src/lib.rs",
+          1,
+          "The Tauri adapter explicitly delegates to tauri_native_example_core."
+        ],
+        [
+          "docs/adr/0001-ios-runtime-boundary.md",
+          30,
+          "The host must remain the sole lifecycle owner."
+        ]
+      ],
+      "excerpt": "const manifest = options.manifest\n  ? path.resolve(workingDirectory, options.manifest)\n  : path.join(tauriDirectory, 'crates/app-core/Cargo.toml');",
+      "scope": [
+        "docs/adr/",
+        "packages/cli/src/ (isolated prototype only)",
+        "packages/cli/test/fixtures/standard-tauri/ (new)",
+        "packages/cli/test/native-export/ (new)",
+        "packages/cli/package.json"
+      ],
+      "steps": [
+        "Create a pinned ordinary Tauri fixture with directly registered commands and no custom core/header/macros/host-detection code. Hash authored Rust, frontend, Cargo, and Tauri config files before/after export.",
+        "Compare public-API reuse and a CLI-generated build workspace/source-adaptation approach. Do not assume private Rust functions or generate_handler! internals are a stable reusable interface; do not execute app run()/event-loop startup to discover commands. Disposable generated copies are allowed, author-maintained forks are not.",
+        "Prove a registered synchronous command and serializable Result success/error through a compiled native boundary and unchanged @tauri-apps/api/core.invoke frontend. Probe async, modules, serde/cfg/features, State initialization, AppHandle/WebviewWindow, and plugins; classify supported/conditional/blocked with compiler/runtime evidence.",
+        "Record the selected architecture, exact reproduction commands, versions, source hashes, and a go/no-go ADR. Add test:export:spike. A no-go must block dependent implementation rather than quietly reverting to manual app-core extraction."
+      ],
+      "checks": [
+        [
+          "New gate to add",
+          "nub --cwd packages/cli run test:export:spike",
+          "Native command/result parity and unchanged authored-source hashes; failed feasibility is recorded honestly."
+        ],
+        [
+          "Existing baseline",
+          "nub --cwd packages/cli run typecheck",
+          "Exit 0."
+        ]
+      ],
+      "tests": [
+        "Custom serializable inputs/results and Result::Err parity.",
+        "An annotated but unregistered command is not exposed.",
+        "Runtime/plugin-dependent command receives an explicit compatibility outcome.",
+        "Deleting generated intermediates and repeating still works; the original desktop fixture remains buildable."
+      ],
+      "done": [
+        "A reproducible go/no-go decision exists.",
+        "A go includes native proof with no producer integration code and no second app runtime.",
+        "Initialization/state and unsupported command categories are explicitly covered.",
+        "A no-go leaves M1+ blocked pending a maintainer decision, not a weakened success claim."
+      ],
+      "stop": "If both source transparency and single-owner lifecycle cannot be preserved, report the smallest required concession. Do not promise arbitrary command compatibility.",
+      "notes": "Research gate, not a preselected macro fork or runtime replacement. References: https://v2.tauri.app/develop/calling-rust/ and https://docs.rs/tauri/2.11.5/tauri/macro.generate_handler.html (generated macro output is internal).",
+      "file": "plans/001-source-transparent-export-spike.md",
+      "url": "https://github.com/gronxb/tauri-native/issues/5",
+      "number": 5,
+      "bodySynced": false,
+      "status": "DONE",
+      "verification": {
+        "date": "2026-09-06",
+        "decision": "go for the explicitly restricted synchronous root-command subset",
+        "adr": "docs/adr/0004-source-transparent-export-spike.md",
+        "report": "target/export-spike/report.json",
+        "command": "nub --cwd packages/cli run test:export:spike",
+        "githubIssueState": "Delivery tracked by issue #5 and its linked implementation PR"
+      }
+    },
+    {
+      "id": 2,
+      "m": "M0",
+      "slug": "compatibility-source-integrity",
+      "title": "[M0] Define compatibility and source-integrity acceptance fixtures",
+      "priority": "P1",
+      "effort": "M",
+      "risk": "MED",
+      "deps": [
+        1
+      ],
+      "why": "A bridge-tailored example does not prove that an ordinary Tauri app stays unaware of this project. Establish reusable fixtures and a precise support contract for all subsequent work.",
+      "evidence": [
+        [
+          "examples/tauri/src/main.ts",
+          12,
+          "The current demo reads a custom __TAURI_NATIVE_HOST__ global."
+        ],
+        [
+          "docs/adr/0001-ios-runtime-boundary.md",
+          47,
+          "The current seam supports invoke, not general plugins/events/capabilities."
+        ],
+        [
+          "examples/tauri/src-tauri/src/lib.rs",
+          1,
+          "The demo uses a custom response envelope."
+        ]
+      ],
+      "excerpt": "const hostType = window.__TAURI_NATIVE_HOST__ ?? 'desktop';",
+      "scope": [
+        "packages/cli/test/fixtures/",
+        "packages/cli/test/native-export/",
+        "packages/cli/package.json",
+        "docs/compatibility.md (new)",
+        "docs/adr/",
+        "README.md"
+      ],
+      "steps": [
+        "Create pinned positive/negative fixtures for a scaffold, command modules, serde naming/enums, sync/async signatures, unregistered commands, and runtime-dependent commands.",
+        "Define the authored-file change budget: CLI installation/removal may edit package.json and the JS lockfile; export must not edit authored Rust/frontend, Cargo manifests/lockfiles, command registration, or Tauri config. Ignored generated output/caches are separate. Check byte hashes as well as git diff.",
+        "Document supported Tauri/Rust/API versions and unsupported categories. Preserve ordinary invoke resolution/rejection and serialization behavior; internal wire envelopes must not leak into the Tauri-facing API.",
+        "Add test:export:contract and reuse it across milestones. Supersede conflicting PoC assumptions in an ADR while preserving their history. Keep host identification in host UI/test harness, not the ordinary producer fixture."
+      ],
+      "checks": [
+        [
+          "New gate to add",
+          "nub --cwd packages/cli run test:export:contract",
+          "Positive/negative compatibility expectations and source-integrity hashes pass."
+        ],
+        [
+          "Existing baseline",
+          "nub --cwd packages/cli run test",
+          "CLI unit/package checks pass."
+        ]
+      ],
+      "tests": [
+        "Successful, failed, repeated export and cleanup preserve authored files.",
+        "Ordinary frontend needs no custom global/import.",
+        "Result::Err, serde names and null behavior match desktop.",
+        "Unsupported fixtures fail clearly without a falsely valid export."
+      ],
+      "done": [
+        "Every documented supported/unsupported category has a fixture.",
+        "The source-integrity gate covers success and failure.",
+        "Normal Tauri frontend return/error behavior is normative.",
+        "The contract makes no blanket runtime/plugin compatibility claim."
+      ],
+      "stop": "Do not redefine fixtures to accept source intrusion that the feasibility decision did not approve.",
+      "notes": "Users may naturally have Rust crates and domain initialization; our particular crate layout or runtime API must not become mandatory.",
+      "file": "plans/002-compatibility-source-integrity.md",
+      "url": "https://github.com/gronxb/tauri-native/issues/6",
+      "number": 6,
+      "bodySynced": true
+    },
+    {
+      "id": 3,
+      "m": "M1",
+      "slug": "project-command-discovery",
+      "title": "[M1] Discover ordinary Tauri projects and registered commands",
+      "priority": "P1",
+      "effort": "L",
+      "risk": "HIGH",
+      "deps": [
+        1,
+        2
+      ],
+      "why": "Export should begin with the existing Tauri application and actual registered commands, eliminating the mandatory bridge-specific Rust layout.",
+      "evidence": [
+        [
+          "packages/cli/src/commands/export-ios.ts",
+          67,
+          "Defaults to the bridge-specific app-core."
+        ],
+        [
+          "packages/cli/src/commands/export-android.ts",
+          63,
+          "Android uses the same assumption."
+        ],
+        [
+          "packages/cli/src/utils/cargo-manifest.ts",
+          3,
+          "Current library-name extraction uses regular expressions."
+        ]
+      ],
+      "excerpt": "const libSection = source.match(/\\[lib\\]([\\s\\S]*?)(?=\\n\\[|$)/)?.[1];",
+      "scope": [
+        "packages/cli/src/cli.ts",
+        "packages/cli/src/commands/",
+        "packages/cli/src/utils/cargo-manifest.ts",
+        "packages/cli/src/discovery/ (new if required by M0)",
+        "packages/cli/test/",
+        "packages/cli/package.json",
+        "packages/cli/README.md"
+      ],
+      "steps": [
+        "Use the M0-selected mechanism, Cargo metadata and resolved configuration where appropriate. Resolve project/workspace roots, features/targets, actual registration and frontend build/dist inputs for the documented subset.",
+        "Produce one command model for native adapters and later type generation. Export only registered eligible commands; reject ambiguous/unsupported registration with locations rather than guessing or exposing all annotated functions.",
+        "Default export to the ordinary application manifest. Keep explicit custom-core/header input only as optional legacy/advanced compatibility if necessary, never the main setup path.",
+        "Add a read-only inspect command with human/JSON output. Any optional selection flags must resolve ambiguity without requiring source restructuring, new producer macros, or startup execution."
+      ],
+      "checks": [
+        [
+          "Existing baseline",
+          "nub --cwd packages/cli run test",
+          "Discovery/CLI/package tests pass."
+        ],
+        [
+          "Existing baseline",
+          "nub --cwd packages/cli run typecheck",
+          "Exit 0."
+        ],
+        [
+          "Gate from M0",
+          "nub --cwd packages/cli run test:export:contract",
+          "Registration and source-integrity expectations pass."
+        ]
+      ],
+      "tests": [
+        "Scaffold/workspace, command modules, lib names, paths with spaces and supported cfg/features.",
+        "Unregistered functions are absent; ambiguous registrations fail.",
+        "Config formats/build-hook forms are supported correctly or rejected before compilation.",
+        "inspect does not build/mutate and JSON output is deterministic."
+      ],
+      "done": [
+        "Ordinary fixture is discovered without app-core/header arguments.",
+        "Diagnostics explain every unsupported command.",
+        "Both exporters share the discovered command model.",
+        "No authored producer file changes."
+      ],
+      "stop": "If registration resolution needs semantic guessing or application startup, report an unsupported case rather than inventing a command set.",
+      "notes": "Support an explicit bounded Rust/Tauri subset initially; arbitrary macro expansion is not an implicit first-release requirement.",
+      "file": "plans/003-project-command-discovery.md",
+      "url": "https://github.com/gronxb/tauri-native/issues/7",
+      "number": 7,
+      "bodySynced": true
+    },
+    {
+      "id": 4,
+      "m": "M1",
+      "slug": "generated-native-adapter",
+      "title": "[M1] Generate the native command adapter and own the C ABI",
+      "priority": "P1",
+      "effort": "L",
+      "risk": "HIGH",
+      "deps": [
+        3
+      ],
+      "why": "Application authors should not maintain invoke_json, a second allowlist, C allocation/free functions, or a header. Generate that machinery while preserving ordinary command behavior.",
+      "evidence": [
+        [
+          "examples/tauri/src-tauri/crates/app-core/src/lib.rs",
+          224,
+          "Application-owned match dispatcher."
+        ],
+        [
+          "examples/tauri/src-tauri/crates/app-core/src/lib.rs",
+          263,
+          "Application exports the custom C ABI."
+        ],
+        [
+          "packages/react-native/cpp/TauriNativeImpl.cpp",
+          25,
+          "The host directly consumes this ABI."
+        ]
+      ],
+      "excerpt": "pub extern \"C\" fn tauri_native_invoke(\n    command: *const c_char,\n    payload_json: *const c_char,\n) -> *mut c_char",
+      "scope": [
+        "packages/cli/src/adapter/ (new, M0-selected architecture)",
+        "packages/cli/native/ (only if selected by M0)",
+        "packages/cli/src/commands/",
+        "packages/cli/test/",
+        "packages/cli/package.json",
+        "packages/react-native/ and packages/lynx/ native ABI consumers (required protocol adaptation only)",
+        "docs/compatibility.md"
+      ],
+      "steps": [
+        "Generate disposable adapter/build inputs and header from the discovered model. Preserve command implementations and M0 initialization semantics; any copied/transformed code is regenerated tooling output, never an author-maintained fork.",
+        "Own allocation/free, transport failures, protocol versioning, dispatch and allowlist internally. Separate the wire envelope from application-facing Tauri values and promise rejection behavior.",
+        "Compile and execute the supported synchronous subset through a native consumer and packaged frontend. Plan protocol versioning for async extension without prematurely adding a general runtime.",
+        "Make ordinary export work without a producer header, crate-type edit, custom crate, dispatcher or tauri-native Rust dependency. Preserve the explicit legacy fixture until it can be cleanly replaced."
+      ],
+      "checks": [
+        [
+          "Existing baseline",
+          "nub --cwd packages/cli run test",
+          "Generation/package tests pass."
+        ],
+        [
+          "Gate from M0",
+          "nub --cwd packages/cli run test:export:contract",
+          "Native behavior and source hashes pass."
+        ],
+        [
+          "Existing baseline",
+          "cargo test -p tauri-native-example-core --locked",
+          "Legacy core tests pass while that example remains."
+        ]
+      ],
+      "tests": [
+        "Command registration changes regenerate dispatch without another list.",
+        "Unicode, custom serde values and domain errors match desktop.",
+        "Repeated success/failure calls use exactly one matching free; instrument actual native execution.",
+        "Generation/compile failure leaves source unchanged and identifies useful original locations."
+      ],
+      "done": [
+        "Ordinary fixture executes without author-written bridge code.",
+        "Direct and WebView callers receive correct value/error semantics.",
+        "Generated intermediates can be removed and reproduced.",
+        "ABI versioning is explicit and consumers check it."
+      ],
+      "stop": "A required source edit or second Tauri runtime is a feasibility-contract failure, not something to hide behind a setup command.",
+      "notes": "Reuse the discovered model for type generation later. Async scheduling is a later issue; preserve a clear internal transport boundary.",
+      "file": "plans/004-generated-native-adapter.md",
+      "url": "https://github.com/gronxb/tauri-native/issues/8",
+      "number": 8,
+      "bodySynced": true
+    },
+    {
+      "id": 5,
+      "m": "M1",
+      "slug": "portable-ios-artifacts",
+      "title": "[M1] Export a relocatable iOS XCFramework and frontend bundle",
+      "priority": "P1",
+      "effort": "L",
+      "risk": "MED",
+      "deps": [
+        4
+      ],
+      "why": "The intended workflow is install CLI, export, and move one artifact directory. The exported native code/assets must work independently of the original checkout and author-machine paths.",
+      "evidence": [
+        [
+          "packages/cli/src/commands/export-ios.ts",
+          46,
+          "Already emits a local TauriNativeGenerated podspec."
+        ],
+        [
+          "packages/cli/src/commands/export-ios.ts",
+          150,
+          "Creates an XCFramework for device/simulator inputs."
+        ],
+        [
+          "packages/react-native/app.plugin.js",
+          81,
+          "Host currently follows tauriDir into the producer checkout."
+        ]
+      ],
+      "excerpt": "s.vendored_frameworks = \"TauriNativeCore.xcframework\"\ns.resources = \"TauriNativeAssets.bundle\"",
+      "scope": [
+        "packages/cli/src/commands/export-ios.ts",
+        "packages/cli/src/artifacts/ (minimal shared metadata/staging helpers)",
+        "packages/cli/test/",
+        "packages/cli/package.json",
+        "packages/cli/README.md",
+        "docs/artifacts.md (new)"
+      ],
+      "steps": [
+        "Connect export ios to ordinary-project discovery/generated adapters. Preserve supported device/simulator slices and local pod integration; the host must not compile Rust.",
+        "Define a minimal shared manifest with format/ABI version, CLI/API compatibility, platform/architectures, source fingerprints, command/type metadata references and relative file/checksum entries. Exclude secrets and source-machine absolute paths.",
+        "Build into staging and promote only after validation. Export XCFramework, unchanged frontend assets, local podspec and manifest as one relocatable directory. Archive support is optional convenience, not a registry product.",
+        "Add test:export:ios: copy the directory elsewhere, make the source checkout unavailable, and compile/run a native consumer from only that copy. Document CocoaPods/manual Xcode use."
+      ],
+      "checks": [
+        [
+          "Existing baseline",
+          "nub --cwd packages/cli run test",
+          "Artifact/manifest/podspec tests pass."
+        ],
+        [
+          "New gate to add",
+          "nub --cwd packages/cli run test:export:ios",
+          "On a configured Mac, relocated output builds/runs in the simulator without source access."
+        ],
+        [
+          "Gate from M0",
+          "nub --cwd packages/cli run test:export:contract",
+          "Source integrity and command parity pass."
+        ]
+      ],
+      "tests": [
+        "Relocation into a path with spaces; no original source path required.",
+        "Missing slice, incompatible ABI, corrupt artifact and interrupted export preserve last valid output.",
+        "Frontend file bytes match the configured frontendDist.",
+        "Host compilation succeeds with Rust toolchain unavailable to the host build environment."
+      ],
+      "done": [
+        "npx tauri-native export ios works on the supported ordinary fixture after CLI installation.",
+        "One copied export directory suffices for host integration.",
+        "Device/simulator slices and manifest integrity are checked.",
+        "Failed exports preserve the prior valid output."
+      ],
+      "stop": "Reading the source checkout, copying application source into the host, or rebuilding Rust in the host violates this artifact-only gate.",
+      "notes": "Resources may be a sibling bundle next to the XCFramework. Describe the entire exportable directory honestly; do not claim resources automatically live inside a framework.",
+      "file": "plans/005-portable-ios-artifacts.md",
+      "url": "https://github.com/gronxb/tauri-native/issues/9",
+      "number": 9,
+      "bodySynced": true
+    },
+    {
+      "id": 6,
+      "m": "M1",
+      "slug": "portable-android-artifacts",
+      "title": "[M1] Export equivalent portable Android libraries and assets",
+      "priority": "P1",
+      "effort": "L",
+      "risk": "MED",
+      "deps": [
+        4,
+        5
+      ],
+      "why": "Android needs the same source-transparent export/relocation contract as iOS. Preserve the existing separation between application artifacts and reusable host bridges.",
+      "evidence": [
+        [
+          "packages/cli/src/commands/export-android.ts",
+          28,
+          "Exports four Android ABIs."
+        ],
+        [
+          "packages/cli/src/commands/export-android.ts",
+          45,
+          "Normalizes libraries to libtauri_native_core.so."
+        ],
+        [
+          "docs/adr/0003-android-runtime-and-export-boundary.md",
+          1,
+          "App-owned libraries/assets were chosen over a fat host-specific AAR."
+        ]
+      ],
+      "excerpt": "const OUTPUT_LIBRARY_NAME = 'libtauri_native_core.so';",
+      "scope": [
+        "packages/cli/src/commands/export-android.ts",
+        "packages/cli/src/artifacts/",
+        "packages/cli/test/",
+        "packages/cli/package.json",
+        "packages/cli/README.md",
+        "docs/artifacts.md"
+      ],
+      "steps": [
+        "Use ordinary-project discovery and the generated adapter without requiring producer cdylib edits or a custom app-core.",
+        "Export normalized jniLibs/assets plus the shared relative-path manifest, fingerprints and command/type metadata. Reusable JNI/framework code remains in host packages; preserve the no-fat-AAR decision.",
+        "Stage/promote validated output; check supported ABI set, API floor, ELF/page-size compatibility and packaged frontend before replacement.",
+        "Add test:export:android: relocate output, hide source checkout, compile a minimal host and execute both transport paths on the documented emulator."
+      ],
+      "checks": [
+        [
+          "Existing baseline",
+          "nub --cwd packages/cli run test",
+          "Android artifact/package tests pass."
+        ],
+        [
+          "New gate to add",
+          "nub --cwd packages/cli run test:export:android",
+          "Configured toolchain/emulator executes relocated direct and embedded calls."
+        ],
+        [
+          "Gate from M0",
+          "nub --cwd packages/cli run test:export:contract",
+          "Authored source stays unchanged."
+        ]
+      ],
+      "tests": [
+        "All documented ABIs contain the normalized library and expected generated symbols.",
+        "Partial output never replaces a valid artifact set.",
+        "Verify 16 KB ELF and APK alignment using Android tools, not configuration-text assertions.",
+        "Host can build while producer source/Rust toolchain are unavailable."
+      ],
+      "done": [
+        "No custom producer ABI or manifest restructuring required.",
+        "Manifest/failure semantics match iOS.",
+        "Documented ABIs validate and both transports execute.",
+        "No RN/Lynx-specific source is duplicated into application artifacts."
+      ],
+      "stop": "Do not introduce a host-specific export fork or fat AAR without revisiting the accepted artifact boundary.",
+      "notes": "Reuse the metadata contract, not platform-specific build implementation. Keep architecture support explicit.",
+      "file": "plans/006-portable-android-artifacts.md",
+      "url": "https://github.com/gronxb/tauri-native/issues/10",
+      "number": 10,
+      "bodySynced": true
+    },
+    {
+      "id": 7,
+      "m": "M2",
+      "slug": "react-native-artifact-consumption",
+      "title": "[M2] Let React Native and Expo consume copied artifacts only",
+      "priority": "P1",
+      "effort": "L",
+      "risk": "MED",
+      "deps": [
+        5,
+        6
+      ],
+      "why": "Expo currently requires tauriDir pointing to the source project. Consumers should be able to receive an export from another machine/team and build with no producer checkout or Rust toolchain.",
+      "evidence": [
+        [
+          "packages/react-native/app.plugin.js",
+          33,
+          "resolveTauriDir requires the producer directory."
+        ],
+        [
+          "packages/react-native/app.plugin.js",
+          81,
+          "iOS copies from producer gen/tauri-native."
+        ],
+        [
+          "packages/react-native/app.plugin.js",
+          109,
+          "Android similarly resolves source-owned exports."
+        ]
+      ],
+      "excerpt": "const exportDirectory = path.join(resolvedTauriDir, 'gen/tauri-native/ios');",
+      "scope": [
+        "packages/react-native/app.plugin.js",
+        "packages/react-native/test/",
+        "packages/react-native/src/ and native loaders (artifact validation only)",
+        "packages/react-native/README.md",
+        "examples/react-native/",
+        "docs/artifacts.md"
+      ],
+      "steps": [
+        "Add host-side artifact-directory configuration relative to the host. Validate manifest/platform/ABI/content before modifying generated host files; source paths must not be needed.",
+        "Keep Expo CNG idempotent and preserve unrelated Pods/libraries/assets. If tauriDir remains as convenience, normalize it to the same artifact reader and make it optional.",
+        "Document/test Expo and bare RN builds with the producer checkout and Rust toolchain inaccessible. Host packages still own Fabric/TurboModule and app lifecycle.",
+        "Add missing/corrupt/incompatible artifact diagnostics and copied-artifact E2E flows. Add test:e2e:android matching existing iOS coverage."
+      ],
+      "checks": [
+        [
+          "Existing baseline",
+          "nub --cwd packages/react-native run test",
+          "Plugin/package checks pass."
+        ],
+        [
+          "Existing baseline",
+          "nub --cwd packages/react-native run typecheck",
+          "Exit 0."
+        ],
+        [
+          "Existing native gate",
+          "nub --cwd examples/react-native run test:e2e:ios",
+          "After fixture build/install, both transports execute from copied output."
+        ],
+        [
+          "New gate to add",
+          "nub --cwd examples/react-native run test:e2e:android",
+          "Equivalent Android flow passes."
+        ]
+      ],
+      "tests": [
+        "Fresh host consumes a copied artifact with no source access.",
+        "Two prebuilds plus one artifact upgrade modify only dedicated integration files.",
+        "Invalid manifest/frontend/platform fails before destructive copying.",
+        "Direct and packaged-web calls return matching values/errors on both platforms."
+      ],
+      "done": [
+        "Main quickstart config uses artifacts, not mandatory tauriDir.",
+        "Expo and bare integrations reproduce without source/Rust access.",
+        "Both transports pass on iOS/Android.",
+        "Repeat prebuild is idempotent and unrelated host files survive."
+      ],
+      "stop": "Secretly rebuilding producer code or needing sibling source paths means the artifact-only contract is not met.",
+      "notes": "The host can know about tauri-native; the producer should not. Keep build diagnostics separate from end-user product UI.",
+      "file": "plans/007-react-native-artifact-consumption.md",
+      "url": "https://github.com/gronxb/tauri-native/issues/11",
+      "number": 11,
+      "bodySynced": true
+    },
+    {
+      "id": 8,
+      "m": "M2",
+      "slug": "lynx-artifact-parity",
+      "title": "[M2] Bring Lynx to the same artifact-only integration contract",
+      "priority": "P1",
+      "effort": "M",
+      "risk": "MED",
+      "deps": [
+        5,
+        6,
+        7
+      ],
+      "why": "Lynx should consume the same application artifacts as RN without source-path assumptions or Lynx-specific modifications in the producer.",
+      "evidence": [
+        [
+          "packages/lynx/ios/TauriNativeLynx.podspec",
+          27,
+          "Depends on the shared TauriNativeGenerated Pod."
+        ],
+        [
+          "packages/lynx/src/index.ts",
+          26,
+          "Calls through generated NativeModules."
+        ],
+        [
+          "docs/adr/0002-lynx-host-boundary.md",
+          1,
+          "Uses public native-module/autolink APIs with Lynx lifecycle ownership."
+        ]
+      ],
+      "excerpt": "s.dependency \"TauriNativeGenerated\"",
+      "scope": [
+        "packages/lynx/README.md",
+        "packages/lynx/ios/ and android/ (integration/validation only)",
+        "packages/lynx/package.json",
+        "examples/lynx/",
+        "docs/artifacts.md"
+      ],
+      "steps": [
+        "Configure/document copied-export consumption on both platforms using the M1 artifact manifest and normalized files.",
+        "Retain public Lynx native modules/autolinking. Do not install private JSI hooks or change Tauri producer code.",
+        "Use byte-identical platform artifacts from the RN integration fixture to prove host independence. Share metadata validation only where concrete duplication warrants it.",
+        "Add Android E2E parity and update iOS checks for relocation, invalid artifacts, mount/unmount and relaunch behavior."
+      ],
+      "checks": [
+        [
+          "Existing baseline",
+          "nub --cwd packages/lynx run test",
+          "Codegen/type/package checks pass without generated drift."
+        ],
+        [
+          "Existing native gate",
+          "nub --cwd examples/lynx run test:e2e:ios",
+          "Copied-artifact direct/embedded flows pass."
+        ],
+        [
+          "New gate to add",
+          "nub --cwd examples/lynx run test:e2e:android",
+          "Equivalent Android flow passes."
+        ]
+      ],
+      "tests": [
+        "RN and Lynx consume identical application artifacts.",
+        "Missing/incompatible artifacts fail with no source fallback.",
+        "Native calls respect Lynx background scripting.",
+        "Mount/unmount/relaunch do not duplicate registration or lose assets."
+      ],
+      "done": [
+        "Both platforms need only host package plus copied artifact.",
+        "No Lynx-specific producer branch or export variant.",
+        "Both transports pass on both platforms.",
+        "Docs agree with the shared artifact contract."
+      ],
+      "stop": "Report private-runtime or producer-coupling requirements instead of forking the producer contract.",
+      "notes": "Follow current autolink/codegen patterns; regenerate generated files rather than editing bindings manually.",
+      "file": "plans/008-lynx-artifact-parity.md",
+      "url": "https://github.com/gronxb/tauri-native/issues/12",
+      "number": 12,
+      "bodySynced": true
+    },
+    {
+      "id": 9,
+      "m": "M3",
+      "slug": "async-lifecycle-protocol",
+      "title": "[M3] Add nonblocking invocation with cancellation and teardown semantics",
+      "priority": "P1",
+      "effort": "L",
+      "risk": "HIGH",
+      "deps": [
+        4,
+        7,
+        8
+      ],
+      "why": "All direct APIs are synchronous; Promise-shaped WebView calls do not by themselves make Rust work nonblocking. Real file/database/long-running commands need bridge-owned execution and lifetime semantics.",
+      "evidence": [
+        [
+          "packages/react-native/src/NativeTauri.ts",
+          3,
+          "Synchronous string-to-string TurboModule."
+        ],
+        [
+          "packages/react-native/ios/TNTauriWebView.swift",
+          192,
+          "Incoming messages synchronously invoke Rust."
+        ],
+        [
+          "packages/lynx/src/index.ts",
+          26,
+          "Lynx also returns synchronously."
+        ]
+      ],
+      "excerpt": "invoke(command: string, payloadJson: string): string;",
+      "scope": [
+        "packages/cli/ generated adapter/protocol and fixtures",
+        "packages/react-native/src/, cpp/, ios/, android/",
+        "packages/lynx/src/, generated/, types/, ios/, android/",
+        "examples/react-native/.maestro/",
+        "examples/lynx/.maestro/",
+        "docs/compatibility.md",
+        "host API docs"
+      ],
+      "steps": [
+        "Specify request IDs/runtime generations, queues, concurrency/task ownership, cancellation and shutdown. State whether cancellation cooperatively stops work or only suppresses delivery; do not claim arbitrary Rust code is preemptible.",
+        "Implement supported async commands in the generated adapter and Promise-based host APIs. Move actual blocking work off UI/JS threads and dispatch callbacks onto the correct runtime thread without a second app owner.",
+        "Preserve ordinary Tauri invoke success/rejection in the frontend. Define migration for synchronous host APIs and version the artifact ABI.",
+        "Handle cancellation/completion races, unmount/remount, runtime reload, late/out-of-order callbacks and errors exactly once. Test deliberately slow commands and observable side effects."
+      ],
+      "checks": [
+        [
+          "Existing baseline",
+          "nub --cwd packages/cli run test",
+          "Adapter/protocol tests pass."
+        ],
+        [
+          "Existing baseline",
+          "nub --cwd packages/react-native run typecheck && nub --cwd packages/lynx run typecheck",
+          "Both exit 0."
+        ],
+        [
+          "Native gates from M2",
+          "nub --cwd examples/react-native run test:e2e:ios && nub --cwd examples/react-native run test:e2e:android",
+          "Slow work does not freeze the UI; lifecycle tests pass."
+        ],
+        [
+          "Native gates from M2",
+          "nub --cwd examples/lynx run test:e2e:ios && nub --cwd examples/lynx run test:e2e:android",
+          "Equivalent Lynx scheduling/lifetime behavior."
+        ]
+      ],
+      "tests": [
+        "UI remains interactive during real delayed Rust work.",
+        "Concurrent out-of-order results route to correct requests.",
+        "Cancel/complete races and dead-runtime callbacks settle once without leaks/crashes.",
+        "Domain/transport errors and bounded cleanup work across both transports."
+      ],
+      "done": [
+        "Actual work executes without blocking UI/JS call paths.",
+        "Supported ordinary async commands need no custom producer APIs.",
+        "Cancellation/teardown semantics are documented and tested on all hosts/platforms.",
+        "Incompatible ABI versions fail deterministically."
+      ],
+      "stop": "Promise.resolve around a synchronous native call is insufficient. New producer runtime/annotations or fabricated State semantics require revisiting compatibility.",
+      "notes": "Host AbortSignal controls can live in host packages. Ordinary Tauri frontend calls may initially cancel only through teardown; do not require custom cancellation imports.",
+      "file": "plans/009-async-lifecycle-protocol.md",
+      "url": "https://github.com/gronxb/tauri-native/issues/13",
+      "number": 13,
+      "bodySynced": true
+    },
+    {
+      "id": 10,
+      "m": "M3",
+      "slug": "generated-command-types",
+      "title": "[M3] Generate host TypeScript contracts from existing Rust commands",
+      "priority": "P1",
+      "effort": "L",
+      "risk": "HIGH",
+      "deps": [
+        4,
+        9
+      ],
+      "why": "invoke<T> currently lets callers invent command/result types. Generate useful host contracts without requiring producer schemas, a second registry, or custom Rust derives.",
+      "evidence": [
+        [
+          "packages/react-native/src/invoke.ts",
+          12,
+          "Accepts arbitrary command/string payload and casts the result."
+        ],
+        [
+          "packages/lynx/src/index.ts",
+          26,
+          "Same unchecked generic API."
+        ],
+        [
+          "examples/tauri/src-tauri/crates/app-core/src/lib.rs",
+          224,
+          "Current dispatcher manually lists commands."
+        ]
+      ],
+      "excerpt": "command: string,\npayload: Record<string, unknown>",
+      "scope": [
+        "packages/cli/src/discovery/ and type emission",
+        "packages/cli/src/artifacts/",
+        "packages/cli/test/ type fixtures",
+        "packages/cli/package.json",
+        "packages/react-native/src/ typed host API",
+        "packages/lynx/src/ and types/ typed host API",
+        "CLI/host docs"
+      ],
+      "steps": [
+        "Reuse the discovered model and M0-approved extraction. Determine the accurately representable Rust/serde subset without producer source changes.",
+        "Emit command names, argument/result contracts and typed host bindings into the artifact. RN/Lynx consume them; the ordinary frontend keeps its existing @tauri-apps/api imports.",
+        "Handle serde names/tagged enums/option-null, unit/Result semantics and integer range policy explicitly. Custom serializers or opaque types yield honest unknown/unsupported diagnostics, not guessed layouts.",
+        "Add test:types with positive/negative compilation fixtures and serialization parity. Unsupported advanced typed output must not unnecessarily block the otherwise valid untyped export path."
+      ],
+      "checks": [
+        [
+          "Existing baseline",
+          "nub --cwd packages/cli run test",
+          "Generation/package checks pass."
+        ],
+        [
+          "New gate to add",
+          "nub --cwd packages/cli run test:types",
+          "Generated clients compile; invalid commands/payloads trigger expected diagnostics."
+        ],
+        [
+          "Existing baseline",
+          "nub --cwd packages/react-native run typecheck && nub --cwd packages/lynx run typecheck",
+          "Both typed APIs compile."
+        ]
+      ],
+      "tests": [
+        "Wrong command names and payload shapes fail at compile time.",
+        "Generated serde types match actual Rust JSON.",
+        "Changing command registration regenerates the artifact contract.",
+        "Custom serialization and large integers never silently produce misleading types."
+      ],
+      "done": [
+        "Useful types require no new producer derives/macros/schema.",
+        "One model drives dispatch and type output.",
+        "Both hosts consume types from copied artifacts.",
+        "Frontend remains independent of tauri-native bindings."
+      ],
+      "stop": "Mandatory producer annotations require an explicit tradeoff decision; preserve the untyped route rather than silently editing source.",
+      "notes": "This is an export convenience, not an assertion that arbitrary serde implementations can be understood statically.",
+      "file": "plans/010-generated-command-types.md",
+      "url": "https://github.com/gronxb/tauri-native/issues/14",
+      "number": 14,
+      "bodySynced": true
+    },
+    {
+      "id": 11,
+      "m": "M3",
+      "slug": "view-context-events",
+      "title": "[M3] Connect host view lifecycle and scoped frontend interaction",
+      "priority": "P2",
+      "effort": "L",
+      "risk": "HIGH",
+      "deps": [
+        7,
+        8,
+        9
+      ],
+      "why": "TauriView currently exposes layout only. Embedded features need ready/error callbacks and context/actions while the frontend stays an ordinary web/Tauri application.",
+      "evidence": [
+        [
+          "packages/react-native/src/TauriViewNativeComponent.ts",
+          7,
+          "Only ViewProps exist."
+        ],
+        [
+          "packages/react-native/ios/TNTauriWebView.swift",
+          150,
+          "Invoke-only injected seam."
+        ],
+        [
+          "packages/react-native/android/src/main/java/com/reactnativetauri/TauriWebView.kt",
+          173,
+          "Android implements its own invoke seam."
+        ]
+      ],
+      "excerpt": "export interface NativeProps extends ViewProps {\n}",
+      "scope": [
+        "packages/react-native/src/ and native view implementations",
+        "packages/lynx/src/, types/ and native view elements",
+        "packages/cli/test/fixtures/ interaction fixture",
+        "packages/cli/package.json",
+        "examples/react-native/",
+        "examples/lynx/",
+        "docs/compatibility.md",
+        "host API docs"
+      ],
+      "steps": [
+        "Add host-owned ready/load/error callbacks and initial local route/query context using ordinary URL semantics. Preserve the packaged-origin boundary; no arbitrary remote URL feature.",
+        "Evaluate a minimal standard @tauri-apps/api/event listen/emit subset for host↔view notifications with an ordinary frontend fixture. Define exact targets, payload/order and unlisten semantics; do not imply global windows/plugin event compatibility.",
+        "Implement only the proven view-scoped subset in both hosts/platforms with generation-scoped cleanup. Broader Rust AppHandle emission/state and channels remain conditional on the compatibility decision.",
+        "If standard event fidelity cannot satisfy M0, deliver lifecycle/URL context and record the blocked event capability with evidence. Do not substitute a mandatory proprietary frontend SDK. Add test:events for supported behavior and explicit unsupported outcomes."
+      ],
+      "checks": [
+        [
+          "Existing baseline",
+          "nub --cwd packages/react-native run typecheck && nub --cwd packages/lynx run typecheck",
+          "Both view APIs compile."
+        ],
+        [
+          "New gate to add",
+          "nub --cwd packages/cli run test:events",
+          "Documented standard event subset/diagnostics match fixtures."
+        ],
+        [
+          "Native gates from M2",
+          "nub --cwd examples/react-native run test:e2e:ios && nub --cwd examples/react-native run test:e2e:android",
+          "Ready/error/context and supported interactions pass."
+        ],
+        [
+          "Native gates from M2",
+          "nub --cwd examples/lynx run test:e2e:ios && nub --cwd examples/lynx run test:e2e:android",
+          "Equivalent Lynx results."
+        ]
+      ],
+      "tests": [
+        "Document ID is passed through a local URL and read by ordinary frontend code.",
+        "Ready timing and asset/navigation errors are observable by the host.",
+        "Unlisten/unmount removes listeners; two view instances do not cross-deliver.",
+        "The same standard frontend fixture runs on desktop without host globals/imports."
+      ],
+      "done": [
+        "Ready/error and local initial context work on both hosts.",
+        "Supported/blocked event capabilities are explicitly evidenced.",
+        "No producer custom global or dependency is mandatory.",
+        "Cleanup follows the async lifetime protocol."
+      ],
+      "stop": "Full-runtime or fabricated AppHandle requirements are blocked capabilities, not reasons to invent a general event framework.",
+      "notes": "Standard Tauri events and normal URL parameters are acceptable producer APIs. The producer must not need a tauri-native frontend API.",
+      "file": "plans/011-view-context-events.md",
+      "url": "https://github.com/gronxb/tauri-native/issues/15",
+      "number": 15,
+      "bodySynced": true
+    },
+    {
+      "id": 12,
+      "m": "M4",
+      "slug": "doctor-artifact-diagnostics",
+      "title": "[M4] Diagnose toolchains, unsupported projects, and artifact mismatches",
+      "priority": "P2",
+      "effort": "M",
+      "risk": "LOW",
+      "deps": [
+        3,
+        5,
+        6,
+        7
+      ],
+      "why": "Export often finds problems during expensive builds, while host checks mostly verify existence. Read-only diagnostics should explain project/toolchain and copied-artifact failures early.",
+      "evidence": [
+        [
+          "packages/cli/src/cli.ts",
+          15,
+          "Only export commands exist."
+        ],
+        [
+          "packages/cli/src/commands/export-android.ts",
+          107,
+          "Target setup/build occurs during export."
+        ],
+        [
+          "packages/react-native/app.plugin.js",
+          93,
+          "Current artifact checks are existence based."
+        ]
+      ],
+      "excerpt": "statSync(path.join(exportDirectory, artifact));",
+      "scope": [
+        "packages/cli/src/cli.ts",
+        "packages/cli/src/commands/doctor.ts (new)",
+        "packages/cli/src/discovery/ and artifacts/ diagnostics",
+        "packages/cli/test/",
+        "packages/cli/package.json",
+        "packages/react-native/app.plugin.js",
+        "packages/react-native/test/",
+        "CLI/host docs"
+      ],
+      "steps": [
+        "Add doctor for source projects and copied artifacts: toolchain/target checks, configuration/command compatibility, manifest/ABI/version and content integrity.",
+        "Only source mode may compare source fingerprints to exports. Artifact-only mode must work without source and must not pretend to detect edits in an unavailable producer checkout.",
+        "Share diagnostic codes with export/install, provide human/JSON output and meaningful nonzero exit statuses, and perform checks before expensive builds/destructive copying.",
+        "Keep doctor read-only: no source edits, automatic installations/repairs or secret dumps. Add test:doctor covering actual documented failure cases."
+      ],
+      "checks": [
+        [
+          "Existing baseline",
+          "nub --cwd packages/cli run test",
+          "CLI diagnostics/package checks pass."
+        ],
+        [
+          "Existing baseline",
+          "nub --cwd packages/react-native run test",
+          "Host diagnostics/package checks pass."
+        ],
+        [
+          "New gate to add",
+          "nub --cwd packages/cli run test:doctor",
+          "Expected exit codes/diagnostics with no mutation."
+        ]
+      ],
+      "tests": [
+        "Missing NDK/compiler/target, incompatible API/ABI and corrupt member are distinguishable.",
+        "Relocated artifact validates without source.",
+        "Staleness is claimed only with source evidence.",
+        "Narrow/non-TTY output and spaced paths preserve machine-readable diagnostics."
+      ],
+      "done": [
+        "Both producer and artifact-only consumer have useful diagnostic flows.",
+        "Failures happen before destructive copy/compilation.",
+        "JSON is stable and checks do not mutate/install.",
+        "Staleness claims match observable evidence."
+      ],
+      "stop": "Do not require source access for copied-artifact validation or turn doctor into an installer.",
+      "notes": "The prior review observed root-directory CLI assertions sensitive to wrapped paths; test diagnostic semantics separately from terminal formatting while touching this code.",
+      "file": "plans/012-doctor-artifact-diagnostics.md",
+      "url": "https://github.com/gronxb/tauri-native/issues/16",
+      "number": 16,
+      "bodySynced": true
+    },
+    {
+      "id": 13,
+      "m": "M4",
+      "slug": "incremental-export-watch",
+      "title": "[M4] Refresh exports with correct caching and a watch workflow",
+      "priority": "P2",
+      "effort": "L",
+      "risk": "MED",
+      "deps": [
+        12
+      ],
+      "why": "Developers currently repeat frontend build, native export and host integration manually. Shorten that loop while retaining exported artifacts as the producer/host boundary.",
+      "evidence": [
+        [
+          "packages/cli/src/commands/export-ios.ts",
+          89,
+          "Runs the frontend build hook during export."
+        ],
+        [
+          "packages/cli/src/commands/export-android.ts",
+          107,
+          "Recreates intermediate output and invokes native builds."
+        ],
+        [
+          "packages/cli/src/cli.ts",
+          15,
+          "No watch/development workflow exists."
+        ]
+      ],
+      "excerpt": "rmSync(cargoOutput, { recursive: true, force: true });",
+      "scope": [
+        "packages/cli/src/cli.ts",
+        "packages/cli/src/commands/ export/watch paths",
+        "packages/cli/src/artifacts/ fingerprints/staging",
+        "packages/cli/test/",
+        "packages/cli/package.json",
+        "CLI/host docs"
+      ],
+      "steps": [
+        "Define minimal cache inputs: actual source, Cargo lock/config/features/target, frontend inputs, CLI/ABI version. Reuse Cargo incremental compilation; do not add a distributed cache service.",
+        "Add opt-in watch export with debounce, one build per output, generated-directory exclusion and atomic successful promotion. Skip appropriate expensive steps when inputs do not change.",
+        "Differentiate frontend/native edits and report accurate host actions. Packaged-asset changes may require copy/rebuild/reinstall; do not advertise automatic HMR that the host cannot perform.",
+        "Keep any host copying explicitly configured on the host/CLI side. Add test:watch. Defer embedded dev servers, arbitrary remote loading, OTA and live native-code replacement."
+      ],
+      "checks": [
+        [
+          "Existing baseline",
+          "nub --cwd packages/cli run test",
+          "Cache/watch/package tests pass."
+        ],
+        [
+          "New gate to add",
+          "nub --cwd packages/cli run test:watch",
+          "Real temp edits exercise invalidation, recovery and promotion."
+        ],
+        [
+          "Platform gates from M1",
+          "nub --cwd packages/cli run test:export:ios && nub --cwd packages/cli run test:export:android",
+          "Incremental outputs still execute on configured native toolchains."
+        ]
+      ],
+      "tests": [
+        "No-change, frontend, Rust, Cargo.lock, feature/target and CLI protocol changes invalidate correct components.",
+        "Failed rebuild preserves old output and recovers on the next valid edit.",
+        "Generated output never triggers a loop; concurrent edits cannot publish mixed artifacts.",
+        "Changed Rust behavior reaches the host after documented refresh/install steps."
+      ],
+      "done": [
+        "Repeatable documented watch flow needs no producer integration code.",
+        "Cache validity is tested against real behavior, not only timestamps.",
+        "Failures preserve known-good output.",
+        "Docs distinguish artifact refresh from host rebuild/install."
+      ],
+      "stop": "If faster reload needs production origin-policy changes or an OTA service, defer it instead of expanding scope.",
+      "notes": "Measure before/after times on the same fixture/toolchain; correct invalidation comes before headline speed.",
+      "file": "plans/013-incremental-export-watch.md",
+      "url": "https://github.com/gronxb/tauri-native/issues/17",
+      "number": 17,
+      "bodySynced": true
+    },
+    {
+      "id": 14,
+      "m": "M5",
+      "slug": "real-feature-independent-consumers",
+      "title": "[M5] Demonstrate a useful Tauri feature in independent mobile hosts",
+      "priority": "P1",
+      "effort": "L",
+      "risk": "MED",
+      "deps": [
+        9,
+        10,
+        11,
+        13
+      ],
+      "why": "The calculator proves transport but not adoption value. A small document save/search feature can demonstrate domain and frontend reuse with native mobile navigation.",
+      "evidence": [
+        [
+          "examples/tauri/src-tauri/src/lib.rs",
+          1,
+          "Current command is a bridge-tailored calculator adapter."
+        ],
+        [
+          "examples/tauri/src/main.ts",
+          12,
+          "Frontend identifies the host with a custom global."
+        ],
+        [
+          "examples/react-native/src/App.tsx",
+          1,
+          "Mobile example combines a direct-call surface and embedded view."
+        ]
+      ],
+      "excerpt": "__TAURI_NATIVE_HOST__?: 'react-native' | 'lynx';",
+      "scope": [
+        "examples/tauri/ or new examples/ordinary-tauri-feature/ (choose one canonical example)",
+        "examples/react-native/",
+        "examples/lynx/",
+        "packages/cli/test/native-export/ external-consumer harness",
+        "packages/cli/package.json",
+        "README.md",
+        "docs/examples/ (new)"
+      ],
+      "steps": [
+        "Implement one narrow flow: save a local document and search saved text in Rust with a normal Tauri frontend. No accounts/cloud/sync service or full document-product scope.",
+        "Keep producer code ordinary using only M0/M3-supported standard mechanisms. No custom bridge core/layout/ABI/annotations/globals or RN/Lynx branches; desktop remains independently runnable.",
+        "Integrate via copied artifacts in independent RN/Expo and Lynx hosts, showing native navigation/direct calls and the embedded feature. If persistence/state initialization is still unsupported, report that blocker rather than hiding a custom runtime.",
+        "Add test:external-consumer using packed candidate packages in temp projects outside the monorepo: no workspace aliases or source access during host compilation. Record setup, source reuse and measured build/size/startup costs."
+      ],
+      "checks": [
+        [
+          "New gate to add",
+          "nub --cwd packages/cli run test:external-consumer",
+          "Fresh consumers use packed packages and copied artifacts without workspace shortcuts."
+        ],
+        [
+          "Native gates from M2",
+          "nub --cwd examples/react-native run test:e2e:ios && nub --cwd examples/react-native run test:e2e:android",
+          "Save/search/relaunch/navigation and both transports pass."
+        ],
+        [
+          "Native gates from M2",
+          "nub --cwd examples/lynx run test:e2e:ios && nub --cwd examples/lynx run test:e2e:android",
+          "Equivalent Lynx behavior."
+        ],
+        [
+          "Producer gate to record",
+          "Add and record the canonical example's standard Tauri desktop build/test commands in its package.json and walkthrough.",
+          "Same frontend/domain behavior passes independently on desktop."
+        ]
+      ],
+      "tests": [
+        "Save, terminate/relaunch, search by content; errors remain visible.",
+        "Search does not freeze the host and can be abandoned by leaving the view.",
+        "One Rust behavior change appears on desktop and both mobile hosts after export.",
+        "Host builds after the producer checkout is removed from the consumer environment."
+      ],
+      "done": [
+        "Example demonstrates useful reuse beyond arithmetic.",
+        "No producer bridge-specific code is needed.",
+        "Packed external consumers pass on both hosts/platforms.",
+        "Measurements and integration tradeoffs are recorded honestly."
+      ],
+      "stop": "Unsupported state/plugin requirements must feed back into compatibility scope, not become hidden producer coupling.",
+      "notes": "Remove obsolete tailored demo scaffolding only when this replacement makes it unnecessary. Focus on one feature.",
+      "file": "plans/014-real-feature-independent-consumers.md",
+      "url": "https://github.com/gronxb/tauri-native/issues/18",
+      "number": 18,
+      "bodySynced": true
+    },
+    {
+      "id": 15,
+      "m": "M5",
+      "slug": "native-compatibility-ci",
+      "title": "[M5] Gate changes with native, compatibility, and package verification",
+      "priority": "P1",
+      "effort": "L",
+      "risk": "MED",
+      "deps": [
+        2,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14
+      ],
+      "why": "A release workflow alone cannot establish a cross-language/native support promise. Validate real exports, lifecycle behavior, version compatibility and package consumption outside the developer checkout.",
+      "evidence": [
+        [
+          ".github/workflows/release.yml",
+          16,
+          "Current workflow installs dependencies and runs Changesets release work."
+        ],
+        [
+          "packages/cli/package.json",
+          1,
+          "CLI has unit and package tests."
+        ],
+        [
+          "examples/react-native/.maestro/ios-integration.yaml",
+          1,
+          "Existing iOS flow exercises both calculator transports."
+        ]
+      ],
+      "excerpt": "- run: nub ci\n- uses: changesets/action@v2.1.1",
+      "scope": [
+        ".github/workflows/",
+        "scripts/verify-package.mjs",
+        "packages/*/package.json (checks only)",
+        "packages/cli/test/ and native-export fixtures",
+        "examples/react-native/.maestro/",
+        "examples/lynx/.maestro/",
+        "docs/compatibility.md",
+        "docs/validation.md (new)"
+      ],
+      "steps": [
+        "Add PR Rust/unit/type/package/source-integrity checks. Run package tests in documented directories; fix wrapping-sensitive assertions meaningfully rather than suppressing failures.",
+        "Define a bounded supported Tauri/API and RN/Expo/Lynx version matrix starting with repository-pinned baselines. Each claim needs iOS/Android evidence for direct and embedded paths; do not imply every version cross-product.",
+        "Use configured Mac/Android runners for native relocation and packed consumers, release builds, async cancellation/teardown, serde/errors, ABI mismatch, and Android page-size packaging. Record physical-device RC checks where CI cannot supply them.",
+        "Gate publication on validation of the same candidate/commit. Publish reproducible commands/logs; pending devices/runners/signing are unresolved gates, not skipped-to-green success. Use existing secret management without exposing credentials."
+      ],
+      "checks": [
+        [
+          "Existing baseline",
+          "cargo test --workspace --locked",
+          "On supported native toolchain, Rust core/desktop tests pass."
+        ],
+        [
+          "Existing baselines",
+          "nub --cwd packages/cli run test && nub --cwd packages/react-native run test && nub --cwd packages/lynx run test",
+          "All package checks pass."
+        ],
+        [
+          "Native gates",
+          "nub --cwd packages/cli run test:export:ios && nub --cwd packages/cli run test:export:android && nub --cwd packages/cli run test:external-consumer",
+          "Configured runners validate real outputs and consumers."
+        ],
+        [
+          "Workflow evidence",
+          "Run new validation workflow on a branch/PR and attach run URLs for each support entry.",
+          "Every required job passes for the release candidate commit."
+        ]
+      ],
+      "tests": [
+        "Incompatible artifact/ABI is rejected by an actual consumer.",
+        "Real invoke error/async teardown regression fails transport tests.",
+        "A packed package missing a needed native/generated file fails outside the monorepo.",
+        "Failed/pending required checks prevent publication."
+      ],
+      "done": [
+        "All claimed support entries have linked automated/device evidence.",
+        "Native behavior/source integrity/external consumers are required gates.",
+        "Publication uses the validated candidate/commit.",
+        "Unavailable infrastructure is recorded as a gap, never a pass."
+      ],
+      "stop": "If runner/signing/device access is unavailable, deliver reviewable configuration and record blocked evidence; do not claim completion of unrun native checks.",
+      "notes": "Scenario tests and a bounded matrix are sufficient. Avoid meaningless snapshots/coverage percentages. No new secrets or infrastructure purchases are authorized by writing this ticket.",
+      "file": "plans/015-native-compatibility-ci.md",
+      "url": "https://github.com/gronxb/tauri-native/issues/19",
+      "number": 19,
+      "bodySynced": true
+    },
+    {
+      "id": 16,
+      "m": "M5",
+      "slug": "onboarding-1-0-release",
+      "title": "[M5] Validate independent onboarding and prepare the 1.0 release",
+      "priority": "P1",
+      "effort": "M",
+      "risk": "MED",
+      "deps": [
+        14,
+        15
+      ],
+      "why": "The final gate is evidence that developers can install the CLI, export/move artifacts and integrate while their producer stays ordinary. Working on the author's machine is insufficient.",
+      "evidence": [
+        [
+          "README.md",
+          5,
+          "Project is explicitly a PoC."
+        ],
+        [
+          "packages/cli/package.json",
+          1,
+          "Packages target the experimental dist-tag."
+        ],
+        [
+          "scripts/release.mjs",
+          1,
+          "Publication already has a dedicated script."
+        ]
+      ],
+      "excerpt": "This is a proof-of-concept (PoC) project currently under development.",
+      "scope": [
+        "README.md",
+        "packages/cli/README.md",
+        "packages/react-native/README.md",
+        "packages/lynx/README.md",
+        "docs/compatibility.md",
+        "docs/adoption.md (new)",
+        "docs/validation.md",
+        ".changeset/",
+        "manifests/release workflow only as needed for the approved candidate"
+      ],
+      "steps": [
+        "Write the canonical quickstart: producer CLI install → export → move artifacts → host package/config → build. Legacy custom-core integration is explicitly optional.",
+        "Arrange 2–3 independent evaluators with ordinary Tauri projects through maintainer-authorized outreach. Record setup versions, producer diffs, supported/blocked commands, time/steps and failures. This ticket does not authorize an agent to contact anyone.",
+        "Complete at least two independent artifact-only walkthroughs from docs alone. Route blockers back to the responsible milestone; publish support/migration guidance and measured overhead/limitations.",
+        "Prepare a reviewable 1.0 candidate, versioning/changelogs/release notes. Stable publication follows the maintainer's release authorization/process only after all required gates pass. Do not invent due dates or guaranteed compatibility."
+      ],
+      "checks": [
+        [
+          "Existing baselines",
+          "nub --cwd packages/cli run test && nub --cwd packages/react-native run test && nub --cwd packages/lynx run test",
+          "Candidate packages verify."
+        ],
+        [
+          "Gate from reference feature",
+          "nub --cwd packages/cli run test:external-consumer",
+          "Candidate package/artifact combination integrates externally."
+        ],
+        [
+          "Adoption evidence",
+          "Attach evaluator walkthroughs/source-diff summaries and CI/device run URLs.",
+          "At least two independent integrations satisfy the source/artifact contracts; otherwise keep gate open."
+        ]
+      ],
+      "tests": [
+        "Quickstart uses real commands/options from tested candidate packages.",
+        "Removing CLI/generated output leaves the ordinary Tauri app runnable.",
+        "Producer diff remains within install/export change budget.",
+        "A consumer reproduces the supported combination using copied artifacts only."
+      ],
+      "done": [
+        "At least two evidenced independent integrations need no bridge-specific producer code.",
+        "Required native/compatibility/package checks pass for the RC.",
+        "Unsupported APIs and migration from PoC are documented.",
+        "A reviewable 1.0 candidate exists; stable publication uses the authorized release process."
+      ],
+      "stop": "If adoption needs manual core extraction, custom annotations, source access in hosts or silent fallbacks, remain experimental and reopen the failed gate.",
+      "notes": "Do not invent user quotes, metrics, dates or market demand. Stars/downloads do not replace successful integrations.",
+      "file": "plans/016-onboarding-1-0-release.md",
+      "url": "https://github.com/gronxb/tauri-native/issues/20",
+      "number": 20,
+      "bodySynced": true
+    }
+  ],
+  "tracker": {
+    "number": 21,
+    "url": "https://github.com/gronxb/tauri-native/issues/21",
+    "title": "[Roadmap] CLI-only Tauri export to native hosts — path to 1.0",
+    "file": "plans/000-roadmap.md"
+  }
+}
