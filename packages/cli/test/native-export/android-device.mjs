@@ -59,7 +59,7 @@ export async function verifyAndroidConsumer(preparedFile) {
       selection: { type: 'display-name', data: '한글' },
     });
     writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({
-      ...prepared.export, ...result, emulator: { api, architecture, pageSize: 16384 },
+      ...prepared.export, ...result, refreshedRustObservedInHost: true, emulator: { api, architecture, pageSize: 16384 },
       transferredApkSha256: prepared.apkSha256,
       executionMatrix: 'All four ABIs built/inspected; only the named emulator ABI executed',
     }, null, 2) + '\n');

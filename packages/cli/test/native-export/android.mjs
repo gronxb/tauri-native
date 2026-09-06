@@ -128,7 +128,7 @@ try {
     apkSha256: createHash('sha256').update(readFileSync(apk)).digest('hex'),
     export: { installedCli: true, producerUnchanged: true, producerDeleted: true, relocatedPathWithSpaces: true,
       hostWithoutRust: true, frontendBytesUnchanged: true, validatedAbis: manifest.native, apkAlignment: 16384,
-      incrementalReuse: true, refreshedRustObservedInHost: true, failedBuildPreservedOutput: true,
+      incrementalReuse: true, refreshedRustExported: true, failedBuildPreservedOutput: true,
       invalidElfPreservedOutput: ['4 KB alignment', 'API 26', 'wrong SONAME', 'wrong machine', 'unbundled shared dependency'],
     },
   }, null, 2) + '\n');

@@ -34,6 +34,11 @@ export function buildAndInstallTestHost(profile, platform, run, hostEnv, { ios, 
     profile.app = path.join(host, 'android/app/build/outputs/apk/release/app-release.apk');
     run(`${label}-alignment`, process.env.ZIPALIGN ?? 'zipalign', ['-c', '-P', '16', '-v', '4', profile.app], host, hostEnv);
     run(`${label}-install-app`, 'adb', ['-s', android, 'install', '-r', profile.app], host, hostEnv);
+    // A frozen previous test app can leave an unresponsive CDP socket behind.
+    // Limit cleanup to the other applications owned by this acceptance gate.
+    for (const appId of new Set(hostProfiles.map(item => item.appId))) {
+      if (appId !== profile.appId) run(`${label}-stop-previous`, 'adb', ['-s', android, 'shell', 'am', 'force-stop', appId], host, hostEnv);
+    }
   }
   return profile.app;
 }
