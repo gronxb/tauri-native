@@ -17,6 +17,7 @@ import { inventory, sha256 } from '../artifacts/files.ts';
 import { ANDROID_ABIS, writeArtifactManifest } from '../artifacts/manifest.ts';
 import { androidTools, validateAndroidArtifacts, type AndroidTools } from '../artifacts/android.ts';
 import { publishArtifacts } from '../artifacts/staging.ts';
+import { assertExportReady } from './doctor.ts';
 
 export interface ExportAndroidOptions {
   tauriDir: string;
@@ -68,6 +69,7 @@ export function exportAndroid(options: ExportAndroidOptions): void {
   try {
     publishArtifacts(outputDirectory, stage => {
       const project = options.manifest ? undefined : discoverProject(options.tauriDir);
+      if (project) assertExportReady(project, 'android');
       tools = androidTools();
       adapter = project ? prepareAdapter(project) : undefined;
       exportAndroidArtifacts({ ...options, outputDir: stage }, adapter);
@@ -75,7 +77,7 @@ export function exportAndroid(options: ExportAndroidOptions): void {
     message(`Created validated Android artifacts in ${outputDirectory}`, '◆ ');
   }
   catch (error) {
-    if (adapter) throw new Error(`${error instanceof Error ? error.message : error}\nGenerated source maps to ${adapter.sourceRoot}; original command line numbers are preserved.`);
+    if (adapter) throw Object.assign(new Error(`${error instanceof Error ? error.message : error}\nGenerated source maps to ${adapter.sourceRoot}; original command line numbers are preserved.`), { code: (error as { code?: string }).code });
     throw error;
   }
   finally { adapter?.cleanup(); }

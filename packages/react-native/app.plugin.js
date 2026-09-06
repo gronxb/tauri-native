@@ -43,7 +43,7 @@ function resolveArtifacts(projectRoot, options, platform) {
   const root = path.resolve(projectRoot, selected);
   const directory = path.join(root, ...(options.artifactsDir ? [] : ['gen/tauri-native']), platform);
   try { readArtifacts(directory, platform); }
-  catch (error) { throw fail(`${error.message} Supply a complete, matching CLI export before prebuild.`); }
+  catch (error) { throw Object.assign(fail(`${error.message} Supply a complete, matching CLI export before prebuild.`), { code: error.code }); }
   return directory;
 }
 

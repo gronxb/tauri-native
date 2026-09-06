@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/011-view-context-events.md`
 - Issue: [#15](https://github.com/gronxb/tauri-native/issues/15)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: IMPLEMENTED AND VERIFIED — all acceptance gates pass; ready for PR merge.
+- Status: DONE — [PR #32](https://github.com/gronxb/tauri-native/pull/32) merged into main as `c8d63a95da0993bcfc9b2fd01607ec03137af82f`; issue closed.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 

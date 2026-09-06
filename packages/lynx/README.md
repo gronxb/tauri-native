@@ -19,6 +19,8 @@ Transfer the **whole** `ios/` and `android/` export directories into the Lynx ho
 
 Validate received files with the Node-only reader shipped in this package:
 
+Reader errors expose stable `.code` values shared with optional CLI `doctor --artifacts`. Both flows work without Rust or producer access; see [diagnostics](https://github.com/gronxb/tauri-native/blob/main/docs/diagnostics.md).
+
 ```sh
 node --input-type=module -e "import {readArtifacts} from '@tauri-native/lynx/artifacts'; readArtifacts('./tauri-native/ios','ios'); readArtifacts('./tauri-native/android','android')"
 ```

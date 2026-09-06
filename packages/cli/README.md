@@ -16,6 +16,15 @@ Node.js 22.12+ and Rust are required. The package includes its Rust parser sourc
 
 The current verified subset is synchronous root commands on resolved Tauri 2.11.5 with an existing Cargo.lock, ordinary Builder/build-script setup and local JSON configuration. Cargo workspace members, custom library names/paths and string or `{script, cwd}` frontend hooks are discovered. Module/cfg registration, runtime objects, plugins, custom initialization/build scripts, configuration overlays and application ACLs fail explicitly. The producer's dependency version range can remain unchanged: verification reads the resolved lockfile. See the repository's [compatibility contract](https://github.com/gronxb/tauri-native/blob/main/docs/compatibility.md).
 
+## Diagnose
+
+```sh
+npx tauri-native doctor --platform ios
+npx tauri-native doctor --artifacts ./copied-artifacts/android --json
+```
+
+Doctor checks source/toolchain compatibility or a complete copied artifact without building, installing or repairing files. Artifact-only mode needs no producer or Rust. If the source inspector is not cached, run `inspect` once to prepare it. Add both `--tauri-dir` and `--artifacts` to compare recorded source hashes; matching hashes do not prove unbuilt frontend inputs are current. JSON reports have schema version 1 and stable diagnostic codes; a failed check exits with status 1. See [diagnostic modes, codes and limits](https://github.com/gronxb/tauri-native/blob/main/docs/diagnostics.md).
+
 ## Export
 
 ```sh

@@ -13,6 +13,7 @@ export interface Diagnostic {
 }
 
 export class DiscoveryError extends Error {
+  readonly code = 'project_unsupported';
   readonly diagnostics: Diagnostic[];
   constructor(diagnostics: Diagnostic[]) {
     super(diagnostics.map(d => `${d.file}:${d.line ?? 1}:${d.column ?? 1}: ${d.message}`).join('\n'));
@@ -26,24 +27,27 @@ const bundled = fileURLToPath(new URL('../native', import.meta.url));
 export const nativeDirectory = existsSync(path.join(bundled, 'Cargo.toml'))
   ? bundled : fileURLToPath(new URL('../../native', import.meta.url));
 
-export function commandOutput(command: string, args: string[], cwd?: string): string {
-  const result = spawnSync(command, args, { cwd, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
+export function commandOutput(command: string, args: string[], cwd?: string, readOnly = false): string {
+  const result = spawnSync(command, args, { cwd, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024,
+    ...(readOnly ? { env: { ...process.env, RUSTUP_AUTO_INSTALL: '0', CARGO_NET_OFFLINE: 'true' } } : {}),
+  });
   if (result.status !== 0) {
-    throw new Error(`${command} failed: ${result.error?.message ?? result.stderr.trim()}`);
+    throw Object.assign(new Error(`${command} failed: ${result.error?.message ?? result.stderr.trim()}`), { code: (result.error as NodeJS.ErrnoException | undefined)?.code === 'ENOENT' ? 'tool_missing' : 'tool_failed' });
   }
   return result.stdout;
 }
 
-export function nativeTool<T>(operation: string, input: string, output?: string): T {
+export function nativeTool<T>(operation: string, input: string, output?: string, readOnly = false): T {
   const hash = createHash('sha256');
   for (const file of ['Cargo.toml', 'Cargo.lock', ...readdirSync(path.join(nativeDirectory, 'src')).sort().map(name => `src/${name}`)]) {
     hash.update(file).update(readFileSync(path.join(nativeDirectory, file)));
   }
-  const host = commandOutput('rustc', ['-vV']).match(/^host: (.+)$/m)?.[1];
+  const host = commandOutput('rustc', ['-vV'], undefined, readOnly).match(/^host: (.+)$/m)?.[1];
   if (!host) throw new Error('rustc did not report its host target');
   const target = path.join(tmpdir(), 'tauri-native-adapter', hash.digest('hex'));
   const binary = path.join(target, host, 'debug', `tauri-native-adapter${process.platform === 'win32' ? '.exe' : ''}`);
   if (!existsSync(binary)) {
+    if (readOnly) throw Object.assign(new Error('The CLI inspector is not prepared. Run tauri-native inspect once, then rerun doctor; doctor does not compile or install tools.'), { code: 'inspector_not_prepared' });
     commandOutput('cargo', ['build', '--locked', '--manifest-path', path.join(nativeDirectory, 'Cargo.toml'), '--target', host, '--target-dir', target], tmpdir());
   }
   const result = spawnSync(binary, [operation, input, ...(output ? [output] : [])], { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });

@@ -23,7 +23,7 @@ export interface AdapterWorkspace {
   cleanup(): void;
 }
 
-export function prepareAdapter(project: ProjectModel): AdapterWorkspace {
+export function projectCopyRoot(project: ProjectModel): string {
   const frontendRoot = path.dirname(project.tauriDirectory);
   const copyRoot = within(project.workspaceRoot, frontendRoot) ? project.workspaceRoot : frontendRoot;
   if (!within(copyRoot, project.workspaceRoot) || !within(copyRoot, project.source) || !within(copyRoot, project.frontend.dist) || (project.frontend.build && !within(copyRoot, project.frontend.build.cwd))) {
@@ -32,12 +32,21 @@ export function prepareAdapter(project: ProjectModel): AdapterWorkspace {
   for (const dependency of project.cargoPackage.dependencies) {
     if (dependency.path && !within(copyRoot, dependency.path)) throw new DiscoveryError([{ file: project.manifest, message: `External path dependency ${dependency.name} is outside the copied project root.` }]);
   }
+  return copyRoot;
+}
+
+export function projectFingerprints(project: ProjectModel): Record<string, string> {
+  return Object.fromEntries(Object.entries({ rustEntry: project.source, cargoManifest: project.manifest, cargoLock: path.join(project.workspaceRoot, 'Cargo.lock'), tauriConfig: path.join(project.tauriDirectory, 'tauri.conf.json') }).map(([key, file]) => [`${key}Sha256`, sha256(readFileSync(file))]));
+}
+
+export function prepareAdapter(project: ProjectModel): AdapterWorkspace {
+  const copyRoot = projectCopyRoot(project);
   const directory = realpathSync(mkdtempSync(path.join(tmpdir(), 'tauri-native-workspace-')));
   const copy = path.join(directory, 'producer');
   const map = (file: string) => path.join(copy, path.relative(copyRoot, file));
   const cleanup = () => rmSync(directory, { recursive: true, force: true });
   try {
-    const fingerprints = Object.fromEntries(Object.entries({ rustEntry: project.source, cargoManifest: project.manifest, cargoLock: path.join(project.workspaceRoot, 'Cargo.lock'), tauriConfig: path.join(project.tauriDirectory, 'tauri.conf.json') }).map(([key, file]) => [`${key}Sha256`, sha256(readFileSync(file))]));
+    const fingerprints = projectFingerprints(project);
     const dependencies: [string, string][] = [];
     const generatedRoots = [path.join(project.workspaceRoot, 'target'), path.join(project.tauriDirectory, 'target'), path.join(project.tauriDirectory, 'gen')];
     cpSync(copyRoot, copy, { recursive: true, dereference: true, filter(source) {

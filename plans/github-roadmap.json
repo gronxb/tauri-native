@@ -5,7 +5,7 @@
   "milestones": [
     {
       "key": "M0",
-      "title": "M0 — Prove source-transparent Tauri export",
+      "title": "M0 \u2014 Prove source-transparent Tauri export",
       "description": "Gate: prove native execution of existing registered Tauri commands without application-authored bridge code or a second application runtime. Define the supported subset and source-integrity fixtures. If infeasible, block dependent implementation and report the smallest required concession.",
       "number": 1,
       "url": "https://github.com/gronxb/tauri-native/milestone/1",
@@ -13,7 +13,7 @@
     },
     {
       "key": "M1",
-      "title": "M1 — CLI-only portable native artifacts",
+      "title": "M1 \u2014 CLI-only portable native artifacts",
       "description": "Gate: install the CLI in an ordinary Tauri project and export relocatable iOS XCFramework/assets and Android libraries/assets. Discovery, adapters, ABI, and metadata are tool-owned. No mandatory app-core, header, custom macros, or host-specific frontend imports.",
       "number": 2,
       "url": "https://github.com/gronxb/tauri-native/milestone/2",
@@ -21,7 +21,7 @@
     },
     {
       "key": "M2",
-      "title": "M2 — Drop-in artifacts for React Native and Lynx",
+      "title": "M2 \u2014 Drop-in artifacts for React Native and Lynx",
       "description": "Gate: RN/Expo and Lynx consume only copied platform artifacts plus their host package. No access to the producer source or Rust build toolchain is needed for the host build. Verify direct and embedded calls on iOS and Android.",
       "number": 3,
       "url": "https://github.com/gronxb/tauri-native/milestone/3",
@@ -29,21 +29,22 @@
     },
     {
       "key": "M3",
-      "title": "M3 — Real commands and host interaction",
+      "title": "M3 \u2014 Real commands and host interaction",
       "description": "Gate: nonblocking commands, explicit cancellation/teardown semantics, generated host TypeScript contracts, and a narrow host/frontend interaction surface. The producer continues using ordinary Tauri APIs.",
       "number": 4,
-      "url": "https://github.com/gronxb/tauri-native/milestone/4"
+      "url": "https://github.com/gronxb/tauri-native/milestone/4",
+      "state": "closed"
     },
     {
       "key": "M4",
-      "title": "M4 — Short and diagnosable development workflow",
+      "title": "M4 \u2014 Short and diagnosable development workflow",
       "description": "Gate: diagnose setup/config/artifact mismatches before expensive builds; refresh exports with correct invalidation and accurate host rebuild instructions. Preserve the portable-artifact boundary.",
       "number": 5,
       "url": "https://github.com/gronxb/tauri-native/milestone/5"
     },
     {
       "key": "M5",
-      "title": "M5 — Validate adoption and ship 1.0",
+      "title": "M5 \u2014 Validate adoption and ship 1.0",
       "description": "Gate: one useful feature shared by independent desktop/mobile apps, native/compatibility/package CI, and independent onboarding evidence. Stable release covers only the verified support matrix, not arbitrary Tauri runtime/plugin compatibility.",
       "number": 6,
       "url": "https://github.com/gronxb/tauri-native/milestone/6"
@@ -318,7 +319,7 @@
         "iosSwiftTypecheck": true,
         "androidJniCompile": true,
         "legacyCoreTests": 8,
-        "platformRuntimeGate": "Remaining issues #9–#12"
+        "platformRuntimeGate": "Remaining issues #9\u2013#12"
       },
       "pr": "https://github.com/gronxb/tauri-native/pull/24",
       "mergeCommit": "83196b97412e52bef451b6e5fec5c069744383ac"
@@ -418,7 +419,7 @@
         "iosSwiftTypecheck": true,
         "androidJniCompile": true,
         "legacyCoreTests": 8,
-        "platformRuntimeGate": "Remaining issues #9–#12"
+        "platformRuntimeGate": "Remaining issues #9\u2013#12"
       },
       "pr": "https://github.com/gronxb/tauri-native/pull/24",
       "mergeCommit": "83196b97412e52bef451b6e5fec5c069744383ac"
@@ -1086,7 +1087,7 @@
       ],
       "steps": [
         "Add host-owned ready/load/error callbacks and initial local route/query context using ordinary URL semantics. Preserve the packaged-origin boundary; no arbitrary remote URL feature.",
-        "Evaluate a minimal standard @tauri-apps/api/event listen/emit subset for host↔view notifications with an ordinary frontend fixture. Define exact targets, payload/order and unlisten semantics; do not imply global windows/plugin event compatibility.",
+        "Evaluate a minimal standard @tauri-apps/api/event listen/emit subset for host\u2194view notifications with an ordinary frontend fixture. Define exact targets, payload/order and unlisten semantics; do not imply global windows/plugin event compatibility.",
         "Implement only the proven view-scoped subset in both hosts/platforms with generation-scoped cleanup. Broader Rust AppHandle emission/state and channels remain conditional on the compatibility decision.",
         "If standard event fidelity cannot satisfy M0, deliver lifecycle/URL context and record the blocked event capability with evidence. Do not substitute a mandatory proprietary frontend SDK. Add test:events for supported behavior and explicit unsupported outcomes."
       ],
@@ -1130,7 +1131,7 @@
       "url": "https://github.com/gronxb/tauri-native/issues/15",
       "number": 15,
       "bodySynced": true,
-      "status": "IMPLEMENTED AND VERIFIED",
+      "status": "DONE",
       "verification": {
         "date": "2026-09-07",
         "adr": "docs/adr/0006-view-context-events.md",
@@ -1148,7 +1149,9 @@
         "typechecks": true,
         "packages": true,
         "nativeDevices": "arm64 iOS Simulator 26.4.1 and Android API 37 / 16 KB; no physical-device claim"
-      }
+      },
+      "pr": "https://github.com/gronxb/tauri-native/pull/32",
+      "mergeCommit": "c8d63a95da0993bcfc9b2fd01607ec03137af82f"
     },
     {
       "id": 12,
@@ -1233,7 +1236,29 @@
       "file": "plans/012-doctor-artifact-diagnostics.md",
       "url": "https://github.com/gronxb/tauri-native/issues/16",
       "number": 16,
-      "bodySynced": true
+      "bodySynced": true,
+      "status": "IMPLEMENTED AND VERIFIED",
+      "verification": {
+        "date": "2026-09-07",
+        "docs": "docs/diagnostics.md",
+        "doctorScenarios": 8,
+        "packageTests": {
+          "cli": 41,
+          "reactNative": 9,
+          "lynx": 2
+        },
+        "typechecks": true,
+        "packages": true,
+        "installedCliAndHostReaders": true,
+        "realProducerPlatforms": [
+          "ios",
+          "android"
+        ],
+        "portableExportGate": "test:events:export",
+        "exportEvidence": "target/view-events/export-report.json",
+        "sourceIntegrity": true,
+        "readOnlyChecks": true
+      }
     },
     {
       "id": 13,
@@ -1541,8 +1566,8 @@
         "manifests/release workflow only as needed for the approved candidate"
       ],
       "steps": [
-        "Write the canonical quickstart: producer CLI install → export → move artifacts → host package/config → build. Legacy custom-core integration is explicitly optional.",
-        "Arrange 2–3 independent evaluators with ordinary Tauri projects through maintainer-authorized outreach. Record setup versions, producer diffs, supported/blocked commands, time/steps and failures. This ticket does not authorize an agent to contact anyone.",
+        "Write the canonical quickstart: producer CLI install \u2192 export \u2192 move artifacts \u2192 host package/config \u2192 build. Legacy custom-core integration is explicitly optional.",
+        "Arrange 2\u20133 independent evaluators with ordinary Tauri projects through maintainer-authorized outreach. Record setup versions, producer diffs, supported/blocked commands, time/steps and failures. This ticket does not authorize an agent to contact anyone.",
         "Complete at least two independent artifact-only walkthroughs from docs alone. Route blockers back to the responsible milestone; publish support/migration guidance and measured overhead/limitations.",
         "Prepare a reviewable 1.0 candidate, versioning/changelogs/release notes. Stable publication follows the maintainer's release authorization/process only after all required gates pass. Do not invent due dates or guaranteed compatibility."
       ],
@@ -1586,7 +1611,7 @@
   "tracker": {
     "number": 21,
     "url": "https://github.com/gronxb/tauri-native/issues/21",
-    "title": "[Roadmap] CLI-only Tauri export to native hosts — path to 1.0",
+    "title": "[Roadmap] CLI-only Tauri export to native hosts \u2014 path to 1.0",
     "file": "plans/000-roadmap.md"
   }
 }

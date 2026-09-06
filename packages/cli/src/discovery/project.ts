@@ -46,7 +46,7 @@ function reject(file: string, message: string): never {
   throw new DiscoveryError([{ file, message }]);
 }
 
-export function discoverProject(tauriDir: string, cwd = process.cwd()): ProjectModel {
+export function discoverProject(tauriDir: string, cwd = process.cwd(), readOnly = false): ProjectModel {
   const requestedDirectory = path.resolve(cwd, tauriDir);
   const tauriDirectory = existsSync(requestedDirectory) ? realpathSync(requestedDirectory) : requestedDirectory;
   const manifest = path.join(tauriDirectory, 'Cargo.toml');
@@ -74,7 +74,7 @@ export function discoverProject(tauriDir: string, cwd = process.cwd()): ProjectM
   }
   // --no-deps avoids resolving/downloading/building the application. --locked
   // makes any required lockfile update an error rather than a source mutation.
-  const metadata = JSON.parse(commandOutput('cargo', ['metadata', '--format-version', '1', '--no-deps', '--locked', '--offline', '--manifest-path', manifest], cwd)) as { packages: CargoPackage[]; workspace_root: string };
+  const metadata = JSON.parse(commandOutput('cargo', ['metadata', '--format-version', '1', '--no-deps', '--locked', '--offline', '--manifest-path', manifest], cwd, readOnly)) as { packages: CargoPackage[]; workspace_root: string };
   const app = metadata.packages.find(item => realpathSync(item.manifest_path) === realpathSync(manifest));
   if (!app) reject(manifest, 'The selected manifest must be an application package, not a virtual workspace.');
   const libraries = app.targets.filter(target => target.kind.some(kind => ['lib', 'rlib', 'staticlib', 'cdylib'].includes(kind)));
@@ -84,11 +84,11 @@ export function discoverProject(tauriDir: string, cwd = process.cwd()): ProjectM
   if (!tauri || app.dependencies.some(dep => dep.name === 'tauri' && (dep.rename || dep.target))) reject(manifest, 'Expected an ordinary, unaliased Tauri dependency without target overrides.');
   const lockPath = path.join(metadata.workspace_root, 'Cargo.lock');
   if (!existsSync(lockPath)) reject(lockPath, 'An existing Cargo.lock is required to verify the resolved Tauri version without changing producer dependencies.');
-  const lock = nativeTool<{ package: { name: string; version: string }[] }>('manifest', lockPath);
+  const lock = nativeTool<{ package: { name: string; version: string }[] }>('manifest', lockPath, undefined, readOnly);
   const versions = lock.package.filter(item => item.name === 'tauri');
   if (versions.length !== 1 || versions[0]!.version !== '2.11.5') reject(lockPath, 'Only resolved Tauri 2.11.5 is verified by this compatibility contract.');
-  for (const target of app.targets.filter(target => target.kind.includes('custom-build'))) nativeTool('inspect-build', target.src_path);
-  const source = nativeTool<SourceModel>('inspect', library.src_path);
+  for (const target of app.targets.filter(target => target.kind.includes('custom-build'))) nativeTool('inspect-build', target.src_path, undefined, readOnly);
+  const source = nativeTool<SourceModel>('inspect', library.src_path, undefined, readOnly);
   return {
     ...source, manifest, workspaceRoot: metadata.workspace_root, tauriDirectory,
     source: library.src_path, libraryName: library.name,

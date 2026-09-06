@@ -59,6 +59,8 @@ The final host APK needs both compatible native libraries and correct ZIP alignm
 
 ## Manifest contract
 
+Use [artifact-only doctor](diagnostics.md) or the host SDK's `readArtifacts` to validate a copied directory without the producer or Rust. The CLI and both SDKs share receipt checks and diagnostic codes; the Expo plugin validates before copying. Source comparison requires an explicit producer path and only reports the recorded evidence.
+
 Format 1 uses relative POSIX file paths. `files` contains each exported file's SHA-256 and byte count, excluding `manifest.json` itself. Validation checks the full inventory: missing, changed, duplicate or extra files and symlinks are errors. The manifest is an integrity record, not a signature or proof that a third party's artifact is trustworthy.
 
 `native` describes library paths, architectures and device/simulator variants. iOS export checks XCFramework metadata, actual archive architectures, ABI symbols in every architecture and the generated ABI header before publishing. It inspects machine-code symbols instead of asking Xcode's possibly older LLVM reader to parse embedded Rust bitcode.

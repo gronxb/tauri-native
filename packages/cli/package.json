@@ -29,6 +29,7 @@
     "test:types": "nub run build && node --experimental-strip-types test/types/run.mjs",
     "test:events": "node --experimental-vm-modules --test test/events/protocol.mjs",
     "test:events:export": "nub run build && node --experimental-strip-types test/events/export.mjs",
+    "test:doctor": "nub run build && node --experimental-strip-types --test test/doctor.test.ts",
     "test:package": "node ../../scripts/verify-package.mjs",
     "typecheck": "tsc --noEmit"
   },
