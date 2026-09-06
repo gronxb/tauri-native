@@ -924,7 +924,7 @@
       "url": "https://github.com/gronxb/tauri-native/issues/13",
       "number": 13,
       "bodySynced": true,
-      "status": "IMPLEMENTED",
+      "status": "DONE",
       "verification": {
         "date": "2026-09-07",
         "exportReport": "target/async-protocol/export-report.json",
@@ -937,7 +937,9 @@
         "nativeRuntimeReplacement": true,
         "physicalDeviceExecution": false,
         "fullLynxAppR8": false
-      }
+      },
+      "pr": "https://github.com/gronxb/tauri-native/pull/30",
+      "mergeCommit": "fc8bce83452d30d15b61d7e71832f1ec3b353603"
     },
     {
       "id": 10,
@@ -1019,7 +1021,24 @@
       "file": "plans/010-generated-command-types.md",
       "url": "https://github.com/gronxb/tauri-native/issues/14",
       "number": 14,
-      "bodySynced": true
+      "bodySynced": true,
+      "status": "IMPLEMENTED",
+      "verification": {
+        "date": "2026-09-07",
+        "report": "target/command-types/report.json",
+        "nativeParityRequests": 17,
+        "packedHosts": [
+          "react-native",
+          "lynx"
+        ],
+        "platforms": [
+          "ios",
+          "android"
+        ],
+        "producerDeleted": true,
+        "hostWithoutRust": true,
+        "physicalDeviceExecution": false
+      }
     },
     {
       "id": 11,

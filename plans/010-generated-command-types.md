@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/010-generated-command-types.md`
 - Issue: [#14](https://github.com/gronxb/tauri-native/issues/14)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: TODO.
+- Status: IMPLEMENTED — native serialization parity, portable exports and packed-consumer type gates passed; merge pending.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 
@@ -87,12 +87,12 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 
 ## Acceptance criteria
 
-- [ ] Useful types require no new producer derives/macros/schema.
-- [ ] One model drives dispatch and type output.
-- [ ] Both hosts consume types from copied artifacts.
-- [ ] Frontend remains independent of tauri-native bindings.
-- [ ] Required checks have recorded results; skipped/blocked checks are identified accurately.
-- [ ] Changes stay within this issue's purpose and preserve the producer change budget.
+- [x] Useful types require no new producer derives/macros/schema.
+- [x] One model drives dispatch and type output.
+- [x] Both hosts consume types from copied artifacts.
+- [x] Frontend remains independent of tauri-native bindings.
+- [x] Required checks have recorded results; skipped/blocked checks are identified accurately.
+- [x] Changes stay within this issue's purpose and preserve the producer change budget.
 
 ## Blockers and maintenance
 
@@ -101,3 +101,11 @@ Mandatory producer annotations require an explicit tradeoff decision; preserve t
 This is an export convenience, not an assertion that arbitrary serde implementations can be understood statically.
 
 Use a `codex/generated-command-types` branch if creating one, follow the repository's conventional commit style, and do not commit/push/merge/publish changes without the execution task's authorization. Keep this issue and any checked-in plan status aligned.
+
+## Execution result — 2026-09-07
+
+The Rust parser adds type syntax, explicit imports, root definitions and serde attributes to the existing command model. Generated platform artifacts include checksummed `commands.ts` with a `Commands` map, `createCommands(invoke)` and located `typeDiagnostics`. Both hosts share that copied contract; the ordinary producer/frontend needs no new code. Unsupported or lossy projections remain unknown while untyped native export continues.
+
+`nub --cwd packages/cli run test:types` passes: seventeen real Tauri/native calls agree, observed native JSON satisfies generated success/error types, and registration changes regenerate bindings. All iOS/Android slices export without source changes. After deleting the producer, packed RN and Lynx consumers validate both copied platform directories and compile positive/negative calls without Cargo or rustc on PATH. The wrapper retains the original cancellable request and options. Empty registries compile. Evidence: `target/command-types/report.json`; reproduction and limits: [generated host contracts](../docs/command-types.md).
+
+Final regression checks pass: CLI 33 tests, RN 9, Lynx 2, all package/type checks and the Rust protocol scenario. The artifact receipt rejects a substituted command contract. No native bridge execution code changed in this issue, and no new physical-device or external-adoption evidence is claimed.

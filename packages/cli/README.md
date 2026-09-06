@@ -53,9 +53,13 @@ Hosts install the matching React Native or Lynx bridge package. They consume nat
 
 ## Protocol and legacy integration
 
-Generated ABI v1 exports `tauri_native_abi_version`, `tauri_native_invoke` and `tauri_native_string_free`. Every non-null response is owned UTF-8 JSON and must be freed exactly once. The private frame identifies `abiVersion: 1`. WebViews resolve ordinary Tauri `invoke` with the success value or reject it with the original serialized error. Host SDK errors default to `unknown`; `invoke<Value, DomainError>` can provide an explicit domain contract until generated typing is available.
+Generated ABI 2 includes the versioned invoke/free functions and request-session functions for nonblocking execution. Every non-null response is owned UTF-8 JSON and must be freed exactly once. The private frame identifies `abiVersion: 2`. WebViews resolve ordinary Tauri `invoke` with the success value or reject it with the original serialized error. Host SDK `invoke` returns a cancellable Promise of the result envelope; `invokeSync` retains explicit blocking/legacy use. See [the async contract](../../docs/adr/0005-async-request-sessions.md).
 
 The explicit `--manifest <core/Cargo.toml>` option retains the old application-owned ABI path; iOS also accepts `--header`. Existing calculator example scripts select this legacy path while their host migration is pending. Neither option is needed for ordinary source export. Legacy envelopes remain supported by the updated host packages.
+
+## Generated host types
+
+Generated exports include a checksummed `commands.ts` contract derived from existing Rust commands and ordinary serde declarations. Both host SDKs use the same `createCommands(invoke)` binding from the copied artifact. The producer frontend keeps its Tauri imports. See [the supported typing subset and verification](../../docs/command-types.md); unsupported projections remain `unknown` with explicit diagnostics.
 
 ## License
 

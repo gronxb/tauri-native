@@ -96,6 +96,18 @@ The returned Promise has a `cancel()` method. You can also pass `{ signal }` as 
 
 The embedded frontend keeps using ordinary `@tauri-apps/api/core.invoke`. Removing its view or leaving its document closes its session and suppresses late results. ABI 0/1 WebView compatibility retains the previous execution behavior; nonblocking execution requires ABI 2.
 
+## Generated command types
+
+Current generated artifacts include `commands.ts`. Import its `createCommands` and connect the host SDK's `invoke` to infer command names, inputs, success and error values:
+
+```ts
+import { invoke } from '@tauri-native/react-native';
+import { createCommands } from './Native Artifacts/commands';
+const command = createCommands(invoke);
+```
+
+Use command names and inputs from your exported application. Copy the complete artifact so contracts and binaries stay together. `typeDiagnostics` identifies custom serialization, large integers and other unknown projections; see [the supported typing subset](https://github.com/gronxb/tauri-native/blob/main/docs/command-types.md). The producer frontend keeps its ordinary Tauri imports.
+
 ## License
 
 MIT

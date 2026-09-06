@@ -1,0 +1,52 @@
+import { invoke } from '__HOST_PACKAGE__';
+import { createCommands, type Commands } from './Native Artifacts/commands';
+
+const command = createCommands(invoke);
+const save = command('save', { record: { display_name: '한글 🦀', pair: [true, -2], flags: [true, false], labels: { owner: 'me' } } });
+save.cancel();
+save.then(response => {
+  if (response.ok) {
+    const name: string = response.value.displayName;
+    const note: string | null | undefined = response.value.note;
+    // @ts-expect-error output uses serde's serialization name
+    response.value.display_name;
+    void [name, note];
+  } else if (typeof response.error !== 'string' && response.error.kind === 'empty_name') {
+    const message: string = response.error.message;
+    void message;
+  }
+});
+command('select', { selection: { type: 'display-name', data: 'selected' } });
+command('select', { selection: { type: 'pair', data: [7, true] } });
+command('external', { value: 'x_m_l_parser' });
+command('flexible', { value: [7, true] });
+command('label', { value: 'transparent' });
+command('optional', {});
+command('optional', { displayName: null });
+command('nothing', {}, { signal: new AbortController().signal });
+
+// @ts-expect-error an annotation without registration does not expose a command
+command('unregistered', {});
+// @ts-expect-error incorrect command name
+command('missing', {});
+// @ts-expect-error argument key is camelCase in Tauri IPC
+command('optional', { display_name: 'wrong key' });
+// @ts-expect-error incorrect Option element type
+command('optional', { displayName: 42 });
+// @ts-expect-error missing required argument
+command('save', {});
+// @ts-expect-error wrong input serde name and missing required fields
+command('save', { record: { displayName: 'wrong direction' } });
+// @ts-expect-error tagged enum variant payload must be a string
+command('select', { selection: { type: 'display-name', data: 42 } });
+// @ts-expect-error fixed tuple shape, not an arbitrary array
+command('select', { selection: { type: 'pair', data: [7] } });
+// @ts-expect-error no input for a zero-argument command
+command('nothing', { unexpected: true });
+// @ts-expect-error custom serializer output is unknown
+const guessedCustom: { count: number } = {} as Commands['custom']['success'];
+// @ts-expect-error u64 output cannot be promised as an exact JS number
+const guessedWide: number = 0 as Commands['wide']['success'];
+// @ts-expect-error unit returns null, not void
+const guessedUnit: void = null as Commands['nothing']['success'];
+void [guessedCustom, guessedWide, guessedUnit];

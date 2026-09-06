@@ -68,7 +68,7 @@ M0 must produce a **go/no-go** result. Do not promise automatic export of arbitr
 
 ### M3 — Real commands and host interaction
 
-- [ ] [#13 — [M3] Add nonblocking invocation with cancellation and teardown semantics](https://github.com/gronxb/tauri-native/issues/13)
+- [x] [#13 — [M3] Add nonblocking invocation with cancellation and teardown semantics](https://github.com/gronxb/tauri-native/issues/13)
 - [ ] [#14 — [M3] Generate host TypeScript contracts from existing Rust commands](https://github.com/gronxb/tauri-native/issues/14)
 - [ ] [#15 — [M3] Connect host view lifecycle and scoped frontend interaction](https://github.com/gronxb/tauri-native/issues/15)
 

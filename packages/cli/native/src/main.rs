@@ -6,6 +6,7 @@ use std::{collections::HashSet, env, fs, process};
 use syn::spanned::Spanned;
 mod manifest;
 mod publication;
+mod types;
 use syn::{
     parse::Parser, punctuated::Punctuated, Expr, FnArg, Item, Meta, Pat, ReturnType, Stmt, Token,
     Type,
@@ -244,6 +245,7 @@ fn generate(source: &str) -> Result<(String, Value), syn::Error> {
         })
         .unwrap_or_else(Span::call_site);
     let names = registered(&file).map_err(|e| syn::Error::new(entry_span, e.to_string()))?;
+    let type_graph = types::graph(&file);
     let mut arms = Vec::new();
     let mut commands = Vec::new();
     let mut exported = HashSet::new();
@@ -338,7 +340,7 @@ fn generate(source: &str) -> Result<(String, Value), syn::Error> {
                     .map_err(|error| serde_json::Value::String(format!("invalid args `{}` for command `{}`: {}", #key, #command_name, error)))?;
             });
                 parameters.push(
-                    json!({"name": ident.to_string(), "key": key, "type": quote!(#ty).to_string()}),
+                    json!({"name": ident.to_string(), "key": key, "type": quote!(#ty).to_string(), "rustType": types::ty(ty)}),
                 );
                 args.push(ident);
             }
@@ -356,7 +358,11 @@ fn generate(source: &str) -> Result<(String, Value), syn::Error> {
                 ReturnType::Default => "()".into(),
                 ReturnType::Type(_, ty) => quote!(#ty).to_string(),
             };
-            commands.push(json!({"name": command_name, "async": is_async, "parameters": parameters, "output": output, "line": f.sig.ident.span().start().line, "column": f.sig.ident.span().start().column + 1}));
+            let rust_output = match &f.sig.output {
+                ReturnType::Default => json!({"tuple": []}),
+                ReturnType::Type(_, ty) => types::ty(ty),
+            };
+            commands.push(json!({"name": command_name, "async": is_async, "parameters": parameters, "output": output, "rustOutput": rust_output, "line": f.sig.ident.span().start().line, "column": f.sig.ident.span().start().column + 1}));
             arms.push(quote! { #command_name => { #(#decode)* #invoke } });
             Ok(())
         })();
@@ -433,7 +439,7 @@ fn generate(source: &str) -> Result<(String, Value), syn::Error> {
             include_str!("abi.rs"),
             include_str!("session.rs")
         ),
-        json!({"schemaVersion": 1, "abiVersion": 2, "commands": commands}),
+        json!({"schemaVersion": 1, "abiVersion": 2, "commands": commands, "typeGraph": type_graph}),
     ))
 }
 

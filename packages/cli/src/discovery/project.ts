@@ -1,12 +1,14 @@
 import { existsSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { commandOutput, DiscoveryError, nativeTool } from './native-tool.ts';
+import type { RustType, TypeGraph } from '../types/commands.ts';
 
 export interface CommandModel {
   name: string;
   async?: boolean;
-  parameters: { name: string; key: string; type: string }[];
+  parameters: { name: string; key: string; type: string; rustType?: RustType }[];
   output: string;
+  rustOutput?: RustType;
   line: number;
   column: number;
 }
@@ -15,6 +17,7 @@ export interface SourceModel {
   schemaVersion: number;
   abiVersion: 1 | 2;
   commands: CommandModel[];
+  typeGraph?: TypeGraph;
 }
 
 interface CargoPackage {
