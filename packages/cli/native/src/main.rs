@@ -281,9 +281,6 @@ fn generate(source: &str) -> Result<(String, Value), syn::Error> {
             })
             .ok_or_else(|| fail(format!("registered command {name} is not a root function")))?;
         let result = (|| -> Result<(), syn::Error> {
-            if f.sig.asyncness.is_some() {
-                return Err(fail(format!("async command {name}")));
-            }
             if !f.sig.generics.params.is_empty() || f.sig.unsafety.is_some() || f.sig.abi.is_some()
             {
                 return Err(fail(format!("generic/unsafe/extern command {name}")));
@@ -345,15 +342,21 @@ fn generate(source: &str) -> Result<(String, Value), syn::Error> {
                 );
                 args.push(ident);
             }
+            let is_async = f.sig.asyncness.is_some();
+            let call = if is_async {
+                quote!(__TAURI_NATIVE_ASYNC_RUNTIME.block_on(#name(#(#args),*)))
+            } else {
+                quote!(#name(#(#args),*))
+            };
             let invoke = quote! {
-                let result = #name(#(#args),*);
+                let result = #call;
                 (&result).__tauri_native_kind().serialize(result)
             };
             let output = match &f.sig.output {
                 ReturnType::Default => "()".into(),
                 ReturnType::Type(_, ty) => quote!(#ty).to_string(),
             };
-            commands.push(json!({"name": command_name, "parameters": parameters, "output": output, "line": f.sig.ident.span().start().line, "column": f.sig.ident.span().start().column + 1}));
+            commands.push(json!({"name": command_name, "async": is_async, "parameters": parameters, "output": output, "line": f.sig.ident.span().start().line, "column": f.sig.ident.span().start().column + 1}));
             arms.push(quote! { #command_name => { #(#decode)* #invoke } });
             Ok(())
         })();
@@ -408,7 +411,13 @@ fn generate(source: &str) -> Result<(String, Value), syn::Error> {
         }
     }
     let adapted = String::from_utf8(adapted).expect("erasing source preserves UTF-8");
+    let async_runtime = commands.iter().any(|command| command["async"] == true).then(|| quote! {
+        static __TAURI_NATIVE_ASYNC_RUNTIME: std::sync::LazyLock<tokio::runtime::Runtime> =
+            std::sync::LazyLock::new(|| tokio::runtime::Builder::new_multi_thread()
+                .worker_threads(2).enable_all().build().expect("create tauri-native async runtime"));
+    });
     let generated = quote! {
+        #async_runtime
         fn __tauri_native_dispatch(command: &str, payload: serde_json::Value) -> Result<serde_json::Value, serde_json::Value> {
             match command {
                 #(#arms,)*
@@ -418,12 +427,13 @@ fn generate(source: &str) -> Result<(String, Value), syn::Error> {
     };
     Ok((
         format!(
-            "{adapted}\n{generated}\n{}\n{}\n{}",
+            "{adapted}\n{generated}\n{}\n{}\n{}\n{}",
             include_str!("argument.rs"),
             include_str!("response.rs"),
-            include_str!("abi.rs")
+            include_str!("abi.rs"),
+            include_str!("session.rs")
         ),
-        json!({"schemaVersion": 1, "abiVersion": 1, "commands": commands}),
+        json!({"schemaVersion": 1, "abiVersion": 2, "commands": commands}),
     ))
 }
 
@@ -494,7 +504,7 @@ fn main() {
                 return Err(fail("generated manifest must not overwrite the producer"));
             }
             manifest::prepare(&source, std::path::Path::new(output)).map_err(fail)?;
-            return Ok(json!({"abiVersion": 1}));
+            return Ok(json!({"abiVersion": 2}));
         }
         if args[1] != "inspect" && args[1] != "generate" {
             return Err(fail("unknown adapter operation"));
@@ -520,3 +530,6 @@ fn main() {
         }
     }
 }
+
+#[cfg(test)]
+mod session_tests;

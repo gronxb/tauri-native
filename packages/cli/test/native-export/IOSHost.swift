@@ -39,7 +39,7 @@ final class ArtifactHost: UIResponder, UIApplicationDelegate, WKScriptMessageHan
   }
 
   func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-    precondition(tauri_native_abi_version() == 1)
+    precondition(tauri_native_abi_version() == 2)
     do {
       for (command, payload) in [
         ("describe", ["request": ["displayName": "한글 🦀", "values": [2, 3, 5]]] as [String: Any]),

@@ -1,5 +1,5 @@
 #[tauri::command]
-async fn greet() -> String { "Hello".into() }
+async fn greet() -> String { std::future::ready("Hello".to_owned()).await }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

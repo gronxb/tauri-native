@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ordinary async Tauri commands</title>
+    <style>body{font:16px system-ui;margin:16px}button{display:block;margin:12px 0;padding:12px}output{display:block}</style>
+  </head>
+  <body>
+    <output id="result">Checking frontend async commands</output>
+    <output id="order"></output>
+    <button id="start">Start frontend work</button>
+    <button id="pulse">Pulse frontend</button>
+    <output id="pulse-result">Frontend pulse: 0</output>
+    <button id="reload">Reload frontend</button>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

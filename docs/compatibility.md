@@ -16,7 +16,7 @@ The producer remains an ordinary Tauri application. Install the CLI, export, and
 | Native execution | macOS arm64, Swift C ABI consumer and actual WKWebView |
 | Desktop parity | Original desktop binary builds; separate test copy uses Tauri's real command macros and test IPC |
 
-Other versions and mobile execution need their own evidence. MockRuntime is used only for the desktop IPC baseline, never the exported adapter. There is no general window, state, plugin, capability, event or runtime compatibility claim.
+Other versions and execution targets need their own evidence. The table records the original M0 baseline; the mobile and async extension is documented below. MockRuntime is used only for the desktop IPC baseline, never the exported adapter. There is no general window, state, plugin, capability, event or runtime compatibility claim.
 
 ## Normative command and frontend behavior
 
@@ -36,7 +36,7 @@ The [ordinary fixture](../packages/cli/test/fixtures/standard-tauri/) has a sing
 
 The unchanged frontend imports `invoke` from `@tauri-apps/api/core`. It has no host detection, bridge SDK or transport envelope. The host shim resolves with a success value or rejects with an error; `{ok, value, error}` is private transport data. A promise resolving to an error envelope violates this contract.
 
-The test checks ABI version 1, compares fourteen native requests with the original Tauri handler after removing the internal protocol version field, and verifies matching frees across 10,000 additional responses and executes the ordinary frontend through WKWebView. These examples establish the stated subset, not arbitrary macro expansion, custom serializers, transitive runtime helpers or Cargo dependency initialization.
+The current regression gate checks ABI version 2, compares fourteen native requests with the original Tauri handler after removing the internal protocol version field, verifies matching frees across 10,000 additional responses and executes the ordinary frontend through WKWebView. These examples establish the stated subset, not arbitrary macro expansion, custom serializers, transitive runtime helpers or Cargo dependency initialization.
 
 ## Explicit rejection corpus
 
@@ -44,7 +44,7 @@ Each directory in [the compatibility corpus](../packages/cli/test/fixtures/compa
 
 | Fixture | Current outcome |
 | --- | --- |
-| `async` | Async scheduling and lifetime semantics are pending M3. |
+| `async` | Supported for the owned root-command subset in ABI 2; exercised by the separate async gate below. |
 | `module` | External module registration is pending module/privacy-aware discovery. |
 | `command-options` | Command-level argument renaming requires explicit discovery support. |
 | `conditional` | Feature-gated registration requires resolved configuration. The fixture enables its ordinary `greeting` feature. |
@@ -54,7 +54,7 @@ Each directory in [the compatibility corpus](../packages/cli/test/fixtures/compa
 | `alias`, `item-macro` | Alias/macro resolution is outside the M0 analyzer. |
 | `borrowed` | Borrowed arguments require a separately verified lifetime contract. |
 
-These are supported **diagnostics**, not execution support for the rejected APIs. Adding a capability requires changing its fixture expectation and proving native/desktop behavior, not merely removing a rejection. Configuration forms, ACLs, dependency graphs and source shapes outside this corpus remain unverified; production discovery must reject ambiguity before publishing an artifact.
+The remaining negative cases are supported **diagnostics**, not execution support for the rejected APIs. Adding a capability requires changing its fixture expectation and proving native/desktop behavior, not merely removing a rejection. Configuration forms, ACLs, dependency graphs and source shapes outside this corpus remain unverified; production discovery must reject ambiguity before publishing an artifact.
 
 ## Authored-file change budget
 
@@ -88,3 +88,13 @@ Generated builds remove the standard Tauri application build/runtime dependency 
 ABI v1 has an explicit version function and an internal versioned response frame. React Native and Lynx unwrap it for the unchanged Tauri frontend; the explicit legacy route keeps its prior envelope. The contract compiles both actual Objective-C++ host bridges on macOS and proves version mismatch rejection before invocation, UTF-8 handling and rejection of embedded NUL command names. Platform compilation and packaged mobile execution have separate gates.
 
 The native gate also changes only the existing `generate_handler!` registry and confirms the newly registered command executes through native and frontend calls. A separate Rust type error proves that failed compilation preserves producer hashes and the original error line.
+
+## M3 asynchronous commands and lifetime
+
+ABI 2 adds artifact-owned request sessions and two execution workers. Ordinary root `async fn` commands with supported owned/serde arguments and outputs are awaited on a tool-owned Tokio runtime. The disposable Cargo manifest retains an existing Tokio version specification and supplies the required runtime/I/O features; the pinned acceptance fixture uses Tokio 1.53.1. The producer's authored files, manifest and lockfile remain unchanged during export. Tauri runtime objects, plugins, state and application initialization remain outside the supported subset.
+
+Host `invoke` returns a Promise of the existing result envelope. Transport failures reject; domain failures remain `{ ok: false, error }`. Its request exposes `cancel()`, with optional AbortSignal support. Cancellation removes queued work and discards late results from running work. It does not preempt Rust or undo side effects. A closed view/document or native runtime releases its sessions, and a new document/runtime cannot receive retired results. The queue and per-session pending storage are bounded. See [ADR 0005](adr/0005-async-request-sessions.md) for limits and the 16 ms polling tradeoff.
+
+The producer frontend keeps its ordinary Tauri Promise value/rejection behavior. `invokeSync` preserves the explicit blocking host API for short commands and ABI 0/1 migration; older WebView artifacts keep their prior execution behavior. Re-export with the current CLI for nonblocking ABI 2 invocation. These source changes are newer than the original experimental 0.1.0 package release.
+
+The [async fixture](../packages/cli/test/fixtures/async-tauri/) waits on actual Tokio timers and exposes observable Rust side effects. Explicit hold/release commands verify concurrent routing without relying on cold-start timing. Its [acceptance gate](testing-async.md) compares actual Tauri async IPC with both Objective-C++ consumers, exports every iOS/Android slice without producer edits, then executes copied artifacts in RN 0.86.3 and Lynx 4.0.1 Release hosts. The verified execution targets are arm64 iOS Simulator 26.4.1 and Android API 37 with 16 KB pages. The four host flows cover direct and embedded calls, cancellation, UI interaction, remount, page reload and actual runtime replacement while old Rust work continues. Other architectures are compiled/inspected, and physical-device execution is not claimed.

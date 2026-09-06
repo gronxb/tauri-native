@@ -1,6 +1,6 @@
 export interface ArtifactReceipt {
   formatVersion: 1;
-  abiVersion: 0 | 1;
+  abiVersion: 0 | 1 | 2;
   platform: 'ios' | 'android';
   assets: string;
   files: { path: string; sha256: string; size: number }[];

@@ -10,8 +10,8 @@ function readArtifacts(directory, platform) {
   const invalid = (message) => { throw new Error(`Invalid ${platform} artifacts at "${directory}": ${message}`); };
   if (!lstatSync(directory).isDirectory() || !lstatSync(path.join(directory, 'manifest.json')).isFile()) invalid('the artifact root and manifest must not be links');
   const manifest = JSON.parse(readFileSync(path.join(directory, 'manifest.json'), 'utf8'));
-  if (!manifest || manifest.formatVersion !== 1 || manifest.platform !== platform || ![0, 1].includes(manifest.abiVersion)) invalid('unsupported format, platform or ABI');
-  const generated = manifest.abiVersion === 1;
+  if (!manifest || manifest.formatVersion !== 1 || manifest.platform !== platform || ![0, 1, 2].includes(manifest.abiVersion)) invalid('unsupported format, platform or ABI');
+  const generated = manifest.abiVersion !== 0;
   if (manifest.compatibility?.mode !== (generated ? 'generated' : 'legacy') || manifest.compatibility?.verifiedTauri !== (generated ? '2.11.5' : null) || manifest.compatibility?.verifiedApi !== (generated ? '2.11.1' : null)) invalid('unsupported API compatibility');
   if (manifest.commands !== (generated ? 'commands.json' : null)) invalid('invalid command metadata');
   const assets = platform === 'ios' ? 'TauriNativeAssets.bundle' : 'assets/tauri-native';
@@ -58,8 +58,8 @@ function readArtifacts(directory, platform) {
   if (count !== files.size || required.some(file => !files.has(file))) invalid('missing required file');
   if (generated) {
     const model = JSON.parse(readFileSync(path.join(directory, manifest.commands), 'utf8'));
-    if (model.schemaVersion !== 1 || model.abiVersion !== 1 || !Array.isArray(model.commands)) invalid('incompatible command metadata');
-    for (const header of headers) if (!/^#define TAURI_NATIVE_ABI_VERSION 1\b/m.test(readFileSync(path.join(directory, header), 'utf8'))) invalid('incompatible ABI header');
+    if (model.schemaVersion !== 1 || model.abiVersion !== manifest.abiVersion || !Array.isArray(model.commands)) invalid('incompatible command metadata');
+    for (const header of headers) if (!new RegExp(`^#define TAURI_NATIVE_ABI_VERSION ${manifest.abiVersion}\\b`, 'm').test(readFileSync(path.join(directory, header), 'utf8'))) invalid('incompatible ABI header');
   }
   return manifest;
 }

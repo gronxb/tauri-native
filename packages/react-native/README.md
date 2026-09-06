@@ -85,12 +85,16 @@ React Native autolinks this package's native bridge. Build with Xcode/CocoaPods 
 ```tsx
 import { TauriView, invoke } from '@tauri-native/react-native';
 
-const response = invoke('calculate', { expression: '7 * (8 - 2)' });
+const response = await invoke('calculate', { expression: '7 * (8 - 2)' });
 
 <TauriView style={{ flex: 1 }} />;
 ```
 
-The direct TurboModule API is synchronous on both iOS and Android.
+`invoke` returns a Promise of `{ ok: true, value }` or `{ ok: false, error }`. Transport failures reject the Promise. ABI 2 artifacts execute commands on Rust workers; rebuild older artifacts with the CLI to use this API. The previous blocking API is available as `invokeSync`, including for ABI 0/1 migration. The calculator example deliberately uses that legacy path.
+
+The returned Promise has a `cancel()` method. You can also pass `{ signal }` as the third argument when your host provides `AbortSignal`. Cancellation rejects with `AbortError`, removes queued work and discards a running request's result; it does not interrupt Rust code or undo side effects. The native module closes outstanding sessions when its runtime is destroyed. Busy clients poll every 16 ms and release their session when idle.
+
+The embedded frontend keeps using ordinary `@tauri-apps/api/core.invoke`. Removing its view or leaving its document closes its session and suppresses late results. ABI 0/1 WebView compatibility retains the previous execution behavior; nonblocking execution requires ABI 2.
 
 ## License
 

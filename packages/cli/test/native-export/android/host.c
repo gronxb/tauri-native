@@ -10,8 +10,8 @@ static _Atomic int frees;
 JNIEXPORT jbyteArray JNICALL Java_dev_taurinative_artifacttest_MainActivity_invokeNative(
     JNIEnv *env, jclass type, jbyteArray command, jbyteArray payload) {
   (void)type;
-  if (tauri_native_abi_version() != 1) {
-    (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/RuntimeException"), "Expected ABI 1");
+  if (tauri_native_abi_version() != 2) {
+    (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/RuntimeException"), "Expected ABI 2");
     return NULL;
   }
   jsize command_length = (*env)->GetArrayLength(env, command);

@@ -22,7 +22,7 @@ export interface AndroidArtifacts {
 
 export type ArtifactManifest = (IosArtifacts | AndroidArtifacts) & {
   formatVersion: 1;
-  abiVersion: 0 | 1;
+  abiVersion: 0 | 1 | 2;
   generator: { name: string; version: string };
   compatibility: { mode: 'generated' | 'legacy'; verifiedTauri: string | null; verifiedApi: string | null };
   source: Record<string, string>;
@@ -33,7 +33,7 @@ export type ArtifactManifest = (IosArtifacts | AndroidArtifacts) & {
 export function writeArtifactManifest(directory: string, input: (IosArtifacts | AndroidArtifacts) & { source: Record<string, string> }, model?: SourceModel): void {
   if (model) writeFileSync(path.join(directory, 'commands.json'), JSON.stringify(model, null, 2) + '\n');
   const manifest: ArtifactManifest = {
-    formatVersion: 1, abiVersion: model ? 1 : 0,
+    formatVersion: 1, abiVersion: model ? model.abiVersion : 0,
     generator: { name: packageJson.name, version: packageJson.version },
     compatibility: { mode: model ? 'generated' : 'legacy', verifiedTauri: model ? '2.11.5' : null, verifiedApi: model ? '2.11.1' : null },
     ...input, commands: model ? 'commands.json' : null,
@@ -48,9 +48,9 @@ function relativeFile(value: unknown): value is string {
 
 export function validateArtifactManifest(directory: string): ArtifactManifest {
   const manifest = JSON.parse(readFileSync(path.join(directory, 'manifest.json'), 'utf8')) as ArtifactManifest;
-  if (manifest.formatVersion !== 1 || ![0, 1].includes(manifest.abiVersion) || !['ios', 'android'].includes(manifest.platform)) throw new Error('Unsupported artifact format, ABI or platform');
+  if (manifest.formatVersion !== 1 || ![0, 1, 2].includes(manifest.abiVersion) || !['ios', 'android'].includes(manifest.platform)) throw new Error('Unsupported artifact format, ABI or platform');
   if (manifest.generator?.name !== packageJson.name || typeof manifest.generator.version !== 'string') throw new Error('Invalid artifact generator');
-  const generated = manifest.abiVersion === 1;
+  const generated = manifest.abiVersion !== 0;
   if (manifest.compatibility?.mode !== (generated ? 'generated' : 'legacy') || manifest.compatibility.verifiedTauri !== (generated ? '2.11.5' : null) || manifest.compatibility.verifiedApi !== (generated ? '2.11.1' : null)) throw new Error('Incompatible artifact API contract');
   if (!manifest.source || !Object.keys(manifest.source).length || Object.entries(manifest.source).some(([key, value]) => !/^[a-zA-Z]+Sha256$/.test(key) || !/^[a-f0-9]{64}$/.test(value))) throw new Error('Invalid source fingerprints');
   if (manifest.commands !== (generated ? 'commands.json' : null)) throw new Error('Invalid command metadata path');
@@ -74,7 +74,7 @@ export function validateArtifactManifest(directory: string): ArtifactManifest {
   }
   if (manifest.commands) {
     const model = JSON.parse(readFileSync(path.join(directory, manifest.commands), 'utf8')) as SourceModel;
-    if (model.schemaVersion !== 1 || model.abiVersion !== 1 || !Array.isArray(model.commands)) throw new Error('Incompatible command model');
+    if (model.schemaVersion !== 1 || model.abiVersion !== manifest.abiVersion || !Array.isArray(model.commands)) throw new Error('Incompatible command model');
   }
   return manifest;
 }

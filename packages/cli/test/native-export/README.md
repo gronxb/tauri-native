@@ -24,7 +24,7 @@ Successful evidence is written to ignored `target/export-spike/report.json`, wit
 3. Discover the project with Cargo metadata and `syn`, then prepare the same disposable workspace used by production export. Only registered root commands get ABI dispatch; the producer owns no dispatcher/header or native crate-type configuration.
 4. Delete the entire generated copy, regenerate it, and check deterministic generated source.
 5. The contract runner additionally checks the complete negative fixture corpus for unsupported source forms. These are **diagnostic** checks, not native implementations of those capabilities.
-6. Compile the generated native library and load it through a Swift C ABI consumer. Check ABI 1, exercise 10,000 additional calls and assert every response has a matching free. Run the frontend in a real WKWebView. Compile and execute the actual RN/Lynx Objective-C++ bridges against valid and incompatible libraries; check UTF-8, errors and NUL-command rejection.
+6. Compile the generated native library and load it through a Swift C ABI consumer. Check ABI 2, exercise 10,000 additional calls and assert every response has a matching free. Run the frontend in a real WKWebView. Compile and execute the actual RN/Lynx Objective-C++ bridges against valid and incompatible libraries; check UTF-8, errors and NUL-command rejection.
 7. Build the original desktop application without changing its source.
 8. Compile a separate public-API experiment: calling the private ordinary command produces Rust E0603, and accessing `InvokeMessage::new` produces E0624.
 9. In a separate test-only copy, run the same requests through Tauri's real command macros and IPC with `tauri::test::MockRuntime`. Compare responses exactly after removing the internal ABI-version field. MockRuntime is never part of the exported adapter.
@@ -33,7 +33,7 @@ Successful evidence is written to ignored `target/export-spike/report.json`, wit
 
 The scenarios cover a serde-renamed structured input/output, a tagged domain error, Unicode, default camelCase argument names, invalid/missing/null arguments, optional and unit results, adjacent-tagged enums, and an annotated but unregistered command.
 
-`test:export:contract` also compiles the fourteen complete negative fixture overlays as ordinary Tauri applications, checks their repeated export rejection, and verifies Git/byte-hash integrity. Its versioned support matrix and authored-file budget are in [the compatibility contract](../../../../docs/compatibility.md). It retains aggregate evidence in `target/export-contract/report.json`.
+`test:export:contract` also compiles the thirteen complete negative fixture overlays as ordinary Tauri applications, checks their repeated export rejection, and verifies Git/byte-hash integrity. Its versioned support matrix and authored-file budget are in [the compatibility contract](../../../../docs/compatibility.md). It retains aggregate evidence in `target/export-contract/report.json`.
 
 ## Boundaries
 

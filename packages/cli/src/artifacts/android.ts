@@ -24,7 +24,7 @@ export function validateAndroidArtifacts(directory: string, tools: AndroidTools)
     const output = commandOutput(tools.readelf, ['--file-header', '--program-headers', '--notes', '--dynamic', '--dyn-symbols', path.join(directory, slice.path)]);
     validateAndroidElf(output, slice.abi, manifest.abiVersion, systemLibraries);
   }
-  if (manifest.header && !/^#define TAURI_NATIVE_ABI_VERSION 1\b/m.test(readFileSync(path.join(directory, manifest.header), 'utf8'))) throw new Error('Incompatible generated ABI header');
+  if (manifest.header && !new RegExp(`^#define TAURI_NATIVE_ABI_VERSION ${manifest.abiVersion}\\b`, 'm').test(readFileSync(path.join(directory, manifest.header), 'utf8'))) throw new Error('Incompatible generated ABI header');
 }
 
 export function validateAndroidElf(output: string, abi: AndroidArtifacts['native'][number]['abi'], abiVersion: number, systemLibraries: Record<string, string>): void {
@@ -40,7 +40,7 @@ export function validateAndroidElf(output: string, abi: AndroidArtifacts['native
   }
   const note = output.match(/NT_ANDROID_TYPE_IDENT\s*\n\s*description data: ((?:[a-f\d]{2} ){3}[a-f\d]{2})/i)?.[1];
   if (!note || Buffer.from(note.replaceAll(' ', ''), 'hex').readUInt32LE(0) !== 24) throw new Error(`Expected Android API 24 ELF identification: ${abi}`);
-  for (const symbol of ['tauri_native_invoke', 'tauri_native_string_free', ...(abiVersion === 1 ? ['tauri_native_abi_version'] : [])]) {
+  for (const symbol of ['tauri_native_invoke', 'tauri_native_string_free', ...(abiVersion !== 0 ? ['tauri_native_abi_version'] : []), ...(abiVersion === 2 ? ['create', 'start', 'poll', 'cancel', 'destroy'].map(name => `tauri_native_session_${name}`) : [])]) {
     if (!new RegExp(`\\bFUNC\\s+GLOBAL\\s+DEFAULT\\s+\\d+\\s+${symbol}\\s*$`, 'm').test(output)) throw new Error(`Missing ${symbol} in ${abi}`);
   }
   if (!/\(SONAME\)\s+Library soname: \[libtauri_native_core\.so\]/.test(output)) throw new Error(`Incorrect Android library SONAME: ${abi}`);

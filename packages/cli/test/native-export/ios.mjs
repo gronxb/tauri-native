@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -35,10 +35,7 @@ try {
   run('npm', ['install', '--prefix', cli, '--ignore-scripts', '--no-audit', '--no-fund', path.join(work, packed[0].filename)]);
   const producer = path.join(work, 'ordinary producer');
   cpSync(path.join(here, '../fixtures/standard-tauri'), producer, { recursive: true });
-  const modules = path.join(root, 'examples/tauri/node_modules');
-  const fixturePackage = JSON.parse(readFileSync(path.join(producer, 'package.json'), 'utf8'));
-  for (const name of ['@tauri-apps/api', 'vite']) assert.equal(JSON.parse(readFileSync(path.join(modules, name, 'package.json'))).version, fixturePackage.dependencies[name] ?? fixturePackage.devDependencies[name]);
-  symlinkSync(modules, path.join(producer, 'node_modules'), 'dir');
+  run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: producer });
   const before = snapshot(producer);
   run('npm', ['run', 'build'], { cwd: producer });
   const frontend = inventory(path.join(producer, 'dist'));
@@ -69,7 +66,7 @@ try {
         run('lipo', [library, '-thin', 'arm64', '-output', library + '.thin']); renameSync(library + '.thin', library);
       } else {
         const header = path.join(path.dirname(library), 'Headers/tauri_native.h');
-        writeFileSync(header, readFileSync(header, 'utf8').replace('TAURI_NATIVE_ABI_VERSION 1', 'TAURI_NATIVE_ABI_VERSION 2'));
+        writeFileSync(header, readFileSync(header, 'utf8').replace('TAURI_NATIVE_ABI_VERSION 2', 'TAURI_NATIVE_ABI_VERSION 99'));
       }
       // Keep checksums correct so the actual binary/header check must reject it.
       manifest.files = inventory(stage).filter(file => file.path !== 'manifest.json');
@@ -126,13 +123,13 @@ try {
   assert.ok(existsSync(reportFile), 'Simulator consumer did not finish');
   const result = JSON.parse(readFileSync(reportFile));
   assert.equal(result.fatal, undefined);
-  assert.equal(result.abiVersion, 1);
+  assert.equal(result.abiVersion, 2);
   assert.equal(result.responses, 11);
   assert.equal(result.responses, result.frees);
   assert.deepEqual(result.direct, [
-    { abiVersion: 1, ok: true, value: { displayName: '한글 🦀', total: 10 } },
-    { abiVersion: 1, ok: false, error: { kind: 'empty_name', message: 'A name is required' } },
-    { abiVersion: 1, ok: true, value: null },
+    { abiVersion: 2, ok: true, value: { displayName: '한글 🦀', total: 10 } },
+    { abiVersion: 2, ok: false, error: { kind: 'empty_name', message: 'A name is required' } },
+    { abiVersion: 2, ok: true, value: null },
   ]);
   assert.deepEqual(result.frontend, {
     success: { displayName: '한글 🦀', total: 10 }, error: { kind: 'empty_name', message: 'A name is required' },

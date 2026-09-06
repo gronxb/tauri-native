@@ -1,6 +1,6 @@
-// ABI v1: owned UTF-8 JSON responses; callers free every non-null result once.
+// ABI v2: owned UTF-8 JSON responses plus nonblocking request sessions.
 #[no_mangle]
-pub extern "C" fn tauri_native_abi_version() -> u32 { 1 }
+pub extern "C" fn tauri_native_abi_version() -> u32 { 2 }
 
 // Tool-owned ABI appended to the disposable build copy, never the producer.
 #[no_mangle]
@@ -24,8 +24,8 @@ pub unsafe extern "C" fn tauri_native_invoke(
     })
     .unwrap_or_else(|_| Err(serde_json::Value::String("Rust command panicked".into())));
     let envelope = match result {
-        Ok(value) => serde_json::json!({"abiVersion": 1, "ok": true, "value": value}),
-        Err(error) => serde_json::json!({"abiVersion": 1, "ok": false, "error": error}),
+        Ok(value) => serde_json::json!({"abiVersion": 2, "ok": true, "value": value}),
+        Err(error) => serde_json::json!({"abiVersion": 2, "ok": false, "error": error}),
     };
     std::ffi::CString::new(envelope.to_string())
         .unwrap()
@@ -33,7 +33,7 @@ pub unsafe extern "C" fn tauri_native_invoke(
 }
 
 /// # Safety
-/// Non-null pointers must come from tauri_native_invoke and be freed once.
+/// Non-null pointers must come from an ABI string-returning function and be freed once.
 #[no_mangle]
 pub unsafe extern "C" fn tauri_native_string_free(value: *mut std::ffi::c_char) {
     if !value.is_null() {

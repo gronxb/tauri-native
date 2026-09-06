@@ -45,7 +45,7 @@ test('missing slices, incompatible ABI, corruption and partial builds preserve t
   const before = inventory(output);
   const failures: [string, (stage: string) => void][] = [
     ['Missing required iOS slice', stage => editManifest(stage, m => m.native[1].architectures.pop())],
-    ['Unsupported artifact', stage => editManifest(stage, m => { m.abiVersion = 2; })],
+    ['Unsupported artifact', stage => editManifest(stage, m => { m.abiVersion = 99; })],
     ['integrity', stage => writeFileSync(path.join(stage, 'TauriNativeAssets.bundle/index.html'), 'corrupt')],
     ['integrity', stage => rmSync(path.join(stage, 'TauriNativeCore.xcframework/device/core.a'))],
     ['frontend build failed', () => { throw new Error('frontend build failed'); }],

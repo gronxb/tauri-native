@@ -2,7 +2,7 @@ import { useCallback, useState } from '@lynx-js/react';
 import { Button } from '@lynx-js/lynx-ui';
 import type { BaseEvent, InputInputEvent } from '@lynx-js/types';
 import {
-  invoke,
+  invokeSync,
   type InvokeResponse,
   type InvokeError,
 } from '@tauri-native/lynx';
@@ -31,7 +31,7 @@ export function App() {
 
   const calculate = useCallback(() => {
     'background only';
-    setResponse(invoke<Calculation, InvokeError>('calculate', { expression }));
+    setResponse(invokeSync<Calculation, InvokeError>('calculate', { expression }));
   }, [expression]);
 
   return (

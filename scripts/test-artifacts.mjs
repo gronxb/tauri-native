@@ -3,12 +3,12 @@ import path from 'node:path';
 
 function write(root, file, content) { const target = path.join(root, file); mkdirSync(path.dirname(target), { recursive: true }); writeFileSync(target, content); }
 
-export async function writeTestArtifacts(directory, platform, label = 'version one', legacy = false) {
+export async function writeTestArtifacts(directory, platform, label = 'version one', legacy = false, abiVersion = 1) {
   // The real CLI writer supplies receipts to this independent host reader.
   const { ANDROID_ABIS, IOS_LAYOUT, writeArtifactManifest } = await import('../packages/cli/src/artifacts/manifest.ts');
   rmSync(directory, { recursive: true, force: true });
   const source = { rustEntrySha256: '0'.repeat(64) };
-  const header = legacy ? 'void tauri_native_string_free(char *value);\n' : '#define TAURI_NATIVE_ABI_VERSION 1\n';
+  const header = legacy ? 'void tauri_native_string_free(char *value);\n' : `#define TAURI_NATIVE_ABI_VERSION ${abiVersion}\n`;
   let metadata;
   if (platform === 'ios') {
     const native = [
@@ -30,6 +30,5 @@ export async function writeTestArtifacts(directory, platform, label = 'version o
     if (!legacy) write(directory, 'include/tauri_native.h', header);
     metadata = { platform, minimumApiLevel: 24, pageSize: 16384, native, assets: 'assets/tauri-native', integration: null, header: legacy ? null : 'include/tauri_native.h', source };
   }
-  writeArtifactManifest(directory, metadata, legacy ? undefined : { schemaVersion: 1, abiVersion: 1, commands: [] });
+  writeArtifactManifest(directory, metadata, legacy ? undefined : { schemaVersion: 1, abiVersion, commands: [] });
 }
-

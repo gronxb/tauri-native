@@ -20,7 +20,7 @@ final class NativeCore {
     self.handle = handle
     self.invoke = unsafeBitCast(invoke, to: Invoke.self)
     self.free = unsafeBitCast(free, to: Free.self)
-    precondition(unsafeBitCast(version, to: Version.self)() == 1, "Expected ABI 1")
+    precondition(unsafeBitCast(version, to: Version.self)() == 2, "Expected ABI 2")
   }
 
   func call(_ command: String, _ payload: Any) throws -> String {

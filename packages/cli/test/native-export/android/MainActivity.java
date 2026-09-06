@@ -90,7 +90,7 @@ public final class MainActivity extends Activity {
         String text = new JSONArray("[" + value + "]").optString(0);
         if (!text.startsWith("{")) { handler.postDelayed(this::poll, 100); return; }
         int[] counts = nativeCounts();
-        JSONObject result = new JSONObject().put("abiVersion", 1).put("direct", direct).put("frontend", new JSONObject(text)).put("responses", counts[0]).put("frees", counts[1]);
+        JSONObject result = new JSONObject().put("abiVersion", 2).put("direct", direct).put("frontend", new JSONObject(text)).put("responses", counts[0]).put("frees", counts[1]);
         finishReport(result);
       } catch (Exception error) { fail(error); }
     });
