@@ -178,7 +178,7 @@ import { TauriView } from '@tauri-native/react-native';
 <TauriView style={{ flex: 1 }} />;
 ```
 
-`TauriView` accepts standard React Native `ViewProps`. In this PoC it loads the single packaged frontend exported as an iOS resource bundle or Android asset directory. Selecting bundles or remote URLs is intentionally unsupported.
+`TauriView` accepts standard React Native `ViewProps` and the shared host interaction props: local `path`, `onLoadStart`, `onReady`, `onLoadError`, `message` and `onEvent`. It loads the copied frontend bundle, supports ordinary local query/fragment context and the verified standard Tauri `Webview/main` event subset. See [view interaction](docs/view-interaction.md) for message readiness, cleanup and unsupported targets. Remote URLs and runtime bundle selection remain unsupported.
 
 The native views disable WebView zoom, and the bundled demo locks viewport scaling so input focus cannot leave the embedded surface enlarged or horizontally clipped.
 

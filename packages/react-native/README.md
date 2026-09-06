@@ -96,6 +96,15 @@ The returned Promise has a `cancel()` method. You can also pass `{ signal }` as 
 
 The embedded frontend keeps using ordinary `@tauri-apps/api/core.invoke`. Removing its view or leaving its document closes its session and suppresses late results. ABI 0/1 WebView compatibility retains the previous execution behavior; nonblocking execution requires ABI 2.
 
+## View lifecycle and local interaction
+
+`TauriView` accepts a local `path` (including query/fragment), `onLoadStart`,
+`onReady`, `onLoadError`, `message` and `onEvent`. A new message ID sends once
+to the ready current document; navigation does not replay the last message.
+The frontend uses the verified standard Tauri `Webview/main` event subset.
+See the [view contract and examples](https://github.com/gronxb/tauri-native/blob/main/docs/view-interaction.md)
+for readiness, payloads, cleanup and unsupported global/window behavior.
+
 ## Generated command types
 
 Current generated artifacts include `commands.ts`. Import its `createCommands` and connect the host SDK's `invoke` to infer command names, inputs, success and error values:

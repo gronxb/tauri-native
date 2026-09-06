@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/011-view-context-events.md`
 - Issue: [#15](https://github.com/gronxb/tauri-native/issues/15)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: TODO.
+- Status: IMPLEMENTED AND VERIFIED — all acceptance gates pass; ready for PR merge.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 
@@ -89,12 +89,12 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 
 ## Acceptance criteria
 
-- [ ] Ready/error and local initial context work on both hosts.
-- [ ] Supported/blocked event capabilities are explicitly evidenced.
-- [ ] No producer custom global or dependency is mandatory.
-- [ ] Cleanup follows the async lifetime protocol.
-- [ ] Required checks have recorded results; skipped/blocked checks are identified accurately.
-- [ ] Changes stay within this issue's purpose and preserve the producer change budget.
+- [x] Ready/error and local initial context work on both hosts.
+- [x] Supported/blocked event capabilities are explicitly evidenced.
+- [x] No producer custom global or dependency is mandatory.
+- [x] Cleanup follows the async lifetime protocol.
+- [x] Required checks have recorded results; skipped/blocked checks are identified accurately.
+- [x] Changes stay within this issue's purpose and preserve the producer change budget.
 
 ## Blockers and maintenance
 
@@ -103,3 +103,13 @@ Full-runtime or fabricated AppHandle requirements are blocked capabilities, not 
 Standard Tauri events and normal URL parameters are acceptable producer APIs. The producer must not need a tauri-native frontend API.
 
 Use a `codex/view-context-events` branch if creating one, follow the repository's conventional commit style, and do not commit/push/merge/publish changes without the execution task's authorization. Keep this issue and any checked-in plan status aligned.
+
+## Implementation evidence (2026-09-07)
+
+- The host API now exposes local path/query/fragment context, start/ready/error callbacks and scoped JSON messages. Native Android navigation does not reset a document session that has already opened; packaged URLs are served by the existing local asset interceptor.
+- `test:events` passes eight scenarios using the actual pinned Tauri event/core modules against all four injected shims. Default/global/window/system targets fail explicitly; listener limits, unlisten/once and retired-document isolation are exercised.
+- `test:events:export` runs a real ordinary Tauri 2.11.5 desktop frontend with API 2.11.1, installs the packed CLI, exports all mobile slices, verifies source/frontend hashes plus Git diff, and deletes the producer. Report: `target/view-events/export-report.json`.
+- RN 0.86.3 and Lynx 4.0.1 Release hosts pass the two-view flow on iOS Simulator 26.4.1 and Android API 37/16 KB: RN iOS 28 s, Lynx iOS 31 s, RN Android 60 s, Lynx Android 66 s. Android uses a dedicated test emulator to avoid interference from unrelated work.
+- All four existing async lifecycle regressions pass: RN iOS 57 s, Lynx iOS 53 s, RN Android 52 s, Lynx Android 54 s. Pending work, cancellation, document reload, remount and actual native runtime replacement remain verified.
+- Host builds use packed SDKs and copied artifacts without Rust on PATH. Both APKs pass 16 KB ZIP alignment. CLI 33 tests, RN 9 tests, Lynx 2 tests, package checks and typechecks pass. Input hashes and eight native reports are recorded in `target/view-events/host-report.json`.
+- [ADR 0006](../docs/adr/0006-view-context-events.md), [view API](../docs/view-interaction.md) and [reproduction guide](../docs/testing-views.md) document the exact subset. General ACL/runtime/plugin support, physical devices and external adopters are not claimed.

@@ -1022,7 +1022,7 @@
       "url": "https://github.com/gronxb/tauri-native/issues/14",
       "number": 14,
       "bodySynced": true,
-      "status": "IMPLEMENTED",
+      "status": "DONE",
       "verification": {
         "date": "2026-09-07",
         "report": "target/command-types/report.json",
@@ -1038,7 +1038,9 @@
         "producerDeleted": true,
         "hostWithoutRust": true,
         "physicalDeviceExecution": false
-      }
+      },
+      "pr": "https://github.com/gronxb/tauri-native/pull/31",
+      "mergeCommit": "f7f0fdbfcab45a083470f0b022e4c2ea645ee721"
     },
     {
       "id": 11,
@@ -1127,7 +1129,26 @@
       "file": "plans/011-view-context-events.md",
       "url": "https://github.com/gronxb/tauri-native/issues/15",
       "number": 15,
-      "bodySynced": true
+      "bodySynced": true,
+      "status": "IMPLEMENTED AND VERIFIED",
+      "verification": {
+        "date": "2026-09-07",
+        "adr": "docs/adr/0006-view-context-events.md",
+        "exportReport": "target/view-events/export-report.json",
+        "hostReport": "target/view-events/host-report.json",
+        "desktopFrontend": true,
+        "producerUnchanged": true,
+        "producerDeleted": true,
+        "viewFlows": 4,
+        "asyncRegressionFlows": 4,
+        "eventProtocolTests": 8,
+        "cliTests": 33,
+        "rnTests": 9,
+        "lynxTests": 2,
+        "typechecks": true,
+        "packages": true,
+        "nativeDevices": "arm64 iOS Simulator 26.4.1 and Android API 37 / 16 KB; no physical-device claim"
+      }
     },
     {
       "id": 12,

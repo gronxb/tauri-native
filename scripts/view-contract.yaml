@@ -1,0 +1,62 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "left standard events PASS"
+    timeout: 60000
+- extendedWaitUntil:
+    visible: "right standard events PASS"
+    timeout: 60000
+- assertVisible: "left host: 1/1 replies 0 none error none"
+- assertVisible: "right host: 1/1 replies 0 none error none"
+- tapOn: "Send left"
+- assertVisible: "left host: 1/1 replies 1 left/1 error none"
+- assertVisible: "right host: 1/1 replies 0 none error none"
+- tapOn: "Same left id"
+- tapOn: "Send right"
+- assertVisible: "right host: 1/1 replies 1 right/1 error none"
+- assertVisible: "left host: 1/1 replies 1 left/1 error none"
+- assertVisible: "Host checks OK"
+- tapOn: "Unsubscribe left"
+- assertVisible: "left unsubscribed"
+- tapOn: "Send left"
+- tapOn: "Send right"
+- assertVisible: "right host: 1/1 replies 2 right/2 error none"
+- assertVisible: "left host: 1/1 replies 1 left/1 error none"
+- tapOn: "Next document"
+- extendedWaitUntil:
+    visible: "next standard events PASS"
+    timeout: 30000
+- assertVisible: "left host: 2/2 replies 1 left/1 error none"
+- assertVisible: "No message"
+- tapOn: "Send left"
+- assertVisible: "left host: 2/2 replies 2 next/1 error none"
+- tapOn: "Reload next"
+- extendedWaitUntil:
+    visible: "left host: 3/3 replies 2 next/1 error none"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "next standard events PASS"
+    timeout: 30000
+- assertVisible: "No message"
+- tapOn: "Send left"
+- assertVisible: "left host: 3/3 replies 3 next/1 error none"
+- tapOn: "Invalid path"
+- assertVisible: "left host: 3/3 replies 3 next/1 error invalid_path"
+- tapOn: "Missing document"
+- assertVisible:
+    text: "left host: .*replies 3 next/1 error asset_missing"
+- tapOn: "Unmount left"
+- tapOn: "Send right"
+- assertVisible: "right host: 1/1 replies 3 right/3 error none"
+- tapOn: "Mount left"
+- extendedWaitUntil:
+    visible: "left standard events PASS"
+    timeout: 30000
+- assertVisible: "No message"
+- tapOn: "Send left"
+- assertVisible:
+    text: "left host: .*replies 4 left/1 error asset_missing"
+- assertVisible: "right host: 1/1 replies 3 right/3 error none"
+- assertVisible: "Host checks OK"

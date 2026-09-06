@@ -102,3 +102,9 @@ The [async fixture](../packages/cli/test/fixtures/async-tauri/) waits on actual 
 ## M3 generated host contracts
 
 Generated artifacts include `commands.ts`, derived from the same registered command model as dispatch. Both packed host SDKs consume it from copied iOS/Android artifacts without producer source or Rust. The [typing contract](command-types.md) defines canonical serde input/output shapes and explicit `unknown` diagnostics for unsupported projections. Typing does not expand the runtime compatibility subset or modify the ordinary frontend. The acceptance gate compares seventeen actual Tauri/native requests, validates all mobile slices and typechecks independent consumers, including invalid-call diagnostics.
+
+## M3 local view interaction
+
+Both hosts expose load-start, ready and error callbacks, a packaged local path with query/fragment context, and scoped JSON notifications. The standard frontend event subset requires an explicit `{ kind: 'Webview', label: 'main' }` target for `listen`, `once` and `emitTo`; unlisten and document teardown release subscriptions. Default/global events, other targets, system events, Rust AppHandle emission and channels remain unsupported. Each embedded document is independent, and host messages are not replayed across navigation. See [the view contract](view-interaction.md) for exact behavior and limits.
+
+The [ordinary event fixture](../packages/cli/test/fixtures/events-tauri/) runs in a real desktop Tauri application and in all four RN/Lynx iOS/Android Release combinations using unchanged exported frontend bytes. It uses an ordinary desktop event capability grant; the embedded host does not implement the general Tauri ACL engine. The [acceptance procedure](testing-views.md) verifies two-view isolation, payloads, unlisten, local context, readiness/errors, navigation and remount after deleting the producer. Mobile execution remains limited to the documented arm64 simulator/emulator environment.

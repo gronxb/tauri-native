@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/010-generated-command-types.md`
 - Issue: [#14](https://github.com/gronxb/tauri-native/issues/14)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: IMPLEMENTED — native serialization parity, portable exports and packed-consumer type gates passed; merge pending.
+- Status: DONE — [PR #31](https://github.com/gronxb/tauri-native/pull/31) merged into main (`f7f0fdb`).
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 

@@ -1,8 +1,8 @@
-import type { ViewProps } from '@lynx-js/types';
+import type { NativeViewProps } from '../src/TauriView';
 
 declare module '@lynx-js/types' {
   interface IntrinsicElements {
-    'tauri-view': ViewProps;
+    'tauri-view': NativeViewProps;
   }
 }
 
