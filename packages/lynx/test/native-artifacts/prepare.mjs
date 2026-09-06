@@ -22,6 +22,6 @@ cpSync(android, path.join(host, 'tauri-native/android'), { recursive: true });
 writeFileSync(project, xcode.replaceAll('dev.tauri-native.lynx-example', 'dev.taurinative.lynxartifacttest'));
 writeFileSync(gradle, build
   .replace("applicationId 'dev.taurinative.lynxexample'", "applicationId 'dev.taurinative.lynxartifacttest'")
-  .replace('minifyEnabled false', 'signingConfig signingConfigs.debug\n      minifyEnabled false'));
+  .replace('release {', 'release {\n      signingConfig signingConfigs.debug'));
 cpSync(new URL('./App.tsx', import.meta.url), path.join(host, 'src/App.tsx'));
 console.log(`Prepared independent Lynx host: ${host}`);

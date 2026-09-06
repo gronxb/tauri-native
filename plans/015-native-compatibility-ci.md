@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/015-native-compatibility-ci.md`
 - Issue: [#19](https://github.com/gronxb/tauri-native/issues/19)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: TODO.
+- Status: IN PROGRESS — required native/package validation and publication of the same candidate; #18 is awaiting its final native matrix.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 

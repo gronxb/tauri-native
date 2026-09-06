@@ -1,0 +1,163 @@
+name: Validate
+
+on:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: '1'
+  CARGO_BUILD_JOBS: '2'
+  CARGO_INCREMENTAL: '0'
+  CARGO_PROFILE_DEV_DEBUG: '0'
+  MAESTRO_CLI_NO_ANALYTICS: 'true'
+
+jobs:
+  producer:
+    runs-on: macos-26
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: ./.github/actions/native-tools
+        with:
+          producer: 'true'
+      - run: nub ci
+      - run: node scripts/ci/producer.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: producer-input
+          path: target/ci/input/
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: producer-evidence
+          path: |
+            target/ci/logs/
+            target/*/report.json
+            target/*/export-report.json
+            target/*/desktop*.json
+          retention-days: 14
+
+  native-ios:
+    needs: producer
+    runs-on: macos-26
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: ./.github/actions/native-tools
+      - uses: actions/download-artifact@v4
+        with:
+          name: producer-input
+          path: target/ci/input
+      - run: node scripts/ci/prepare-hosts.mjs
+      - run: node --experimental-strip-types scripts/ci/native.mjs ios
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-ios-receipt
+          path: target/ci/native-ios.json
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-ios-evidence
+          path: |
+            target/ci/logs/
+            target/ci/*-maestro/
+            target/ci/*.xml
+            target/document-feature*/native-report.json
+            target/document-feature*/*.log
+            target/document-feature*/*.xml
+            target/document-feature*/*-maestro/
+          retention-days: 14
+
+  native-android:
+    needs: producer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: ./.github/actions/native-tools
+      - uses: actions/download-artifact@v4
+        with:
+          name: producer-input
+          path: target/ci/input
+      - run: node scripts/ci/prepare-hosts.mjs
+      - name: Allow the job-owned emulator to use KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2.38.0
+        with:
+          api-level: 37
+          target: google_apis_ps16k
+          arch: x86_64
+          profile: pixel_7
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: ANDROID_SERIAL=emulator-5554 node --experimental-strip-types scripts/ci/native.mjs android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-android-receipt
+          path: target/ci/native-android.json
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-android-evidence
+          path: |
+            target/ci/logs/
+            target/ci/*-maestro/
+            target/ci/*.xml
+            target/document-feature*/native-report.json
+            target/document-feature*/*.log
+            target/document-feature*/*.xml
+            target/document-feature*/*-maestro/
+            target/export-android/report.json
+            target/export-android/native-result.json
+          retention-days: 14
+
+  candidate:
+    needs: [producer, native-ios, native-android]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: producer-input
+          path: target/ci/input
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: native-*-receipt
+          merge-multiple: true
+          path: target/ci
+      - run: node scripts/ci/aggregate.mjs
+        env:
+          VALIDATION_RESULTS: '{"producer":"${{ needs.producer.result }}","native-ios":"${{ needs.native-ios.result }}","native-android":"${{ needs.native-android.result }}"}'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate
+          path: target/ci/release-candidate/
+          if-no-files-found: error
+          retention-days: 14

@@ -23,7 +23,7 @@ android {
 
   buildTypes {
     release {
-      minifyEnabled false
+      minifyEnabled true
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
   }
@@ -44,11 +44,11 @@ android {
 }
 
 dependencies {
+  implementation 'com.google.code.gson:gson:2.14.0'
   implementation 'androidx.annotation:annotation:1.9.1'
   implementation 'org.lynxsdk.lynx:lynx:4.0.1'
   implementation 'org.lynxsdk.lynx:lynx-jssdk:4.0.1'
   implementation 'org.lynxsdk.lynx:lynx-trace:4.0.1'
   implementation 'org.lynxsdk.lynx:primjs:4.0.0'
-  implementation 'org.lynxsdk.lynx:xelement:4.0.1'
   implementation 'org.lynxsdk.lynx:xelement-input:4.0.1'
 }

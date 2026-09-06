@@ -14,7 +14,13 @@ permissions:
   pull-requests: write
 
 jobs:
+  validate:
+    uses: ./.github/workflows/validate.yml
+    permissions:
+      contents: read
+
   release:
+    needs: validate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +30,13 @@ jobs:
           nub-version: 0.8.3
           registry-url: https://registry.npmjs.org/
       - run: nub ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-candidate
+          path: target/release-candidate
       - uses: changesets/action@v2.1.1
+        env:
+          TAURI_NATIVE_RELEASE_CANDIDATE: ${{ github.workspace }}/target/release-candidate
         with:
           version-script: nub run version
           publish-script: nub run release

@@ -112,3 +112,7 @@ The [ordinary event fixture](../packages/cli/test/fixtures/events-tauri/) runs i
 ## Persistent application data
 
 The embedded standard `appDataDir()` call and the host SDK's `appDataDir()` share a host-private persistent directory. This is a narrow adaptation of `plugin:path|resolve_directory` with base directory 14; other path operations remain unsupported. It does not enable runtime state, filesystem plugins or application ACL emulation. See [Fieldnotes](examples/fieldnotes.md#application-data-directory-contract) for the precise storage mapping and ordinary Rust document example.
+
+## Candidate CI
+
+The [candidate validation procedure](validation.md) defines the bounded versions, required native jobs, transferred-package checks and publication gate. Its matrix is under acceptance in #19; unrun hosted checks and physical-device checks remain unverified. The RN version used for SDK development/typechecking is not an additional native support claim.

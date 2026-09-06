@@ -79,9 +79,9 @@ try {
   assert.equal(parity[0].directory, parity[1].directory, 'relaunch opens the same persistent directory');
 
   const cli = path.join(work, 'cli'); mkdirSync(cli);
-  const packed = JSON.parse(run('npm', ['pack', path.join(root, 'packages/cli'), '--ignore-scripts', '--json', '--pack-destination', work]));
+  const cliTarball = process.env.TAURI_NATIVE_CLI_TARBALL ?? path.join(work, JSON.parse(run('npm', ['pack', path.join(root, 'packages/cli'), '--ignore-scripts', '--json', '--pack-destination', work]))[0].filename);
   writeFileSync(path.join(cli, 'package.json'), '{"private":true}');
-  run('npm', ['install', '--prefix', cli, '--ignore-scripts', '--no-audit', '--no-fund', path.join(work, packed[0].filename)]);
+  run('npm', ['install', '--prefix', cli, '--ignore-scripts', '--no-audit', '--no-fund', cliTarball]);
   const artifacts = {};
   for (const platform of ['ios', 'android']) {
     run(path.join(cli, 'node_modules/.bin/tauri-native'), ['export', platform], { cwd: producer, measure: `${platform}ExportMs` });
