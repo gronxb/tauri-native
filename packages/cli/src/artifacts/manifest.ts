@@ -3,6 +3,7 @@ import path from 'node:path';
 import packageJson from '../../package.json' with { type: 'json' };
 import type { SourceModel } from '../discovery/project.ts';
 import { inventory, type ArtifactFile } from './files.ts';
+import { generateCommands } from '../types/commands.ts';
 
 export const ANDROID_ABIS = ['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'] as const;
 export const IOS_LAYOUT = { platform: 'ios', minimumOsVersion: '13.0', assets: 'TauriNativeAssets.bundle', integration: 'TauriNativeGenerated.podspec' } as const;
@@ -27,16 +28,18 @@ export type ArtifactManifest = (IosArtifacts | AndroidArtifacts) & {
   compatibility: { mode: 'generated' | 'legacy'; verifiedTauri: string | null; verifiedApi: string | null };
   source: Record<string, string>;
   commands: 'commands.json' | null;
+  bindings?: 'commands.ts' | null;
   files: ArtifactFile[];
 };
 
 export function writeArtifactManifest(directory: string, input: (IosArtifacts | AndroidArtifacts) & { source: Record<string, string> }, model?: SourceModel): void {
   if (model) writeFileSync(path.join(directory, 'commands.json'), JSON.stringify(model, null, 2) + '\n');
+  if (model?.typeGraph) writeFileSync(path.join(directory, 'commands.ts'), generateCommands(model));
   const manifest: ArtifactManifest = {
     formatVersion: 1, abiVersion: model ? model.abiVersion : 0,
     generator: { name: packageJson.name, version: packageJson.version },
     compatibility: { mode: model ? 'generated' : 'legacy', verifiedTauri: model ? '2.11.5' : null, verifiedApi: model ? '2.11.1' : null },
-    ...input, commands: model ? 'commands.json' : null,
+    ...input, commands: model ? 'commands.json' : null, bindings: model?.typeGraph ? 'commands.ts' : null,
     files: inventory(directory),
   };
   writeFileSync(path.join(directory, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
@@ -54,6 +57,7 @@ export function validateArtifactManifest(directory: string): ArtifactManifest {
   if (manifest.compatibility?.mode !== (generated ? 'generated' : 'legacy') || manifest.compatibility.verifiedTauri !== (generated ? '2.11.5' : null) || manifest.compatibility.verifiedApi !== (generated ? '2.11.1' : null)) throw new Error('Incompatible artifact API contract');
   if (!manifest.source || !Object.keys(manifest.source).length || Object.entries(manifest.source).some(([key, value]) => !/^[a-zA-Z]+Sha256$/.test(key) || !/^[a-f0-9]{64}$/.test(value))) throw new Error('Invalid source fingerprints');
   if (manifest.commands !== (generated ? 'commands.json' : null)) throw new Error('Invalid command metadata path');
+  if (manifest.bindings != null && (!generated || manifest.bindings !== 'commands.ts')) throw new Error('Invalid command bindings path');
   if (!Array.isArray(manifest.native) || manifest.native.some(slice => !relativeFile(slice.path))) throw new Error('Invalid native slices');
   if (manifest.platform === 'ios') {
     if (manifest.minimumOsVersion !== '13.0' || manifest.assets !== IOS_LAYOUT.assets || manifest.integration !== IOS_LAYOUT.integration) throw new Error('Invalid iOS artifact layout');
@@ -73,6 +77,7 @@ export function validateArtifactManifest(directory: string): ArtifactManifest {
     if (!expected.has(file)) throw new Error(`Missing artifact file: ${file}`);
   }
   if (manifest.commands) {
+    if (manifest.bindings && !expected.has(manifest.bindings)) throw new Error('Missing command bindings');
     const model = JSON.parse(readFileSync(path.join(directory, manifest.commands), 'utf8')) as SourceModel;
     if (model.schemaVersion !== 1 || model.abiVersion !== manifest.abiVersion || !Array.isArray(model.commands)) throw new Error('Incompatible command model');
   }

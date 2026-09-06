@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/009-async-lifecycle-protocol.md`
 - Issue: [#13](https://github.com/gronxb/tauri-native/issues/13)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: IMPLEMENTED — native and package gates passed; merge pending.
+- Status: DONE — [PR #30](https://github.com/gronxb/tauri-native/pull/30) merged into main (`fc8bce8`).
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 

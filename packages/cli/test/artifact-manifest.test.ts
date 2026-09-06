@@ -40,6 +40,17 @@ test('the entire artifact inventory validates after copying to a path with space
   assert.equal(readFileSync(path.join(relocated, 'manifest.json'), 'utf8').includes(root), false);
 });
 
+test('copied command bindings are covered by the artifact receipt', () => {
+  const root = temporary(); fixture(root);
+  const previous = validateArtifactManifest(root);
+  assert.ok(previous.platform === 'ios');
+  rmSync(path.join(root, 'manifest.json'));
+  writeArtifactManifest(root, { ...IOS_LAYOUT, native: previous.native, source: previous.source }, { schemaVersion: 1, abiVersion: 2, commands: [], typeGraph: { definitions: {}, imports: {}, globImports: false } });
+  assert.equal(validateArtifactManifest(root).bindings, 'commands.ts');
+  writeFileSync(path.join(root, 'commands.ts'), 'types copied from a different application');
+  assert.throws(() => validateArtifactManifest(root), /integrity/);
+});
+
 test('missing slices, incompatible ABI, corruption and partial builds preserve the previous export', () => {
   const root = temporary(); const output = path.join(root, 'export'); fixture(output);
   const before = inventory(output);

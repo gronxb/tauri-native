@@ -3,6 +3,7 @@ export interface ArtifactReceipt {
   abiVersion: 0 | 1 | 2;
   platform: 'ios' | 'android';
   assets: string;
+  bindings?: 'commands.ts' | null;
   files: { path: string; sha256: string; size: number }[];
 }
 

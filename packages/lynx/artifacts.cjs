@@ -14,9 +14,11 @@ function readArtifacts(directory, platform) {
   const generated = manifest.abiVersion !== 0;
   if (manifest.compatibility?.mode !== (generated ? 'generated' : 'legacy') || manifest.compatibility?.verifiedTauri !== (generated ? '2.11.5' : null) || manifest.compatibility?.verifiedApi !== (generated ? '2.11.1' : null)) invalid('unsupported API compatibility');
   if (manifest.commands !== (generated ? 'commands.json' : null)) invalid('invalid command metadata');
+  if (manifest.bindings != null && (!generated || manifest.bindings !== 'commands.ts')) invalid('invalid command bindings');
   const assets = platform === 'ios' ? 'TauriNativeAssets.bundle' : 'assets/tauri-native';
   if (manifest.assets !== assets || !Array.isArray(manifest.native)) invalid('invalid native/assets layout');
   const required = [`${assets}/index.html`, ...(generated ? ['commands.json'] : [])];
+  if (manifest.bindings) required.push(manifest.bindings);
   const headers = [];
   if (platform === 'ios') {
     if (manifest.minimumOsVersion !== '13.0' || manifest.integration !== 'TauriNativeGenerated.podspec' || manifest.native.length !== 2) invalid('invalid iOS layout');

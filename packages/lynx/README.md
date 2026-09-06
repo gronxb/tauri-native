@@ -78,6 +78,18 @@ The example hosts initialize `LynxEnv`, load the local `main.lynx.bundle` throug
 
 This package is experimental and supports iOS and Android. See the root README for the complete build and integration contract.
 
+## Generated command types
+
+Current generated artifacts include `commands.ts`. Import its `createCommands` and connect the host SDK's `invoke` to infer command names, inputs, success and error values:
+
+```ts
+import { invoke } from '@tauri-native/lynx';
+import { createCommands } from './Native Artifacts/commands';
+const command = createCommands(invoke);
+```
+
+Use command names and inputs from your exported application. Copy the complete artifact so contracts and binaries stay together. `typeDiagnostics` identifies custom serialization, large integers and other unknown projections; see [the supported typing subset](https://github.com/gronxb/tauri-native/blob/main/docs/command-types.md). The producer frontend keeps its ordinary Tauri imports.
+
 ## License
 
 MIT
