@@ -2,9 +2,7 @@
 
 ## North star
 
-> “tauri 프로젝트는 우리의 프로젝트를 최대한 모르면 좋겠음. 그냥 cli 설치하고 xcframework 말아서 옮기는 느낌이 나면 좋겠음”
-
-**An ordinary Tauri project should know as little as possible about tauri-native. Install the CLI, export native artifacts, and move them into a native host.** Adaptation belongs to tooling; integration belongs to the host.
+tauri-native provides an artifact-based integration workflow for existing Tauri applications. Within the documented compatibility scope, developers install the CLI, export platform binaries and frontend assets, and integrate the resulting artifacts into a native host. The CLI and host packages own the required adaptation, so the Tauri application does not need host-specific dependencies, bridge code, or a custom project layout.
 
 This tracker covers the path from the current proof of concept through a verified 1.0 release. The repository baseline is [`117e887`](https://github.com/gronxb/tauri-native/commit/117e887977a878aa4734f2df7ab2cca0670014ac); this roadmap was created on 2026-09-05. Tasks are ordered by evidence and dependencies, not invented calendar deadlines.
 

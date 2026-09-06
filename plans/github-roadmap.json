@@ -708,7 +708,7 @@
         "Repeat prebuild is idempotent and unrelated host files survive."
       ],
       "stop": "Secretly rebuilding producer code or needing sibling source paths means the artifact-only contract is not met.",
-      "notes": "The host can know about tauri-native; the producer should not. Keep build diagnostics separate from end-user product UI.",
+      "notes": "Keep framework-specific dependencies and integration code in the host package and export tooling. Build diagnostics should remain separate from end-user product UI.",
       "file": "plans/007-react-native-artifact-consumption.md",
       "url": "https://github.com/gronxb/tauri-native/issues/11",
       "number": 11,
