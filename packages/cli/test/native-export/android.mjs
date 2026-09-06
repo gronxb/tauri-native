@@ -50,13 +50,15 @@ try {
   run('npm', ['run', 'build'], { cwd: producer });
   const frontend = inventory(path.join(producer, 'dist'));
   const output = path.join(producer, 'src-tauri/gen/tauri-native/android');
-  run(path.join(cli, 'node_modules/.bin/tauri-native'), ['export', 'android'], { cwd: producer });
+  run(path.join(cli, 'node_modules/.bin/tauri-native'), ['export', 'android', '--incremental'], { cwd: producer });
   assert.deepEqual(snapshot(producer), before);
   validateAndroidArtifacts(output, tools);
   assert.deepEqual(inventory(path.join(output, 'assets/tauri-native')), frontend);
   assert.equal(readFileSync(path.join(output, 'manifest.json'), 'utf8').includes(work), false);
 
   const published = inventory(output);
+  assert.match(run(path.join(cli, 'node_modules/.bin/tauri-native'), ['export', 'android', '--incremental'], { cwd: producer }), /reused validated/);
+  assert.deepEqual(inventory(output), published);
   const configPath = path.join(producer, 'src-tauri/tauri.conf.json');
   const configBytes = readFileSync(configPath); const broken = JSON.parse(configBytes);
   broken.build.beforeBuildCommand = 'node -e "process.exit(23)"';
@@ -82,6 +84,12 @@ try {
     assert.deepEqual(inventory(output), published);
   }
   assert.deepEqual(snapshot(producer), before);
+
+  const rust = path.join(producer, 'src-tauri/src/lib.rs');
+  writeFileSync(rust, readFileSync(rust, 'utf8').replace('Hello, {display_name}!', 'Hello again, {display_name}!'));
+  const edited = snapshot(producer);
+  run(path.join(cli, 'node_modules/.bin/tauri-native'), ['export', 'android', '--incremental'], { cwd: producer });
+  assert.deepEqual(snapshot(producer), edited, 'Refreshing after an authored Rust edit must preserve the edited producer');
 
   const hostRoot = path.join(evidence, 'Independent Host'); rmSync(hostRoot, { recursive: true, force: true }); mkdirSync(hostRoot);
   const relocated = path.join(hostRoot, 'Native Artifacts'); cpSync(output, relocated, { recursive: true });
@@ -117,8 +125,8 @@ try {
   host(path.join(buildTools, 'apksigner'), ['sign', '--ks', key, '--ks-pass', 'pass:android', '--out', apk, aligned]);
   host(path.join(buildTools, `zipalign${suffix}`), ['-c', '-P', '16', '-v', '4', apk]);
   host(path.join(buildTools, 'apksigner'), ['verify', apk]);
-  const devices = host(adb, ['devices']).split('\n').filter(line => /^emulator-\d+\s+device\s*$/.test(line));
-  assert.equal(devices.length, 1, 'Run exactly one Android emulator configured for 16 KB pages');
+  const devices = host(adb, ['devices']).split('\n').filter(line => /^emulator-\d+\s+device\s*$/.test(line) && (!process.env.ANDROID_SERIAL || line.startsWith(`${process.env.ANDROID_SERIAL}\t`)));
+  assert.equal(devices.length, 1, 'Select one running 16 KB Android emulator with ANDROID_SERIAL, or run exactly one emulator');
   serial = devices[0].split(/\s+/)[0];
   assert.equal(device(['shell', 'getconf', 'PAGE_SIZE']).trim(), '16384');
   const api = device(['shell', 'getprop', 'ro.build.version.sdk']).trim();
@@ -144,14 +152,14 @@ try {
   ]);
   assert.deepEqual(result.frontend, {
     success: { displayName: '한글 🦀', total: 10 }, error: { kind: 'empty_name', message: 'A name is required' },
-    camelCase: 'Hello, Ada!', unregisteredRejected: true, absent: null, explicitNull: null, unit: null,
+    camelCase: 'Hello again, Ada!', unregisteredRejected: true, absent: null, explicitNull: null, unit: null,
     selection: { type: 'display-name', data: '한글' },
   });
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({
     ...result, emulator: { api, architecture, pageSize: 16384 }, installedCli: true,
     producerUnchanged: true, producerDeleted: true, relocatedPathWithSpaces: true, hostWithoutRust: true,
     frontendBytesUnchanged: true, validatedAbis: manifest.native, apkAlignment: 16384,
-    failedBuildPreservedOutput: true, invalidElfPreservedOutput: ['4 KB alignment', 'API 26', 'wrong SONAME', 'wrong machine', 'unbundled shared dependency'],
+    incrementalReuse: true, refreshedRustObservedInHost: true, failedBuildPreservedOutput: true, invalidElfPreservedOutput: ['4 KB alignment', 'API 26', 'wrong SONAME', 'wrong machine', 'unbundled shared dependency'],
     executionMatrix: 'All four ABIs built/inspected; only the named emulator ABI executed',
   }, null, 2) + '\n');
   console.log(`PASS: installed CLI → copied artifacts → 16 KB Android native + unchanged frontend. Evidence: ${evidence}/report.json`);

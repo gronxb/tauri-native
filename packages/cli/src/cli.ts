@@ -6,6 +6,7 @@ import {
 import { exportIos, type ExportIosOptions } from './commands/export-ios.ts';
 import { inspectProject } from './commands/inspect.ts';
 import { doctor } from './commands/doctor.ts';
+import { watchExport } from './commands/watch.ts';
 
 export function createProgram(): Command {
   const program = new Command();
@@ -39,7 +40,10 @@ export function createProgram(): Command {
     .option('--manifest <path>', 'legacy application-owned core Cargo.toml')
     .option('--header <path>', 'legacy application-owned C ABI header')
     .option('--output-dir <path>', 'generated artifact directory')
-    .action((options: ExportIosOptions) => exportIos(options));
+    .option('--incremental', 'Reuse a validated export when recorded build inputs are unchanged')
+    .option('--force', 'Bypass the incremental result cache and rerun build steps')
+    .option('--watch', 'Watch inputs and serialize incremental exports; host rebuild/install remains explicit')
+    .action((options: ExportIosOptions & { watch?: boolean }) => options.watch ? watchExport('ios', options) : exportIos(options));
 
   exportCommand
     .command('android')
@@ -47,7 +51,10 @@ export function createProgram(): Command {
     .option('--tauri-dir <path>', 'Tauri Rust directory', 'src-tauri')
     .option('--manifest <path>', 'legacy application-owned core Cargo.toml')
     .option('--output-dir <path>', 'generated artifact directory')
-    .action((options: ExportAndroidOptions) => exportAndroid(options));
+    .option('--incremental', 'Reuse a validated export when recorded build inputs are unchanged')
+    .option('--force', 'Bypass the incremental result cache and rerun build steps')
+    .option('--watch', 'Watch inputs and serialize incremental exports; host rebuild/install remains explicit')
+    .action((options: ExportAndroidOptions & { watch?: boolean }) => options.watch ? watchExport('android', options) : exportAndroid(options));
 
   return program;
 }

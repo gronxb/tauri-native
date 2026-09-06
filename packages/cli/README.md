@@ -60,6 +60,10 @@ npx tauri-native export ios --output-dir ../mobile-app/ios/tauri-native
 
 Hosts install the matching React Native or Lynx bridge package. They consume native artifacts and frontend assets; the CLI belongs in the producer project. Full copied-artifact onboarding and platform release certification are tracked by the remaining roadmap milestones.
 
+## Development loop
+
+Add `--incremental` to either export command to reuse a validated result when build inputs match, or `--watch` to rebuild after edits. Watch serializes exports, preserves the previous artifact on failure and reports the host copy/rebuild/reinstall step. It does not reload an installed host automatically. `--force` reruns frontend/Cargo steps; Cargo can still reuse its own compiled dependencies. See [cache inputs, watch recovery and measurements](https://github.com/gronxb/tauri-native/blob/main/docs/development-loop.md).
+
 ## Protocol and legacy integration
 
 Generated ABI 2 includes the versioned invoke/free functions and request-session functions for nonblocking execution. Every non-null response is owned UTF-8 JSON and must be freed exactly once. The private frame identifies `abiVersion: 2`. WebViews resolve ordinary Tauri `invoke` with the success value or reject it with the original serialized error. Host SDK `invoke` returns a cancellable Promise of the result envelope; `invokeSync` retains explicit blocking/legacy use. See [the async contract](../../docs/adr/0005-async-request-sessions.md).
