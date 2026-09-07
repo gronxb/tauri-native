@@ -8,7 +8,16 @@ appId: ${APP_ID}
     timeout: 5000
 - tapOn: "Native search query"
 - inputText: "__pending__"
-- pressKey: Enter
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - pressKey: Enter
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
 - tapOn: "Search library"
 - assertVisible: "Searching…"
 - scrollUntilVisible:
@@ -22,7 +31,16 @@ appId: ${APP_ID}
 - tapOn: "Native search query"
 - eraseText: 50
 - inputText: "cedar"
-- pressKey: Enter
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - pressKey: Enter
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
 - tapOn: "Search library"
 - extendedWaitUntil:
     visible: "1 saved document"
