@@ -139,7 +139,12 @@ for (const profile of profiles) {
       if (platform === 'ios') {
         try {
           const reports = path.join(homedir(), 'Library/Logs/DiagnosticReports');
-          if (existsSync(reports)) cpSync(reports, path.join(evidence, `${label}-diagnostics`), { recursive: true });
+          if (existsSync(reports)) for (const report of readdirSync(reports, { withFileTypes: true })) {
+            if (!report.isFile() || !report.name.startsWith(`${profile.scheme}-`)) continue;
+            const destination = path.join(evidence, `${label}-diagnostics`);
+            mkdirSync(destination, { recursive: true });
+            cpSync(path.join(reports, report.name), path.join(destination, report.name));
+          }
           run(`${label}-system`, 'xcrun', ['simctl', 'spawn', ios, 'log', 'show', '--last', '5m', '--style', 'compact',
             '--predicate', `process == "${profile.scheme}" OR eventMessage CONTAINS "${profile.appId}"`], host, hostEnv);
         } catch (diagnosticError) { console.error(`Could not collect ${label} diagnostics: ${diagnosticError.message}`); }
