@@ -30,9 +30,9 @@ mkdirSync(evidence, { recursive: true });
 rmSync(path.join(evidence, 'report.json'), { force: true });
 try {
   const cli = path.join(work, 'cli installation'); mkdirSync(cli);
-  const packed = JSON.parse(run('npm', ['pack', path.join(root, 'packages/cli'), '--ignore-scripts', '--json', '--pack-destination', work]));
+  const cliTarball = process.env.TAURI_NATIVE_CLI_TARBALL ?? path.join(work, JSON.parse(run('npm', ['pack', path.join(root, 'packages/cli'), '--ignore-scripts', '--json', '--pack-destination', work]))[0].filename);
   writeFileSync(path.join(cli, 'package.json'), '{"private":true}');
-  run('npm', ['install', '--prefix', cli, '--ignore-scripts', '--no-audit', '--no-fund', path.join(work, packed[0].filename)]);
+  run('npm', ['install', '--prefix', cli, '--ignore-scripts', '--no-audit', '--no-fund', cliTarball]);
   const producer = path.join(work, 'ordinary producer');
   cpSync(path.join(here, '../fixtures/standard-tauri'), producer, { recursive: true });
   run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: producer });

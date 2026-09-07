@@ -4,7 +4,8 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, 
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { setTimeout } from 'node:timers/promises';
+import { createHash } from 'node:crypto';
+import { verifyAndroidConsumer } from './android-device.mjs';
 import { inventory } from '../../src/artifacts/files.ts';
 import { androidTools, validateAndroidArtifacts } from '../../src/artifacts/android.ts';
 import { publishArtifacts } from '../../src/artifacts/staging.ts';
@@ -21,13 +22,10 @@ assert.ok(sdk && existsSync(sdk), 'Set ANDROID_HOME to the installed Android SDK
 assert.ok(java && existsSync(java), 'Set JAVA_HOME to JDK 17+ (Android Studio bundles a suitable JDK)');
 const tools = androidTools();
 const suffix = process.platform === 'win32' ? '.exe' : '';
-const adb = path.join(sdk, 'platform-tools', `adb${suffix}`);
 const newest = directory => readdirSync(directory).sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).at(-1);
 const buildTools = path.join(sdk, 'build-tools', newest(path.join(sdk, 'build-tools')));
 const androidJar = path.join(sdk, 'platforms', newest(path.join(sdk, 'platforms')), 'android.jar');
 const hostEnvironment = { ...process.env, PATH: `${path.join(java, 'bin')}${path.delimiter}/usr/bin${path.delimiter}/bin`, JAVA_HOME: java };
-let serial;
-let installed = false;
 function run(command, args, options = {}) {
   console.log(`> ${command} ${args.join(' ')}`);
   const result = spawnSync(command, args, { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024, ...options });
@@ -35,14 +33,13 @@ function run(command, args, options = {}) {
   return result.stdout;
 }
 function host(command, args, options = {}) { return run(command, args, { env: hostEnvironment, ...options }); }
-function device(args) { return host(adb, ['-s', serial, ...args]); }
 mkdirSync(evidence, { recursive: true });
 rmSync(path.join(evidence, 'report.json'), { force: true });
 try {
   const cli = path.join(work, 'cli installation'); mkdirSync(cli);
-  const packed = JSON.parse(run('npm', ['pack', path.join(root, 'packages/cli'), '--ignore-scripts', '--json', '--pack-destination', work]));
+  const cliTarball = process.env.TAURI_NATIVE_CLI_TARBALL ?? path.join(work, JSON.parse(run('npm', ['pack', path.join(root, 'packages/cli'), '--ignore-scripts', '--json', '--pack-destination', work]))[0].filename);
   writeFileSync(path.join(cli, 'package.json'), '{"private":true}');
-  run('npm', ['install', '--prefix', cli, '--ignore-scripts', '--no-audit', '--no-fund', path.join(work, packed[0].filename)]);
+  run('npm', ['install', '--prefix', cli, '--ignore-scripts', '--no-audit', '--no-fund', cliTarball]);
   const producer = path.join(work, 'ordinary producer');
   cpSync(path.join(here, '../fixtures/standard-tauri'), producer, { recursive: true });
   run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: producer });
@@ -125,45 +122,19 @@ try {
   host(path.join(buildTools, 'apksigner'), ['sign', '--ks', key, '--ks-pass', 'pass:android', '--out', apk, aligned]);
   host(path.join(buildTools, `zipalign${suffix}`), ['-c', '-P', '16', '-v', '4', apk]);
   host(path.join(buildTools, 'apksigner'), ['verify', apk]);
-  const devices = host(adb, ['devices']).split('\n').filter(line => /^emulator-\d+\s+device\s*$/.test(line) && (!process.env.ANDROID_SERIAL || line.startsWith(`${process.env.ANDROID_SERIAL}\t`)));
-  assert.equal(devices.length, 1, 'Select one running 16 KB Android emulator with ANDROID_SERIAL, or run exactly one emulator');
-  serial = devices[0].split(/\s+/)[0];
-  assert.equal(device(['shell', 'getconf', 'PAGE_SIZE']).trim(), '16384');
-  const api = device(['shell', 'getprop', 'ro.build.version.sdk']).trim();
-  const architecture = device(['shell', 'getprop', 'ro.product.cpu.abi']).trim();
-  device(['install', apk]); installed = true;
-  device(['shell', 'am', 'start', '-W', '-n', `${bundleId}/dev.taurinative.artifacttest.MainActivity`]);
-  let result; const deadline = Date.now() + 50000;
-  while (!result && Date.now() < deadline) {
-    const read = spawnSync(adb, ['-s', serial, 'exec-out', 'run-as', bundleId, 'cat', 'files/report.json'], { env: hostEnvironment, encoding: 'utf8' });
-    // adb exec-out may return status 0 for a remote cat error before the app
-    // atomically publishes its report; only parse an actual JSON response.
-    if (read.status === 0 && read.stdout.trim().startsWith('{')) result = JSON.parse(read.stdout);
-    else await setTimeout(500);
-  }
-  assert.ok(result, 'Android consumer did not finish');
-  writeFileSync(path.join(evidence, 'native-result.json'), JSON.stringify(result, null, 2) + '\n');
-  assert.equal(result.fatal, undefined);
-  assert.equal(result.abiVersion, 2); assert.equal(result.responses, 11); assert.equal(result.responses, result.frees);
-  assert.deepEqual(result.direct, [
-    { abiVersion: 2, ok: true, value: { displayName: '한글 🦀', total: 10 } },
-    { abiVersion: 2, ok: false, error: { kind: 'empty_name', message: 'A name is required' } },
-    { abiVersion: 2, ok: true, value: null },
-  ]);
-  assert.deepEqual(result.frontend, {
-    success: { displayName: '한글 🦀', total: 10 }, error: { kind: 'empty_name', message: 'A name is required' },
-    camelCase: 'Hello again, Ada!', unregisteredRejected: true, absent: null, explicitNull: null, unit: null,
-    selection: { type: 'display-name', data: '한글' },
-  });
-  writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({
-    ...result, emulator: { api, architecture, pageSize: 16384 }, installedCli: true,
-    producerUnchanged: true, producerDeleted: true, relocatedPathWithSpaces: true, hostWithoutRust: true,
-    frontendBytesUnchanged: true, validatedAbis: manifest.native, apkAlignment: 16384,
-    incrementalReuse: true, refreshedRustObservedInHost: true, failedBuildPreservedOutput: true, invalidElfPreservedOutput: ['4 KB alignment', 'API 26', 'wrong SONAME', 'wrong machine', 'unbundled shared dependency'],
-    executionMatrix: 'All four ABIs built/inspected; only the named emulator ABI executed',
+  const prepared = path.join(evidence, 'consumer-prepared.json');
+  writeFileSync(prepared, JSON.stringify({
+    schemaVersion: 1, bundleId, apk: 'Independent Host/ArtifactHost.apk',
+    apkSha256: createHash('sha256').update(readFileSync(apk)).digest('hex'),
+    export: { installedCli: true, producerUnchanged: true, producerDeleted: true, relocatedPathWithSpaces: true,
+      hostWithoutRust: true, frontendBytesUnchanged: true, validatedAbis: manifest.native, apkAlignment: 16384,
+      incrementalReuse: true, refreshedRustExported: true, failedBuildPreservedOutput: true,
+      invalidElfPreservedOutput: ['4 KB alignment', 'API 26', 'wrong SONAME', 'wrong machine', 'unbundled shared dependency'],
+    },
   }, null, 2) + '\n');
-  console.log(`PASS: installed CLI → copied artifacts → 16 KB Android native + unchanged frontend. Evidence: ${evidence}/report.json`);
+  if (process.env.ANDROID_CONSUMER_BUILD_ONLY === '1') {
+    console.log(`Prepared Android consumer; device execution is still required: ${prepared}`);
+  } else await verifyAndroidConsumer(prepared);
 } finally {
-  if (installed) spawnSync(adb, ['-s', serial, 'uninstall', bundleId]);
   rmSync(work, { recursive: true, force: true });
 }

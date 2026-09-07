@@ -14,12 +14,30 @@ appId: ${APP_ID}
 - inputText: "Mobile note"
 - tapOn: "Native document text"
 - inputText: "Native storage CEDAR"
-- pressKey: Enter
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - pressKey: Enter
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
 - tapOn: "Save quick note"
 - assertVisible: 'Saved.*Mobile note.*'
 - tapOn: "Native search query"
 - inputText: "cedar"
-- pressKey: Enter
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - pressKey: Enter
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
 - tapOn: "Search library"
 - assertVisible: "1 saved document"
 - scrollUntilVisible:
@@ -75,7 +93,16 @@ appId: ${APP_ID}
     timeout: 60000
 - tapOn: "Native search query"
 - inputText: "maple"
-- pressKey: Enter
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - pressKey: Enter
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
 - tapOn: "Search library"
 - assertVisible: "1 saved document"
 - scrollUntilVisible:

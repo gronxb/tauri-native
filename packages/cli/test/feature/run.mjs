@@ -1,23 +1,24 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { closeSync, cpSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inventory, sha256 } from '../../src/artifacts/files.ts';
+import { hostProfiles, buildAndInstallTestHost } from '../native-export/host-build.mjs';
 
 const root = realpathSync(fileURLToPath(new URL('../../../..', import.meta.url)));
 const changedRust = process.env.FIELDNOTES_CHANGED_RUST === '1';
 const evidence = path.join(root, changedRust ? 'target/document-feature-changed' : 'target/document-feature');
+const platforms = process.env.FIELDNOTES_PLATFORM ? [process.env.FIELDNOTES_PLATFORM] : ['ios', 'android'];
+assert(platforms.every(platform => ['ios', 'android'].includes(platform)), 'FIELDNOTES_PLATFORM must be ios or android');
 const ios = process.env.IOS_SIMULATOR_UDID, android = process.env.ANDROID_SERIAL;
-assert(ios && android, 'Set IOS_SIMULATOR_UDID and ANDROID_SERIAL to dedicated test devices.');
+assert(!platforms.includes('ios') || ios, 'Set IOS_SIMULATOR_UDID to a dedicated simulator');
+assert(!platforms.includes('android') || android, 'Set ANDROID_SERIAL to a dedicated emulator');
 assert(process.env.NATIVE_HOST_PATH, 'Set NATIVE_HOST_PATH to Node/Ruby/native tools without cargo or rustc.');
 const hostEnv = { ...process.env, PATH: process.env.NATIVE_HOST_PATH };
 for (const tool of ['cargo', 'rustc']) assert.equal(spawnSync(tool, ['--version'], { env: hostEnv }).error?.code, 'ENOENT', `${tool} must be absent during host builds`);
-const profiles = [
-  { name: 'rn', directory: process.env.RN_HOST, sdk: 'react-native', scheme: 'TauriArtifactHost', appId: 'dev.taurinative.rnartifacttest' },
-  { name: 'lynx', directory: process.env.LYNX_HOST, sdk: 'lynx', scheme: 'Hello-Lynx', appId: 'dev.taurinative.lynxartifacttest' },
-  { name: 'expo', directory: process.env.EXPO_HOST, sdk: 'react-native', scheme: 'TauriArtifactExpo', appId: 'dev.taurinative.rnartifacttest' },
-];
+const profiles = hostProfiles.map(profile => ({ ...profile, directory: process.env[profile.hostVariable] }));
 for (const profile of profiles) {
   assert(profile.directory, `Set ${profile.name.toUpperCase()}_HOST to a disposable independent integration host; see the feature gate README.`);
   profile.directory = realpathSync(profile.directory);
@@ -40,17 +41,20 @@ function run(label, command, args, cwd = root, env = process.env) {
   return readFileSync(log, 'utf8');
 }
 
-run('export', process.execPath, ['--experimental-strip-types', path.join(root, 'packages/cli/test/feature/export.mjs')]);
+if (!process.env.FIELDNOTES_PACKAGES) run('export', process.execPath, ['--experimental-strip-types', path.join(root, 'packages/cli/test/feature/export.mjs')]);
 const exported = JSON.parse(readFileSync(path.join(evidence, 'export-report.json')));
 assert.equal(exported.changedRust, changedRust);
 assert(exported.producerDeleted && exported.producerUnchanged && exported.desktopFrontend.every(result => result.passed));
-const packageDirectory = path.join(evidence, 'packages'); mkdirSync(packageDirectory, { recursive: true });
+const packageDirectory = process.env.FIELDNOTES_PACKAGES ?? path.join(evidence, 'packages');
+mkdirSync(packageDirectory, { recursive: true });
 const packages = {};
 for (const sdk of ['react-native', 'lynx']) {
-  run(`build-${sdk}`, 'nub', ['--cwd', path.join(root, 'packages', sdk), 'run', 'build']);
   const destination = path.join(packageDirectory, sdk);
-  rmSync(destination, { recursive: true, force: true }); mkdirSync(destination);
-  run(`pack-${sdk}`, 'npm', ['pack', path.join(root, 'packages', sdk), '--ignore-scripts', '--pack-destination', destination]);
+  if (!process.env.FIELDNOTES_PACKAGES) {
+    run(`build-${sdk}`, 'nub', ['--cwd', path.join(root, 'packages', sdk), 'run', 'build']);
+    rmSync(destination, { recursive: true, force: true }); mkdirSync(destination);
+    run(`pack-${sdk}`, 'npm', ['pack', path.join(root, 'packages', sdk), '--ignore-scripts', '--pack-destination', destination]);
+  }
   const files = readdirSync(destination);
   assert(files.length === 1 && files[0].endsWith('.tgz'), 'Packing must produce one fresh tarball');
   packages[sdk] = path.join(destination, files[0]);
@@ -85,42 +89,12 @@ if (changedRust) {
 const results = [];
 for (const profile of profiles) {
   const host = profile.directory;
-  for (const platform of ['ios', 'android']) {
+  for (const platform of platforms) {
     const label = `${profile.name}-${platform}`;
     try {
       const received = path.join(host, 'tauri-native', platform);
       assert.deepEqual(inventory(received), exported.artifacts[platform].files, 'Only copied artifacts are consumed');
-      if (profile.name === 'lynx') run(`${label}-bundle`, 'npm', ['run', platform === 'ios' ? 'build:ios' : 'build'], host, hostEnv);
-      if (platform === 'ios') {
-        if (profile.name === 'lynx') run(`${label}-pods`, 'bundle', ['exec', 'pod', 'install'], path.join(host, 'ios'), { ...hostEnv, BUNDLE_PATH: 'vendor/bundle' });
-        else run(`${label}-pods`, 'pod', ['install'], path.join(host, 'ios'), hostEnv);
-        run(`${label}-build`, 'xcodebuild', ['-workspace', `${profile.scheme}.xcworkspace`, '-scheme', profile.scheme, '-configuration', 'Release', '-sdk', 'iphonesimulator', '-destination', 'generic/platform=iOS Simulator', '-derivedDataPath', '../build-ios', 'CODE_SIGNING_ALLOWED=NO', 'ARCHS=arm64', 'ONLY_ACTIVE_ARCH=YES', '-jobs', '2'], path.join(host, 'ios'), hostEnv);
-        profile.app = path.join(host, `build-ios/Build/Products/Release-iphonesimulator/${profile.scheme}.app`);
-        run(`${label}-install-app`, 'xcrun', ['simctl', 'install', ios, profile.app], host, hostEnv);
-      } else {
-        // Maestro's Android accessibility snapshots can omit a recreated WebView's
-        // entire DOM. Enable its documented CDP inspection in disposable hosts only.
-        const application = path.join(host, 'android/app/src/main/java', profile.name === 'lynx'
-          ? 'dev/taurinative/lynxexample/TauriNativeApplication.java' : 'dev/taurinative/rnartifacttest/MainApplication.kt');
-        const source = readFileSync(application, 'utf8');
-        const inspection = 'android.webkit.WebView.setWebContentsDebuggingEnabled(true)';
-        if (!source.includes(inspection)) {
-          assert(source.includes('super.onCreate()'), 'Expected the disposable application scaffold');
-          writeFileSync(application, source.replace(/super\.onCreate\(\);?/, value =>
-            `${value}\n    ${inspection}${profile.name === 'lynx' ? ';' : ''} // Disposable Maestro host only.`));
-        }
-        run(`${label}-build`, './gradlew', ['--no-daemon', 'assembleRelease', '--max-workers=2'], path.join(host, 'android'), hostEnv);
-        profile.app = path.join(host, 'android/app/build/outputs/apk/release/app-release.apk');
-        run(`${label}-alignment`, process.env.ZIPALIGN ?? 'zipalign', ['-c', '-P', '16', '-v', '4', profile.app], host, hostEnv);
-        run(`${label}-install-app`, 'adb', ['-s', android, 'install', '-r', profile.app], host, hostEnv);
-      }
-      if (platform === 'android') {
-        // Background test apps can be frozen while their CDP sockets remain
-        // discoverable. Stop only the other applications owned by this gate.
-        for (const appId of new Set(profiles.map(item => item.appId))) {
-          if (appId !== profile.appId) run(`${label}-stop-previous`, 'adb', ['-s', android, 'shell', 'am', 'force-stop', appId], host, hostEnv);
-        }
-      }
+      buildAndInstallTestHost(profile, platform, run, hostEnv, { ios, android });
       const debug = path.join(evidence, `${label}-maestro`);
       rmSync(debug, { recursive: true, force: true });
       run(`${label}-flow`, 'maestro', ['--udid', platform === 'ios' ? ios : android, 'test', '-e', `APP_ID=${profile.appId}`, '--format', 'junit', '--output', path.join(evidence, `${label}.xml`), '--debug-output', debug, '--flatten-debug-output', featureFlow], host, hostEnv);
@@ -162,14 +136,27 @@ for (const profile of profiles) {
     } catch (error) {
       results.push({ host: profile.name, platform, appId: profile.appId, passed: false, error: error.message });
       console.error(`FAIL: ${label}; continuing the other independent consumers. ${error.message}`);
+      if (platform === 'ios') {
+        try {
+          const reports = path.join(homedir(), 'Library/Logs/DiagnosticReports');
+          if (existsSync(reports)) for (const report of readdirSync(reports, { withFileTypes: true })) {
+            if (!report.isFile() || !report.name.startsWith(`${profile.scheme}-`)) continue;
+            const destination = path.join(evidence, `${label}-diagnostics`);
+            mkdirSync(destination, { recursive: true });
+            cpSync(path.join(reports, report.name), path.join(destination, report.name));
+          }
+          run(`${label}-system`, 'xcrun', ['simctl', 'spawn', ios, 'log', 'show', '--last', '5m', '--style', 'compact',
+            '--predicate', `process == "${profile.scheme}" OR eventMessage CONTAINS "${profile.appId}"`], host, hostEnv);
+        } catch (diagnosticError) { console.error(`Could not collect ${label} diagnostics: ${diagnosticError.message}`); }
+      }
     }
   }
 }
-const passed = results.length === 6 && results.every(result => result.passed);
-writeFileSync(path.join(evidence, 'native-report.json'), JSON.stringify({ passed, changedRust, producerDeleted: true, hostBuildsWithoutRust: true,
+const passed = results.length === profiles.length * platforms.length && results.every(result => result.passed);
+writeFileSync(path.join(evidence, 'native-report.json'), JSON.stringify({ passed, changedRust, platforms, producerDeleted: true, hostBuildsWithoutRust: true,
   independentlyInstalledPackages: true, templates: 'Disposable independent RN/Expo/Lynx integration scaffolds; build caches may be warm',
   androidWebViewInspection: 'Maestro CDP; WebView debugging enabled only in disposable test applications, not SDKs or producer artifacts',
   iosSimulator: ios, androidEmulator: android, results, timings,
 }, null, 2) + '\n');
 assert(passed, `Failed consumers: ${results.filter(result => !result.passed).map(result => `${result.host}-${result.platform}`).join(', ')}. See ${evidence}/native-report.json`);
-console.log(`PASS: six installed artifact-only document consumers. Evidence: ${evidence}/native-report.json`);
+console.log(`PASS: ${results.length} installed artifact-only document consumers. Evidence: ${evidence}/native-report.json`);

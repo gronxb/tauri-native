@@ -1,1 +1,1 @@
-# The example does not currently enable shrinking.
+# Release builds use the dependency and tauri-native consumer rules.

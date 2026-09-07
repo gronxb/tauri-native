@@ -52,7 +52,7 @@ No due dates or assignees are invented. M0 is a go/no-go gate. A failed proof bl
 | [012](012-doctor-artifact-diagnostics.md) | [#16 — [M4] Diagnose toolchains, unsupported projects, and artifact mismatches](https://github.com/gronxb/tauri-native/issues/16) | P2 | M | 003, 005, 006, 007 | DONE · PR #33 merged |
 | [013](013-incremental-export-watch.md) | [#17 — [M4] Refresh exports with correct caching and a watch workflow](https://github.com/gronxb/tauri-native/issues/17) | P2 | L | 012 | DONE · PR #34 merged |
 | [014](014-real-feature-independent-consumers.md) | [#18 — [M5] Demonstrate a useful Tauri feature in independent mobile hosts](https://github.com/gronxb/tauri-native/issues/18) | P1 | L | 009, 010, 011, 013 | DONE · PR #35 |
-| [015](015-native-compatibility-ci.md) | [#19 — [M5] Gate changes with native, compatibility, and package verification](https://github.com/gronxb/tauri-native/issues/19) | P1 | L | 002, 007, 008, 009, 010, 011, 013, 014 | TODO |
+| [015](015-native-compatibility-ci.md) | [#19 — [M5] Gate changes with native, compatibility, and package verification](https://github.com/gronxb/tauri-native/issues/19) | P1 | L | 002, 007, 008, 009, 010, 011, 013, 014 | IN PROGRESS · PR #36 |
 | [016](016-onboarding-1-0-release.md) | [#20 — [M5] Validate independent onboarding and prepare the 1.0 release](https://github.com/gronxb/tauri-native/issues/20) | P1 | M | 014, 015 | TODO |
 
 M1 follows the M0 decision. M2 requires portable artifacts. M3 builds real command behavior on working host integrations. M4 can overlap later M2/M3 work where issue dependencies allow. The reference feature integrates these capabilities; native/package evidence and independent onboarding gate 1.0.

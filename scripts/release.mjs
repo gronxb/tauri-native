@@ -1,9 +1,12 @@
 import { appendFile, readFile, readdir } from "node:fs/promises";
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
+import assert from "node:assert/strict";
+import { readReleaseCandidate } from "./release-candidate.mjs";
 
 const packagesDirectory = new URL("../packages/", import.meta.url);
 const entries = await readdir(packagesDirectory, { withFileTypes: true });
 const published = [];
+const manifests = [];
 
 for (const entry of entries.sort((left, right) =>
   left.name.localeCompare(right.name),
@@ -18,7 +21,14 @@ for (const entry of entries.sort((left, right) =>
   if (manifest.private || !manifest.name?.startsWith("@tauri-native/")) {
     continue;
   }
+  manifests.push(manifest);
+}
 
+assert(process.env.TAURI_NATIVE_RELEASE_CANDIDATE, "Download the successful validation workflow's release candidate before publishing.");
+const commit = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+const candidate = readReleaseCandidate(process.env.TAURI_NATIVE_RELEASE_CANDIDATE, commit, manifests);
+
+for (const manifest of candidate) {
   const registry = manifest.publishConfig?.registry ?? "https://registry.npmjs.org/";
   const response = await fetch(
     new URL(
@@ -39,8 +49,11 @@ for (const entry of entries.sort((left, right) =>
   }
 
   const exitCode = await new Promise((resolve, reject) => {
-    const child = spawn("npm", ["publish"], {
-      cwd: directory,
+    // Publishing a tarball does not apply its embedded publishConfig options.
+    const args = ["publish", manifest.tarball, "--registry", registry];
+    if (manifest.publishConfig?.tag) args.push("--tag", manifest.publishConfig.tag);
+    if (manifest.publishConfig?.access) args.push("--access", manifest.publishConfig.access);
+    const child = spawn("npm", args, {
       stdio: "inherit",
     });
     child.on("error", reject);
