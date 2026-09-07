@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
+import { freemem, totalmem } from 'node:os';
 import path from 'node:path';
 
 export const hostProfiles = [
@@ -33,7 +34,19 @@ export function buildAndInstallTestHost(profile, platform, run, hostEnv, { ios, 
     run(`${label}-build`, './gradlew', ['--no-daemon', 'assembleRelease', '--max-workers=2'], path.join(host, 'android'), hostEnv);
     profile.app = path.join(host, 'android/app/build/outputs/apk/release/app-release.apk');
     run(`${label}-alignment`, process.env.ZIPALIGN ?? 'zipalign', ['-c', '-P', '16', '-v', '4', profile.app], host, hostEnv);
-    run(`${label}-install-app`, 'adb', ['-s', android, 'install', '-r', profile.app], host, hostEnv);
+    try {
+      run(`${label}-install-app`, 'adb', ['-s', android, 'install', '-r', profile.app], host, hostEnv);
+    } catch (error) {
+      console.error('Runner memory at installation failure:', { totalBytes: totalmem(), freeBytes: freemem() });
+      for (const [name, args] of [
+        ['memory', ['shell', 'cat', '/proc/meminfo']],
+        ['logcat', ['logcat', '-b', 'all', '-d', '-t', '2000']],
+      ]) {
+        try { run(`${label}-install-${name}`, 'adb', ['-s', android, ...args], host, hostEnv); }
+        catch (diagnosticError) { console.error(`Could not collect installation ${name}: ${diagnosticError.message}`); }
+      }
+      throw error;
+    }
     // A frozen previous test app can leave an unresponsive CDP socket behind.
     // Limit cleanup to the other applications owned by this acceptance gate.
     for (const appId of new Set(hostProfiles.map(item => item.appId))) {

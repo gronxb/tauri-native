@@ -14,11 +14,17 @@ const devices = { ios: process.env.IOS_SIMULATOR_UDID, android: process.env.ANDR
 assert(devices[platform], 'Select the job-owned device');
 const reportFile = path.join(output, `native-${platform}.json`);
 rmSync(reportFile, { force: true });
+if (platform === 'android') process.on('exit', code => {
+  if (code === 0) return;
+  try { run('android-failure-logcat', 'adb', ['-s', devices.android, 'logcat', '-b', 'all', '-d', '-t', '2000'], root, hostEnv); }
+  catch (error) { console.error(`Could not collect final Android system logs: ${error.message}`); }
+});
 let androidStorage;
 if (platform === 'android') {
   const pageSize = run('android-page-size', 'adb', ['-s', devices.android, 'shell', 'getconf', 'PAGE_SIZE'], root, hostEnv).trim();
   assert.equal(pageSize, '16384', 'Native acceptance requires the 16 KB emulator');
   const storage = run('android-storage', 'adb', ['-s', devices.android, 'shell', 'df', '-k', '/data'], root, hostEnv);
+  run('android-memory', 'adb', ['-s', devices.android, 'shell', 'cat', '/proc/meminfo'], root, hostEnv);
   const availableKiB = Number(storage.trim().split('\n').at(-1).trim().split(/\s+/)[3]);
   assert(availableKiB >= 1024 * 1024, 'The CI emulator needs at least 1 GiB free for Release app installation; configure its data disk before building');
   androidStorage = { availableKiB, pageSize: Number(pageSize) };
