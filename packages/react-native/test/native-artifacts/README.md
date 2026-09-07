@@ -12,7 +12,7 @@ npm pack ./packages/react-native --pack-destination ./target/react-native-artifa
 npm exec --yes --package @react-native-community/cli -- rnc-cli init TauriArtifactHost \
   --version 0.86.3 --directory /tmp/tauri-native-rn-artifact-host \
   --package-name dev.taurinative.rnartifacttest --skip-install --install-pods false --skip-git-init
-npm install --prefix /tmp/tauri-native-rn-artifact-host "$PWD/target/react-native-artifacts/tauri-native-react-native-0.1.0.tgz"
+npm install --prefix /tmp/tauri-native-rn-artifact-host "$PWD/target/react-native-artifacts/tauri-native-react-native-1.0.0-rc.0.tgz"
 node packages/react-native/test/native-artifacts/prepare.mjs \
   /tmp/tauri-native-rn-artifact-host \
   'target/export-ios/Independent Host/Native Artifacts' \

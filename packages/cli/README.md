@@ -4,7 +4,7 @@ Export existing Tauri commands and a web frontend for React Native and Lynx host
 
 ## Install and inspect
 
-The published 0.1.0 release predates ordinary source export. Install the matching candidate from this checkout using the [Fieldnotes walkthrough](https://github.com/gronxb/tauri-native/blob/main/docs/examples/fieldnotes.md) to use the APIs documented here. The registry command below selects the published experimental release.
+The earlier 0.1.0 release predates ordinary source export. Install the matching candidate from this checkout using the [Fieldnotes walkthrough](https://github.com/gronxb/tauri-native/blob/main/docs/examples/fieldnotes.md) to use the APIs documented here. This checkout prepares 1.0.0-rc.0; its version alone does not establish npm availability. The registry command below selects the published experimental release. See [migration](https://github.com/gronxb/tauri-native/blob/main/docs/migration.md) for the API changes.
 
 ```sh
 npm install --save-dev @tauri-native/cli@experimental

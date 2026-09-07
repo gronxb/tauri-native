@@ -4,7 +4,7 @@ Experimental iOS and Android React Native bridge for a Tauri microfrontend and i
 
 ## Install
 
-The published 0.1.0 release predates the source-export and async APIs documented here. For this checkout, install the matching candidate tarball using the [Fieldnotes walkthrough](https://github.com/gronxb/tauri-native/blob/main/docs/examples/fieldnotes.md). The registry command below selects the published experimental release.
+The earlier 0.1.0 release predates the source-export and async APIs documented here. For this checkout, install the matching candidate tarball using the [Fieldnotes walkthrough](https://github.com/gronxb/tauri-native/blob/main/docs/examples/fieldnotes.md). This checkout prepares 1.0.0-rc.0; its version alone does not establish npm availability. The registry command below selects the published experimental release. See [migration](https://github.com/gronxb/tauri-native/blob/main/docs/migration.md) for the API changes.
 
 ```sh
 npm install @tauri-native/react-native@experimental

@@ -39,6 +39,7 @@ for (const [label, file, extra] of [
   ['events-export', 'events/export.mjs', {}],
   ['feature-export', 'feature/export.mjs', {}],
   ['feature-changed-export', 'feature/export.mjs', { FIELDNOTES_CHANGED_RUST: '1' }],
+  ['onboarding-uninstall', 'feature/uninstall.mjs', {}],
 ]) run(label, process.execPath, ['--experimental-strip-types', `packages/cli/test/${file}`], root, { ...env, ...extra });
 run('source-clean', 'git', ['diff', '--exit-code']);
 const paths = ['document-feature', 'document-feature-changed', 'async-protocol', 'view-events']

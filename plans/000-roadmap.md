@@ -110,14 +110,18 @@ M4 can proceed alongside later M2/M3 work when its individual prerequisites are 
 
 A 1.0 candidate requires:
 
-- [ ] Positive M0 feasibility evidence and a published support/unsupported table.
-- [ ] Ordinary producer source remains unchanged by export.
-- [ ] Both hosts consume copied iOS/Android artifacts with no source/Rust dependency.
-- [ ] Nonblocking commands and teardown/cancellation are tested, with honest type/event limitations.
-- [ ] One useful document save/search feature works independently on desktop and mobile.
+- [x] Positive M0 feasibility evidence and a published support/unsupported table.
+- [x] Ordinary producer source remains unchanged by export.
+- [x] Both hosts consume copied iOS/Android artifacts with no source/Rust dependency.
+- [x] Nonblocking commands and teardown/cancellation are tested, with honest type/event limitations.
+- [x] One useful document save/search feature works independently on desktop and mobile.
 - [ ] Native/compatibility/package/relocation checks pass for the candidate commit.
 - [ ] At least two independent integrations complete the documented artifact-only workflow.
-- [ ] Migration instructions, limitations, candidate packages and release notes are reviewable.
+- [x] Migration instructions, limitations, candidate packages and release notes are reviewable.
+
+The completed implementation gates are backed by the [compatibility contract](https://github.com/gronxb/tauri-native/blob/5320ec8e0b67bf061b79c89dfe408a0a90edcb3f/docs/compatibility.md), merged [RN/Expo](https://github.com/gronxb/tauri-native/pull/27), [Lynx](https://github.com/gronxb/tauri-native/pull/29), [async](https://github.com/gronxb/tauri-native/pull/30), [type](https://github.com/gronxb/tauri-native/pull/31) and [view](https://github.com/gronxb/tauri-native/pull/32) acceptance, and [Fieldnotes execution evidence](https://github.com/gronxb/tauri-native/blob/5320ec8e0b67bf061b79c89dfe408a0a90edcb3f/docs/evidence/fieldnotes-local-2026-09-07.json). Mobile evidence covers the documented simulator/emulator scope. Final candidate CI, physical-device RC execution and independent onboarding remain open in #19 and #20.
+
+The release-preparation requirement is reviewable in [PR #37](https://github.com/gronxb/tauri-native/pull/37): matching 1.0.0-rc.0 packages, migration/support guidance, changelogs and release notes. Its [successful hosted producer](https://github.com/gronxb/tauri-native/actions/runs/34073619475/job/101595449258) provides the exact prepared package tarballs. Complete candidate native acceptance, physical-device checks and independent onboarding remain required before release readiness.
 
 Independent evaluator contact and stable package publication follow the maintainer's normal authorization process when execution reaches those steps. This roadmap does not invent dates, testimonials, performance numbers or completed validation.
 

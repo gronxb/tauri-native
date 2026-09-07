@@ -1,7 +1,7 @@
 # tauri-native
 
 > [!WARNING]
-> This is a proof-of-concept (PoC) project currently under development.
+> Experimental release candidate: support is limited to the documented compatibility matrix. Independent onboarding and physical-device release checks remain open.
 
 Embed a packaged Tauri microfrontend in a React Native or Lynx application on iOS or Android, and call the same Rust command implementation from each host.
 
@@ -40,7 +40,7 @@ The canonical [Fieldnotes example](docs/examples/fieldnotes.md) saves and search
 
 `@tauri-native/react-native` uses React Native Builder Bob to produce ESM and TypeScript declarations. `@tauri-native/lynx` follows Lynx Native Library autolinking and code generation. `@tauri-native/cli` uses Commander for its command interface and `@clack/core` for terminal output.
 
-The packages are configured to publish under the `experimental` npm dist-tag. Install the CLI in the Tauri project that owns the frontend and Rust code. Install only the matching bridge package in each native host. The published 0.1.0 packages predate the source-export APIs shown here; use matching candidate tarballs from this checkout to try Fieldnotes, following the [candidate walkthrough](docs/examples/fieldnotes.md). The following npm commands refer to the published releases.
+The packages are configured to publish under the `experimental` npm dist-tag. Install the CLI in the Tauri project that owns the frontend and Rust code. Install only the matching bridge package in each native host. The earlier 0.1.0 packages predate the source-export APIs shown here; use matching candidate tarballs from this checkout to try Fieldnotes, following the [candidate walkthrough](docs/examples/fieldnotes.md). This checkout prepares 1.0.0-rc.0. The npm commands below select whichever experimental release is published; a version in the checkout does not establish registry availability. See the [migration guide](docs/migration.md) and [adoption gates](docs/adoption.md).
 
 ```sh
 # Run in the Tauri project
@@ -69,7 +69,7 @@ install and run the CLI from the Tauri project:
 ```sh
 cd workspace/tauri-app
 # Candidate built from this checkout; see the walkthrough above.
-npm install --save-dev /path/to/tauri-native-cli-0.1.0.tgz
+npm install --save-dev /path/to/tauri-native-cli-1.0.0-rc.0.tgz
 npx tauri-native export ios
 npx tauri-native export android
 ```

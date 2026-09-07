@@ -11,7 +11,7 @@ mkdir -p target/lynx-artifacts
 npm pack ./packages/lynx --pack-destination ./target/lynx-artifacts
 mkdir /tmp/tauri-native-lynx-artifact-host
 git archive HEAD examples/lynx | tar -x -C /tmp/tauri-native-lynx-artifact-host --strip-components=2
-npm install --prefix /tmp/tauri-native-lynx-artifact-host "$PWD/target/lynx-artifacts/tauri-native-lynx-0.1.0.tgz"
+npm install --prefix /tmp/tauri-native-lynx-artifact-host "$PWD/target/lynx-artifacts/tauri-native-lynx-1.0.0-rc.0.tgz"
 node packages/lynx/test/native-artifacts/prepare.mjs \
   /tmp/tauri-native-lynx-artifact-host \
   'target/export-ios/Independent Host/Native Artifacts' \

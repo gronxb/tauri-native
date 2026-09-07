@@ -32,12 +32,12 @@ npm pack ./packages/cli --pack-destination /tmp/tauri-native-candidate
 npm pack ./packages/react-native --pack-destination /tmp/tauri-native-candidate
 npm pack ./packages/lynx --pack-destination /tmp/tauri-native-candidate
 # Ordinary producer directory:
-npm install --save-dev /tmp/tauri-native-candidate/tauri-native-cli-0.1.0.tgz
+npm install --save-dev /tmp/tauri-native-candidate/tauri-native-cli-1.0.0-rc.0.tgz
 npx tauri-native export ios
 npx tauri-native export android
 ```
 
-In the independent React Native/Expo host, install `/tmp/tauri-native-candidate/tauri-native-react-native-0.1.0.tgz`; in Lynx, install `/tmp/tauri-native-candidate/tauri-native-lynx-0.1.0.tgz`. Use `npm install <tarball>` from that host. These candidate tarballs replace the published-package install commands in the host guides below. The host receives only its matching SDK package.
+In the independent React Native/Expo host, install `/tmp/tauri-native-candidate/tauri-native-react-native-1.0.0-rc.0.tgz`; in Lynx, install `/tmp/tauri-native-candidate/tauri-native-lynx-1.0.0-rc.0.tgz`. Use `npm install <tarball>` from that host. These candidate tarballs replace the published-package install commands in the host guides below. The host receives only its matching SDK package.
 
 Copy the complete `src-tauri/gen/tauri-native/ios` and `android` directories to the host's `tauri-native/` directory. Copy either export's `commands.ts` to `tauri-native/commands.ts`; when receiving both, verify those files are identical. The example host imports this generated contract and connects `createCommands(invoke)` to its installed SDK. The host owns these copies and does not need the producer checkout, CLI or Rust compiler when building.
 
