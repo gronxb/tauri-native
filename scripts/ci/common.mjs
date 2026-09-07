@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { closeSync, mkdirSync, openSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -16,11 +16,12 @@ export function record(file, value) {
 export function run(label, command, args, cwd = root, env = process.env) {
   mkdirSync(path.join(output, 'logs'), { recursive: true });
   const log = path.join(output, 'logs', `${label}.log`);
-  const fd = openSync(log, 'w');
   console.log(`> ${label}: ${command} ${args.join(' ')}`);
-  let result;
-  try { result = spawnSync(command, args, { cwd, env, stdio: ['ignore', fd, fd] }); }
-  finally { closeSync(fd); }
+  // Both hosted platforms provide Bash/tee. Positional arguments preserve paths
+  // and payloads verbatim; pipefail keeps command errors from becoming success.
+  const result = spawnSync('/bin/bash', ['-o', 'pipefail', '-c', '"$@" 2>&1 | tee "$TAURI_NATIVE_COMMAND_LOG"', 'tauri-native-ci', command, ...args], {
+    cwd, env: { ...env, TAURI_NATIVE_COMMAND_LOG: log }, stdio: ['ignore', 'inherit', 'inherit'],
+  });
   assert.equal(result.status, 0, `${label}: ${result.error ?? ''}\n${readFileSync(log, 'utf8').slice(-12000)}`);
   return readFileSync(log, 'utf8');
 }

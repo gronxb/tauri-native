@@ -15,6 +15,7 @@ for (const sdk of ['cli', 'react-native', 'lynx']) {
   for (const check of ['test', 'typecheck']) run(`${sdk}-${check}`, 'nub', ['--cwd', `packages/${sdk}`, 'run', check]);
 }
 run('release-receipt-tests', process.execPath, ['--test', 'scripts/test/release-candidate.test.mjs']);
+run('ci-command-tests', process.execPath, ['--test', 'scripts/test/ci-command.test.mjs']);
 for (const check of ['test:export:contract', 'test:types', 'test:events', 'test:watch']) {
   run(check.replaceAll(':', '-'), 'nub', ['--cwd', 'packages/cli', 'run', check]);
 }

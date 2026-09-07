@@ -58,7 +58,7 @@ The preparation step reports that device execution is still required. Only the r
 
 ## Evidence and failure handling
 
-Each job uploads its command logs and available JSON, JUnit and Maestro evidence even on failure. The producer input and final release candidate are retained for 14 days. Record a permanent run URL and candidate commit in release notes; expired downloadable logs do not extend a support claim. A failed platform is not certified by another platform's passing result.
+Each job streams command output while retaining its log file, and uploads available JSON, JUnit and Maestro evidence even on failure. Command logging preserves nonzero exit codes and literal arguments. This exposes the nested Fieldnotes build/flow progress while the receiving job is still running. The producer input and final release candidate are retained for 14 days. Record a permanent run URL and candidate commit in release notes; expired downloadable logs do not extend a support claim. A failed platform is not certified by another platform's passing result.
 
 The producer caches Cargo dependencies with the pinned Rust/Xcode/NDK inputs; every validation command still runs for the candidate. Android compilation uses the installed API 35/36 platforms. The emulator separately selects the repository's `android-37.0` 16 KB system image; `android-37` is not a published SDK package name. Its data disk is set to 6 GB. The native job records page size and free data space before building, requiring at least 1 GiB free for app installation. With the image's default data disk, all three Release apps failed installation because internal storage was exhausted.
 
