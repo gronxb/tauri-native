@@ -113,6 +113,7 @@ jobs:
           target: google_apis_ps16k
           arch: x86_64
           profile: pixel_7
+          disk-size: 6G
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: ANDROID_SERIAL=emulator-5554 node --experimental-strip-types scripts/ci/native.mjs android

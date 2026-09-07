@@ -14,6 +14,15 @@ const devices = { ios: process.env.IOS_SIMULATOR_UDID, android: process.env.ANDR
 assert(devices[platform], 'Select the job-owned device');
 const reportFile = path.join(output, `native-${platform}.json`);
 rmSync(reportFile, { force: true });
+let androidStorage;
+if (platform === 'android') {
+  const pageSize = run('android-page-size', 'adb', ['-s', devices.android, 'shell', 'getconf', 'PAGE_SIZE'], root, hostEnv).trim();
+  assert.equal(pageSize, '16384', 'Native acceptance requires the 16 KB emulator');
+  const storage = run('android-storage', 'adb', ['-s', devices.android, 'shell', 'df', '-k', '/data'], root, hostEnv);
+  const availableKiB = Number(storage.trim().split('\n').at(-1).trim().split(/\s+/)[3]);
+  assert(availableKiB >= 1024 * 1024, 'The CI emulator needs at least 1 GiB free for Release app installation; configure its data disk before building');
+  androidStorage = { availableKiB, pageSize: Number(pageSize) };
+}
 const checks = [], features = [];
 for (const changed of [false, true]) {
   const name = changed ? 'feature-changed' : 'feature';
@@ -63,5 +72,6 @@ record(reportFile, { schemaVersion: 1, commit: receipt.commit, platform, passed:
   producerReceiptSha256: digest(path.join(settings.FIELDNOTES_PACKAGES, 'producer.json')),
   packages: receipt.packages, lynxAndroidMinified: platform === 'android', device: devices[platform],
   lynxR8MappingSha256: platform === 'android' ? digest(path.join(settings.LYNX_HOST, 'android/app/build/outputs/mapping/release/mapping.txt')) : undefined,
+  androidStorage,
 });
 console.log(`PASS: candidate consumers, lifecycle and ${platform} runtime gates. ${reportFile}`);
