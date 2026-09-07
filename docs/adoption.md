@@ -44,7 +44,7 @@ A walkthrough can fail and still provide useful evidence. Keep its failures visi
 
 `nub --cwd packages/cli run test:onboarding` exercises the installation/removal part of the workflow in a disposable ordinary Fieldnotes project. It installs the packed CLI as a development dependency, inspects and exports both platforms, removes the CLI and generated output, then runs the application's normal desktop Release build. Hash checks permit only the JavaScript manifest and lockfile to change during installation; export preserves the installed producer exactly. The final report records any remaining JavaScript diff.
 
-The local run passed with the prepared 1.0.0-rc.0 CLI. Its report is `target/onboarding/report.json`; the candidate producer CI also runs this gate with its exact CLI tarball. All three prepared packages also passed an npm publication dry-run with the validated registry, experimental channel and public access passed explicitly; no package was published. These are automated maintainer checks, not independent evaluator records. The CLI exposes version information through its npm package metadata; use `npm ls @tauri-native/cli` when recording the installed version.
+The local run and the [hosted producer at `eb1fab8`](https://github.com/gronxb/tauri-native/actions/runs/34111222423/job/101707922544) passed with the exact 1.0.0-rc.0 CLI tarball. Its report is `target/onboarding/report.json`; see the [candidate evidence](releases/1.0.0-rc.0.md) for matching package hashes and complete hosted native results. All three prepared packages also passed an npm publication dry-run with the validated registry, experimental channel and public access passed explicitly; no package was published. These are automated maintainer checks, not independent evaluator records. The CLI exposes version information through its npm package metadata; use `npm ls @tauri-native/cli` when recording the installed version.
 
 For physical-device RC evidence, use the host's normal Release signing and distribution process, record the actual device/OS and package/artifact hashes, and repeat the direct/embedded success, error, pending-navigation and relaunch scenarios. Record failures and signing/distribution conditions. Simulator results do not fill these records.
 
@@ -56,9 +56,9 @@ The release checklist is intentionally incomplete until evidence exists:
 
 - [ ] First independent documentation-only integration and producer diff reviewed.
 - [ ] Second independent documentation-only integration and producer diff reviewed.
-- [ ] Required package, source-integrity, compatibility and native jobs passed for the candidate.
+- [x] Required package, source-integrity, compatibility and native jobs passed for the candidate.
 - [ ] Physical iOS and Android RC checks recorded, including platform signing/distribution conditions.
-- [ ] Unsupported APIs and migration guidance reflect the candidate's actual behavior.
+- [x] Unsupported APIs and migration guidance reflect the candidate's actual behavior.
 - [ ] Maintainer has authorized stable publication through the documented release process.
 
 Outreach requires maintainer authorization. This document does not authorize contacting developers, publishing private evaluation material, or claiming that independent adoption has occurred.

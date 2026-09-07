@@ -16,7 +16,7 @@ npx tauri-native export ios
 npx tauri-native export android
 ```
 
-These commands already exist, but achieving this workflow **without today's custom app-core/header prerequisites is the roadmap goal**, not a claim about the current release.
+The prepared candidate implements this workflow within the [documented compatibility scope](../docs/compatibility.md), without producer-authored bridge code. Use matching workflow tarballs until registry publication is confirmed; see [candidate evidence](../docs/releases/1.0.0-rc.0.md).
 
 The producer hands over one exported platform directory. iOS contains an XCFramework plus its frontend bundle/integration metadata; Android contains normalized native libraries plus frontend assets. Both have a versioned manifest. The mobile host installs its matching bridge package and references the copied artifact. **No producer checkout or Rust toolchain is required during host compilation.**
 
@@ -32,7 +32,7 @@ The producer hands over one exported platform directory. iOS contains an XCFrame
 | Portability | Copy artifacts to an unrelated host, make producer source inaccessible, and still build/run both direct and embedded calls. |
 | Evidence | Hash authored source before/after successful and failed exports. Verify native execution and isolated packed-package consumers, not only generated text. |
 
-The existing PoC architecture requires source adaptation by the user. Removing that burden is the first gate. An optional legacy/manual integration route must never become the default success path.
+Source-preserving export passed the M0 feasibility gate and is implemented in the candidate. The CLI owns generated adaptation; an optional legacy/manual integration route is not required for this workflow.
 
 ## Milestones and exit gates
 
@@ -80,7 +80,7 @@ M0 must produce a **go/no-go** result. Do not promise automatic export of arbitr
 ### M5 — Validate adoption and ship 1.0
 
 - [x] [#18 — [M5] Demonstrate a useful Tauri feature in independent mobile hosts](https://github.com/gronxb/tauri-native/issues/18)
-- [ ] [#19 — [M5] Gate changes with native, compatibility, and package verification](https://github.com/gronxb/tauri-native/issues/19)
+- [x] [#19 — [M5] Gate changes with native, compatibility, and package verification](https://github.com/gronxb/tauri-native/issues/19)
 - [ ] [#20 — [M5] Validate independent onboarding and prepare the 1.0 release](https://github.com/gronxb/tauri-native/issues/20)
 
 ## Dependency order
@@ -115,13 +115,13 @@ A 1.0 candidate requires:
 - [x] Both hosts consume copied iOS/Android artifacts with no source/Rust dependency.
 - [x] Nonblocking commands and teardown/cancellation are tested, with honest type/event limitations.
 - [x] One useful document save/search feature works independently on desktop and mobile.
-- [ ] Native/compatibility/package/relocation checks pass for the candidate commit.
+- [x] Native/compatibility/package/relocation checks pass for the candidate commit.
 - [ ] At least two independent integrations complete the documented artifact-only workflow.
 - [x] Migration instructions, limitations, candidate packages and release notes are reviewable.
 
-The completed implementation gates are backed by the [compatibility contract](https://github.com/gronxb/tauri-native/blob/5320ec8e0b67bf061b79c89dfe408a0a90edcb3f/docs/compatibility.md), merged [RN/Expo](https://github.com/gronxb/tauri-native/pull/27), [Lynx](https://github.com/gronxb/tauri-native/pull/29), [async](https://github.com/gronxb/tauri-native/pull/30), [type](https://github.com/gronxb/tauri-native/pull/31) and [view](https://github.com/gronxb/tauri-native/pull/32) acceptance, and [Fieldnotes execution evidence](https://github.com/gronxb/tauri-native/blob/5320ec8e0b67bf061b79c89dfe408a0a90edcb3f/docs/evidence/fieldnotes-local-2026-09-07.json). Mobile evidence covers the documented simulator/emulator scope. Final candidate CI, physical-device RC execution and independent onboarding remain open in #19 and #20.
+The completed implementation gates are backed by the [compatibility contract](https://github.com/gronxb/tauri-native/blob/5320ec8e0b67bf061b79c89dfe408a0a90edcb3f/docs/compatibility.md), merged [RN/Expo](https://github.com/gronxb/tauri-native/pull/27), [Lynx](https://github.com/gronxb/tauri-native/pull/29), [async](https://github.com/gronxb/tauri-native/pull/30), [type](https://github.com/gronxb/tauri-native/pull/31) and [view](https://github.com/gronxb/tauri-native/pull/32) acceptance, and [Fieldnotes execution evidence](https://github.com/gronxb/tauri-native/blob/5320ec8e0b67bf061b79c89dfe408a0a90edcb3f/docs/evidence/fieldnotes-local-2026-09-07.json). Mobile evidence covers the documented simulator/emulator scope. [CI acceptance](https://github.com/gronxb/tauri-native/pull/36) and [complete RC validation at `eb1fab8`](https://github.com/gronxb/tauri-native/actions/runs/34111222423) passed. Physical-device RC execution and independent onboarding remain open in #20.
 
-The release-preparation requirement is reviewable in [PR #37](https://github.com/gronxb/tauri-native/pull/37): matching 1.0.0-rc.0 packages, migration/support guidance, changelogs and release notes. Its [successful hosted producer](https://github.com/gronxb/tauri-native/actions/runs/34073619475/job/101595449258) provides the exact prepared package tarballs. Complete candidate native acceptance, physical-device checks and independent onboarding remain required before release readiness.
+The release-preparation requirement was delivered in merged [PR #37](https://github.com/gronxb/tauri-native/pull/37): matching 1.0.0-rc.0 packages, migration/support guidance, changelogs and release notes. Its [successful candidate workflow](https://github.com/gronxb/tauri-native/actions/runs/34111222423) provides the exact validated tarballs; [candidate evidence](../docs/releases/1.0.0-rc.0.md) records their hashes. Main publication requires validation of its own release commit. Physical-device checks and two independent onboarding records still gate stable readiness.
 
 Independent evaluator contact and stable package publication follow the maintainer's normal authorization process when execution reaches those steps. This roadmap does not invent dates, testimonials, performance numbers or completed validation.
 
