@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,6 +8,7 @@ import { inventory } from '../../src/artifacts/files.ts';
 import { validateIosArtifacts } from '../../src/artifacts/ios.ts';
 import { androidTools, validateAndroidArtifacts } from '../../src/artifacts/android.ts';
 import { snapshot } from '../native-export/source-integrity.mjs';
+import { waitForDesktopReport } from '../native-export/desktop-report.ts';
 
 const root = fileURLToPath(new URL('../../../..', import.meta.url));
 const evidence = path.join(root, 'target/view-events');
@@ -40,12 +41,7 @@ try {
   desktop = spawn(path.join(root, 'target/debug/ordinary-tauri-fixture'), [], {
     cwd: producer, env: { ...process.env, TAURI_EVENT_REPORT: reportFile }, stdio: 'inherit',
   });
-  const deadline = Date.now() + 60000;
-  while (!existsSync(reportFile) && desktop.exitCode === null && Date.now() < deadline) {
-    await new Promise(resolve => setTimeout(resolve, 200));
-  }
-  assert(existsSync(reportFile), `Desktop frontend did not report; exit=${desktop.exitCode}`);
-  const parity = JSON.parse(readFileSync(reportFile));
+  const parity = await waitForDesktopReport(reportFile, desktop);
   assert.equal(parity.passed, true, JSON.stringify(parity));
   assert.equal(parity.documentId, 'desktop');
   desktop.kill(); desktop = undefined;

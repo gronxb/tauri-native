@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,6 +8,7 @@ import { inventory } from '../../src/artifacts/files.ts';
 import { validateIosArtifacts } from '../../src/artifacts/ios.ts';
 import { androidTools, validateAndroidArtifacts } from '../../src/artifacts/android.ts';
 import { snapshot } from '../native-export/source-integrity.mjs';
+import { waitForDesktopReport } from '../native-export/desktop-report.ts';
 
 const root = fileURLToPath(new URL('../../../..', import.meta.url));
 const changedRust = process.env.FIELDNOTES_CHANGED_RUST === '1';
@@ -65,10 +66,7 @@ try {
     const report = path.join(evidence, `desktop-${phase}.json`);
     rmSync(report, { force: true });
     desktop = spawn(path.join(root, 'target/debug/ordinary-tauri-documents'), [], { cwd: desktopCopy, env: { ...process.env, TAURI_FEATURE_REPORT: report }, stdio: 'inherit' });
-    const deadline = Date.now() + 60000;
-    while (!existsSync(report) && desktop.exitCode === null && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 200));
-    assert(existsSync(report), `Desktop ${phase} did not report; exit=${desktop.exitCode}`);
-    const result = JSON.parse(readFileSync(report));
+    const result = await waitForDesktopReport(report, desktop);
     assert.equal(result.passed, true, JSON.stringify(result));
     dataDirectory = result.directory;
     assert.equal(path.basename(dataDirectory), config.identifier);
