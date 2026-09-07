@@ -1,5 +1,7 @@
 # tauri-native
 
+![tauri-native demo](docs/assets/tauri-native.gif)
+
 > [!WARNING]
 > Experimental release candidate: support is limited to the documented compatibility matrix. Independent onboarding and physical-device release checks remain open.
 
