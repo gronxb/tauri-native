@@ -1,11 +1,52 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
 import { readReleaseCandidate, requiredChecks, validateNativeReceipt } from '../release-candidate.mjs';
+
+test('the release script keeps a packed prerelease on its experimental npm channel', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'tauri-native-publish-channel-'));
+  try {
+    const pkg = { name: '@tauri-native/cli', version: '1.0.0-rc.0', publishConfig: {
+      tag: 'experimental', access: 'public', registry: 'https://registry.npmjs.org/',
+    } };
+    for (const directory of ['scripts', 'packages/cli', 'package', 'bin', 'candidate']) mkdirSync(path.join(root, directory), { recursive: true });
+    for (const directory of ['packages/cli', 'package']) writeFileSync(path.join(root, directory, 'package.json'), JSON.stringify(pkg));
+    for (const file of ['release.mjs', 'release-candidate.mjs']) cpSync(new URL(`../${file}`, import.meta.url), path.join(root, 'scripts', file));
+    const file = 'cli.tgz', tarball = path.join(root, 'candidate', file);
+    assert.equal(spawnSync('tar', ['-czf', tarball, '-C', root, 'package']).status, 0);
+    const sha256 = createHash('sha256').update(readFileSync(tarball)).digest('hex');
+    const git = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' });
+    assert.equal(git.status, 0);
+    writeFileSync(path.join(root, 'candidate/candidate.json'), JSON.stringify({ schemaVersion: 1,
+      commit: git.stdout.trim(), passed: true, checks: Object.fromEntries(requiredChecks.map(check => [check, 'success'])),
+      packages: [{ name: pkg.name, version: pkg.version, file, sha256 }],
+    }));
+    // Exercise real npm with a mandatory dry-run wrapper. Registry discovery is
+    // isolated, and no publish request or credentials are needed for this test.
+    const npm = realpathSync(process.env.PATH.split(path.delimiter).map(directory => path.join(directory, 'npm')).find(file => existsSync(file)));
+    writeFileSync(path.join(root, 'bin/npm'), `#!${process.execPath}
+const { spawnSync } = require('node:child_process');
+const result = spawnSync(${JSON.stringify(npm)}, [...process.argv.slice(2), '--dry-run'], { stdio: 'inherit' });
+process.exit(result.status ?? 1);
+`, { mode: 0o755 });
+    const offline = path.join(root, 'registry.mjs');
+    writeFileSync(offline, 'globalThis.fetch = async () => ({ ok: false, status: 404 });\n');
+    const result = spawnSync(process.execPath, ['--import', offline, path.join(root, 'scripts/release.mjs')], {
+      encoding: 'utf8', env: { ...process.env, PATH: `${path.join(root, 'bin')}${path.delimiter}${process.env.PATH}`,
+        TAURI_NATIVE_RELEASE_CANDIDATE: path.join(root, 'candidate'), CHANGESETS_OUTPUT: path.join(root, 'events.ndjson') },
+    });
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.match(result.stderr, /with tag experimental and public access \(dry-run\)/);
+    assert.equal(createHash('sha256').update(readFileSync(tarball)).digest('hex'), sha256);
+    assert.deepEqual(JSON.parse(readFileSync(path.join(root, 'events.ndjson'), 'utf8')), {
+      type: 'git-tag', tag: `${pkg.name}@${pkg.version}`, packageName: pkg.name,
+    });
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
 
 test('publication rejects failed validation, stale commits and changed packed bytes', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'tauri-native-release-candidate-'));

@@ -49,7 +49,11 @@ for (const manifest of candidate) {
   }
 
   const exitCode = await new Promise((resolve, reject) => {
-    const child = spawn("npm", ["publish", manifest.tarball], {
+    // Publishing a tarball does not apply its embedded publishConfig options.
+    const args = ["publish", manifest.tarball, "--registry", registry];
+    if (manifest.publishConfig?.tag) args.push("--tag", manifest.publishConfig.tag);
+    if (manifest.publishConfig?.access) args.push("--access", manifest.publishConfig.access);
+    const child = spawn("npm", args, {
       stdio: "inherit",
     });
     child.on("error", reject);
