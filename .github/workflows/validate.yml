@@ -85,6 +85,7 @@ jobs:
             target/document-feature*/*.log
             target/document-feature*/*.xml
             target/document-feature*/*-maestro/
+            target/document-feature*/*-diagnostics/
           retention-days: 14
 
   native-android:

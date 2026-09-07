@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { closeSync, cpSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inventory, sha256 } from '../../src/artifacts/files.ts';
@@ -135,6 +136,14 @@ for (const profile of profiles) {
     } catch (error) {
       results.push({ host: profile.name, platform, appId: profile.appId, passed: false, error: error.message });
       console.error(`FAIL: ${label}; continuing the other independent consumers. ${error.message}`);
+      if (platform === 'ios') {
+        try {
+          const reports = path.join(homedir(), 'Library/Logs/DiagnosticReports');
+          if (existsSync(reports)) cpSync(reports, path.join(evidence, `${label}-diagnostics`), { recursive: true });
+          run(`${label}-system`, 'xcrun', ['simctl', 'spawn', ios, 'log', 'show', '--last', '5m', '--style', 'compact',
+            '--predicate', `process == "${profile.scheme}" OR eventMessage CONTAINS "${profile.appId}"`], host, hostEnv);
+        } catch (diagnosticError) { console.error(`Could not collect ${label} diagnostics: ${diagnosticError.message}`); }
+      }
     }
   }
 }
