@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/016-onboarding-1-0-release.md`
 - Issue: [#20](https://github.com/gronxb/tauri-native/issues/20)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: IN PROGRESS — candidate versioning, migration and onboarding records are prepared; independent evaluator and physical-device evidence remain open.
+- Status: IN PROGRESS — [PR #37](https://github.com/gronxb/tauri-native/pull/37) merged as `05cb528`; complete RC validation at `eb1fab8` passed. Independent evaluator and physical-device evidence remain open.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 
@@ -89,11 +89,12 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 ## Acceptance criteria
 
 - [ ] At least two evidenced independent integrations need no bridge-specific producer code.
-- [ ] Required native/compatibility/package checks pass for the RC.
+- [ ] Physical iOS and Android RC execution is recorded, including signing/distribution conditions.
+- [x] Required native/compatibility/package checks pass for the RC.
 - [x] Unsupported APIs and migration from PoC are documented.
 - [x] A reviewable 1.0 candidate exists; stable publication uses the authorized release process.
-- [ ] Required checks have recorded results; skipped/blocked checks are identified accurately.
-- [ ] Changes stay within this issue's purpose and preserve the producer change budget.
+- [x] Required checks have recorded results; skipped/blocked checks are identified accurately.
+- [x] Changes stay within this issue's purpose and preserve the producer change budget.
 
 ## Blockers and maintenance
 
@@ -103,12 +104,14 @@ Do not invent user quotes, metrics, dates or market demand. Stars/downloads do n
 
 Use a `codex/onboarding-1-0-release` branch if creating one, follow the repository's conventional commit style, and do not commit/push/merge/publish changes without the execution task's authorization. Keep this issue and any checked-in plan status aligned.
 
-## Candidate preparation
+## Candidate acceptance and remaining gates
 
-[Draft PR #37](https://github.com/gronxb/tauri-native/pull/37) prepares matching 1.0.0-rc.0 packages, Changesets prerelease state, changelogs, migration guidance and the onboarding evidence template. The packages retain the experimental npm channel. This branch has not been merged or published.
+[PR #37](https://github.com/gronxb/tauri-native/pull/37) merged into main as `05cb528`, preparing matching 1.0.0-rc.0 packages, Changesets prerelease state, changelogs, migration guidance and the onboarding evidence template. The packages retain the experimental npm channel.
 
-Local CLI/RN/Lynx package checks and receipt/publication regression scenarios passed. Actual npm publication dry-runs for all three prepared tarballs selected the explicit experimental channel and public access without changing their hashes or publishing packages.
+[Complete hosted validation at `eb1fab8`](https://github.com/gronxb/tauri-native/actions/runs/34111222423) passed the producer, iOS, Android and candidate jobs. Downloaded evidence verifies the exact commit, export archive, all three package hashes and embedded manifests. Both native receipts match those inputs; all 13 required JUnit scenarios per platform passed with no failures, errors or skips. Original and changed-Rust Fieldnotes, pending navigation, and RN/Lynx async/scoped-view lifetimes passed. Android also executed the copied standalone APK on API 36 x86_64 with 16 KB pages and completed fully minified Lynx acceptance. The final candidate contains the exact verified tarballs.
 
-The [hosted producer at 4f9b911](https://github.com/gronxb/tauri-native/actions/runs/34073619475/job/101595449258) passed all required Rust, package, compatibility, type, event, watch, desktop and export checks. Its installation/removal gate used the exact packed RC CLI: only package.json and its JavaScript lockfile changed during installation; both platform exports preserved the installed producer; removing the CLI and generated output left a successful ordinary desktop Release build with no remaining JavaScript diff. This is automated maintainer evidence, not an independent evaluator record.
+The installed CLI gate permitted only package.json and package-lock.json to change during installation. Both exports preserved the installed producer; removing the CLI and generated output left a successful ordinary desktop Release build with no remaining JavaScript diff. The three RC tarballs match the previously verified actual npm publication dry-runs for the explicit experimental channel and public access. These are automated maintainer checks, not independent evaluator records.
 
-The [RC Android job](https://github.com/gronxb/tauri-native/actions/runs/34073619475/job/101604256647) passed storage/page-size preflight, all three Release builds and APK alignment, but failed before runtime acceptance: RN and Lynx installation reported a package-service broken pipe, and Expo installed but its Maestro driver did not start. The cause is under investigation. The [RC iOS receiving job at 4f9b911](https://github.com/gronxb/tauri-native/actions/runs/34073619475/job/101604256576) passed all 13 JUnit scenarios without failures or skips: original and changed-Rust Fieldnotes in RN/Expo/Lynx, pending navigation in all three hosts, and RN/Lynx async and scoped-view lifetimes. Its receipt matches the transferred producer receipt and all three RC package hashes. The six pending-navigation observations ranged from 2.991 to 14.317 seconds during the injected 20-second Rust delay, including automation overhead. Complete native acceptance, physical iOS/Android RC execution and two independent documentation-only evaluations remain open. A successful producer does not establish final candidate acceptance or stable-release readiness.
+The [candidate release notes](../docs/releases/1.0.0-rc.0.md) record package hashes and bounded execution evidence. Main publication requires a fresh validated candidate for its own release commit; branch validation does not establish npm publication.
+
+Physical iOS/Android RC execution and two independent documentation-only evaluations remain unperformed. Independent evaluations require real projects and consented evidence; maintainer automation cannot fill those records. Keep #20 and M5 open until these gates are evidenced, and retain the experimental channel.

@@ -23,7 +23,7 @@ tauri-native provides an artifact-based integration workflow for existing Tauri 
 - Local plan: `plans/015-native-compatibility-ci.md`
 - Issue: [#19](https://github.com/gronxb/tauri-native/issues/19)
 - Roadmap: [#21](https://github.com/gronxb/tauri-native/issues/21)
-- Status: IN PROGRESS — required native/package validation and publication of the same candidate; #18 is merged and the hosted matrix is under acceptance.
+- Status: DONE — [PR #36](https://github.com/gronxb/tauri-native/pull/36) merged as `75a6a38`; the complete hosted matrix and candidate at `fb4000f` passed.
 
 Effort is relative: S = hours, M = roughly one to a few working days, L = multiple days or investigation. These are not deadlines. Confirm estimates after M0.
 
@@ -89,12 +89,12 @@ Use current conventions: CLI tests use `node:test` and `node:assert/strict` (e.g
 
 ## Acceptance criteria
 
-- [ ] All claimed support entries have linked automated/device evidence.
-- [ ] Native behavior/source integrity/external consumers are required gates.
-- [ ] Publication uses the validated candidate/commit.
-- [ ] Unavailable infrastructure is recorded as a gap, never a pass.
-- [ ] Required checks have recorded results; skipped/blocked checks are identified accurately.
-- [ ] Changes stay within this issue's purpose and preserve the producer change budget.
+- [x] All claimed support entries have linked automated/device evidence.
+- [x] Native behavior/source integrity/external consumers are required gates.
+- [x] Publication uses the validated candidate/commit.
+- [x] Unavailable infrastructure is recorded as a gap, never a pass.
+- [x] Required checks have recorded results; skipped/blocked checks are identified accurately.
+- [x] Changes stay within this issue's purpose and preserve the producer change budget.
 
 ## Blockers and maintenance
 
@@ -104,24 +104,14 @@ Scenario tests and a bounded matrix are sufficient. Avoid meaningless snapshots/
 
 Use a `codex/native-compatibility-ci` branch if creating one, follow the repository's conventional commit style, and do not commit/push/merge/publish changes without the execution task's authorization. Keep this issue and any checked-in plan status aligned.
 
-## Known integration check from #13
+## Acceptance evidence
 
-The ABI 2 Release lifecycle gates pass on all four host/platform combinations. R8 preserves JNI names and the annotated WebView entry point in both compiled SDK bridges. A full Lynx independent-host minification attempt fails on missing optional XElement/Fresco/Gson/ServalMarkdown classes. Establish a minimal, properly declared minified host dependency set and run that full-app gate here; do not treat the scoped bridge check as full-app minification evidence.
+[PR #36](https://github.com/gronxb/tauri-native/pull/36) merged into main as `75a6a38`. Its [complete validation at `fb4000f`](https://github.com/gronxb/tauri-native/actions/runs/34111195208) passed the producer, iOS, Android and candidate jobs. The producer ran Rust, package, type, compatibility, watch, desktop and source-preserving export checks with the packed CLI.
 
-## Acceptance progress
+Downloaded evidence contains all 13 required JUnit scenarios per platform, with no failures, errors or skips: original and Rust-refreshed Fieldnotes in RN/Expo/Lynx, pending navigation in all three hosts, and RN/Lynx async and scoped-view lifetimes. Both native receipts match the exact producer receipt and all three package hashes; the separately uploaded feature reports match their embedded receipt entries. Six pending-navigation observations per platform ranged from 3.601–9.305 seconds on iOS and 4.082–8.230 seconds on Android during an injected 20-second Rust delay, including automation overhead.
 
-The [hosted producer job at f04f593](https://github.com/gronxb/tauri-native/actions/runs/34067737240/job/101579509176) passed Rust, package, type, compatibility, watch, desktop and export acceptance. The [iOS receiving job](https://github.com/gronxb/tauri-native/actions/runs/34067737240/job/101583216992) also passed: original and changed-Rust Fieldnotes on React Native, Expo and Lynx, pending navigation in all three hosts, and RN/Lynx async and scoped-view lifetimes. All 13 JUnit scenarios passed without failures or skips. The native receipt validates against the transferred producer receipt, archive and package hashes. During the injected 20-second Rust delay, the six iOS pending-navigation observations ranged from 3.490 to 9.143 seconds, including automation overhead.
+The copied standalone Android APK executed direct and unchanged-frontend calls on API 36 x86_64 with 16 KB pages, with a matching transferred APK hash. Full Release Lynx minification and runtime acceptance passed; its receipt records the generated R8 mapping hash. This resolves the incomplete full-app minification gate carried from #13. All three iOS slices and four Android ABIs were built and inspected; runtime evidence covers only the named simulator/emulator architectures.
 
-The [Android receiving job](https://github.com/gronxb/tauri-native/actions/runs/34067737240/job/101583216946) built all three Release hosts and passed their 16 KB alignment checks, but every installation failed because the emulator's default data disk lacked space. Runtime checks did not run. The [candidate job](https://github.com/gronxb/tauri-native/actions/runs/34067737240/job/101599111145) received successful producer/iOS results and the failed Android result, rejected aggregation, and produced no release-candidate artifact. The workflow now configures a 6 GB data disk and checks page size and available storage before compilation. Hosted installation and runtime acceptance still require a successful rerun. The [RC Android job at 4f9b911](https://github.com/gronxb/tauri-native/actions/runs/34073619475/job/101604256647), which includes these CI fixes, passed preflight with 16,384-byte pages and 5,155,156 KiB free on the data disk. All three Release builds and alignment checks passed. RN and Lynx installation then failed with a package-service broken pipe; Expo installed successfully but its Maestro driver did not start. No host runtime flow passed. That run did not retain enough system evidence to establish a cause; the later diagnostic run is described below.
+The downloaded release candidate verifies the exact commit, all required successful jobs, tarball hashes and embedded package names, versions and publish settings. The main release workflow requires a fresh candidate for its own merge commit before publishing those exact tarballs. Earlier failed matrices produced no candidate, demonstrating that platform failures prevent aggregation. Five receipt, npm publication dry-run, command logging and failed-installation diagnostic regression scenarios also passed.
 
-Local acceptance also passed for the transferred standalone Android APK on a 16 KB arm64 emulator and fully minified Lynx document, pending-navigation, async cancellation/runtime replacement and scoped-view flows. An actual npm dry-run exposed that tarball publication needs explicit channel arguments; the release script now passes the validated registry, channel and access settings. Its regression scenario fails against the previous script and passes through a mandatory dry-run wrapper without publishing. Command logging now streams output while preserving literal arguments and nonzero exits. CI uses the boolean value accepted by the ordinary Tauri CLI; the complete RC install/export/uninstall/desktop-build scenario passed locally with CI=true.
-
-The [producer at 28ca82f](https://github.com/gronxb/tauri-native/actions/runs/34078784120/job/101610092979) and [iOS receiving job](https://github.com/gronxb/tauri-native/actions/runs/34078784120/job/101616811595) passed. Downloaded evidence verifies the commit, archive, package hashes and native receipt; all 13 iOS JUnit scenarios passed without failures or skips. The [Android receiving job](https://github.com/gronxb/tauri-native/actions/runs/34078784120/job/101616811610) passed all three Release builds and 16 KB alignment checks, but RN/Expo installation failed and Lynx's Maestro driver did not start. No runtime flow passed. New diagnostics record 1,498,276 KiB guest RAM, low-memory kills and a `surfaceflinger` abort in `mapper.ranchu` (`hasReadColorBufferDma`) in both failed installation logs, followed by framework restarts. The candidate job rejected aggregation and produced no release-candidate artifact.
-
-The workflow now selects the published API 36 16 KB image, configures 4 GB RAM and uses the supported software renderer. These changes require a fresh hosted matrix before claiming resolution. Installation and flow failures remain fatal; diagnostic collection does not retry them. Five receipt, publication and logging regression scenarios passed for the diagnostic change. The issue and PR remain open until all required jobs validate the final commit. Physical-device RC execution and independent onboarding remain separate open gates in #20.
-
-The [RC iOS receiving job at 4f9b911](https://github.com/gronxb/tauri-native/actions/runs/34073619475/job/101604256576) passed all 13 JUnit scenarios without failures or skips: original and changed-Rust Fieldnotes in RN/Expo/Lynx, pending navigation in all three hosts, and RN/Lynx async and scoped-view lifetimes. Its receipt matches the transferred producer receipt and all three RC package hashes. The six pending-navigation observations ranged from 2.991 to 14.317 seconds during the injected 20-second Rust delay, including automation overhead. Android acceptance remains unresolved; iOS success does not certify the complete candidate.
-
-The [9c4906f producer](https://github.com/gronxb/tauri-native/actions/runs/34100733974/job/101674347062) passed and its downloaded archive and package hashes were verified. The [Android job](https://github.com/gronxb/tauri-native/actions/runs/34100733974/job/101691570536) installed all three Release hosts; RN and Expo completed the original Fieldnotes flow. Lynx completed native save/search and embedded save, then failed the search after relaunch. Its retained screenshot, hierarchy and command log show the keyboard still open after Enter: the search tap at (540, 1518) landed inside the keyboard beginning at y=1517, while the status remained idle. Native-input steps now dismiss the Android keyboard explicitly before tapping save/search; iOS retains Enter. All result, persistence and pending-navigation assertions remain required. YAML parsing and diff checks pass; the corrected native matrix has not run yet.
-
-The [iOS job at 9c4906f](https://github.com/gronxb/tauri-native/actions/runs/34100733974/job/101691570668) completed RN native/embedded save before reporting that the app was not running at the first assertion after process relaunch. Maestro retained a black screen and the XCTest error, but no OS crash report; the termination cause remains unknown. After the Android correction was prepared, the failed matrix was cancelled during the next host build, and its existing iOS diagnostic artifact was downloaded successfully. The feature runner now retains OS crash reports and the preceding five minutes of app/lifecycle system logs immediately after an iOS failure, while preserving the original error. Final iOS acceptance is still required.
+Physical-device RC execution and two independent documentation-only integrations remain open in #20. Hosted acceptance does not establish stable 1.0 readiness.
