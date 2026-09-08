@@ -42,3 +42,11 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.
 
 Implementation is authorized directly on `main` in incremental commits, without PRs. Do not publish packages as part of this task.
+
+## M6 handoff
+
+The composition probes modify only generated platform scaffolds while the authored producer hashes match. Carry the complete Tauri platform bootstrap plus renderer/native dependency initialization into portable artifacts; do not distribute the proof's absolute npm/project paths or require a host Rust rebuild. Native integration must declare deployment requirements (the RN 0.86.3 iOS probe uses 16.4, while standalone Tauri remains 14.0).
+
+Android inspection found the standard NDK 27 Tauri Rust library was initially 4 KB aligned. Generated composition now links it for 16 KB and validates every packaged ELF. Retain both ELF and APK alignment checks in production. Tauri 2.11.5 also failed to regenerate Activity classes when only the Android output directory changed while sharing Cargo caches; define deterministic output-directory invalidation rather than relying on the probe's targeted `cargo clean -p tauri`.
+
+Concurrent standard mobile builds with the same app identity also overwrote Tauri CLI 2.11.4 connection options during M6. Its [options implementation](https://github.com/tauri-apps/tauri/blob/tauri-cli-v2.11.4/crates/tauri-cli/src/mobile/mod.rs#L334) keys the temporary server-address file by the original app identifier. The proof runs serialize across platforms; production export must isolate or serialize those options as well.

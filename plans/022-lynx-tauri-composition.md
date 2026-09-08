@@ -42,3 +42,7 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.
 
 Implementation is authorized directly on `main` in incremental commits, without PRs. Do not publish packages as part of this task.
+
+## M6 handoff
+
+Lynx 4.0.1 native views now execute beside the real Tauri WebView on both platforms with unchanged producer sources. iOS attaches to the existing view parent without replacing the Tauri delegate; Android uses `TauriActivity.onWebViewCreate`. Actual background JS calls, view destruction/remount and background/resume preserve state and single Tauri/plugin initialization. Turn these version-pinned attachment seams into package-owned integration with explicit readiness and cleanup; production autolinking, native plugins, direct caller permissions and relocated artifacts remain required.

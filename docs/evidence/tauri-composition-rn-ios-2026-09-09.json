@@ -1,6 +1,6 @@
 {
   "passed": true,
-  "renderer": "Lynx 4.0.1",
+  "renderer": "React Native 0.86.3",
   "platform": "ios",
   "sourceHashes": {
     "README.md": "e442b942588c194c8b3b921ccb592fe5e52e19173bf514c8d77309d1b6643e3b",
@@ -38,7 +38,7 @@
     "released": 1,
     "resumed": 2,
     "completed": 5,
-    "pid": 90694
+    "pid": 73772
   },
   "transport": "Test-only native module proxies through the main real Tauri WebView IPC; production direct dispatch is M7 work",
   "baseline": {
@@ -66,19 +66,19 @@
   },
   "date": "2026-09-09",
   "environment": "iPhone 16 arm64 Simulator, iOS 26.4.1, Debug",
-  "command": "nub --cwd packages/cli run test:runtime:compose:ios",
+  "command": "nub --cwd packages/cli run test:runtime:compose:rn:ios",
   "versions": {
     "tauri": "2.11.5",
     "tauriCli": "2.11.4",
-    "lynx": "4.0.1",
-    "primjs": "4.0.0",
-    "reactLynx": "0.125.0",
-    "rspeedy": "0.16.5",
+    "reactNative": "0.86.3",
+    "react": "19.2.3",
+    "hermes": "250829098.0.17",
+    "metro": "0.84.5",
     "node": "24.15.0",
     "rust": "1.97.1",
-    "xcode": "26.4.1 (17E202)",
-    "maestro": "2.4.0"
+    "maestro": "2.4.0",
+    "xcode": "26.4.1 (17E202)"
   },
-  "scope": "M6 iOS Lynx feasibility only; RN composition and production native caller/portable plugin artifacts are still pending",
-  "recheckedAfterRunnerGeneralization": true
+  "deploymentTarget": "16.4 for the composed RN native target; ordinary Tauri configuration is unchanged",
+  "scope": "M6 React Native surface/lifecycle feasibility; no Expo native integration, direct production caller, Swift/Kotlin plugin or portable-artifact support claim"
 }

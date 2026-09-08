@@ -42,3 +42,7 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.
 
 Implementation is authorized directly on `main` in incremental commits, without PRs. Do not publish packages as part of this task.
+
+## M6 handoff
+
+The executable M6 probes retain actual Tauri startup and proxy native requests through the original WebView IPC. Their fixed probe inherits that WebView's identity; it is deliberately not a production arbitrary-command bridge. Replace this test wiring with a declared native caller and real Tauri capability checks, including denial before side effects, shared state, readiness and late-result suppression after renderer teardown. Preserve the current exporter rejection checks until the production path has native evidence.

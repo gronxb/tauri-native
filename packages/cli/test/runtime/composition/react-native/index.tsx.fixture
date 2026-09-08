@@ -1,0 +1,21 @@
+import React, { useEffect, useState } from 'react';
+import { AppRegistry, NativeModules, Pressable, Text, View } from 'react-native';
+
+function App() {
+  const [result, setResult] = useState('Waiting for Tauri');
+  const [generation, setGeneration] = useState(0);
+  const inspect = () => NativeModules.RuntimeProof.inspect((json: string) => {
+    const value = JSON.parse(json);
+    setGeneration(value.generation);
+    setResult(value.error ? `ERROR ${value.error}` : `Tauri state ${value.state.value}`);
+  });
+  useEffect(inspect, []);
+  return <View style={{ flex: 1, backgroundColor: '#e4f3ed', padding: 24 }}>
+    <Text style={{ fontSize: 22, color: '#12382d' }}>RN SURFACE {generation}</Text>
+    <Text style={{ fontSize: 18, marginTop: 10, color: '#12382d' }}>{result}</Text>
+    <Pressable accessibilityRole="button" onPress={inspect} style={{ marginTop: 18, padding: 12, backgroundColor: '#ffffff' }}><Text>Verify Tauri</Text></Pressable>
+    <Pressable accessibilityRole="button" onPress={() => NativeModules.RuntimeProof.remount()} style={{ marginTop: 12, padding: 12, backgroundColor: '#ffffff' }}><Text>Remount renderer</Text></Pressable>
+  </View>;
+}
+
+AppRegistry.registerComponent('RuntimeProof', () => App);

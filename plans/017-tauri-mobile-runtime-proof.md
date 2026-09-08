@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — real desktop/iOS/Android baseline and iOS/Android Lynx composition passed; both RN combinations remain open.
+- Status: IN PROGRESS — real standalone baseline and all four native composition combinations passed; final serialized rechecks and integration-removal verification are running.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: existing M0–M5 evidence; this is the new feasibility gate
@@ -35,7 +35,7 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 ## Acceptance
 
 - [x] Real baseline executes on desktop and on iOS/Android.
-- [ ] RN and Lynx coexistence and lifecycle are proved on both mobile platforms.
+- [x] RN and Lynx coexistence and lifecycle are proved on both mobile platforms.
 - [ ] Source hashes, tool versions, logs and an architectural decision are recorded.
 
 ## Scope and constraints
@@ -63,7 +63,7 @@ The generated Android `MainActivity` remains a subclass of Tauri's generated `Ta
 - Generated build integration sets 16 KB Rust link alignment and verifies every packaged native ELF. The first unaligned standard Tauri build displayed Android's compatibility-mode warning; it was corrected before the composed UI gate passed. The earlier standalone Android baseline ran on the 16 KB emulator but did not establish native 16 KB compatibility.
 - Recreating the platform output while sharing Cargo caches exposed Tauri 2.11.5's missing output-directory invalidation. The reproducible gate clears only the target-specific Tauri crate build output before code generation.
 
-M6 stays open for Android RN and iOS RN. Production artifacts, native Swift/Kotlin plugin lifecycle, Expo integration and physical-device/Release coverage remain M7–M8 work.
+M6 stays open until final verification and the architecture decision are recorded. Production artifacts, native Swift/Kotlin plugin lifecycle, Expo integration and physical-device/Release coverage remain M7–M8 work.
 
 ## iOS Lynx composition evidence — 2026-09-09
 
@@ -73,4 +73,15 @@ The standard Tauri-generated `main.mm` still calls the sole `ffi::start_app()`. 
 - Evidence: [iOS Lynx report](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/tauri-composition-lynx-ios-2026-09-09.json); logs under `target/tauri-mobile-composition/lynx-ios/`.
 - Scope: Debug iPhone 16 arm64 Simulator / iOS 26.4.1. The native probe still uses the real WebView's IPC/caller identity; production dispatch and native plugin callback support remain M7 work.
 
-Lynx is now proved on both mobile platforms. RN Android/iOS and the final cross-platform architecture decision remain open.
+Lynx is proved on both mobile platforms; the RN execution results follow below.
+
+## React Native composition evidence — 2026-09-09
+
+RN 0.86.3 now passes actual native UI, Tauri IPC, background/resume and Fabric surface removal/remount on both platforms. Android keeps `TauriActivity`, uses `ReactHost`/`ReactSurface`, and awaits surface stop before counting release. iOS keeps the standard Tauri bootstrap and delegate while `RCTReactNativeFactory` creates Fabric views. Each platform records five actual renderer probes, two surface generations, one release, unchanged process/state and single Tauri/plugin initialization. Plugin denial has zero side effects and the unchanged original frontend passes all ten baseline scenarios. Producer source hashes match.
+
+- Commands: `nub --cwd packages/cli run test:runtime:compose:rn:ios` and `test:runtime:compose:rn:android` with the environments in runtime verification.
+- Evidence: [RN iOS report](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/tauri-composition-rn-ios-2026-09-09.json), [RN Android report](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/tauri-composition-rn-android-2026-09-09.json). Full build/UI logs remain under `target/tauri-mobile-composition/react-native-{ios,android}/`.
+- Generated Android integration includes the standard RN core Java TurboModule provider registration, matching Hermes/C++ runtime and 16 KB alignment. The APK stays Debug; only native debug symbols are stripped to fit emulator storage. Generated RN iOS targets require 16.4 while authored Tauri configuration is unchanged.
+- Run all proof builds serially: concurrent Tauri CLI 2.11.4 mobile builds using this app identity overwrite shared connection options. This and dependency/bootstrap packaging findings are recorded in #42/#44/#45/#46.
+
+The native four-combination gate has passed. Final serialized harness rechecks, removal/standalone verification and the scoped architecture decision remain before closing M6. Expo native modules, production direct native caller authorization, Swift/Kotlin plugins, Release/devices and portable artifacts remain M7–M8 work.

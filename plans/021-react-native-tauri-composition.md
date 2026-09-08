@@ -42,3 +42,9 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.
 
 Implementation is authorized directly on `main` in incremental commits, without PRs. Do not publish packages as part of this task.
+
+## M6 handoff
+
+The iOS prototype uses `RCTReactNativeFactory` and a real Fabric root view under the retained Tauri view hierarchy; it does not install an RN UIApplication delegate. The Android candidate keeps `TauriActivity` and uses `ReactHost`/`ReactSurface`, forwarding RN resume/pause and awaiting asynchronous surface stop before remount. Carry RN's core TurboModule provider registration and matching Hermes/C++ dependencies into generated native integration.
+
+The probes use RN 0.86.3 and an offline JS bundle with a test-only callback module. They do not establish Expo native module/autolinking or lifecycle coverage, production TurboModule contracts, Activity recreation, deep links, permission results or Release artifacts. Verify those scenarios in this issue rather than treating M6 surface coexistence as package support.

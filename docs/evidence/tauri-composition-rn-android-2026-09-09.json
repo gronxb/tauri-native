@@ -1,7 +1,21 @@
 {
   "passed": true,
-  "renderer": "Lynx 4.0.1",
-  "platform": "ios",
+  "renderer": "React Native 0.86.3",
+  "platform": "android",
+  "libraries": [
+    "lib/arm64-v8a/libappmodules.so",
+    "lib/arm64-v8a/libc++_shared.so",
+    "lib/arm64-v8a/libfbjni.so",
+    "lib/arm64-v8a/libhermestooling.so",
+    "lib/arm64-v8a/libhermesvm.so",
+    "lib/arm64-v8a/libimagepipeline.so",
+    "lib/arm64-v8a/libjsi.so",
+    "lib/arm64-v8a/libnative-filters.so",
+    "lib/arm64-v8a/libnative-imagetranscoder.so",
+    "lib/arm64-v8a/libordinary_tauri_runtime_fixture_lib.so",
+    "lib/arm64-v8a/libreactnative.so"
+  ],
+  "elfAlignment": "Every packaged LOAD segment >= 16 KB",
   "sourceHashes": {
     "README.md": "e442b942588c194c8b3b921ccb592fe5e52e19173bf514c8d77309d1b6643e3b",
     "index.html": "9b1253436400db0fd038e328a3bf8ba7af0d75a5ed87f73aaca732ec3f2927b8",
@@ -19,9 +33,15 @@
   "producerUnchanged": true,
   "originalFrontendUnchanged": true,
   "result": {
+    "generation": 2,
+    "released": 1,
+    "resumed": 2,
     "paused": 1,
+    "stopped": 1,
+    "completed": 5,
+    "activity": "dev.taurinative.runtimeproof.MainActivity",
+    "pid": 9210,
     "lastProbe": {
-      "pluginCalls": 0,
       "id": 5,
       "state": {
         "value": 45,
@@ -30,19 +50,13 @@
         "appIdentifier": "dev.taurinative.runtimeproof"
       },
       "denied": true,
+      "pluginCalls": 0,
       "generation": 2
-    },
-    "generation": 2,
-    "stopped": 1,
-    "appDelegate": "AppDelegate",
-    "released": 1,
-    "resumed": 2,
-    "completed": 5,
-    "pid": 90694
+    }
   },
   "transport": "Test-only native module proxies through the main real Tauri WebView IPC; production direct dispatch is M7 work",
   "baseline": {
-    "directory": "<app-container>/Library/Application Support/dev.taurinative.runtimeproof",
+    "directory": "/data/user/0/dev.taurinative.runtimeproof",
     "passed": true,
     "reloaded": true,
     "scenarios": [
@@ -65,20 +79,22 @@
     }
   },
   "date": "2026-09-09",
-  "environment": "iPhone 16 arm64 Simulator, iOS 26.4.1, Debug",
-  "command": "nub --cwd packages/cli run test:runtime:compose:ios",
+  "environment": "Android 17 / API 37 arm64 emulator, 16 KB pages, Debug APK with native debug symbols stripped",
+  "command": "nub --cwd packages/cli run test:runtime:compose:rn:android",
   "versions": {
     "tauri": "2.11.5",
     "tauriCli": "2.11.4",
-    "lynx": "4.0.1",
-    "primjs": "4.0.0",
-    "reactLynx": "0.125.0",
-    "rspeedy": "0.16.5",
+    "reactNative": "0.86.3",
+    "react": "19.2.3",
+    "hermes": "250829098.0.17",
+    "metro": "0.84.5",
     "node": "24.15.0",
     "rust": "1.97.1",
-    "xcode": "26.4.1 (17E202)",
-    "maestro": "2.4.0"
+    "maestro": "2.4.0",
+    "ndk": "27.1.12297006",
+    "jdk": "21",
+    "kotlin": "2.1.20",
+    "cmake": "3.22.1"
   },
-  "scope": "M6 iOS Lynx feasibility only; RN composition and production native caller/portable plugin artifacts are still pending",
-  "recheckedAfterRunnerGeneralization": true
+  "scope": "M6 React Native surface/lifecycle feasibility; no Expo native integration, direct production caller, Swift/Kotlin plugin or portable-artifact support claim"
 }

@@ -1,0 +1,76 @@
+package dev.taurinative.runtimeproof
+
+import android.os.Bundle
+import android.webkit.WebView
+import android.widget.LinearLayout
+import android.view.ViewGroup
+import com.facebook.react.ReactHost
+import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
+import com.facebook.react.defaults.DefaultReactHost
+import com.facebook.react.interfaces.fabric.ReactSurface
+import com.facebook.react.shell.MainReactPackage
+import com.facebook.react.soloader.OpenSourceMergedSoMapping
+import com.facebook.soloader.SoLoader
+
+class MainActivity : TauriActivity() {
+  private var proof: RuntimeProof? = null
+  private var surface: ReactSurface? = null
+  private lateinit var layout: LinearLayout
+  private lateinit var reactHost: ReactHost
+  private var resumeCount = 0
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    SoLoader.init(applicationContext, OpenSourceMergedSoMapping)
+    DefaultNewArchitectureEntryPoint.load()
+    reactHost = DefaultReactHost.getDefaultReactHost(applicationContext,
+      listOf(MainReactPackage(), ReactProofPackage()), jsBundleAssetPath = "index.bundle.js", useDevSupport = false)
+    super.onCreate(savedInstanceState)
+  }
+
+  override fun onWebViewCreate(webView: WebView) {
+    super.onWebViewCreate(webView)
+    webView.post {
+      (webView.parent as? ViewGroup)?.removeView(webView)
+      layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+      layout.addView(webView, LinearLayout.LayoutParams(-1, 0, 1f))
+      setContentView(layout)
+      proof = RuntimeProof(this, webView) { remount() }
+      proof!!.resumed = resumeCount
+      proof!!.awaitBaseline { mount() }
+    }
+  }
+
+  private fun mount() {
+    proof!!.mounted()
+    surface = reactHost.createSurface(this, "RuntimeProof", null)
+    layout.addView(surface!!.view, LinearLayout.LayoutParams(-1, 0, 1f))
+    surface!!.start()
+  }
+
+  private fun remount() {
+    val previous = surface!!
+    layout.removeView(previous.view)
+    val stopped = previous.stop()
+    // RN stops asynchronously; never block the UI thread or count release before completion.
+    Thread {
+      stopped.waitForCompletion()
+      check(!stopped.isCancelled() && !stopped.isFaulted()) { "RN surface failed to stop: ${stopped.getError()}" }
+      runOnUiThread {
+        previous.clear()
+        previous.detach()
+        proof!!.released()
+        mount()
+      }
+    }.start()
+  }
+
+  override fun onResume() { super.onResume(); reactHost.onHostResume(this); resumeCount++; proof?.resumed() }
+  override fun onPause() { proof?.paused(); reactHost.onHostPause(this); super.onPause() }
+  override fun onStop() { proof?.stopped(); super.onStop() }
+  override fun onDestroy() {
+    reactHost.onHostDestroy(this)
+    reactHost.invalidate()
+    proof?.close()
+    super.onDestroy()
+  }
+}

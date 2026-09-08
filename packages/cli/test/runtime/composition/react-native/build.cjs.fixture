@@ -1,0 +1,16 @@
+const path = require('node:path');
+const { createRequire } = require('node:module');
+const { getDefaultConfig } = require('expo/metro-config');
+const expoConfig = createRequire(require.resolve('expo/metro-config'));
+const dependencies = createRequire(expoConfig.resolve('@expo/metro-config'));
+const Metro = dependencies('metro');
+const config = getDefaultConfig(__dirname);
+config.watchFolders = [process.env.PROOF_REPOSITORY];
+config.maxWorkers = 2;
+const reactNative = createRequire(require.resolve('react-native/package.json'));
+config.resolver.extraNodeModules = { '@babel/runtime': path.dirname(reactNative.resolve('@babel/runtime/package.json')) };
+config.resolver.nodeModulesPaths = [path.dirname(path.dirname(require.resolve('react-native/package.json')))];
+Metro.runBuild(config, {
+  entry: 'index.tsx', platform: process.argv[2], dev: false, minify: true,
+  out: 'index.bundle.js',
+}).catch(error => { console.error(error); process.exitCode = 1; });

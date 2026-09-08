@@ -40,7 +40,7 @@
     "stopped": 1,
     "completed": 5,
     "activity": "dev.taurinative.runtimeproof.MainActivity",
-    "pid": 6454,
+    "pid": 9916,
     "lastProbe": {
       "id": 5,
       "state": {
@@ -94,5 +94,6 @@
     "jdk": "21",
     "maestro": "2.4.0"
   },
-  "scope": "M6 Android Lynx feasibility only; RN/iOS composition and production native caller/portable plugin artifacts are still pending"
+  "scope": "M6 Android Lynx feasibility only; RN/iOS composition and production native caller/portable plugin artifacts are still pending",
+  "recheckedAfterRunnerGeneralization": true
 }
