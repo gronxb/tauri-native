@@ -44,3 +44,19 @@ With the same per-platform environment as above, run `test:runtime:compose:rn:io
 Android retains `TauriActivity`, initializes RN's `ReactHost`, attaches real Fabric surfaces and awaits actual asynchronous surface stop before remount. Generated integration registers the real RN core Java TurboModule provider through the standard app library entry, uses the matching Hermes 250829098.0.17 and NDK/C++ runtime, and adds the RN-required Kotlin 2.1.20 compiler. CMake 3.22.1 is required. The APK remains Debug and debuggable; native debug symbols are stripped to keep emulator installation small. All packaged native ELF segments must still satisfy 16 KB alignment.
 
 iOS retains `ffi::start_app()` and Tauri's UIApplication delegate, then uses `RCTReactNativeFactory` to create and stop Fabric root views. RN raises only the generated native target's deployment minimum to 16.4; the authored Tauri configuration stays unchanged. The same five actual renderer calls, UI interactions, lifecycle/remount, shared state, plugin allow/deny and source-integrity assertions apply to both platforms.
+
+## Independent Tauri after integration removal
+
+After the four composition gates pass, remove only their disposable generated native integrations from the repository root:
+
+```sh
+rm -rf target/tauri-mobile-composition/lynx-android/producer/src-tauri/gen \
+  target/tauri-mobile-composition/lynx-ios/producer/src-tauri/gen \
+  target/tauri-mobile-composition/react-native-android/producer/src-tauri/gen \
+  target/tauri-mobile-composition/react-native-ios/producer/src-tauri/gen
+nub --cwd packages/cli run test:runtime:baseline
+nub --cwd packages/cli run test:runtime:ios
+nub --cwd packages/cli run test:runtime:android
+```
+
+Run these commands serially with the same native toolchain environment. The ordinary fixture is the source for each standalone runner; it has no renderer imports or native composition dependencies. Each runner asserts all ten baseline scenarios and authored source integrity. Compare the twelve source hashes in the standalone reports with the four composition reports. The [2026-09-09 independence report](../../../../docs/evidence/tauri-composition-independence-2026-09-09.json) records this final check: all three platforms pass with state 45 and single application/plugin setup after all four integrations were deleted.

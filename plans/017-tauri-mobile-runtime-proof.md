@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — real standalone baseline and all four native composition combinations passed; final serialized rechecks and integration-removal verification are running.
+- Status: DONE — real standalone baseline, all four native composition combinations, serialized harness rechecks and standalone execution after integration removal passed on 2026-09-09. ADR 0007 records a scoped architecture GO.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: existing M0–M5 evidence; this is the new feasibility gate
@@ -36,7 +36,7 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 
 - [x] Real baseline executes on desktop and on iOS/Android.
 - [x] RN and Lynx coexistence and lifecycle are proved on both mobile platforms.
-- [ ] Source hashes, tool versions, logs and an architectural decision are recorded.
+- [x] Source hashes, tool versions, logs and an architectural decision are recorded.
 
 ## Scope and constraints
 
@@ -51,7 +51,7 @@ Implemented an ordinary independently runnable fixture and assertion-bearing nat
 - Commands: `nub --cwd packages/cli run test:runtime:baseline`, `test:runtime:ios`, `test:runtime:android` (select the simulator/emulator and native toolchains as documented in the fixture README).
 - Evidence: [baseline report](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/tauri-runtime-baseline-2026-09-09.json). Full build logs and result files remain under ignored `target/tauri-mobile-runtime/`.
 - Regression checks: CLI build/typecheck and all six existing discovery scenarios passed; current unsupported-export diagnostics remain intact.
-- Next: complete both RN surface/lifecycle combinations, then record the composition decision. This issue remains open until those native scenarios pass. Native Swift/Kotlin plugin support and production artifact integration are not established by this baseline.
+- The native composition and independence results below complete M6. Native Swift/Kotlin plugin support and production artifact integration are not established by this baseline.
 
 ## Android Lynx composition evidence — 2026-09-09
 
@@ -63,7 +63,7 @@ The generated Android `MainActivity` remains a subclass of Tauri's generated `Ta
 - Generated build integration sets 16 KB Rust link alignment and verifies every packaged native ELF. The first unaligned standard Tauri build displayed Android's compatibility-mode warning; it was corrected before the composed UI gate passed. The earlier standalone Android baseline ran on the 16 KB emulator but did not establish native 16 KB compatibility.
 - Recreating the platform output while sharing Cargo caches exposed Tauri 2.11.5's missing output-directory invalidation. The reproducible gate clears only the target-specific Tauri crate build output before code generation.
 
-M6 stays open until final verification and the architecture decision are recorded. Production artifacts, native Swift/Kotlin plugin lifecycle, Expo integration and physical-device/Release coverage remain M7–M8 work.
+Final verification and the architecture decision are recorded below. Production artifacts, native Swift/Kotlin plugin lifecycle, Expo integration and physical-device/Release coverage remain M7–M8 work.
 
 ## iOS Lynx composition evidence — 2026-09-09
 
@@ -84,4 +84,12 @@ RN 0.86.3 now passes actual native UI, Tauri IPC, background/resume and Fabric s
 - Generated Android integration includes the standard RN core Java TurboModule provider registration, matching Hermes/C++ runtime and 16 KB alignment. The APK stays Debug; only native debug symbols are stripped to fit emulator storage. Generated RN iOS targets require 16.4 while authored Tauri configuration is unchanged.
 - Run all proof builds serially: concurrent Tauri CLI 2.11.4 mobile builds using this app identity overwrite shared connection options. This and dependency/bootstrap packaging findings are recorded in #42/#44/#45/#46.
 
-The native four-combination gate has passed. Final serialized harness rechecks, removal/standalone verification and the scoped architecture decision remain before closing M6. Expo native modules, production direct native caller authorization, Swift/Kotlin plugins, Release/devices and portable artifacts remain M7–M8 work.
+## Completion and independent Tauri execution — 2026-09-09
+
+All four native combinations passed. The generalized harness also reran both Lynx combinations successfully, with builds serialized. After deleting all four generated native integration directories, the ordinary desktop, iOS and Android gates each passed their ten scenarios again. All twelve authored producer file hashes match across the baseline, composition and final independent runs. State reaches 45 and application/plugin setup execute once on each standalone target.
+
+- Evidence: [integration-removal report](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/tauri-composition-independence-2026-09-09.json). Reproduction is documented in [runtime verification](https://github.com/gronxb/tauri-native/blob/main/packages/cli/test/runtime/README.md); full final logs remain under `target/tauri-mobile-composition/independen*.log` and `target/tauri-mobile-runtime/`.
+- Decision: [ADR 0007](https://github.com/gronxb/tauri-native/blob/main/docs/adr/0007-tauri-mobile-composition.md) accepts Tauri-driven composition: retain the sole Tauri platform bootstrap and attach RN/Lynx native surfaces through generated integration. Producer Rust, frontend, manifests and capabilities remain unchanged.
+- Implementation commits on `main`: `dc3f517` (real Tauri baseline), `c08a6a9` (Android Lynx), `be7a782` (iOS Lynx), `6b5de39` (both RN platforms and final harness).
+
+M6 is complete in its pinned Debug Simulator/emulator scope. Production direct native caller authorization and dispatch (#42), Swift/Kotlin plugins and OS callbacks (#43), portable artifacts (#44), package-owned RN/Expo and Lynx integration (#45/#46), and Release/device, relocation and adoption acceptance (#47) remain open. The current exporter compatibility scope and rejection diagnostics are unchanged.

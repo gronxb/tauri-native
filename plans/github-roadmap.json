@@ -56,7 +56,7 @@
       "description": "Keep an ordinary Tauri Mobile app and actual startup/state/plugins alive while proving RN and Lynx surface coexistence on iOS and Android. One platform bootstrap; unchanged producer source. Baseline execution alone does not close this gate.",
       "number": 7,
       "url": "https://github.com/gronxb/tauri-native/milestone/7",
-      "state": "open"
+      "state": "closed"
     },
     {
       "key": "M7",
@@ -1688,17 +1688,26 @@
       "url": "https://github.com/gronxb/tauri-native/issues/41",
       "number": 41,
       "bodySynced": true,
-      "status": "IN PROGRESS",
+      "status": "DONE",
       "verification": {
         "baseline": "PASS on real Tauri desktop, iOS Simulator and Android emulator",
         "scenarios": 10,
         "evidence": "docs/evidence/tauri-runtime-baseline-2026-09-09.json",
-        "composition": "PASS iOS/Android Lynx native UI, background/resume and remount; both RN combinations remain open",
+        "composition": "PASS all four RN/Lynx iOS/Android native UI, background/resume and destruction/remount combinations",
         "compositionEvidence": [
           "docs/evidence/tauri-composition-lynx-android-2026-09-09.json",
-          "docs/evidence/tauri-composition-lynx-ios-2026-09-09.json"
-        ]
-      }
+          "docs/evidence/tauri-composition-lynx-ios-2026-09-09.json",
+          "docs/evidence/tauri-composition-rn-ios-2026-09-09.json",
+          "docs/evidence/tauri-composition-rn-android-2026-09-09.json"
+        ],
+        "nativeCombinations": 4,
+        "independence": "PASS all ten standalone scenarios on desktop/iOS/Android after all four generated native integrations were deleted; twelve producer hashes match",
+        "independenceEvidence": "docs/evidence/tauri-composition-independence-2026-09-09.json",
+        "decision": "GO for Tauri-driven composition in the pinned M6 Simulator/emulator scope",
+        "decisionADR": "docs/adr/0007-tauri-mobile-composition.md"
+      },
+      "completedAt": "2026-09-09",
+      "githubIssueState": "CLOSED"
     },
     {
       "id": "018",

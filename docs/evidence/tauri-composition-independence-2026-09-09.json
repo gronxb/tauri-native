@@ -1,0 +1,105 @@
+{
+  "passed": true,
+  "date": "2026-09-09",
+  "removedNativeIntegration": [
+    "target/tauri-mobile-composition/lynx-android/producer/src-tauri/gen",
+    "target/tauri-mobile-composition/lynx-ios/producer/src-tauri/gen",
+    "target/tauri-mobile-composition/react-native-android/producer/src-tauri/gen",
+    "target/tauri-mobile-composition/react-native-ios/producer/src-tauri/gen"
+  ],
+  "producerUnchanged": true,
+  "sourceHashes": {
+    "README.md": "e442b942588c194c8b3b921ccb592fe5e52e19173bf514c8d77309d1b6643e3b",
+    "index.html": "9b1253436400db0fd038e328a3bf8ba7af0d75a5ed87f73aaca732ec3f2927b8",
+    "package.json": "c9a5624d63896d82c6a01cd152973539521d5acec495f7c83f547d6384e19100",
+    "src/main.ts": "b3cb69c8647cc0514e9f6d5473be115489a198c891e944e2955704fde9618acb",
+    "src-tauri/Cargo.lock": "0d80ade1ff2351afc3bb2e90d11416e5b860c6de16acbd11668155a6683cfcf5",
+    "src-tauri/Cargo.toml": "ab12b3239f44fa7ce1415191ad1510593305c5992dc723d503660eb5a7fe74d5",
+    "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "src-tauri/capabilities/main.json": "aa63268ca63387604eb9b7cf0566c9458851faa12fa47683aee464e9431b3df4",
+    "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "src-tauri/src/lib.rs": "60a9aa174031e82df15011926ba6655c22a3b656030ea1d29664c85b823f32c7",
+    "src-tauri/src/main.rs": "0a34746ecc02bce8814e4c14b3f3ab1a967ad350a77f4e82edca1cb260f7684e",
+    "src-tauri/tauri.conf.json": "1a4ce5412f4983f769235bcc85e6deed601113776aabb31c6f03187d9c97cb88"
+  },
+  "commands": [
+    "nub --cwd packages/cli run test:runtime:baseline",
+    "nub --cwd packages/cli run test:runtime:ios",
+    "nub --cwd packages/cli run test:runtime:android"
+  ],
+  "standalone": {
+    "desktop": {
+      "passed": true,
+      "state": {
+        "appIdentifier": "dev.taurinative.runtimeproof",
+        "pluginSetupCount": 1,
+        "setupCount": 1,
+        "value": 45
+      },
+      "scenarios": [
+        "setup",
+        "state",
+        "app-handle",
+        "async",
+        "rust-event",
+        "plugin-setup",
+        "plugin-allowed",
+        "plugin-denied",
+        "domain-error",
+        "reload"
+      ]
+    },
+    "ios": {
+      "passed": true,
+      "state": {
+        "appIdentifier": "dev.taurinative.runtimeproof",
+        "pluginSetupCount": 1,
+        "setupCount": 1,
+        "value": 45
+      },
+      "scenarios": [
+        "setup",
+        "state",
+        "app-handle",
+        "async",
+        "rust-event",
+        "plugin-setup",
+        "plugin-allowed",
+        "plugin-denied",
+        "domain-error",
+        "reload"
+      ]
+    },
+    "android": {
+      "passed": true,
+      "state": {
+        "appIdentifier": "dev.taurinative.runtimeproof",
+        "pluginSetupCount": 1,
+        "setupCount": 1,
+        "value": 45
+      },
+      "scenarios": [
+        "setup",
+        "state",
+        "app-handle",
+        "async",
+        "rust-event",
+        "plugin-setup",
+        "plugin-allowed",
+        "plugin-denied",
+        "domain-error",
+        "reload"
+      ]
+    }
+  },
+  "scope": "M6 Debug Simulator/emulator composition removal and ordinary desktop/iOS/Android execution; no production portable-artifact or native Swift/Kotlin plugin claim",
+  "fixture": "packages/cli/test/fixtures/runtime-tauri",
+  "implementationCommit": "6b5de39",
+  "reproduction": "packages/cli/test/runtime/README.md#independent-tauri-after-integration-removal",
+  "logs": [
+    "target/tauri-mobile-composition/independence-run.log",
+    "target/tauri-mobile-composition/independent-baseline.log",
+    "target/tauri-mobile-composition/independent-ios.log",
+    "target/tauri-mobile-composition/independent-android.log"
+  ]
+}

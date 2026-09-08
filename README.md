@@ -89,7 +89,7 @@ For Expo, copy both complete platform exports into a host-owned `tauri-native/` 
 
 ## Architecture
 
-The [M6–M8 roadmap](plans/README.md) now requires preserving an independently runnable Tauri Mobile application while adding React Native or Lynx composition. Actual Tauri initialization, managed state, mobile plugins, capabilities and lifecycle integration are being investigated in [ADR 0007](docs/adr/0007-tauri-mobile-composition.md). The diagram below describes the currently shipped limited adapter, not completed runtime-preservation support.
+The [M6–M8 roadmap](plans/README.md) requires preserving an independently runnable Tauri Mobile application while adding React Native or Lynx composition. M6 proves real Tauri startup, state, Rust plugin permissions and renderer lifecycle in all four RN/Lynx mobile combinations, plus ordinary desktop/iOS/Android execution after integration removal. [ADR 0007](docs/adr/0007-tauri-mobile-composition.md) records the Tauri-driven architecture and its Simulator/emulator scope. Production native dispatch, Swift/Kotlin plugins, portable artifacts and package integration remain M7–M8 work. The diagram below describes the currently shipped limited adapter.
 
 ```mermaid
 flowchart LR

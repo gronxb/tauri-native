@@ -1,6 +1,6 @@
 # ADR 0007: Preserve Tauri Mobile when composing native renderers
 
-- Status: accepted product requirement; implementation feasibility in progress
+- Status: accepted product requirement and scoped M6 Tauri-driven composition GO; production integration remains M7–M8
 - Date: 2026-09-09
 - Supersedes: the long-term runtime exclusion in ADRs 0001–0004. Their existing export behavior and evidence remain valid for the current limited adapter.
 - Tracker: [PRD and roadmap #21](https://github.com/gronxb/tauri-native/issues/21)
@@ -45,19 +45,19 @@ Development on this work is authorized directly on `main` with incremental commi
 
 ## Initial runtime evidence — 2026-09-09
 
-The [ordinary runtime fixture](../../packages/cli/test/fixtures/runtime-tauri) now passes ten real Tauri scenarios on standalone macOS, iOS Simulator and Android emulator, including state preservation across WebView reload and denial before plugin side effects. [Recorded evidence](../evidence/tauri-runtime-baseline-2026-09-09.json) identifies source hashes and exact scope. This establishes the behavioral baseline only. RN/Lynx attachment, renderer lifecycle and native Swift/Kotlin plugin composition remain unproven; the M6 architecture gate is still open.
+The [ordinary runtime fixture](../../packages/cli/test/fixtures/runtime-tauri) passes ten real Tauri scenarios on standalone macOS, iOS Simulator and Android emulator, including state preservation across WebView reload and denial before plugin side effects. [Recorded evidence](../evidence/tauri-runtime-baseline-2026-09-09.json) identifies source hashes and exact scope. This establishes the behavioral baseline; the later composition and independence evidence below completes M6. Native Swift/Kotlin plugin composition remains M7 work.
 
 ## Android Lynx feasibility evidence — 2026-09-09
 
 A [real Android composition gate](../../packages/cli/test/runtime/README.md) now passes using Tauri-driven startup. The generated `MainActivity` extends the original `TauriActivity`; `onWebViewCreate` attaches a `LynxView` alongside the retained WebView. Tauri's Activity and plugin lifecycle superclass calls remain intact. Removing and destroying the Lynx surface, recreating it and backgrounding/resuming the same Activity preserves state and single initialization. [Native/UI evidence](../evidence/tauri-composition-lynx-android-2026-09-09.json) records five actual JS-to-native probes, source hashes and verified 16 KB ELF alignment.
 
-The probe proxies through the original Tauri WebView IPC using its existing caller identity and permissions. This is test-only feasibility wiring; #42 must define and enforce the production native caller boundary. It does not justify exposing unrestricted dispatch or lifting current exporter diagnostics. RN composition still needs native proof before the cross-platform architecture is accepted.
+The probe proxies through the original Tauri WebView IPC using its existing caller identity and permissions. This is test-only feasibility wiring; #42 must define and enforce the production native caller boundary. It does not justify exposing unrestricted dispatch or lifting current exporter diagnostics. RN native proof is included in the decision below.
 
 ## iOS Lynx feasibility evidence — 2026-09-09
 
 The [iOS native/UI gate](../evidence/tauri-composition-lynx-ios-2026-09-09.json) passes with the standard Tauri `ffi::start_app()` bootstrap and its existing UIApplication delegate. Generated native code observes UIKit launch/active/background notifications and attaches a Lynx view to the original WKWebView's parent. It does not replace that WebView or its delegate. Background/resume and removing/destroying/recreating the Lynx view preserve one Tauri process, state and plugin setup; source hashes and all original frontend assertions match.
 
-This supports the Tauri-driven composition candidate for Lynx on both platforms. It remains a version-pinned prototype: production view attachment/caller dispatch and Swift/Kotlin plugin lifecycle are separate work, and RN native evidence is still required for M6 acceptance.
+This supports Tauri-driven composition for Lynx on both platforms. It remains a version-pinned prototype: production view attachment/caller dispatch and Swift/Kotlin plugin lifecycle are separate work. RN native evidence below completes the four-combination M6 gate.
 
 ## Decision — Tauri-driven composition
 
@@ -71,5 +71,7 @@ GO for the retained-Tauri startup architecture in the version-pinned M6 scope. R
 Evidence: [Lynx iOS](../evidence/tauri-composition-lynx-ios-2026-09-09.json), [Lynx Android](../evidence/tauri-composition-lynx-android-2026-09-09.json), [RN iOS](../evidence/tauri-composition-rn-ios-2026-09-09.json), [RN Android](../evidence/tauri-composition-rn-android-2026-09-09.json). The two RN probes preserve the Tauri owner as the Lynx probes do. Android additionally needs RN's core TurboModule provider registration and matching Hermes/C++ setup; RN surface stop is awaited before remount. RN's generated iOS target requires 16.4, without changing the ordinary producer configuration.
 
 The proof's native callback modules deliberately enter the original WebView's real Tauri IPC. Their fixed requests use that WebView's caller identity. This validates composition feasibility; a production direct native API still needs the explicit caller authorization, readiness and teardown contract in #42. No exporter rejection checks are lifted by this decision.
+
+After all four generated native integration directories were removed, the ordinary desktop, iOS and Android applications each passed the ten baseline scenarios again. All twelve authored producer hashes match the earlier baseline and composition runs. This [independence evidence](../evidence/tauri-composition-independence-2026-09-09.json) completes the removal requirement; the original Tauri project has no RN/Lynx source dependency. The final generalized harness also passed serialized reruns of both Lynx combinations.
 
 M7 must carry actual startup/dispatch, native Swift/Kotlin plugins, capabilities and OS integration into a versioned portable artifact format. M8 must replace these fixture-owned attachment seams with package-owned RN/Expo and Lynx integration, then prove Release/device, relocation, permission/deep-link delivery and independent adoption. The observed Android alignment, Tauri codegen cache, shared CLI connection options and renderer dependency requirements are recorded in those existing issues. This decision adds no production compatibility claim to the currently published limited adapter.
