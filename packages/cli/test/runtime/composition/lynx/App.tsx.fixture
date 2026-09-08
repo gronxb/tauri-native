@@ -1,0 +1,26 @@
+import { useEffect, useState } from '@lynx-js/react';
+
+declare const NativeModules: {
+  RuntimeProof: { inspect(callback: (result: string) => void): void; remount(): void };
+};
+
+export function App() {
+  const [result, setResult] = useState('Waiting for Tauri');
+  const [generation, setGeneration] = useState(0);
+  const inspect = () => {
+    'background only';
+    NativeModules.RuntimeProof.inspect(json => {
+      const value = JSON.parse(json);
+      setGeneration(value.generation);
+      setResult(value.error ? `ERROR ${value.error}` : `Tauri state ${value.state.value}`);
+    });
+  };
+  const remount = () => { 'background only'; NativeModules.RuntimeProof.remount(); };
+  useEffect(inspect, []);
+  return <view style={{ width: '100%', height: '100%', backgroundColor: '#e4f3ed', padding: '24px' }}>
+    <text flatten={false} accessibility-element={true} accessibility-label={`LYNX SURFACE ${generation}`} style={{ fontSize: '22px', color: '#12382d' }}>LYNX SURFACE {generation}</text>
+    <text flatten={false} accessibility-element={true} accessibility-label={result} style={{ fontSize: '18px', marginTop: '10px', color: '#12382d' }}>{result}</text>
+    <view flatten={false} accessibility-element={true} accessibility-label="Verify Tauri" bindtap={inspect} style={{ marginTop: '18px', padding: '12px', backgroundColor: '#ffffff' }}><text>Verify Tauri</text></view>
+    <view flatten={false} accessibility-element={true} accessibility-label="Remount renderer" bindtap={remount} style={{ marginTop: '12px', padding: '12px', backgroundColor: '#ffffff' }}><text>Remount renderer</text></view>
+  </view>;
+}

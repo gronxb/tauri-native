@@ -1,0 +1,14 @@
+function (id) {
+  (async () => {
+    const invoke = window.__TAURI_INTERNALS__.invoke;
+    const state = await invoke('snapshot');
+    let denied = false;
+    try { await invoke('plugin:runtime-probe|forbidden'); } catch { denied = true; }
+    const pluginCalls = await invoke('plugin:runtime-probe|read');
+    return { id, state, denied, pluginCalls };
+  })().catch(error => ({ id, error: String(error) })).then(result => {
+    const json = JSON.stringify(result);
+    if (window.RuntimeProofResult) window.RuntimeProofResult.complete(json);
+    else window.webkit.messageHandlers.RuntimeProofResult.postMessage(json);
+  });
+}

@@ -46,3 +46,9 @@ Development on this work is authorized directly on `main` with incremental commi
 ## Initial runtime evidence — 2026-09-09
 
 The [ordinary runtime fixture](../../packages/cli/test/fixtures/runtime-tauri) now passes ten real Tauri scenarios on standalone macOS, iOS Simulator and Android emulator, including state preservation across WebView reload and denial before plugin side effects. [Recorded evidence](../evidence/tauri-runtime-baseline-2026-09-09.json) identifies source hashes and exact scope. This establishes the behavioral baseline only. RN/Lynx attachment, renderer lifecycle and native Swift/Kotlin plugin composition remain unproven; the M6 architecture gate is still open.
+
+## Android Lynx feasibility evidence — 2026-09-09
+
+A [real Android composition gate](../../packages/cli/test/runtime/README.md) now passes using Tauri-driven startup. The generated `MainActivity` extends the original `TauriActivity`; `onWebViewCreate` attaches a `LynxView` alongside the retained WebView. Tauri's Activity and plugin lifecycle superclass calls remain intact. Removing and destroying the Lynx surface, recreating it and backgrounding/resuming the same Activity preserves state and single initialization. [Native/UI evidence](../evidence/tauri-composition-lynx-android-2026-09-09.json) records five actual JS-to-native probes, source hashes and verified 16 KB ELF alignment.
+
+The probe proxies through the original Tauri WebView IPC using its existing caller identity and permissions. This is test-only feasibility wiring; #42 must define and enforce the production native caller boundary. It does not justify exposing unrestricted dispatch or lifting current exporter diagnostics. iOS and RN composition still need native proof before the cross-platform architecture is accepted.

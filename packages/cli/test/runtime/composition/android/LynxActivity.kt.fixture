@@ -1,0 +1,61 @@
+package dev.taurinative.runtimeproof
+
+import android.os.Bundle
+import android.webkit.WebView
+import android.widget.LinearLayout
+import android.view.ViewGroup
+import com.lynx.tasm.LynxEnv
+import com.lynx.tasm.LynxView
+import com.lynx.tasm.LynxViewBuilder
+import com.lynx.tasm.provider.AbsTemplateProvider
+
+class MainActivity : TauriActivity() {
+  private var proof: RuntimeProof? = null
+  private var surface: LynxView? = null
+  private lateinit var layout: LinearLayout
+  private var resumeCount = 0
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    LynxEnv.inst().init(application, null, null, null)
+    super.onCreate(savedInstanceState)
+  }
+
+  override fun onWebViewCreate(webView: WebView) {
+    super.onWebViewCreate(webView)
+    // Wry finishes attaching its WebView before this queued composition step.
+    webView.post {
+      (webView.parent as? ViewGroup)?.removeView(webView)
+      layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+      layout.addView(webView, LinearLayout.LayoutParams(-1, 0, 1f))
+      setContentView(layout)
+      proof = RuntimeProof(this, webView) { mount() }
+      proof!!.resumed = resumeCount
+      proof!!.awaitBaseline { mount() }
+    }
+  }
+
+  private fun mount() {
+    surface?.let { layout.removeView(it); it.destroy(); proof!!.released() }
+    proof!!.mounted()
+    val builder = LynxViewBuilder()
+    builder.registerModule("RuntimeProof", LynxProofModule::class.java)
+    builder.setTemplateProvider(object : AbsTemplateProvider() {
+      override fun loadTemplate(uri: String, callback: Callback) {
+        callback.onSuccess(assets.open(uri).use { it.readBytes() })
+      }
+    })
+    surface = builder.build(this)
+    layout.addView(surface, LinearLayout.LayoutParams(-1, 0, 1f))
+    surface!!.renderTemplateUrl("main.lynx.bundle", "")
+  }
+
+  override fun onResume() { super.onResume(); resumeCount++; proof?.resumed() }
+  override fun onPause() { proof?.paused(); super.onPause() }
+  override fun onStop() { proof?.stopped(); super.onStop() }
+  override fun onDestroy() {
+    surface?.destroy()
+    proof?.released()
+    proof?.close()
+    super.onDestroy()
+  }
+}

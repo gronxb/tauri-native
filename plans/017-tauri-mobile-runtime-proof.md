@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — real desktop/iOS/Android baseline passed; native renderer coexistence remains unproven.
+- Status: IN PROGRESS — real desktop/iOS/Android baseline and Android Lynx composition passed; iOS Lynx and both RN combinations remain open.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: existing M0–M5 evidence; this is the new feasibility gate
@@ -51,4 +51,16 @@ Implemented an ordinary independently runnable fixture and assertion-bearing nat
 - Commands: `nub --cwd packages/cli run test:runtime:baseline`, `test:runtime:ios`, `test:runtime:android` (select the simulator/emulator and native toolchains as documented in the fixture README).
 - Evidence: [baseline report](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/tauri-runtime-baseline-2026-09-09.json). Full build logs and result files remain under ignored `target/tauri-mobile-runtime/`.
 - Regression checks: CLI build/typecheck and all six existing discovery scenarios passed; current unsupported-export diagnostics remain intact.
-- Next: attach actual RN and Lynx surfaces to this retained Tauri startup on both platforms, exercise background/resume and remount, then record the composition decision. This issue remains open until those native scenarios pass. Native Swift/Kotlin plugin support and production artifact integration are not established by this baseline.
+- Next: complete iOS Lynx and both RN surface/lifecycle combinations, then record the composition decision. This issue remains open until those native scenarios pass. Native Swift/Kotlin plugin support and production artifact integration are not established by this baseline.
+
+## Android Lynx composition evidence — 2026-09-09
+
+The generated Android `MainActivity` remains a subclass of Tauri's generated `TauriActivity`. A real Lynx 4.0.1 surface runs beside the original Tauri WebView. Maestro verifies five native-module calls across initial mount, background/resume and renderer destruction/remount. The process stays the same; Tauri state remains 45, setup/plugin initialization remain 1 and a denied plugin call never executes its side effect. The original frontend still passes all ten baseline scenarios. All authored producer hashes match before/after integration.
+
+- Command: `nub --cwd packages/cli run test:runtime:compose:android` with the environment in [runtime verification](https://github.com/gronxb/tauri-native/blob/main/packages/cli/test/runtime/README.md).
+- Evidence: [Android Lynx report](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/tauri-composition-lynx-android-2026-09-09.json); full build/UI logs remain under `target/tauri-mobile-composition/lynx-android/`.
+- The native probe deliberately enters the original WebView's real Tauri IPC and capabilities. This proves runtime coexistence, not a production native caller identity/dispatcher; that remains #42.
+- Generated build integration sets 16 KB Rust link alignment and verifies every packaged native ELF. The first unaligned standard Tauri build displayed Android's compatibility-mode warning; it was corrected before the composed UI gate passed. The earlier standalone Android baseline ran on the 16 KB emulator but did not establish native 16 KB compatibility.
+- Recreating the platform output while sharing Cargo caches exposed Tauri 2.11.5's missing output-directory invalidation. The reproducible gate clears only the target-specific Tauri crate build output before code generation.
+
+M6 stays open for iOS Lynx, Android RN and iOS RN. Production artifacts, native Swift/Kotlin plugin lifecycle, Expo integration and physical-device/Release coverage remain M7–M8 work.
