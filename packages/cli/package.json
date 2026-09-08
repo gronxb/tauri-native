@@ -24,6 +24,7 @@
     "test:export:spike": "node --experimental-strip-types test/native-export/spike.ts",
     "test:runtime:baseline": "node --experimental-strip-types test/runtime/baseline.ts",
     "test:runtime:ios": "node --experimental-strip-types test/runtime/mobile.ts ios",
+    "test:runtime:compose:ios": "node --experimental-strip-types test/runtime/compose-ios.ts",
     "test:runtime:compose:android": "node --experimental-strip-types test/runtime/compose-android.ts",
     "test:runtime:android": "node --experimental-strip-types test/runtime/mobile.ts android",
     "test:export:contract": "node --experimental-strip-types test/native-export/contract.ts",

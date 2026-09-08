@@ -22,3 +22,17 @@ The Activity retains Tauri's superclass and lifecycle. The Lynx surface mounts a
 The generated build adds 16 KB Rust linker alignment and inspects all native ELF load segments packaged in the APK. Tauri 2.11.5's build cache does not track a changed Android codegen output directory, so the test refreshes only the `tauri` crate's Android output before building its disposable platform project. Authored producer hashes are checked even when the test fails.
 
 This probe uses the original WebView caller's permissions. Production direct native caller identity and dispatch belong to #42. Native Swift/Kotlin plugin integration, artifacts, Expo, Release and physical devices have separate M7–M8 acceptance.
+
+## iOS Lynx
+
+With workspace dependencies installed, boot an arm64 iOS simulator and run:
+
+```sh
+export PATH="$HOME/.cargo/bin:$HOME/.maestro/bin:$PATH"
+export IOS_SIMULATOR_UDID=<booted-simulator-UDID>
+nub --cwd packages/cli run test:runtime:compose:ios
+```
+
+Xcode, xcodegen, CocoaPods, the standard Tauri iOS tools and Maestro are required. The test creates a disposable standard Tauri project under `target/tauri-mobile-composition/lynx-ios/`, adds only generated native sources/resources/Pod dependencies and retains the sole `ffi::start_app()` bootstrap. It registers UIKit lifecycle observers before Tauri starts and attaches a real Lynx view to the original WKWebView's parent after the baseline completes. The original Tauri app delegate and WebView stay alive; no replacement UIApplication or RN/Lynx app delegate is introduced.
+
+The same five native JS probes, real UI actions, remount and background/resume assertions apply. The harness installs and removes only `dev.taurinative.runtimeproof` on the selected simulator. Evidence is Debug Simulator execution; it does not establish Swift plugin/OS callback coverage or production direct native dispatch.

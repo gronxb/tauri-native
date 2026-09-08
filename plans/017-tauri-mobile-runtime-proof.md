@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — real desktop/iOS/Android baseline and Android Lynx composition passed; iOS Lynx and both RN combinations remain open.
+- Status: IN PROGRESS — real desktop/iOS/Android baseline and iOS/Android Lynx composition passed; both RN combinations remain open.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: existing M0–M5 evidence; this is the new feasibility gate
@@ -51,7 +51,7 @@ Implemented an ordinary independently runnable fixture and assertion-bearing nat
 - Commands: `nub --cwd packages/cli run test:runtime:baseline`, `test:runtime:ios`, `test:runtime:android` (select the simulator/emulator and native toolchains as documented in the fixture README).
 - Evidence: [baseline report](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/tauri-runtime-baseline-2026-09-09.json). Full build logs and result files remain under ignored `target/tauri-mobile-runtime/`.
 - Regression checks: CLI build/typecheck and all six existing discovery scenarios passed; current unsupported-export diagnostics remain intact.
-- Next: complete iOS Lynx and both RN surface/lifecycle combinations, then record the composition decision. This issue remains open until those native scenarios pass. Native Swift/Kotlin plugin support and production artifact integration are not established by this baseline.
+- Next: complete both RN surface/lifecycle combinations, then record the composition decision. This issue remains open until those native scenarios pass. Native Swift/Kotlin plugin support and production artifact integration are not established by this baseline.
 
 ## Android Lynx composition evidence — 2026-09-09
 
@@ -63,4 +63,14 @@ The generated Android `MainActivity` remains a subclass of Tauri's generated `Ta
 - Generated build integration sets 16 KB Rust link alignment and verifies every packaged native ELF. The first unaligned standard Tauri build displayed Android's compatibility-mode warning; it was corrected before the composed UI gate passed. The earlier standalone Android baseline ran on the 16 KB emulator but did not establish native 16 KB compatibility.
 - Recreating the platform output while sharing Cargo caches exposed Tauri 2.11.5's missing output-directory invalidation. The reproducible gate clears only the target-specific Tauri crate build output before code generation.
 
-M6 stays open for iOS Lynx, Android RN and iOS RN. Production artifacts, native Swift/Kotlin plugin lifecycle, Expo integration and physical-device/Release coverage remain M7–M8 work.
+M6 stays open for Android RN and iOS RN. Production artifacts, native Swift/Kotlin plugin lifecycle, Expo integration and physical-device/Release coverage remain M7–M8 work.
+
+## iOS Lynx composition evidence — 2026-09-09
+
+The standard Tauri-generated `main.mm` still calls the sole `ffi::start_app()`. Generated native integration registers lifecycle observers and attaches a real Lynx 4.0.1 view to the retained WKWebView's parent; Tauri's UIApplication delegate remains in place. All five native JS probes and Maestro UI actions pass, including actual background/resume and destruction/remount. The process is unchanged, state stays 45 and setup/plugin initialization stay 1. Denied plugin side effects remain zero. The unchanged frontend also passes all ten baseline scenarios and authored producer hashes match.
+
+- Command: `nub --cwd packages/cli run test:runtime:compose:ios` with `IOS_SIMULATOR_UDID` and the documented native toolchain.
+- Evidence: [iOS Lynx report](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/tauri-composition-lynx-ios-2026-09-09.json); logs under `target/tauri-mobile-composition/lynx-ios/`.
+- Scope: Debug iPhone 16 arm64 Simulator / iOS 26.4.1. The native probe still uses the real WebView's IPC/caller identity; production dispatch and native plugin callback support remain M7 work.
+
+Lynx is now proved on both mobile platforms. RN Android/iOS and the final cross-platform architecture decision remain open.

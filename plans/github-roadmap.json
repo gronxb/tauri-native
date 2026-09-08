@@ -1693,8 +1693,11 @@
         "baseline": "PASS on real Tauri desktop, iOS Simulator and Android emulator",
         "scenarios": 10,
         "evidence": "docs/evidence/tauri-runtime-baseline-2026-09-09.json",
-        "composition": "PASS Android Lynx native UI, background/resume and remount; iOS Lynx and both RN combinations remain open",
-        "compositionEvidence": "docs/evidence/tauri-composition-lynx-android-2026-09-09.json"
+        "composition": "PASS iOS/Android Lynx native UI, background/resume and remount; both RN combinations remain open",
+        "compositionEvidence": [
+          "docs/evidence/tauri-composition-lynx-android-2026-09-09.json",
+          "docs/evidence/tauri-composition-lynx-ios-2026-09-09.json"
+        ]
       }
     },
     {
