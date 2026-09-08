@@ -42,3 +42,7 @@ See the M6–M8 implementation plans in [the roadmap](../../plans/README.md). In
 The published limited adapter remains usable within its existing compatibility contract. Runtime preservation is planned work, not an additional compatibility claim for that artifact format. Keep rejecting unsupported runtime-dependent exports until the retained-runtime implementation and native acceptance pass. M5 candidate evidence remains historical evidence for that subset; the revised product contract adds M6–M8 gates before declaring full Tauri Mobile composition ready.
 
 Development on this work is authorized directly on `main` with incremental commits, without pull requests. Publishing packages is a separate action.
+
+## Initial runtime evidence — 2026-09-09
+
+The [ordinary runtime fixture](../../packages/cli/test/fixtures/runtime-tauri) now passes ten real Tauri scenarios on standalone macOS, iOS Simulator and Android emulator, including state preservation across WebView reload and denial before plugin side effects. [Recorded evidence](../evidence/tauri-runtime-baseline-2026-09-09.json) identifies source hashes and exact scope. This establishes the behavioral baseline only. RN/Lynx attachment, renderer lifecycle and native Swift/Kotlin plugin composition remain unproven; the M6 architecture gate is still open.

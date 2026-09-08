@@ -1,0 +1,11 @@
+{
+  "identifier": "main",
+  "windows": ["main"],
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:path:allow-resolve-directory",
+    "runtime-probe:allow-read",
+    "runtime-probe:deny-forbidden"
+  ]
+}
