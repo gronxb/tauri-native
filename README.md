@@ -89,6 +89,8 @@ For Expo, copy both complete platform exports into a host-owned `tauri-native/` 
 
 ## Architecture
 
+The [M6–M8 roadmap](plans/README.md) now requires preserving an independently runnable Tauri Mobile application while adding React Native or Lynx composition. Actual Tauri initialization, managed state, mobile plugins, capabilities and lifecycle integration are being investigated in [ADR 0007](docs/adr/0007-tauri-mobile-composition.md). The diagram below describes the currently shipped limited adapter, not completed runtime-preservation support.
+
 ```mermaid
 flowchart LR
   RN["React Native JS"] <--> JSI["TurboModule JSI / native bridge"]

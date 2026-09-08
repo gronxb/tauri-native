@@ -115,3 +115,14 @@ The installed CLI gate permitted only package.json and package-lock.json to chan
 The [candidate release notes](../docs/releases/1.0.0-rc.0.md) record package hashes and bounded execution evidence. Main publication requires a fresh validated candidate for its own release commit; branch validation does not establish npm publication.
 
 Physical iOS/Android RC execution and two independent documentation-only evaluations remain unperformed. Independent evaluations require real projects and consented evidence; maintainer automation cannot fill those records. Keep #20 and M5 open until these gates are evidenced, and retain the experimental channel.
+
+
+## Added release requirement — Tauri Mobile preservation (2026-09-09)
+
+The published 1.0.0-rc.0 candidate remains evidence for the limited adapter. The revised [PRD #21](https://github.com/gronxb/tauri-native/issues/21) additionally requires an ordinary Tauri Mobile application with RN/Lynx composition. Before declaring the revised product ready:
+
+- [ ] Complete M6–M8: [#41](https://github.com/gronxb/tauri-native/issues/41), [#42](https://github.com/gronxb/tauri-native/issues/42), [#43](https://github.com/gronxb/tauri-native/issues/43), [#44](https://github.com/gronxb/tauri-native/issues/44), [#45](https://github.com/gronxb/tauri-native/issues/45), [#46](https://github.com/gronxb/tauri-native/issues/46), [#47](https://github.com/gronxb/tauri-native/issues/47).
+- [ ] Demonstrate standalone Tauri iOS/Android plus RN and Lynx on both platforms, with real setup/State/AppHandle, native plugins, capabilities and lifecycle parity.
+- [ ] Keep physical-device and independent-onboarding gates; do not reinterpret old candidate passes as new runtime-preservation evidence.
+
+See [ADR 0007](https://github.com/gronxb/tauri-native/blob/main/docs/adr/0007-tauri-mobile-composition.md). Current release preparation is historical completed work; these added gates remain open.

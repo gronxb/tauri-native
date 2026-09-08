@@ -1,5 +1,7 @@
 # Export compatibility contract v1
 
+This document describes the current limited adapter. The [2026-09-09 Tauri Mobile composition requirement](adr/0007-tauri-mobile-composition.md) adds real initialization, State/AppHandle, mobile plugins, capabilities and lifecycle preservation to the [M6–M8 roadmap](../plans/README.md). Those are planned acceptance gates; existing rejection diagnostics remain in force until the new implementation is proved.
+
 This is the versioned acceptance contract for source-transparent export, established by [M0](adr/0004-source-transparent-export-spike.md). The source implementation now uses ordinary project discovery and tool-owned adapter generation by default. The previously published 0.1.0 release used the legacy core/header route.
 
 The producer remains an ordinary Tauri application. Install the CLI, export, and hand the resulting platform directory to a host. The CLI owns generated Rust adaptation and the ABI. The host owns its application lifecycle. Export must not start the producer's `run()` or create a second application event loop.

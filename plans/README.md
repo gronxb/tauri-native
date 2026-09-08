@@ -1,12 +1,36 @@
-# CLI-only Tauri export roadmap
+# Tauri export and mobile composition roadmap
 
-[GitHub roadmap #21](https://github.com/gronxb/tauri-native/issues/21) · 6 milestones · 16 implementation issues
+[GitHub roadmap #21](https://github.com/gronxb/tauri-native/issues/21) · 9 milestones · 23 implementation issues
 
 Planned on 2026-09-05 against `117e887`. Scope: prove the revised product contract and reach a verified 1.0 release.
 
 **Core value:** an ordinary Tauri project installs the CLI, exports native artifacts, and hands them to a host. It should not maintain our Rust bridge, adopt our crate layout/macros, or import host-specific frontend APIs. The host consumes copied artifacts without the Tauri source checkout or Rust toolchain.
 
-## Milestones
+## Tauri Mobile preservation amendment — 2026-09-09
+
+The producer must remain a normal independently runnable Tauri desktop, iOS and Android application. React Native and Lynx are optional composition layers above it. Preserve real Tauri Builder/setup, State, AppHandle, commands, events, mobile plugins and capabilities. The existing limited command adapter is a delivered subset, not the target architecture for this requirement. See [ADR 0007](https://github.com/gronxb/tauri-native/blob/main/docs/adr/0007-tauri-mobile-composition.md).
+
+A single platform bootstrap must initialize the actual Tauri app and cooperate with the renderer. The first feasibility candidate retains Tauri Mobile startup and attaches native renderer surfaces; the previous unconditional RN/Lynx lifecycle ownership requirement is superseded. Do not remove Tauri, fabricate its state/handles or bypass permissions to claim compatibility. Producer source independence and artifact-only host consumption remain requirements.
+
+| Milestone | Exit gate | Issues |
+| --- | --- | --- |
+| [M6 — Prove retained Tauri Mobile composition](https://github.com/gronxb/tauri-native/milestone/7) | Keep an ordinary Tauri Mobile app and actual startup/state/plugins alive while proving RN and Lynx surface coexistence on iOS and Android. One platform bootstrap; unchanged producer source. Baseline execution alone does not close this gate. | [#41](https://github.com/gronxb/tauri-native/issues/41) |
+| [M7 — Retain Tauri runtime, plugins and portable artifacts](https://github.com/gronxb/tauri-native/milestone/8) | Preserve Builder setup, State, AppHandle, actual Tauri dispatch, native Swift/Kotlin plugins and capabilities in source-free versioned platform artifacts. | [#42](https://github.com/gronxb/tauri-native/issues/42), [#43](https://github.com/gronxb/tauri-native/issues/43), [#44](https://github.com/gronxb/tauri-native/issues/44) |
+| [M8 — Integrate renderers and verify Tauri Mobile parity](https://github.com/gronxb/tauri-native/milestone/9) | Compose RN/Expo and Lynx and pass six mobile combinations against standalone Tauri behavior, including lifecycle, permissions, plugins, relocation and independent adoption. | [#45](https://github.com/gronxb/tauri-native/issues/45), [#46](https://github.com/gronxb/tauri-native/issues/46), [#47](https://github.com/gronxb/tauri-native/issues/47) |
+
+- [ ] [#41 — [M6] Prove real Tauri Mobile startup and native renderer coexistence](https://github.com/gronxb/tauri-native/issues/41)
+- [ ] [#42 — [M7] Preserve Builder setup, State and AppHandle in generated integration](https://github.com/gronxb/tauri-native/issues/42)
+- [ ] [#43 — [M7] Preserve native mobile plugins, permissions and OS callbacks](https://github.com/gronxb/tauri-native/issues/43)
+- [ ] [#44 — [M7] Export portable Tauri runtime and plugin artifacts](https://github.com/gronxb/tauri-native/issues/44)
+- [ ] [#45 — [M8] Compose React Native and Expo with retained Tauri Mobile](https://github.com/gronxb/tauri-native/issues/45)
+- [ ] [#46 — [M8] Compose Lynx with retained Tauri Mobile](https://github.com/gronxb/tauri-native/issues/46)
+- [ ] [#47 — [M8] Gate release on standalone and composed Tauri Mobile parity](https://github.com/gronxb/tauri-native/issues/47)
+
+Execution order: #41 establishes standalone real-runtime behavior and mobile renderer coexistence; #42 preserves actual startup/dispatch; #43 adds native plugin and permission lifecycle; #44 packages the runtime/dependencies; #45 and #46 integrate RN/Expo and Lynx; #47 gates parity in all six mobile combinations. #41 is IN PROGRESS; baseline tests alone do not close its mobile composition gate. Desktop-only APIs keep upstream platform restrictions. Support for third-party plugins requires an explicit verified matrix.
+
+M0–M5 and 1.0.0-rc.0 evidence remain valid for the previously documented subset. Mobile-composition readiness now additionally requires M6–M8, and stable release tracking in #20 must distinguish that new requirement from the completed candidate work. Physical-device execution and independent onboarding remain open. No new package release is authorized by this amendment. Implementation proceeds directly on main in incremental commits without PRs.
+
+## Original milestones
 
 ### [M0 — Prove source-transparent Tauri export](https://github.com/gronxb/tauri-native/milestone/1)
 
@@ -54,13 +78,20 @@ No due dates or assignees are invented. M0 is a go/no-go gate. A failed proof bl
 | [014](014-real-feature-independent-consumers.md) | [#18 — [M5] Demonstrate a useful Tauri feature in independent mobile hosts](https://github.com/gronxb/tauri-native/issues/18) | P1 | L | 009, 010, 011, 013 | DONE · PR #35 |
 | [015](015-native-compatibility-ci.md) | [#19 — [M5] Gate changes with native, compatibility, and package verification](https://github.com/gronxb/tauri-native/issues/19) | P1 | L | 002, 007, 008, 009, 010, 011, 013, 014 | DONE · PR #36 merged |
 | [016](016-onboarding-1-0-release.md) | [#20 — [M5] Validate independent onboarding and prepare the 1.0 release](https://github.com/gronxb/tauri-native/issues/20) | P1 | M | 014, 015 | IN PROGRESS · PR #37 merged; RC CI passed; device/adoption gates open |
+| [017](017-tauri-mobile-runtime-proof.md) | [#41 — [M6] Prove real Tauri Mobile startup and native renderer coexistence](https://github.com/gronxb/tauri-native/issues/41) | P1 | L | M0–M5 baseline | IN PROGRESS |
+| [018](018-retained-tauri-dispatch.md) | [#42 — [M7] Preserve Builder setup, State and AppHandle in generated integration](https://github.com/gronxb/tauri-native/issues/42) | P1 | L | 017 | TODO |
+| [019](019-mobile-plugin-lifecycle.md) | [#43 — [M7] Preserve native mobile plugins, permissions and OS callbacks](https://github.com/gronxb/tauri-native/issues/43) | P1 | L | 017, 018 | TODO |
+| [020](020-runtime-portable-artifacts.md) | [#44 — [M7] Export portable Tauri runtime and plugin artifacts](https://github.com/gronxb/tauri-native/issues/44) | P1 | L | 018, 019 | TODO |
+| [021](021-react-native-tauri-composition.md) | [#45 — [M8] Compose React Native and Expo with retained Tauri Mobile](https://github.com/gronxb/tauri-native/issues/45) | P1 | L | 017, 020 | TODO |
+| [022](022-lynx-tauri-composition.md) | [#46 — [M8] Compose Lynx with retained Tauri Mobile](https://github.com/gronxb/tauri-native/issues/46) | P1 | L | 017, 020 | TODO |
+| [023](023-tauri-mobile-composition-acceptance.md) | [#47 — [M8] Gate release on standalone and composed Tauri Mobile parity](https://github.com/gronxb/tauri-native/issues/47) | P1 | L | 019, 021, 022 | TODO |
 
 M1 follows the M0 decision. M2 requires portable artifacts. M3 builds real command behavior on working host integrations. M4 can overlap later M2/M3 work where issue dependencies allow. The reference feature integrates these capabilities; native/package evidence and independent onboarding gate 1.0.
 
 ## Considered and deferred
 
 - Mandatory `app-core` templates or custom producer macros: contradict the revised low-intrusion value; optional legacy support is distinct.
-- Full Tauri runtime/plugin/window compatibility: not proven and conflicts with the current single-owner lifecycle design.
+- Unrestricted desktop-only APIs remain outside mobile scope. Actual Tauri Mobile runtime/plugin preservation is required by M6–M8, superseding the former exclusion.
 - New host frameworks, OTA, hosted artifact registries, cloud sync and a general plugin/event platform: outside the path to the first validated release.
 - Unconditional generated typing for arbitrary serde/custom macro behavior: report the supported subset honestly.
 - A finished calculator demo as the release gate: insufficient to establish useful reuse or independent adoption.

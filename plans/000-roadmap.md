@@ -1,10 +1,10 @@
-# CLI-only Tauri export to native hosts — path to 1.0
+# Tauri Mobile preservation and native composition — path to 1.0
 
 ## North star
 
 tauri-native provides an artifact-based integration workflow for existing Tauri applications. Within the documented compatibility scope, developers install the CLI, export platform binaries and frontend assets, and integrate the resulting artifacts into a native host. The CLI and host packages own the required adaptation, so the Tauri application does not need host-specific dependencies, bridge code, or a custom project layout.
 
-This tracker covers the path from the current proof of concept through a verified 1.0 release. The repository baseline is [`117e887`](https://github.com/gronxb/tauri-native/commit/117e887977a878aa4734f2df7ab2cca0670014ac); this roadmap was created on 2026-09-05. Tasks are ordered by evidence and dependencies, not invented calendar deadlines.
+This tracker covers the existing limited-adapter candidate and the added Tauri Mobile composition requirement through a verified 1.0 release. The repository baseline is [`117e887`](https://github.com/gronxb/tauri-native/commit/117e887977a878aa4734f2df7ab2cca0670014ac); this roadmap was created on 2026-09-05. Tasks are ordered by evidence and dependencies, not invented calendar deadlines.
 
 ## Target experience
 
@@ -16,7 +16,7 @@ npx tauri-native export ios
 npx tauri-native export android
 ```
 
-The prepared candidate implements this workflow within the [documented compatibility scope](../docs/compatibility.md), without producer-authored bridge code. Use matching workflow tarballs until registry publication is confirmed; see [candidate evidence](../docs/releases/1.0.0-rc.0.md).
+The published `1.0.0-rc.0` experimental candidate implements this workflow within the [documented compatibility scope](https://github.com/gronxb/tauri-native/blob/1fbb5a347ba7e45fe956922353f327abaeda6fde/docs/compatibility.md), without producer-authored bridge code. All three matching packages are available on npm; pin `1.0.0-rc.0` for reproducible evaluations. See [main validation and publication](https://github.com/gronxb/tauri-native/actions/runs/34133681385) and [verified results in #20](https://github.com/gronxb/tauri-native/issues/20).
 
 The producer hands over one exported platform directory. iOS contains an XCFramework plus its frontend bundle/integration metadata; Android contains normalized native libraries plus frontend assets. Both have a versioned manifest. The mobile host installs its matching bridge package and references the copied artifact. **No producer checkout or Rust toolchain is required during host compilation.**
 
@@ -28,13 +28,37 @@ The producer hands over one exported platform directory. iOS contains an XCFrame
 | Producer frontend | Existing ordinary Tauri/web APIs; no mandatory tauri-native imports, RN/Lynx branches, or `__TAURI_NATIVE_HOST__` checks. |
 | Change budget | CLI installation/removal may update JS package metadata/lockfile. Export preserves authored Rust/frontend, Cargo manifests/lockfiles, registration, and Tauri config. Generated ignored intermediates/artifacts are disposable. |
 | Command behavior | Preserve command names, serde input/output, Result success/rejection, and the explicitly supported async/state semantics. Diagnose unsupported cases instead of silently substituting behavior. |
-| Runtime ownership | RN or Lynx owns mobile lifecycle. Do not start a second Tauri application event loop. |
+| Runtime ownership | One platform bootstrap initializes the actual Tauri app and cooperates with RN/Lynx rendering. Preserve native lifecycle and plugin callbacks; no competing application/event loop. See the M6–M8 amendment. |
 | Portability | Copy artifacts to an unrelated host, make producer source inaccessible, and still build/run both direct and embedded calls. |
 | Evidence | Hash authored source before/after successful and failed exports. Verify native execution and isolated packed-package consumers, not only generated text. |
 
 Source-preserving export passed the M0 feasibility gate and is implemented in the candidate. The CLI owns generated adaptation; an optional legacy/manual integration route is not required for this workflow.
 
-## Milestones and exit gates
+## Tauri Mobile preservation amendment — 2026-09-09
+
+The producer must remain a normal independently runnable Tauri desktop, iOS and Android application. React Native and Lynx are optional composition layers above it. Preserve real Tauri Builder/setup, State, AppHandle, commands, events, mobile plugins and capabilities. The existing limited command adapter is a delivered subset, not the target architecture for this requirement. See [ADR 0007](https://github.com/gronxb/tauri-native/blob/main/docs/adr/0007-tauri-mobile-composition.md).
+
+A single platform bootstrap must initialize the actual Tauri app and cooperate with the renderer. The first feasibility candidate retains Tauri Mobile startup and attaches native renderer surfaces; the previous unconditional RN/Lynx lifecycle ownership requirement is superseded. Do not remove Tauri, fabricate its state/handles or bypass permissions to claim compatibility. Producer source independence and artifact-only host consumption remain requirements.
+
+| Milestone | Exit gate | Issues |
+| --- | --- | --- |
+| [M6 — Prove retained Tauri Mobile composition](https://github.com/gronxb/tauri-native/milestone/7) | Keep an ordinary Tauri Mobile app and actual startup/state/plugins alive while proving RN and Lynx surface coexistence on iOS and Android. One platform bootstrap; unchanged producer source. Baseline execution alone does not close this gate. | [#41](https://github.com/gronxb/tauri-native/issues/41) |
+| [M7 — Retain Tauri runtime, plugins and portable artifacts](https://github.com/gronxb/tauri-native/milestone/8) | Preserve Builder setup, State, AppHandle, actual Tauri dispatch, native Swift/Kotlin plugins and capabilities in source-free versioned platform artifacts. | [#42](https://github.com/gronxb/tauri-native/issues/42), [#43](https://github.com/gronxb/tauri-native/issues/43), [#44](https://github.com/gronxb/tauri-native/issues/44) |
+| [M8 — Integrate renderers and verify Tauri Mobile parity](https://github.com/gronxb/tauri-native/milestone/9) | Compose RN/Expo and Lynx and pass six mobile combinations against standalone Tauri behavior, including lifecycle, permissions, plugins, relocation and independent adoption. | [#45](https://github.com/gronxb/tauri-native/issues/45), [#46](https://github.com/gronxb/tauri-native/issues/46), [#47](https://github.com/gronxb/tauri-native/issues/47) |
+
+- [ ] [#41 — [M6] Prove real Tauri Mobile startup and native renderer coexistence](https://github.com/gronxb/tauri-native/issues/41)
+- [ ] [#42 — [M7] Preserve Builder setup, State and AppHandle in generated integration](https://github.com/gronxb/tauri-native/issues/42)
+- [ ] [#43 — [M7] Preserve native mobile plugins, permissions and OS callbacks](https://github.com/gronxb/tauri-native/issues/43)
+- [ ] [#44 — [M7] Export portable Tauri runtime and plugin artifacts](https://github.com/gronxb/tauri-native/issues/44)
+- [ ] [#45 — [M8] Compose React Native and Expo with retained Tauri Mobile](https://github.com/gronxb/tauri-native/issues/45)
+- [ ] [#46 — [M8] Compose Lynx with retained Tauri Mobile](https://github.com/gronxb/tauri-native/issues/46)
+- [ ] [#47 — [M8] Gate release on standalone and composed Tauri Mobile parity](https://github.com/gronxb/tauri-native/issues/47)
+
+Execution order: #41 establishes standalone real-runtime behavior and mobile renderer coexistence; #42 preserves actual startup/dispatch; #43 adds native plugin and permission lifecycle; #44 packages the runtime/dependencies; #45 and #46 integrate RN/Expo and Lynx; #47 gates parity in all six mobile combinations. #41 is IN PROGRESS; baseline tests alone do not close its mobile composition gate. Desktop-only APIs keep upstream platform restrictions. Support for third-party plugins requires an explicit verified matrix.
+
+M0–M5 and 1.0.0-rc.0 evidence remain valid for the previously documented subset. Mobile-composition readiness now additionally requires M6–M8, and stable release tracking in #20 must distinguish that new requirement from the completed candidate work. Physical-device execution and independent onboarding remain open. No new package release is authorized by this amendment. Implementation proceeds directly on main in incremental commits without PRs.
+
+## Original M0–M5 milestones and evidence
 
 | Milestone | Exit gate | Implementation issues |
 | --- | --- | --- |
@@ -104,7 +128,7 @@ M0 must produce a **go/no-go** result. Do not promise automatic export of arbitr
 | [#19](https://github.com/gronxb/tauri-native/issues/19) | [#6](https://github.com/gronxb/tauri-native/issues/6), [#11](https://github.com/gronxb/tauri-native/issues/11), [#12](https://github.com/gronxb/tauri-native/issues/12), [#13](https://github.com/gronxb/tauri-native/issues/13), [#14](https://github.com/gronxb/tauri-native/issues/14), [#15](https://github.com/gronxb/tauri-native/issues/15), [#17](https://github.com/gronxb/tauri-native/issues/17), [#18](https://github.com/gronxb/tauri-native/issues/18) | Gate the proven end-to-end feature and packages. |
 | [#20](https://github.com/gronxb/tauri-native/issues/20) | [#18](https://github.com/gronxb/tauri-native/issues/18), [#19](https://github.com/gronxb/tauri-native/issues/19) | Require technical and independent adoption evidence before stable release. |
 
-M4 can proceed alongside later M2/M3 work when its individual prerequisites are ready. No additional framework or runtime expansion is required to complete this roadmap.
+M4 can proceed alongside later M2/M3 work when its individual prerequisites are ready. The added M6–M8 runtime-preservation work is required for the revised product contract.
 
 ## Release decision
 
@@ -121,15 +145,15 @@ A 1.0 candidate requires:
 
 The completed implementation gates are backed by the [compatibility contract](https://github.com/gronxb/tauri-native/blob/5320ec8e0b67bf061b79c89dfe408a0a90edcb3f/docs/compatibility.md), merged [RN/Expo](https://github.com/gronxb/tauri-native/pull/27), [Lynx](https://github.com/gronxb/tauri-native/pull/29), [async](https://github.com/gronxb/tauri-native/pull/30), [type](https://github.com/gronxb/tauri-native/pull/31) and [view](https://github.com/gronxb/tauri-native/pull/32) acceptance, and [Fieldnotes execution evidence](https://github.com/gronxb/tauri-native/blob/5320ec8e0b67bf061b79c89dfe408a0a90edcb3f/docs/evidence/fieldnotes-local-2026-09-07.json). Mobile evidence covers the documented simulator/emulator scope. [CI acceptance](https://github.com/gronxb/tauri-native/pull/36) and [complete RC validation at `eb1fab8`](https://github.com/gronxb/tauri-native/actions/runs/34111222423) passed. Physical-device RC execution and independent onboarding remain open in #20.
 
-The release-preparation requirement was delivered in merged [PR #37](https://github.com/gronxb/tauri-native/pull/37): matching 1.0.0-rc.0 packages, migration/support guidance, changelogs and release notes. Its [successful candidate workflow](https://github.com/gronxb/tauri-native/actions/runs/34111222423) provides the exact validated tarballs; [candidate evidence](../docs/releases/1.0.0-rc.0.md) records their hashes. Main publication requires validation of its own release commit. Physical-device checks and two independent onboarding records still gate stable readiness.
+The release-preparation requirement was delivered in merged [PR #37](https://github.com/gronxb/tauri-native/pull/37): matching 1.0.0-rc.0 packages, migration/support guidance, changelogs and release notes. Its [successful candidate workflow](https://github.com/gronxb/tauri-native/actions/runs/34111222423) provides the exact validated tarballs; [candidate evidence](https://github.com/gronxb/tauri-native/blob/015191221e72fd62ecf04dca46e71ce35e5f5e25/docs/releases/1.0.0-rc.0.md) records their hashes. The [main release at `1fbb5a3`](https://github.com/gronxb/tauri-native/actions/runs/34133681385) also passed its own producer, iOS, Android and candidate gates: all 13 required native JUnit scenarios per platform passed without failures, errors or skips. It published all three `1.0.0-rc.0` packages to the experimental npm channel. Downloaded registry tarballs match the exact validated candidate, including SHA-1/SHA-512 integrity metadata. Physical-device checks and two independent onboarding records still gate stable readiness.
 
 Independent evaluator contact and stable package publication follow the maintainer's normal authorization process when execution reaches those steps. This roadmap does not invent dates, testimonials, performance numbers or completed validation.
 
 ## Deliberately deferred
 
-- Full Tauri runtime/plugin/window compatibility and unrestricted macro/serde inference.
+- Unrestricted desktop-only window APIs and arbitrary macro/serde inference; mobile runtime/plugin preservation is now required by M6–M8.
 - New host frameworks, a hosted artifact registry, OTA delivery, remote production frontend loading, or a cloud sync service.
 - A mandatory tauri-native producer SDK/template/core layout disguised as onboarding.
-- A broad plugin/event system or live native-code replacement.
+- Live native-code replacement and a new plugin ecosystem separate from Tauri; existing Tauri Mobile plugin/event compatibility belongs to M6–M8.
 
-Each implementation issue includes concrete source evidence, scope, dependencies, verification commands, scenario tests, risks and acceptance criteria. Local mirrors are under `plans/`; no source implementation was performed while creating the roadmap.
+Each implementation issue includes concrete source evidence, scope, dependencies, verification commands, scenario tests, risks and acceptance criteria. Local mirrors are under `plans/`. The M6 baseline implementation is tracked in #41.
