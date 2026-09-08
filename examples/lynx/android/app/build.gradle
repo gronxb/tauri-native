@@ -5,7 +5,7 @@ plugins {
 
 providers.exec {
   workingDir rootProject.projectDir.parentFile
-  commandLine 'node', 'scripts/validate-artifacts.mjs', 'android'
+  commandLine 'node', '--experimental-strip-types', 'scripts/validate-artifacts.ts', 'android'
 }.result.get().assertNormalExitValue()
 
 android {

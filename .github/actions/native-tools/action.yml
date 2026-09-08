@@ -19,7 +19,7 @@ runs:
       shell: bash
       run: |
         sudo xcode-select -s /Applications/Xcode_26.4.1.app
-        node scripts/ci/ios-simulator.mjs
+        node scripts/ci/ios-simulator.ts
     - if: inputs.producer == 'true' || runner.os == 'Linux'
       shell: bash
       run: |

@@ -25,7 +25,7 @@ test('input fingerprints track file bytes, dependency contents, Cargo/config and
   write(directory, 'node_modules/local-package/index.js', 'export const value = 1');
   const before = exportInputs(project, output);
   assert.deepEqual(exportInputs(project, output), before);
-  for (const relative of ['src/main.js', 'src-tauri/src/lib.rs', 'src-tauri/Cargo.lock', 'src-tauri/Cargo.toml', 'src-tauri/tauri.conf.json', 'package.json', 'node_modules/local-package/index.js']) {
+  for (const relative of ['src/main.ts', 'src-tauri/src/lib.rs', 'src-tauri/Cargo.lock', 'src-tauri/Cargo.toml', 'src-tauri/tauri.conf.json', 'package.json', 'node_modules/local-package/index.js']) {
     const file = path.join(directory, relative); const original = readFileSync(file); const info = statSync(file);
     writeFileSync(file, Buffer.concat([original, Buffer.from('\nchanged bytes')])); utimesSync(file, info.atime, info.mtime);
     assert.notDeepEqual(exportInputs(project, output), before, `${relative} must invalidate even with the same mtime`);

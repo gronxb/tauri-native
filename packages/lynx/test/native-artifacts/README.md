@@ -12,13 +12,13 @@ npm pack ./packages/lynx --pack-destination ./target/lynx-artifacts
 mkdir /tmp/tauri-native-lynx-artifact-host
 git archive HEAD examples/lynx | tar -x -C /tmp/tauri-native-lynx-artifact-host --strip-components=2
 npm install --prefix /tmp/tauri-native-lynx-artifact-host "$PWD/target/lynx-artifacts/tauri-native-lynx-1.0.0-rc.0.tgz"
-node packages/lynx/test/native-artifacts/prepare.mjs \
+node packages/lynx/test/native-artifacts/prepare.ts \
   /tmp/tauri-native-lynx-artifact-host \
   'target/export-ios/Independent Host/Native Artifacts' \
   'target/export-android/Independent Host/Native Artifacts'
 ```
 
-`prepare.mjs` validates through the installed host package, copies the full exports and QA screen, and assigns the unique test identifier `dev.taurinative.lynxartifacttest`. It enables debug signing only in this disposable Android host so its Release APK can be installed. The host has no CLI, RN package, producer checkout or workspace symlinks. Use a new directory for another run.
+`prepare.ts` validates through the installed host package, copies the full exports and QA screen, and assigns the unique test identifier `dev.taurinative.lynxartifacttest`. It enables debug signing only in this disposable Android host so its Release APK can be installed. The host has no CLI, RN package, producer checkout or workspace symlinks. Use a new directory for another run.
 
 Build with Node, Ruby/CocoaPods and native tools on PATH, but no `cargo` or `rustc`; confirm both `command -v` checks return no path. Set `JAVA_HOME` and `ANDROID_HOME` for the Android SDK.
 

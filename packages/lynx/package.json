@@ -34,11 +34,11 @@
     "README.md"
   ],
   "scripts": {
-    "build": "node ../../scripts/sync-host-files.mjs lynx && nub run codegen && tsc --noEmit",
+    "build": "node --experimental-strip-types ../../scripts/sync-host-files.ts lynx && nub run codegen && tsc --noEmit",
     "codegen": "lynx-autolink-codegen",
-    "prepack": "node ../../scripts/sync-host-files.mjs lynx && lynx-autolink-codegen && tsc --noEmit",
-    "test": "node ../../scripts/sync-host-files.mjs lynx --check && node --experimental-strip-types --test test/*.test.mjs && nub run build && nub run test:package",
-    "test:package": "node ../../scripts/verify-package.mjs",
+    "prepack": "node --experimental-strip-types ../../scripts/sync-host-files.ts lynx && lynx-autolink-codegen && tsc --noEmit",
+    "test": "node --experimental-strip-types ../../scripts/sync-host-files.ts lynx --check && node --experimental-strip-types --test test/*.test.ts && nub run build && nub run test:package",
+    "test:package": "node --experimental-strip-types ../../scripts/verify-package.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

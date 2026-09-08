@@ -13,13 +13,13 @@ npm exec --yes --package @react-native-community/cli -- rnc-cli init TauriArtifa
   --version 0.86.3 --directory /tmp/tauri-native-rn-artifact-host \
   --package-name dev.taurinative.rnartifacttest --skip-install --install-pods false --skip-git-init
 npm install --prefix /tmp/tauri-native-rn-artifact-host "$PWD/target/react-native-artifacts/tauri-native-react-native-1.0.0-rc.0.tgz"
-node packages/react-native/test/native-artifacts/prepare.mjs \
+node packages/react-native/test/native-artifacts/prepare.ts \
   /tmp/tauri-native-rn-artifact-host \
   'target/export-ios/Independent Host/Native Artifacts' \
   'target/export-android/Independent Host/Native Artifacts'
 ```
 
-`prepare.mjs` validates through the **installed host package**, adds the documented local Pod/Gradle source sets and copies the QA screen. It does not import the CLI or producer. The fresh host has no Expo dependency. Use another fresh directory for a new run; the helper rejects an already integrated template.
+`prepare.ts` validates through the **installed host package**, adds the documented local Pod/Gradle source sets and copies the QA screen. It does not import the CLI or producer. The fresh host has no Expo dependency. Use another fresh directory for a new run; the helper rejects an already integrated template.
 
 Build from the fresh host with a PATH containing Node, Ruby/CocoaPods and native build tools, but no `cargo`/`rustc`. Configure `JAVA_HOME` and `ANDROID_HOME` normally. Check `command -v cargo` and `command -v rustc` produce no path. Run `pod install` with **the host's ios directory as the working directory**, so React Native's autolinker discovers that host.
 

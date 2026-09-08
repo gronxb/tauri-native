@@ -5,7 +5,7 @@ plugin 'cocoapods-lynx-library'
 platform :ios, '13.0'
 use_modular_headers!
 
-Pod::Executable.execute_command('node', [File.expand_path('../scripts/validate-artifacts.mjs', __dir__), 'ios'])
+Pod::Executable.execute_command('node', ['--experimental-strip-types', File.expand_path('../scripts/validate-artifacts.ts', __dir__), 'ios'])
 output_dir = File.expand_path('../tauri-native/ios', __dir__)
 
 target 'Hello-Lynx' do

@@ -24,7 +24,7 @@ and [Lynx](../packages/lynx/test/native-artifacts/README.md) artifact procedures
 Install freshly packed host SDKs, then switch the disposable QA screens:
 
 ```sh
-node scripts/prepare-view-hosts.mjs \
+node scripts/prepare-view-hosts.ts \
   /tmp/tauri-native-rn-artifact-host /tmp/tauri-native-lynx-artifact-host
 ```
 

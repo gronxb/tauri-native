@@ -13,9 +13,18 @@
   "scripts": {
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "node scripts/release.mjs"
+    "release": "node scripts/release.ts",
+    "typecheck:scripts": "tsc --noEmit -p scripts/tsconfig.json && tsc --noEmit -p packages/react-native/plugin/tsconfig.json",
+    "test:scripts": "node --experimental-strip-types --test scripts/test/*.test.ts"
   },
   "devDependencies": {
-    "@changesets/cli": "3.0.1"
+    "@changesets/cli": "3.0.1",
+    "@types/node": "^22.20.1",
+    "typescript": "7.0.2",
+    "tsdown": "^0.22.14"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=24.15.0"
   }
 }

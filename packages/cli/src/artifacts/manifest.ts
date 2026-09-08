@@ -4,7 +4,7 @@ import packageJson from '../../package.json' with { type: 'json' };
 import type { SourceModel } from '../discovery/project.ts';
 import { inventory, type ArtifactFile } from './files.ts';
 import { generateCommands } from '../types/commands.ts';
-import { readArtifacts } from '../../../../scripts/artifacts.cjs';
+import { readArtifacts } from '../../../../scripts/artifacts.ts';
 
 export const ANDROID_ABIS = ['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'] as const;
 export const IOS_LAYOUT = { platform: 'ios', minimumOsVersion: '13.0', assets: 'TauriNativeAssets.bundle', integration: 'TauriNativeGenerated.podspec' } as const;

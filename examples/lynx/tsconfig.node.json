@@ -1,15 +1,22 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "allowJs": true,
-    "checkJs": true,
+    "allowJs": false,
     "composite": true,
     "module": "node16",
     "moduleResolution": "node16",
     "erasableSyntaxOnly": true,
-    "lib": ["es2023"],
+    "lib": [
+      "es2023"
+    ],
     "target": "es2022",
-    "noEmit": true
+    "noEmit": true,
+    "types": [
+      "node"
+    ]
   },
-  "include": ["./lynx.config.mjs"]
+  "include": [
+    "./lynx.config.ts",
+    "scripts/**/*.ts"
+  ]
 }

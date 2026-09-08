@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { ArtifactError } from '../../../../scripts/artifacts.cjs';
+import { ArtifactError } from '../../../../scripts/artifacts.ts';
 import { projectCopyRoot, projectFingerprints } from '../adapter/workspace.ts';
 import { androidTools } from '../artifacts/android.ts';
 import { inventory, sha256 } from '../artifacts/files.ts';

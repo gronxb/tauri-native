@@ -1,0 +1,19 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": [
+      "node"
+    ],
+    "paths": {
+      "expo/config-plugins": [
+        "../../../examples/react-native/node_modules/expo/config-plugins"
+      ]
+    },
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "*.cts"
+  ]
+}

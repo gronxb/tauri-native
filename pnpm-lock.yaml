@@ -112,6 +112,15 @@ importers:
       '@changesets/cli':
         specifier: 3.0.1
         version: 3.0.1
+      '@types/node':
+        specifier: ^22.20.1
+        version: 22.20.1
+      tsdown:
+        specifier: ^0.22.14
+        version: 0.22.14(typescript@7.0.2)
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
 
   examples/lynx:
     dependencies:

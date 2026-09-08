@@ -38,10 +38,10 @@
     "*.podspec"
   ],
   "scripts": {
-    "build": "node ../../scripts/sync-host-files.mjs react-native && bob build",
-    "prepack": "node ../../scripts/sync-host-files.mjs react-native && bob build",
-    "test": "node ../../scripts/sync-host-files.mjs react-native --check && node --experimental-strip-types --test test/*.test.js && nub run test:package",
-    "test:package": "node ../../scripts/verify-package.mjs",
+    "build": "node --experimental-strip-types ../../scripts/sync-host-files.ts react-native && bob build",
+    "prepack": "node --experimental-strip-types ../../scripts/sync-host-files.ts react-native && bob build",
+    "test": "node --experimental-strip-types ../../scripts/sync-host-files.ts react-native --check && node --experimental-strip-types --test test/*.test.ts && nub run test:package",
+    "test:package": "node --experimental-strip-types ../../scripts/verify-package.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

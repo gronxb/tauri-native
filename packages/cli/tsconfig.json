@@ -2,7 +2,12 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "allowImportingTsExtensions": true,
-    "types": ["node"]
+    "erasableSyntaxOnly": true,
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "paths": {
+      "@tauri-apps/api/*": ["../../examples/tauri/node_modules/@tauri-apps/api/*"]
+    }
   },
   "include": ["src", "test", "tsdown.config.ts"]
 }

@@ -5,16 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 1420",
-    "build": "vite build",
+    "build": "tsc --noEmit && vite build",
     "tauri": "tauri",
     "test": "cargo test --manifest-path src-tauri/Cargo.toml",
-    "build:desktop": "tauri build --no-bundle"
+    "build:desktop": "tauri build --no-bundle",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@tauri-apps/api": "2.11.1"
   },
   "devDependencies": {
     "@tauri-apps/cli": "2.11.4",
-    "vite": "8.2.2"
+    "vite": "8.2.2",
+    "typescript": "7.0.2"
   }
 }

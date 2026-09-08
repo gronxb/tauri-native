@@ -8,7 +8,7 @@ From the repository, run:
 
 ```sh
 nub --cwd packages/cli run test:export:async
-node scripts/prepare-async-hosts.mjs /tmp/tauri-native-rn-artifact-host /tmp/tauri-native-lynx-artifact-host
+node scripts/prepare-async-hosts.ts /tmp/tauri-native-rn-artifact-host /tmp/tauri-native-lynx-artifact-host
 ```
 
 The first command prepares the ordinary async fixture, compares real Tauri async IPC with the generated sessions through both Objective-C++ bridges, exports/validates every platform slice, compares frontend/source hashes and removes the producer. Only successful runs write `target/async-protocol/export-report.json`. The second command reads the copied artifacts through each installed SDK, installs host-owned QA screens and adds native runtime reload buttons using public framework APIs. It requires the existing baseline host templates.

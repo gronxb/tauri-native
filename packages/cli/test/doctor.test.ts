@@ -8,8 +8,7 @@ import { after, before, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { inventory, sha256 } from '../src/artifacts/files.ts';
-// @ts-expect-error The shared helper prepares structural receipts, not native binaries.
-import { writeTestArtifacts } from '../../../scripts/test-artifacts.mjs';
+import { writeTestArtifacts } from '../../../scripts/test-artifacts.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const cli = path.join(root, 'packages/cli/dist/index.mjs');
@@ -162,7 +161,7 @@ test('source freshness compares only recorded evidence and never claims that an 
   assert.equal(doctor(args).report.freshness.status, 'recorded_inputs_match');
   writeFileSync(source, Buffer.concat([original, Buffer.from('\n// Changed authored source.\n')]));
   const changed = doctor(args); assert.equal(changed.status, 1); assert.deepEqual(changed.report.freshness.changed, ['rustEntrySha256']);
-  writeFileSync(source, original); writeFileSync(path.join(directory, 'src/main.js'), 'authored frontend changed but has not been built');
+  writeFileSync(source, original); writeFileSync(path.join(directory, 'src/main.ts'), 'authored frontend changed but has not been built');
   const unbuilt = doctor(args); assert.equal(unbuilt.status, 0); assert.equal(unbuilt.report.freshness.status, 'recorded_inputs_match');
   assert.match(unbuilt.report.freshness.note, /do not prove/); assertReadOnlyCalls();
   const dist = path.join(directory, 'dist'); mkdirSync(dist, { recursive: true }); writeFileSync(path.join(dist, 'index.html'), 'built frontend');

@@ -25,7 +25,7 @@ nub --cwd packages/cli run test:external-consumer
 
 The caller's normal PATH still needs Node, npm, nub, Cargo, Rust mobile targets and cargo-ndk for producer exports and package builds. Native host commands receive only `NATIVE_HOST_PATH`; the runner first verifies that both `cargo` and `rustc` are unavailable there. The host SDK is installed from a tarball copied into that host's `vendor-packages/` directory, then checked to resolve inside the host itself.
 
-For producer-only iteration, run `nub --cwd packages/cli run test:external-consumer:export`. That creates `target/document-feature/export-report.json`, all seven native slices/ABIs and retained portable artifacts, but does not certify native host execution. `scripts/prepare-feature-hosts.mjs` can receive those artifacts in the three disposable hosts for individual build/debug iterations.
+For producer-only iteration, run `nub --cwd packages/cli run test:external-consumer:export`. That creates `target/document-feature/export-report.json`, all seven native slices/ABIs and retained portable artifacts, but does not certify native host execution. `scripts/prepare-feature-hosts.ts` can receive those artifacts in the three disposable hosts for individual build/debug iterations.
 
 The shared `scripts/feature-contract.yaml` saves through the native module, finds that document in the unchanged Tauri frontend, saves through the frontend, terminates/relaunches the host, and searches the frontend-created document through the native module and a newly mounted view. Domain tests also cover concurrent saves, replacement and corrupt-file preservation. Test-only desktop automation is injected into a separate copy and never exported.
 

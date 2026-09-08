@@ -56,7 +56,7 @@ android.sourceSets.main {
 }
 ```
 
-Run artifact validation before native integration/build. The example's Podfile and Gradle configuration call its `scripts/validate-artifacts.mjs` directly; npm build commands validate first too. Keep the complete directory together when upgrading, replace the received platform directory rather than merging stale files, and run `pod install` after iOS replacement so CocoaPods refreshes the contained archive's link settings.
+Run artifact validation before native integration/build. The example's Podfile and Gradle configuration call its `scripts/validate-artifacts.ts` directly; npm build commands validate first too. Keep the complete directory together when upgrading, replace the received platform directory rather than merging stale files, and run `pod install` after iOS replacement so CocoaPods refreshes the contained archive's link settings.
 
 ## API
 

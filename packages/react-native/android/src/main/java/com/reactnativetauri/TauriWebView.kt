@@ -150,20 +150,20 @@ internal class TauriWebView(context: Context) : WebView(context) {
     private const val ASSET_DIRECTORY = "tauri-native"
     private const val BRIDGE_SOURCE = """
     (() => {
-      let documentId;
+      let documentId        ;
       let nextId = 1;
       let active = false;
-      let timer;
+      let timer                                           ;
       let polling = false;
-      const pending = new Map();
-      const eventCallbacks = new Map();
-      const eventListeners = new Map();
+      const pending = new Map                                                                         ();
+      const eventCallbacks = new Map                                                               ();
+      const eventListeners = new Map                                            ();
       let nextCallback = 1;
       let nextListener = 1;
       let readySent = false;
-      const post = (message) => window.TauriNativeBridge.postMessage(JSON.stringify(message));
-      const send = (message) => post({ ...message, document: documentId });
-      const error = (code) => Object.assign(new Error(code), { code });
+      const post = (message               ) => window.TauriNativeBridge.postMessage(JSON.stringify(message));
+      const send = (message               ) => post({ ...message, document: documentId });
+      const error = (code        ) => Object.assign(new Error(code), { code });
       function reportReady() {
         if (!active || readySent) return;
         readySent = true;
@@ -180,13 +180,13 @@ internal class TauriWebView(context: Context) : WebView(context) {
         }, 16);
       }
 
-      function finish(id, responseJson, cause) {
+      function finish(id        , responseJson         , cause          ) {
         const callbacks = pending.get(id);
         if (!callbacks) return;
         pending.delete(id);
         try {
           if (cause) throw cause;
-          const response = JSON.parse(responseJson);
+          const response = JSON.parse(responseJson );
           if (response?.abiVersion === undefined) callbacks.resolve(response);
           else {
             if (![1, 2].includes(response.abiVersion) || typeof response.ok !== 'boolean' || !((response.ok ? 'value' : 'error') in response)) throw error('invalid_response');
@@ -199,7 +199,7 @@ internal class TauriWebView(context: Context) : WebView(context) {
         }
       }
 
-      function failAll(cause) {
+      function failAll(cause         ) {
         for (const id of [...pending.keys()]) finish(id, undefined, cause);
       }
 
@@ -210,7 +210,7 @@ internal class TauriWebView(context: Context) : WebView(context) {
         if (!active || document !== documentId) return;
         polling = false;
         try {
-          const batch = JSON.parse(responseJson);
+          const batch = JSON.parse(responseJson );
           if (!Array.isArray(batch)) throw error(batch?.error ?? 'invalid_response');
           for (const item of batch) finish(item.id, item.response);
         } catch (cause) { failAll(cause); }
@@ -237,7 +237,7 @@ internal class TauriWebView(context: Context) : WebView(context) {
       window.__RNTauriResume();
       window.__TAURI_NATIVE_HOST__ = "react-native";
       globalThis.isTauri = true;
-      const internals = window.__TAURI_INTERNALS__ || {};
+      const internals = window.__TAURI_INTERNALS__ || {}                  ;
       internals.transformCallback = (callback, once = false) => {
         if (!active) throw error('closed_document');
         if (eventCallbacks.size >= 64) throw error('event_listener_limit');
@@ -246,21 +246,21 @@ internal class TauriWebView(context: Context) : WebView(context) {
         return id;
       };
       internals.unregisterCallback = (id) => eventCallbacks.delete(id);
-      const unlisten = (event, id) => {
+      const unlisten = (event        , id        ) => {
         const listener = eventListeners.get(id);
         if (listener?.event !== event) return;
         eventCallbacks.delete(listener.handler);
         eventListeners.delete(id);
       };
       window.__TAURI_EVENT_PLUGIN_INTERNALS__ = { unregisterListener: unlisten };
-      const validEvent = (event) => {
+      const validEvent                                              = (event) => {
         if (typeof event !== 'string' || !/^[a-zA-Z0-9/:_-]*$/.test(event)) throw error('unsupported_event_name');
         if (event.startsWith('tauri://')) throw error('unsupported_system_event');
       };
-      const validTarget = (target) => {
+      const validTarget = (target                        ) => {
         if (target?.kind !== 'Webview' || target.label !== 'main') throw error('unsupported_event_target: only Webview main is supported');
       };
-      const dispatchEvent = (event, payload) => {
+      const dispatchEvent = (event        , payload         ) => {
         // Delivery is asynchronous, like Tauri's scheduled WebView evaluation.
         const document = documentId;
         const ids = [...eventListeners].filter(([, listener]) => listener.event === event).map(([id]) => id);
@@ -269,7 +269,7 @@ internal class TauriWebView(context: Context) : WebView(context) {
           for (const id of ids) {
             const listener = eventListeners.get(id);
             const entry = listener && eventCallbacks.get(listener.handler);
-            if (!entry) continue;
+            if (!listener || !entry) continue;
             if (entry.once) eventCallbacks.delete(listener.handler);
             try { entry.callback({ event, id, payload }); }
             catch (cause) { setTimeout(() => { throw cause; }, 0); }
@@ -279,19 +279,19 @@ internal class TauriWebView(context: Context) : WebView(context) {
       window.__RNTauriHostEvent = (document, event, payload) => {
         if (!active || document !== documentId) return 'closed_document';
         try { validEvent(event); dispatchEvent(event, JSON.parse(JSON.stringify(payload ?? null))); return ''; }
-        catch (cause) { return cause.message; }
+        catch (cause) { return cause instanceof Error ? cause.message : String(cause); }
       };
-      function invokeEvent(command, payload) {
+      function invokeEvent(command        , payload              ) {
         try {
           if (!active) throw error('closed_document');
           validEvent(payload.event);
-          if (command === 'plugin:event|unlisten') { unlisten(payload.event, payload.eventId); return null; }
+          if (command === 'plugin:event|unlisten') { unlisten(payload.event, payload.eventId ); return null; }
           if (command !== 'plugin:event|listen' && command !== 'plugin:event|emit_to') throw error('unsupported_event_operation');
           validTarget(payload.target);
           if (command === 'plugin:event|listen') {
-            if (!eventCallbacks.has(payload.handler)) throw error('invalid_event_callback');
+            if (!eventCallbacks.has(payload.handler )) throw error('invalid_event_callback');
             const id = nextListener++;
-            eventListeners.set(id, { event: payload.event, handler: payload.handler });
+            eventListeners.set(id, { event: payload.event, handler: payload.handler  });
             return id;
           }
           const value = JSON.parse(JSON.stringify(payload.payload ?? null));
@@ -299,7 +299,7 @@ internal class TauriWebView(context: Context) : WebView(context) {
           send({ type: 'event', event: payload.event, payload: value });
           return null;
         } catch (cause) {
-          if (command === 'plugin:event|listen') eventCallbacks.delete(payload.handler);
+          if (command === 'plugin:event|listen') eventCallbacks.delete(payload.handler );
           throw cause;
         }
       }

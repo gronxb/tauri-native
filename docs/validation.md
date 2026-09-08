@@ -25,25 +25,29 @@ The Lynx example enables full Release R8 and declares the input behavior and Gso
 2. The job archives portable exports and a standalone Android APK, alongside the three npm tarballs and their hashes. A receipt binds these files to the checkout commit. The Android APK is built on macOS because the current CLI's atomic publication uses the supported macOS implementation; the Linux job only consumes it.
 3. `native-ios` and `native-android` verify the transferred receipt and archive hashes. Each creates fresh RN, Expo and Lynx scaffolds outside the checkout, installs the received SDK tarballs with npm and builds with `cargo` and `rustc` absent from PATH. Both jobs run Fieldnotes with its original Rust commands and with the disposable Rust-only edit. Bare RN/Lynx then run the async and scoped-view flows.
 4. `candidate` requires all three jobs to succeed. It also checks that receipts include every required host/flow, reference the same inputs and contain successful pending-navigation evidence. It copies the already-tested tarballs into `release-candidate`.
-5. `scripts/release.mjs` checks the candidate commit, all required results, tarball hashes, embedded package names/versions and publish settings before checking npm. It publishes the received tarballs without rebuilding them, passing the validated registry, channel and access settings explicitly to npm. A tarball's embedded `publishConfig` alone does not select its experimental channel. The release regression test exercises real npm through a mandatory dry-run wrapper and verifies the selected channel. Package versions already on npm remain unchanged.
+5. `scripts/release.ts` checks the candidate commit, all required results, tarball hashes, embedded package names/versions and publish settings before checking npm. It publishes the received tarballs without rebuilding them, passing the validated registry, channel and access settings explicitly to npm. A tarball's embedded `publishConfig` alone does not select its experimental channel. The release regression test exercises real npm through a mandatory dry-run wrapper and verifies the selected channel. Package versions already on npm remain unchanged.
 
 Native automation uses Maestro 2.4.0. Disposable Android applications enable WebView debugging so Maestro can inspect recreated WebViews through CDP. The SDK packages and producer artifacts do not enable debugging. Timing reports include automation overhead and warm build caches; they are not first-frame or incremental SDK size benchmarks.
 
 ## Running the gates
+
+Repository scripts and integration harnesses are TypeScript and run directly with the pinned Node 24.15.0 toolchain. Run `nub run typecheck:scripts` and `nub run test:scripts` for shared tooling, and each package's `typecheck` and `test` scripts for its source and CLI fixtures. The standalone document example also typechecks before its Vite build.
+
+Edit `scripts/artifacts.ts`, `scripts/webview-client.ts`, and `packages/react-native/plugin/app.plugin.cts` as the source of truth. `node scripts/sync-host-files.ts react-native` and `node scripts/sync-host-files.ts lynx` regenerate the shipped CommonJS helpers and embedded WebView JavaScript; `--check` verifies the checked-in output. Package builds and prepack run this generation. The React Native example keeps its three-line `metro.config.js` so its existing Node 22.13 baseline can load Metro without enabling TypeScript stripping; its static Babel presets are in `babel.config.json`.
 
 The main entry points are:
 
 ```sh
 # Supported macOS producer environment, with Xcode/Rust mobile targets/NDK:
 nub ci
-node scripts/ci/producer.mjs
+node scripts/ci/producer.ts
 
 # On another prepared native machine at the same commit, after downloading
 # producer-input into target/ci/input:
-node scripts/ci/prepare-hosts.mjs
+node scripts/ci/prepare-hosts.ts
 # Set IOS_SIMULATOR_UDID or ANDROID_SERIAL to a dedicated device.
-node --experimental-strip-types scripts/ci/native.mjs ios
-node --experimental-strip-types scripts/ci/native.mjs android
+node --experimental-strip-types scripts/ci/native.ts ios
+node --experimental-strip-types scripts/ci/native.ts android
 ```
 
 The setup writes `target/ci/hosts.json`, and the native runner reads it directly. On Actions it also exposes the host paths to later steps through `GITHUB_ENV`. The setup uses existing native tools locally; `.github/actions/native-tools` is intended for disposable hosted runners. Never select a device belonging to another task.
@@ -51,7 +55,7 @@ The setup writes `target/ci/hosts.json`, and the native runner reads it directly
 For the standalone Android gate alone, `ANDROID_CONSUMER_BUILD_ONLY=1 nub --cwd packages/cli run test:export:android` creates `target/export-android/consumer-prepared.json` and `Independent Host/ArtifactHost.apk`. Copy both with that directory layout and run:
 
 ```sh
-ANDROID_SERIAL=<dedicated-16kb-emulator> node packages/cli/test/native-export/android-device.mjs /copied/export-android/consumer-prepared.json
+ANDROID_SERIAL=<dedicated-16kb-emulator> node packages/cli/test/native-export/android-device.ts /copied/export-android/consumer-prepared.json
 ```
 
 The preparation step reports that device execution is still required. Only the receiving-device step can produce the final native report.
