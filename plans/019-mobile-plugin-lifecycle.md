@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — ordinary desktop/iOS/Android and source-free native iOS/Android plugin calls pass; RN/Lynx package-level acceptance remains open.
+- Status: IN PROGRESS — ordinary desktop/iOS/Android, source-free native plugins, packed Lynx iOS/Android and RN Android execution pass; complete package lifecycle acceptance remains open.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#41](https://github.com/gronxb/tauri-native/issues/41) (plan 017), [#42](https://github.com/gronxb/tauri-native/issues/42) (plan 018)
@@ -59,3 +59,5 @@ The Android source-free Release/R8 native event gate also passes cancellation an
 The matching [iOS Release native event gate](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-events-ios-2026-09-09.json) now also passes after producer deletion and relocation: actual Swift plugin callbacks, explicit subscription cancellation/unlisten, original save and background deep-link events, exactly one new event after remount, and one live native listener. Native client readiness, OS permission retirement, setup counts and persistence remain intact.
 
 The packed Lynx retained SDK now passes on both platforms: original Swift/Kotlin geolocation plugins, separate Tauri/native/OS permission decisions and original save/deep-link events survive background/resume and renderer replacement. Actual native listeners drop to zero before replacement and return to one. Android uses a non-debuggable Release/R8 APK; iOS uses an arm64 Release simulator app and also removes Lynx while keeping the original Tauri frontend and `AppDelegate` working in the same process. Evidence: [Android](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-lynx-android-2026-09-09.json), [iOS](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-lynx-ios-2026-09-09.json). Consumer fixtures still own attachment hooks; RN/Expo paths, automatic composition and renderer destruction during a pending OS permission callback remain open.
+
+The packed RN Android SDK now also passes the original Kotlin geolocation permission denial/grant and location save, original Tauri events, background deep links, RN BackHandler/Linking and engine replacement/removal in one non-debuggable Release/R8 process. Native subscriptions retire before engine replacement and after removal, while the original Tauri frontend remains operational. [RN Android evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-react-android-2026-09-09.json). This gate forwards Activity hooks from the consumer fixture; RN iOS/Expo, Activity recreation, RN-owned permissions and actual renderer destruction during a pending OS permission callback still require execution.

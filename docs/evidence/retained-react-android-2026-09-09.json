@@ -1,0 +1,255 @@
+{
+  "passed": true,
+  "platform": "android",
+  "profile": "release",
+  "formatVersion": 2,
+  "abiVersion": 3,
+  "renderer": "React Native 0.86.3 / Hermes 250829098.0.17 / generated TurboModule and Fabric",
+  "sourceFree": true,
+  "sourceFreeBuild": "PATH=/usr/bin:/bin:/usr/sbin:/sbin ./gradlew --no-daemon assembleRelease",
+  "nonDebuggable": true,
+  "libraries": [
+    "lib/arm64-v8a/libappmodules.so",
+    "lib/arm64-v8a/libc++_shared.so",
+    "lib/arm64-v8a/libfbjni.so",
+    "lib/arm64-v8a/libhermestooling.so",
+    "lib/arm64-v8a/libhermesvm.so",
+    "lib/arm64-v8a/libimagepipeline.so",
+    "lib/arm64-v8a/libjsi.so",
+    "lib/arm64-v8a/libnative-filters.so",
+    "lib/arm64-v8a/libnative-imagetranscoder.so",
+    "lib/arm64-v8a/libordinary_tauri_mobile_fieldnotes_lib.so",
+    "lib/arm64-v8a/libreactnative.so"
+  ],
+  "elfAlignment": "All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed",
+  "packageSha256": "15d49b8bb19ed022ae242458c1247d16d30060e6b9d6eb28c5886d4be0f28080",
+  "artifactSha256": "111bbef2dfcdf57278717594837ffe8a72c592c932f521636068436a8b52e962",
+  "apkSha256": "c996abb26dd603ecaf72dec97ea2ca07269b88caf31915f41da5b8e2cdfef300",
+  "bundleSha256": "c1eb6899fefce07ef01a2289d194daf75f93e357213cc38e3552616ec8a3a94b",
+  "baseline": {
+    "directory": "/data/user/0/dev.taurinative.mobilefieldnotes",
+    "passed": true,
+    "reloaded": true,
+    "scenarios": [
+      "setup",
+      "state",
+      "app-handle",
+      "async",
+      "rust-event",
+      "plugin-setup",
+      "plugin-allowed",
+      "plugin-denied",
+      "domain-error",
+      "reload"
+    ],
+    "state": {
+      "appIdentifier": "dev.taurinative.mobilefieldnotes",
+      "pluginSetupCount": 1,
+      "setupCount": 1,
+      "value": 45
+    }
+  },
+  "initial": {
+    "generation": 1,
+    "resumed": 1,
+    "paused": 0,
+    "stopped": 0,
+    "hostClosed": false,
+    "hostDestroyed": false,
+    "receivedIntents": [],
+    "listeners": 1,
+    "listenersAfterRelease": -1,
+    "pid": 15085,
+    "notes": []
+  },
+  "remounted": {
+    "generation": 2,
+    "resumed": 4,
+    "paused": 3,
+    "stopped": 1,
+    "hostClosed": false,
+    "hostDestroyed": false,
+    "receivedIntents": [
+      "tauri-fieldnotes://notes/1"
+    ],
+    "listeners": 1,
+    "listenersAfterRelease": 0,
+    "pid": 15085,
+    "notes": [
+      {
+        "id": 1,
+        "text": "A RN place to remember",
+        "latitude": 37.5664983,
+        "longitude": 126.9779983
+      }
+    ]
+  },
+  "closed": {
+    "generation": 2,
+    "resumed": 5,
+    "paused": 4,
+    "stopped": 1,
+    "hostClosed": true,
+    "hostDestroyed": true,
+    "receivedIntents": [
+      "tauri-fieldnotes://notes/1",
+      "tauri-fieldnotes://notes/1?remounted=1"
+    ],
+    "listeners": 0,
+    "listenersAfterRelease": 0,
+    "pid": 15085,
+    "notes": [
+      {
+        "id": 1,
+        "text": "A RN place to remember",
+        "latitude": 37.5664983,
+        "longitude": 126.9779983
+      }
+    ]
+  },
+  "notes": [
+    {
+      "id": 1,
+      "text": "A RN place to remember",
+      "latitude": 37.5664983,
+      "longitude": 126.9779983
+    }
+  ],
+  "uiScenarios": [
+    "shared original state/setup",
+    "Tauri ACL and native caller denial",
+    "OS permission denial/grant",
+    "save and event",
+    "background deep link and event",
+    "renderer replacement retires native subscriptions",
+    "fresh renderer receives only fresh events",
+    "RN BackHandler and Linking routing",
+    "remove RN and keep original Tauri frontend"
+  ],
+  "testOnlyIntegration": "Consumer fixture layout/bootstrap hooks and RuntimeSession status telemetry; actual packed SDK owns its generated TurboModule, ReactHost/Fabric surface, native event/request lifetime and BackHandler dispatch. Consumer forwards Activity lifecycle/results/intents. Automatic composition/Expo and iOS acceptance remain open.",
+  "testOnlySigning": "Non-debuggable Release with R8 optimization and a debug test signing key; process-scoped logcat telemetry",
+  "recordedAt": "2026-09-09T10:02:21.796965+00:00",
+  "command": "PATH=\"$HOME/.cargo/bin:$HOME/Library/Android/sdk/platform-tools:$HOME/.maestro/bin:$PATH\" JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" ANDROID_HOME=\"$HOME/Library/Android/sdk\" NDK_HOME=\"$HOME/Library/Android/sdk/ndk/27.1.12297006\" ANDROID_SERIAL=emulator-5554 node --experimental-strip-types packages/react-native/test/retained-android.ts",
+  "toolchain": {
+    "node": "v24.15.0",
+    "npm": "11.12.1",
+    "java": "21.0.10+-117844308-b1163.108",
+    "gradle": "8.14.3",
+    "androidGradlePlugin": "8.11.0",
+    "kotlin": "2.1.20",
+    "ndk": "27.1.12297006",
+    "cmake": "3.22.1",
+    "reactNative": "0.86.3",
+    "codegen": "0.86.3",
+    "hermes": "250829098.0.17",
+    "maestro": "2.4.0",
+    "emulator": "Pixel 10 Pro XL, API 37, arm64, 16 KB",
+    "emulatorFingerprint": "google/sdk_gphone16k_arm64/emu64a16k:17/CP21.260330.005/15181570:user/dev-keys"
+  },
+  "sdkSourceSha256": {
+    "packages/react-native/src/retained.ts": "80d8e7c02c54e430986e4851c65788fb883d90f2a4d43a0cfefbff57f1bb28bf",
+    "packages/react-native/src/retained-client.ts": "d54bec5bd9f7dab9a1192da661612089b821494417ac259990d4a1e4da45f53a",
+    "packages/react-native/retained/specs/NativeTauriRuntime.ts": "7bf7588e0073c96a84fb2832c52c947a24956431a915fa5d1afaae33c684f64a",
+    "packages/react-native/package.json": "6f726862af22c8405a1ff8e497dc09169551e10d5ec3e19f1436a9d5da557523",
+    "packages/react-native/android/retained/build.gradle": "dbfa84929c27c4600eceb9857547b4a9fa2fd315b323680186feec229e2766df",
+    "packages/react-native/android/retained/consumer-rules.pro": "61941bc3acb0af12ff898d147aa4fa174cc1584a5c8858e7ecb68f00c94f3505",
+    "packages/react-native/android/retained/src/main/java/dev/taurinative/react/retained/TauriReactHost.kt": "416d970925c7dae3474dea2a98ffa87b28808f7c241eb896ae1145dd9b3cf463",
+    "packages/react-native/android/retained/src/main/java/dev/taurinative/react/retained/TauriRuntimeModule.java": "789c09f64962ead6113c1aa62d2c4a43207ffb074182956d2cb7be082e20723c",
+    "packages/react-native/android/retained/src/main/java/dev/taurinative/react/retained/TauriRuntimePackage.java": "a965bdd0cd78cccdeada376a9e4085319b91dd65a5fbbcc27cba39d42ee5bad9",
+    "packages/react-native/android/retained/src/main/jni/CMakeLists.txt": "ad2647c7fa0c133df00ca2bb20579649a6237dddc5d50de02e08ae5076635b1b",
+    "packages/react-native/android/retained/src/main/jni/OnLoad.cpp": "c11c71fdc1fb88c6b0dbd85fea35f7dae338cd516aa06552c1c6db0b1f1078c9"
+  },
+  "sharedClientSourceSha256": {
+    "scripts/retained-client.ts": "d54bec5bd9f7dab9a1192da661612089b821494417ac259990d4a1e4da45f53a",
+    "scripts/sync-host-files.ts": "aae2f1738ad1ecfa7e5a8e06ae67bbb8ff0a35dc5aa39f44e9fd040bfdef60a3",
+    "packages/lynx/src/retained-client.ts": "d54bec5bd9f7dab9a1192da661612089b821494417ac259990d4a1e4da45f53a"
+  },
+  "gateSourceSha256": {
+    "packages/react-native/test/retained-android.ts": "ebb4373ffb300b7b55bc23ea4e9422d85ec95844349106938a56258b0fd2f4e1",
+    "packages/react-native/test/retained/MainActivity.kt.fixture": "24666068a870c3c1a1414cbc67a8cdcd5586e235bc7550dc29277a1c1f5beca1",
+    "packages/react-native/test/retained/build.cjs.fixture": "5af288db15080da38c5cf493badc3b80dc87ee731f41dd42ac37b69a9a65f740",
+    "packages/react-native/test/retained/index.tsx.fixture": "34a4fa35a0014a529f65d052ac65aea77890e09c2ef22eea6e6bfe8bdae7e530"
+  },
+  "generatedCodeSha256": {
+    "java/dev/taurinative/react/retained/NativeTauriRuntimeSpec.java": "88064adc5999265c26c52fe85c7ee4f6ef5fbf75b6ca5550539e1a248f9b688b",
+    "jni/CMakeLists.txt": "5baed4f174d3edbe9fac0c931a5d0bedb849f639db0b8d530b056c02036dada4",
+    "jni/TauriNativeRetainedSpec-generated.cpp": "7de3e0bc5e6589d8d366ba41e9115f0a6c03c6b55934d1e14aec4a1e084013cb",
+    "jni/TauriNativeRetainedSpec.h": "9ac0b56698049467b963da00a2d5ee87108fc5c45e50d5871c16df39d49030c9",
+    "jni/react/renderer/components/TauriNativeRetainedSpec/TauriNativeRetainedSpecJSI.h": "98729e6dbf39cca317eb1a791f1fc04f54c3b92d4f9197083dd0f41a31ed8bf5",
+    "schema.json": "636ce7820e61e42f31cd000cd4e09c5dd1065118ea5c438185464fef7ed84038"
+  },
+  "junitSha256": {
+    "initial": "da5e5efc4062d9ac9060c8df6a39003c8a9c403a7304bd2163b01c7d86a30423",
+    "back": "c21cc25bacdc840ac8efd2874fa8df4fe2d66b053f3f93729f214b3074ccefa3",
+    "deny-permission": "6a000f28c8875dd02daf35dc12e643e82b354fc08fe5882c171fd1bedfa786e9",
+    "grant-permission": "e9bf611cdfea1b8f50135e4bd4d9eb456d05587ce2615f4fb0c2dfc1a76d8d80",
+    "background": "2877c8206efca5cc419383f68891591bbbc30164a9722af00ab7abf4d962fafa",
+    "resume": "004a4ea7d5cf8128073b0dcee25c007fb7aee1739775040ec6347e45f4fc3aba",
+    "fresh-events": "99ba78435c4495fc19500e55c6fe298da633c9edf3963ced62f60881765cbf0a",
+    "remove-renderer": "111a4383deca631400b23f15b232afb5b1f0e912cbe1cbde265c2f5f0b1a3fdd"
+  },
+  "verification": {
+    "junitFlows": 8,
+    "skippedFlows": 0,
+    "baselineScenarios": 10,
+    "sharedRetainedClientTests": 4,
+    "existingReactNativeJsTests": 9,
+    "packageFiles": 89,
+    "typechecks": [
+      "packages/react-native/tsconfig.json",
+      "scripts/tsconfig.json"
+    ]
+  },
+  "buildLogSha256": "ac9a8ee16c1b77b52c39c06a2371b2de4c47d86198f843e3b246ac1d0a9a063c",
+  "releaseLint": "AGP 8.11.0 K1 analyzer (android.lint.useK2Uast=false); lintVitalAnalyzeRelease, lintVitalReportRelease and lintVitalRelease passed; no lint tasks or findings suppressed.",
+  "r8HostMapping": "dev.taurinative.react.retained.TauriReactHost -> I4.c:",
+  "sdkAarNativeLibraries": [
+    "jni/arm64-v8a/libappmodules.so"
+  ],
+  "scope": "Consumes the previously validated producer-deleted format 2 artifact, relocated to a path with spaces. The input receipt remains byte-identical. This run does not re-export Rust or re-prove the later Android origin capture fix. No producer-specific command bridge or substitute runtime is used.",
+  "earlierAttempts": [
+    {
+      "passed": false,
+      "stage": "resolve codegen",
+      "reason": "Resolving transitive codegen from a nominal pnpm symlink path failed before Gradle. Resolve from the installed RN package real path."
+    },
+    {
+      "passed": false,
+      "stage": "native codegen CMake",
+      "reason": "Generated CMake was included before the RN compiler flag function; corrected include order.",
+      "logSha256": "15e3d353ae676481e29150d7a295d236fa708f3c0f42249e9499182d2b30f821"
+    },
+    {
+      "passed": false,
+      "stage": "native codegen CMake",
+      "reason": "Generated code requires the same unqualified jsi/reactnative/fbjni aliases as upstream RN application CMake; added them.",
+      "logSha256": "4f378dc199fdaf5ad2642973631353c66b7d25e99fe0b78bab8f318f8ca5caf0"
+    },
+    {
+      "passed": false,
+      "stage": "Release native packaging",
+      "reason": "Prefab link inputs duplicated the runtime libraries already shipped by RN AARs. The SDK now packages only its own appmodules native library.",
+      "logSha256": "44d32884779271ffd2405c53abce06273d062f622edb1aff27e283378eb236b0"
+    },
+    {
+      "passed": false,
+      "stage": "Release lint",
+      "reason": "AGP 8.11 K2 lint crashed with Cannot find a KaModule for the VirtualFile on Tauri applied Kotlin Gradle script (upstream b/430991549). The full successful run selects its K1 analyzer, keeping all Release lint checks enabled.",
+      "logSha256": "0c60bbd64faf3a84de159e3bd016cf2a3bb46414f3bb76ed78bffbb1f66ebb6b"
+    }
+  ],
+  "primaryReferences": [
+    "https://issuetracker.google.com/issues/430991549",
+    "https://android.googlesource.com/platform/tools/base/+/d5c65d4fbfccc0065b7f9932acff5e1c28a9e9c9",
+    "https://developer.android.com/studio/projects/gradle-external-native-builds"
+  ],
+  "remaining": [
+    "RN iOS retained SDK",
+    "Expo CNG and native-module integration",
+    "automatic native composition/autolinking",
+    "retained TauriView",
+    "native renderer destruction during a pending OS permission callback",
+    "Activity recreation and RN-owned permissions",
+    "full six-combination release/device/adopter evidence"
+  ]
+}

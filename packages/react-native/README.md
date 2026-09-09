@@ -2,6 +2,12 @@
 
 Experimental iOS and Android React Native bridge for a Tauri microfrontend and its Rust commands.
 
+The retained Tauri mode under `@tauri-native/react-native/retained` is being
+implemented in this checkout. Its Android host uses format 2 / ABI 3 artifacts
+and the original Tauri Activity, Rust state, capabilities and native plugins.
+iOS, Expo/automatic composition and retained `TauriView` remain open. The default
+entry point and integration below describe format 1; see [retained integration](./RETAINED.md).
+
 ## Install
 
 The earlier 0.1.0 release predates the source-export and async APIs documented here. For this checkout, install the matching candidate tarball using the [Fieldnotes walkthrough](https://github.com/gronxb/tauri-native/blob/main/docs/examples/fieldnotes.md). This checkout prepares 1.0.0-rc.0; its version alone does not establish npm availability. The registry command below selects the published experimental release. See [migration](https://github.com/gronxb/tauri-native/blob/main/docs/migration.md) for the API changes.

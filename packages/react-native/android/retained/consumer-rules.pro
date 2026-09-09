@@ -1,0 +1,2 @@
+-keep class dev.taurinative.react.retained.NativeTauriRuntimeSpec { *; }
+-keep class dev.taurinative.react.retained.TauriRuntimeModule { *; }

@@ -1,0 +1,55 @@
+plugins {
+  id 'com.android.library'
+  id 'org.jetbrains.kotlin.android'
+}
+
+def reactNative = file(rootProject.ext.tauriNativeReactNativeDir)
+def codegen = file(rootProject.ext.tauriNativeReactCodegenDir)
+if ([reactNative, codegen].any { new groovy.json.JsonSlurper().parse(new File(it, 'package.json')).version != '0.86.3' }) {
+  throw new GradleException('Retained Tauri RN requires React Native and codegen 0.86.3 to match its native runtime')
+}
+def generated = layout.buildDirectory.dir('generated/retained-codegen').get().asFile
+def specs = file('../../retained/specs')
+def schema = tasks.register('generateRetainedSchema', Exec) {
+  inputs.dir(specs); inputs.dir(codegen)
+  outputs.file(new File(generated, 'schema.json'))
+  doFirst { generated.mkdirs() }
+  commandLine rootProject.ext.tauriNativeNode, new File(codegen, 'lib/cli/combine/combine-js-to-schema-cli.js'),
+    '--platform', 'android', new File(generated, 'schema.json'), specs
+}
+def nativeCode = tasks.register('generateRetainedCode', Exec) {
+  dependsOn schema
+  inputs.file(new File(generated, 'schema.json')); inputs.dir(codegen)
+  inputs.file(new File(reactNative, 'scripts/generate-specs-cli.js')); inputs.dir(new File(reactNative, 'scripts/codegen'))
+  outputs.dirs(new File(generated, 'java'), new File(generated, 'jni'))
+  commandLine rootProject.ext.tauriNativeNode, new File(reactNative, 'scripts/generate-specs-cli.js'),
+    '--platform', 'android', '--schemaPath', new File(generated, 'schema.json'), '--outputDir', generated,
+    '--libraryName', 'TauriNativeRetainedSpec', '--javaPackageName', 'dev.taurinative.react.retained', '--libraryType', 'modules'
+}
+
+android {
+  namespace 'dev.taurinative.react.retained'
+  compileSdk 36
+  ndkVersion '27.1.12297006'
+  defaultConfig {
+    minSdk 24
+    consumerProguardFiles 'consumer-rules.pro'
+    externalNativeBuild.cmake.arguments '-DANDROID_STL=c++_shared', "-DREACT_NATIVE_DIR=${reactNative}", "-DCODEGEN_DIR=${generated}"
+    ndk.abiFilters.addAll(rootProject.ext.tauriNativeAbis)
+  }
+  buildFeatures { prefab true }
+  // Prefab supplies link inputs; the pinned React/Hermes AARs own these runtime libraries.
+  packaging.jniLibs.excludes += ['**/libfbjni.so', '**/libjsi.so', '**/libreactnative.so', '**/libc++_shared.so']
+  sourceSets.main.java.srcDir(new File(generated, 'java'))
+  externalNativeBuild.cmake { path 'src/main/jni/CMakeLists.txt'; version '3.22.1' }
+  compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+  kotlinOptions { jvmTarget = '17' }
+}
+tasks.matching { it.name == 'preBuild' || it.name.startsWith('configureCMake') }.configureEach { dependsOn nativeCode }
+
+dependencies {
+  implementation project(':tauri-native-runtime-client')
+  implementation 'androidx.activity:activity:1.10.1'
+  api 'com.facebook.react:react-android:0.86.3'
+  implementation 'com.facebook.hermes:hermes-android:250829098.0.17'
+}

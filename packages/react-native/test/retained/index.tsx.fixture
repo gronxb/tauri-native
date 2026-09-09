@@ -1,0 +1,72 @@
+import { useEffect, useRef, useState } from 'react';
+import { AppRegistry, BackHandler, Linking, Platform, Pressable, ScrollView, Text } from 'react-native';
+import { openTauriSession, type RuntimeSession, type InvokeResponse } from '@tauri-native/react-native/retained';
+
+function value<T>(response: InvokeResponse<T>): T {
+  if (!response.ok) throw new Error(JSON.stringify(response.error));
+  return response.value;
+}
+
+export function App() {
+  const session = useRef<RuntimeSession | undefined>(undefined);
+  const [status, setStatus] = useState('Opening Tauri');
+  const [events, setEvents] = useState(0);
+  const [links, setLinks] = useState(0);
+  const [backs, setBacks] = useState(0);
+  useEffect(() => {
+    const link = Linking.addEventListener('url', () => setLinks(count => count + 1));
+    const back = BackHandler.addEventListener('hardwareBackPress', () => { setBacks(count => count + 1); return true; });
+    return () => { link.remove(); back.remove(); };
+  }, []);
+  const run = (action: (runtime: RuntimeSession) => Promise<string>) => {
+    if (session.current) void action(session.current).then(setStatus, error => setStatus(`ERROR ${error}`));
+  };
+  useEffect(() => {
+    let disposed = false;
+    void openTauriSession('native').then(async runtime => {
+      if (disposed) { await runtime.close(); return; }
+      session.current = runtime;
+      await runtime.listen('fieldnotes-updated', () => setEvents(count => count + 1), error => setStatus(`EVENT ERROR ${JSON.stringify(error)}`));
+      const state = value(await runtime.invoke<{ value: number; setupCount: number; pluginSetupCount: number }>('snapshot', {}));
+      setStatus(`Tauri ${state.value} setup ${state.setupCount} plugins ${state.pluginSetupCount}`);
+    }).catch(error => { if (!disposed) setStatus(`ERROR ${error}`); });
+    return () => { disposed = true; void session.current?.close(); session.current = undefined; };
+  }, []);
+  const actions: [string, (runtime: RuntimeSession) => Promise<string>][] = [
+    ['Check permission', async runtime => {
+      const permission = value(await runtime.invoke<{ location: string }>('plugin:geolocation|check_permissions', {}));
+      return `Permission ${permission.location}`;
+    }],
+    ['Request permission', async runtime => {
+      const permission = value(await runtime.invoke<{ location: string }>('plugin:geolocation|request_permissions', { permissions: ['location'] }));
+      return `Permission ${permission.location}`;
+    }],
+    ['Deny capability', async runtime => {
+      const reply = await runtime.invoke('plugin:geolocation|watch_position', { callback: 1 });
+      if (reply.ok || !String(reply.error).includes('not allowed by ACL')) throw new Error(JSON.stringify(reply));
+      return 'Tauri capability denied';
+    }],
+    ['Deny native caller', async runtime => {
+      const reply = await runtime.invoke('increment', { delta: 10 });
+      if (reply.ok || !String(reply.error).includes('Native caller does not allow')) throw new Error(JSON.stringify(reply));
+      return 'Native caller denied';
+    }],
+    ['Save location', async runtime => {
+      const position = await runtime.invoke<{ coords: { latitude: number; longitude: number } }>('plugin:geolocation|get_current_position', { options: { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } });
+      if (!position.ok) return 'Location denied';
+      const note = value(await runtime.invoke<{ id: number }>('save_note', { text: 'A RN place to remember', ...position.value.coords }));
+      return `RN note ${note.id}`;
+    }],
+    ['Refresh Tauri', async runtime => {
+      const state = value(await runtime.invoke<{ links: string[]; notes: unknown[]; setupCount: number; pluginSetupCount: number }>('plugin_snapshot', {}));
+      if (state.setupCount !== 1 || state.pluginSetupCount !== 1) throw new Error(JSON.stringify(state));
+      return `Links ${state.links.length} notes ${state.notes.length} setup 1 plugins 1`;
+    }],
+  ];
+  return <ScrollView style={{ flex: 1, backgroundColor: '#e4f3ed' }} contentContainerStyle={{ padding: 12 }}>
+    <Text>{`RN ${Platform.constants.reactNativeVersion.minor} ${global.HermesInternal ? 'Hermes' : 'No Hermes'}`}</Text>
+    {[status, `RN events ${events}`, `RN links ${links} back ${backs}`].map(text => <Text key={text} style={{ fontSize: 15, color: '#12382d' }}>{text}</Text>)}
+    {actions.map(([label, action]) => <Pressable key={label} accessibilityRole="button" accessibilityLabel={label} onPress={() => run(action)} style={{ marginTop: 5, padding: 5, backgroundColor: '#fff' }}><Text>{label}</Text></Pressable>)}
+  </ScrollView>;
+}
+AppRegistry.registerComponent('RetainedFieldnotes', () => App);

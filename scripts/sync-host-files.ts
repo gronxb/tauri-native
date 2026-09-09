@@ -28,6 +28,7 @@ for (const [source, destination] of [
   ...(host === 'react-native' ? [['../packages/react-native/plugin/app.plugin.cts', 'app.plugin.js']] : []),
   ['artifacts.d.cts', 'artifacts.d.ts'],
   ['async-client.ts', 'src/async-client.ts'],
+  ['retained-client.ts', 'src/retained-client.ts'],
   ['view-options.ts', 'src/view-options.ts'],
   ['async-contract.ts', 'test/native-artifacts/async-contract.ts'],
   ['view-contract.ts', 'test/native-artifacts/view-contract.ts'],

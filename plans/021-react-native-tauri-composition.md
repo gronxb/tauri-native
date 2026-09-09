@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: TODO
+- Status: IN PROGRESS — packed RN Android Release/R8 execution passes with retained artifacts; iOS, Expo and automatic composition remain open.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#41](https://github.com/gronxb/tauri-native/issues/41) (plan 017), [#44](https://github.com/gronxb/tauri-native/issues/44) (plan 020)
@@ -48,3 +48,39 @@ Implementation is authorized directly on `main` in incremental commits, without 
 The iOS prototype uses `RCTReactNativeFactory` and a real Fabric root view under the retained Tauri view hierarchy; it does not install an RN UIApplication delegate. The Android candidate keeps `TauriActivity` and uses `ReactHost`/`ReactSurface`, forwarding RN resume/pause and awaiting asynchronous surface stop before remount. Carry RN's core TurboModule provider registration and matching Hermes/C++ dependencies into generated native integration.
 
 The probes use RN 0.86.3 and an offline JS bundle with a test-only callback module. They do not establish Expo native module/autolinking or lifecycle coverage, production TurboModule contracts, Activity recreation, deep links, permission results or Release artifacts. Verify those scenarios in this issue rather than treating M6 surface coexistence as package support.
+
+## Android SDK execution (2026-09-09)
+
+The package now provides `@tauri-native/react-native/retained`, a generated
+`TauriNativeRuntime` TurboModule and `TauriReactHost` owning a Fabric surface and
+independent RN engine. RN and Lynx ship the same session client without depending
+on each other. The original Tauri Activity, WebView, native plugins and bootstrap
+remain in place; no producer bridge is added. The host retires native sessions
+before RN engine destruction, forwards lifecycle/intents and owns AndroidX back
+dispatch with fallback to the original dispatcher.
+
+`packages/react-native/test/retained-android.ts` packs the actual SDK, bundles its
+compiled public entry and builds a relocated format 2 arm64 consumer without Rust
+on PATH. RN/codegen 0.86.3 and Hermes 250829098.0.17 execute in a non-debuggable
+Release/R8 APK. All eleven ELF libraries and APK 16 KB alignment pass. Eight
+JUnit flows cover shared state/setup, separate Tauri/native/OS permission
+decisions, actual Kotlin geolocation/save/events, RN BackHandler and Linking,
+background deep links, RN engine replacement and removal. Native listeners go
+from one to zero to one at replacement, then zero at removal. The original
+frontend still handles commands in the same process after RN is destroyed.
+[Execution evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-react-android-2026-09-09.json).
+
+The SDK includes only its own `appmodules` native library; pinned upstream AARs
+supply RN/Hermes dependencies. RN/codegen version mismatches fail before codegen.
+The original AGP 8.11 K2 lint crashes on applied Kotlin Gradle scripts
+([upstream issue](https://issuetracker.google.com/issues/430991549)); the consumer
+selects its K1 analyzer while retaining Release lint checks. Earlier failed
+builds and this toolchain constraint are recorded separately in the evidence.
+
+Consumer fixtures still supply attachment/layout and Activity forwarding hooks.
+This is not Expo CNG or automatic integration. RN iOS, retained TauriView,
+Activity recreation, RN-owned permissions, renderer destruction during a pending
+OS permission callback, migration and full parity/device/adopter gates remain
+required. The input artifact is unchanged; this consumption run does not re-export
+Rust or re-prove the later Android origin-capture fix. No acceptance item is
+closed by the Android-only result.

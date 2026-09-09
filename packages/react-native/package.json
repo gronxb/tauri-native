@@ -11,6 +11,11 @@
       "types": "./lib/typescript/src/index.d.ts",
       "default": "./lib/module/index.js"
     },
+    "./retained": {
+      "tauri-native-source": "./src/retained.ts",
+      "types": "./lib/typescript/src/retained.d.ts",
+      "default": "./lib/module/retained.js"
+    },
     "./app.plugin": "./app.plugin.js",
     "./app.plugin.js": "./app.plugin.js",
     "./artifacts": {
@@ -26,6 +31,10 @@
     "android/build.gradle",
     "android/consumer-rules.pro",
     "android/src",
+    "android/retained/build.gradle",
+    "android/retained/consumer-rules.pro",
+    "android/retained/src",
+    "retained",
     "cpp",
     "ios/*.h",
     "ios/*.m",
@@ -34,6 +43,7 @@
     "LICENSE",
     "lib",
     "README.md",
+    "RETAINED.md",
     "src",
     "*.podspec"
   ],
