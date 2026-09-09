@@ -90,7 +90,9 @@ action('#save', async () => {
 action('#deny', async () => {
   try { await invoke('plugin:geolocation|watch_position', {}); }
   catch (error) {
-    if (!String(error).includes('not allowed')) throw error;
+    const message = String(error);
+    if (!message.startsWith('geolocation.watch_position explicitly denied') &&
+        message !== 'Command plugin:geolocation|watch_position not allowed by ACL') throw error;
     return 'Tauri capability denied location watch';
   }
   throw new Error('Denied geolocation command unexpectedly ran');

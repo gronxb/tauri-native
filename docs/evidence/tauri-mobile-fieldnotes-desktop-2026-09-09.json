@@ -8,7 +8,7 @@
     "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
     "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
     "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
-    "src/main.ts": "61c16250e5a3897811842f7c5f464033b5096e5570efa4734849009c450d3dc5",
+    "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
     "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
     "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
     "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
@@ -46,9 +46,5 @@
   "mobileComposition": "Desktop independence only; native geolocation/permission callbacks require iOS/Android execution in #43",
   "date": "2026-09-09",
   "command": "nub --cwd packages/cli run test:runtime:plugins:desktop",
-  "plugins": {
-    "geolocation": "2.3.3",
-    "deepLink": "2.4.10"
-  },
-  "scope": "Ordinary producer desktop startup, state, AppHandle, inline plugin ACL, async, events and reload. Native mobile plugin callbacks are not established by this desktop gate."
+  "scope": "Ordinary Tauri producer execution. Composed native callers, callback retirement, Release and physical-device acceptance remain open."
 }

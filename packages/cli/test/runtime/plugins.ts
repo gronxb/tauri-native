@@ -81,19 +81,25 @@ try {
   run('dependencies', 'npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund']);
   const before = snapshot(producer);
   run('init', 'npm', ['run', 'tauri', '--', platform, 'init', '--ci', '--skip-targets-install']);
+  // Fresh scaffolds need the native build-script side effects again. Upstream
+  // deep-link does not invalidate its cache when an existing Info.plist is regenerated.
+  run('refresh-native-codegen', 'cargo', ['clean', '--package', 'tauri', '--package', 'tauri-plugin-geolocation',
+    '--package', 'tauri-plugin-deep-link', '--target', platform === 'ios' ? 'aarch64-apple-ios-sim' : 'aarch64-linux-android',
+    '--manifest-path', 'src-tauri/Cargo.toml']);
   if (platform === 'ios') {
     run('build', 'npm', ['run', 'tauri', '--', 'ios', 'build', '--ci', '--debug', '--target', 'aarch64-sim', '--no-sign']);
     const app = artifact(path.join(producer, 'src-tauri/gen/apple/build'), file => file.endsWith('.app') && path.basename(path.dirname(file)) === 'arm64-sim');
     const info = JSON.parse(run('app-info', 'plutil', ['-convert', 'json', '-o', '-', path.join(app, 'Info.plist')]));
     assert.equal(info.NSLocationWhenInUseUsageDescription, 'Attach your current location to a note when you request it.');
-    assert(info.CFBundleURLTypes.some((type: { CFBundleURLSchemes: string[] }) => type.CFBundleURLSchemes.includes('tauri-fieldnotes')));
+    assert(info.CFBundleURLTypes?.some((type: { CFBundleURLSchemes: string[] }) => type.CFBundleURLSchemes.includes('tauri-fieldnotes')),
+      'Native plugin build must preserve the configured deep-link URL scheme after scaffold regeneration');
     run('install', 'xcrun', ['simctl', 'install', device, app]); installed = true;
     const container = run('container', 'xcrun', ['simctl', 'get_app_container', device, appId, 'data']);
     dataDirectory = path.join(container, 'Library/Application Support', appId);
+    for (const file of ['runtime-report.json', 'plugins-report.json']) rmSync(path.join(dataDirectory, file), { force: true });
     run('privacy-reset', 'xcrun', ['simctl', 'privacy', device, 'reset', 'location', appId]);
     run('gps', 'xcrun', ['simctl', 'location', device, 'set', '37.5665,126.9780']);
   } else {
-    run('refresh-tauri-codegen', 'cargo', ['clean', '--package', 'tauri', '--target', 'aarch64-linux-android', '--manifest-path', 'src-tauri/Cargo.toml']);
     run('build', 'npm', ['run', 'tauri', '--', 'android', 'build', '--ci', '--debug', '--target', 'aarch64', '--apk']);
     const apk = artifact(path.join(producer, 'src-tauri/gen/android/app/build/outputs/apk'), file => file.endsWith('-debug.apk'));
     run('install', 'adb', ['-s', device, 'install', apk]); installed = true;
@@ -106,10 +112,12 @@ try {
   await until(() => report().action === '#deny');
   const acl = report();
   assert.equal(acl.ok, true); assert.equal(acl.snapshot.notes.length, 0);
-  flow('deny-permission', '- tapOn: "Request location permission"\n- tapOn: "(?i)Don.t allow"\n- assertVisible: "Location permission denied"');
+  // Upstream Tauri reports Android's retryable first denial as prompt-with-rationale.
+  const deniedState = platform === 'android' ? 'prompt-with-rationale' : 'denied';
+  flow('deny-permission', `- tapOn: "Request location permission"\n- tapOn: "(?i)(Don.t allow|허용 안 함)"\n- assertVisible: "Location permission ${deniedState}"`);
   await until(() => report().action === '#request');
   const denied = report();
-  assert.equal(denied.ok, true); assert.equal(denied.result, 'Location permission denied');
+  assert.equal(denied.ok, true); assert.equal(denied.result, `Location permission ${deniedState}`);
   flow('denied-position', '- tapOn: "Save location note"');
   await until(() => report().action === '#save');
   const deniedPosition = report();
@@ -120,7 +128,7 @@ try {
     run(`reset-${permission}`, 'adb', ['-s', device, 'shell', 'pm', 'clear-permission-flags', appId, `android.permission.${permission}`, 'user-set', 'user-fixed']);
   }
   launch('permission-relaunch');
-  flow('grant-permission', `- tapOn: "Request location permission"\n- tapOn: "${platform === 'ios' ? 'Allow While Using App' : '(?i)While using the app'}"\n- assertVisible: "Location permission granted"`);
+  flow('grant-permission', `- tapOn: "Request location permission"\n- tapOn: "${platform === 'ios' ? '(Allow While Using App|앱을 사용하는 동안 허용)' : '(?i)While using the app'}"\n- assertVisible: "Location permission granted"`);
   await until(() => report().action === '#request' && report().result === 'Location permission granted');
   const granted = report();
   flow('save', '- tapOn: "Save location note"\n- assertVisible: "Saved location note 1"');
@@ -134,7 +142,8 @@ try {
   const link = 'tauri-fieldnotes://notes/1';
   if (platform === 'ios') run('deep-link', 'xcrun', ['simctl', 'openurl', device, link]);
   else run('deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', link, '-p', appId]);
-  flow('link-ui', '- assertVisible: "Links received 1"\n- tapOn: "Refresh notes and links"');
+  flow('link-ui', (platform === 'ios' ? '- tapOn:\n    text: "(Open|열기)"\n    optional: true\n' : '') +
+    '- assertVisible: "Links received 1"\n- tapOn: "Refresh notes and links"');
   await until(() => report().snapshot.links.length === 1);
   const linked = report();
   assert.deepEqual(linked.snapshot.links, [link]);

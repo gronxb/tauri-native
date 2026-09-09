@@ -1,0 +1,190 @@
+{
+  "passed": true,
+  "platform": "ios",
+  "mode": "standalone Tauri Mobile",
+  "runtime": "Tauri 2.11.5 / Wry",
+  "plugins": {
+    "geolocation": "2.3.3",
+    "deepLink": "2.4.10"
+  },
+  "build": "Debug arm64 simulator/emulator, standard Tauri CLI",
+  "producerUnchanged": true,
+  "sourceHashes": {
+    "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+    "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+  },
+  "scenarios": [
+    "ordinary-runtime-baseline",
+    "tauri-capability-denial",
+    "os-permission-denial",
+    "denied-position-no-save",
+    "os-permission-grant",
+    "native-position-callback",
+    "persist-location-note",
+    "background-deep-link-once",
+    "process-relaunch-persistence"
+  ],
+  "baseline": {
+    "directory": "<application-data-directory>",
+    "passed": true,
+    "reloaded": true,
+    "scenarios": [
+      "setup",
+      "state",
+      "app-handle",
+      "async",
+      "rust-event",
+      "plugin-setup",
+      "plugin-allowed",
+      "plugin-denied",
+      "domain-error",
+      "reload"
+    ],
+    "state": {
+      "appIdentifier": "dev.taurinative.mobilefieldnotes",
+      "pluginSetupCount": 1,
+      "setupCount": 1,
+      "value": 45
+    }
+  },
+  "acl": {
+    "action": "#deny",
+    "kind": "plugins",
+    "ok": true,
+    "result": "Tauri capability denied location watch",
+    "snapshot": {
+      "links": [],
+      "notes": [],
+      "platform": "ios",
+      "pluginSetupCount": 1,
+      "setupCount": 1
+    }
+  },
+  "denied": {
+    "action": "#request",
+    "kind": "plugins",
+    "ok": true,
+    "result": "Location permission denied",
+    "snapshot": {
+      "links": [],
+      "notes": [],
+      "platform": "ios",
+      "pluginSetupCount": 1,
+      "setupCount": 1
+    }
+  },
+  "deniedPosition": {
+    "action": "#save",
+    "kind": "plugins",
+    "ok": false,
+    "result": "The operation couldn’t be completed. (kCLErrorDomain error 1.)",
+    "snapshot": {
+      "links": [],
+      "notes": [],
+      "platform": "ios",
+      "pluginSetupCount": 1,
+      "setupCount": 1
+    }
+  },
+  "granted": {
+    "action": "#request",
+    "kind": "plugins",
+    "ok": true,
+    "result": "Location permission granted",
+    "snapshot": {
+      "links": [],
+      "notes": [],
+      "platform": "ios",
+      "pluginSetupCount": 1,
+      "setupCount": 1
+    }
+  },
+  "saved": {
+    "action": "#save",
+    "kind": "plugins",
+    "ok": true,
+    "result": "Saved location note 1",
+    "snapshot": {
+      "links": [],
+      "notes": [
+        {
+          "id": 1,
+          "latitude": 37.5665,
+          "longitude": 126.978,
+          "text": "A place to remember"
+        }
+      ],
+      "platform": "ios",
+      "pluginSetupCount": 1,
+      "setupCount": 1
+    }
+  },
+  "linked": {
+    "action": "#refresh",
+    "kind": "plugins",
+    "ok": true,
+    "result": "Current links [\"tauri-fieldnotes://notes/1\"]",
+    "snapshot": {
+      "links": [
+        "tauri-fieldnotes://notes/1"
+      ],
+      "notes": [
+        {
+          "id": 1,
+          "latitude": 37.5665,
+          "longitude": 126.978,
+          "text": "A place to remember"
+        }
+      ],
+      "platform": "ios",
+      "pluginSetupCount": 1,
+      "setupCount": 1
+    }
+  },
+  "relaunched": {
+    "action": "#refresh",
+    "kind": "plugins",
+    "ok": true,
+    "result": "Current links null",
+    "snapshot": {
+      "links": [],
+      "notes": [
+        {
+          "id": 1,
+          "latitude": 37.5665,
+          "longitude": 126.978,
+          "text": "A place to remember"
+        }
+      ],
+      "platform": "ios",
+      "pluginSetupCount": 1,
+      "setupCount": 1
+    }
+  },
+  "date": "2026-09-09",
+  "command": "nub --cwd packages/cli run test:runtime:plugins:ios",
+  "scope": "Ordinary Tauri producer execution. Composed native callers, callback retirement, Release and physical-device acceptance remain open.",
+  "binary": {
+    "kind": "installed app executable",
+    "sha256": "de79618eee9e1e8c4d36e270d54e1223c9d8e74318ddd9e0d7243cbffa42c9ed"
+  },
+  "versions": {
+    "tauri": "2.11.5",
+    "tauriCli": "2.11.4",
+    "maestro": "2.4.0",
+    "target": "iOS 26.4 arm64 simulator"
+  },
+  "executionNote": "Full checked-in gate passed serially. Permission actions use real OS UI; reset before retry permits another explicit request. Android first denial is prompt-with-rationale. iOS also confirms opening the custom URL."
+}
