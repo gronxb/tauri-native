@@ -45,7 +45,7 @@ This path pins RN/codegen 0.86.3, Hermes 250829098.0.17, Kotlin 2.1.20, NDK
 with a separate `ReactHost` owned by the package. It does not use RN's global
 default host cache or replace the Tauri Activity/Application.
 
-The package now exposes a source-free reader and Android composer:
+The package exposes a source-free reader and Android composer:
 
 ```js
 const { readRetainedArtifacts } = require('@tauri-native/react-native/retained-artifacts');
@@ -99,8 +99,8 @@ preserve unrelated consumer files; edits to generated files, new file conflicts,
 symlink collisions, custom Activity/Application owners, competing renderer
 configuration and unverified toolchain versions receive explicit diagnostics.
 The current automatic path accepts the pinned standard Tauri `MainActivity`;
-custom lifecycle owners require separate integration evidence. The iOS composer,
-Expo CNG and third-party module autolinking remain open.
+custom lifecycle owners require separate integration evidence. Expo CNG and
+third-party module autolinking remain open.
 
 `TauriReactHost` remains available for explicit native attachment. Its lifecycle
 methods must receive the original Activity callbacks; the generated Activity
@@ -129,7 +129,59 @@ back routing and native session lifetime.
 This path pins RN/codegen 0.86.3 and its matching prebuilt React,
 ReactNativeDependencies and Hermes frameworks. The composed consumer requires
 iOS 16.4 or later. The ordinary producer and immutable exported artifact keep
-their original deployment settings; the RN consumer raises its minimum OS.
+their original deployment settings. The generated consumer uses the highest of
+16.4, the export's minimum and all explicit original Xcode deployment targets.
+
+On macOS, with Xcode's `plutil` available, generate the native consumer after
+building the offline Metro bundle:
+
+```js
+const { composeIos } = require('@tauri-native/react-native/compose');
+
+const result = composeIos({
+  artifactsDir: './runtime/ios',
+  outputDir: './generated-ios',
+  rendererDir: '.',
+  moduleName: 'YourApp',
+  bundleFile: './index.ios.bundle',
+});
+console.log(result.project, result.workspace, result.target, result.minimumOsVersion);
+```
+
+Use the same directory ownership rules as Android above. Run `pod install` in
+`result.project`, then build `result.workspace` with the original Tauri target.
+The generated Podfile uses the installed RN/SDK dependencies and records the
+absolute Node executable in the usual Xcode environment files. Rust and the
+producer checkout are not required.
+
+The composer preserves the original Xcode target, permission descriptions,
+schemes, native plugins, archive and the single compiled native session client.
+It adds SDK notification registration before the unchanged `ffi::start_app()`.
+`TNReactComposition` waits for the original runtime and loaded WKWebView, then
+attaches RN above that WebView within its parent's safe area. The original
+application delegate, window and root controller remain responsible for Tauri.
+The current path requires one original application target, standard Tauri main,
+one original WebView, and no existing CocoaPods or scene/delegate owner.
+Unsupported configuration receives an explicit diagnostic before publication.
+
+The generated-file receipt checks every owned file before CocoaPods runs.
+After successful integration, the SDK records only CocoaPods' project rewrite;
+other modified files or a changed receipt fail validation. Before pod installation,
+an identical composition is a no-op. After installation, composing again restores
+the original project plus SDK configuration, so run `pod install` again before
+building. Unrelated files and Pods caches remain; edits to owned generated files
+must be resolved before regeneration. Both installation/regeneration cycles are
+covered by the native gate.
+
+`TNReactComposition` exposes main-thread `reload`, `close` and its current `host`.
+A native subclass may override `isTauriDocumentReady:`, `createReactContainer:`
+and `reactHostDidAttach` when the consumer needs a custom readiness check or
+layout. Install that subclass in the consumer's native entry point. Such edits
+are consumer-owned custom integration and must be resolved before regenerating
+the owned main file. These hooks do not implement the planned React `TauriView`.
+
+For explicit native integration, the lower-level Podfile helpers and `TNReactHost`
+remain available:
 
 Keep the original format 2 Xcode project, `ffi::start_app()`, Tauri application
 delegate, runtime archive, permission descriptions and URL schemes. Its app
@@ -172,13 +224,19 @@ events remain available through the retained session.
 
 The native gate is
 `node --experimental-strip-types packages/react-native/test/retained-ios.ts <artifact>`
-with `IOS_SIMULATOR_UDID`, Xcode, CocoaPods and Maestro configured. Its consumer
-fixture owns layout, pre-start notification registration and process telemetry.
-The SDK owns the actual generated module, Factory and native session lifetime.
+with `IOS_SIMULATOR_UDID`, Xcode, CocoaPods and Maestro configured. It packs the
+actual SDK, composes a relocated artifact, installs pods, regenerates, installs
+pods again and builds Release without Rust on PATH. An acceptance subclass adds
+only layout, baseline readiness and telemetry; the SDK owns startup observation,
+attachment and lifetime. A second Release app runs the unmodified generated
+startup/default layout without that subclass. Nine UI flows cover permissions,
+plugins/events, replacement/removal and default integration. Run the separate
+macOS metadata/ownership scenarios with
+`node --experimental-strip-types --test packages/react-native/test/retained/compose-ios.test.ts`.
 
 ## Remaining roadmap
 
-iOS automatic composition, third-party autolinking, Expo CNG, iOS Linking URL forwarding, retained
+Third-party autolinking, Expo CNG, iOS Linking URL forwarding, retained
 `TauriView`, consistent session-open diagnostics, broader lifecycle/device/adopter acceptance and full framework
 parity remain tracked in [#45](https://github.com/gronxb/tauri-native/issues/45)
 and [#47](https://github.com/gronxb/tauri-native/issues/47). Forwarded hooks alone

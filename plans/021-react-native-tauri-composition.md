@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — packed RN iOS/Android Release execution and Android automatic composition pass; Expo and iOS automatic composition remain open.
+- Status: IN PROGRESS — packed RN iOS/Android Release execution and automatic composition pass for the pinned standard Tauri projects; Expo, retained TauriView and broader integration remain open.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#41](https://github.com/gronxb/tauri-native/issues/41) (plan 017), [#44](https://github.com/gronxb/tauri-native/issues/44) (plan 020)
@@ -33,7 +33,7 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 
 ## Acceptance
 
-- [x] iOS and Android RN Release executions pass with copied runtime artifacts (packed SDK gates with explicit consumer attachment; automatic composition remains open).
+- [x] iOS and Android RN Release executions pass with copied runtime artifacts (packed SDK automatic composition, including unmodified generated startup/default layouts; Expo and broader source forms remain open).
 - [ ] Ordinary standalone Tauri Mobile remains independently runnable.
 - [ ] Existing limited-adapter users have an explicit migration path.
 
@@ -152,3 +152,38 @@ RN 0.86.3 renderer. iOS/Lynx automatic composition, Expo CNG, third-party module
 autolinking, custom lifecycle owners, retained TauriView, remaining permission/
 lifecycle scenarios and complete parity/device/adopter evidence remain open.
 This increment does not close #45 or authorize package publication.
+
+## iOS automatic composition (2026-09-09)
+
+The packed `composeIos` entry point now generates the original Xcode consumer,
+offline bundle and CocoaPods integration on macOS. `TNReactComposition` registers
+launch observation before the unchanged `ffi::start_app()`, waits for actual
+runtime/document readiness and attaches RN within the original parent's safe
+area. Tauri retains its application delegate, window, root controller and native
+plugins. The generated consumer uses the highest of RN's 16.4 minimum and all
+explicit original deployment targets; the immutable artifact remains unchanged.
+
+The native gate executes pod installation, regeneration and a second successful
+pod installation before building Release without Rust. SDK receipt tracking
+allows CocoaPods' project rewrite while detecting existing or concurrent edits
+to other generated files. Four macOS configuration scenarios cover preservation,
+higher deployment targets, corrupt/conflicting inputs and CocoaPods ownership.
+The shared generator refactor produces the same 98 Android files and identical
+receipt as `c8051fd`; Android native startup code is unchanged.
+
+Nine iOS UI flows pass. An acceptance subclass supplies only layout, baseline
+readiness and telemetry for original state/setup, Swift plugins, permissions,
+Tauri events, background deep links and RN replacement/removal. Native listeners
+retire before replacement and removal; the RN JS thread exits after removal while
+the original frontend keeps working in the same process with `AppDelegate`.
+A second clean-installed Release app executes the unmodified generated main and
+default SDK layout, without acceptance hooks, and passes shared state, ACL and
+original Tauri deep-link/event checks.
+[Execution evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-react-compose-ios-2026-09-09.json).
+
+Automatic composition now has scoped native evidence on both RN platforms.
+Expo CNG, third-party autolinking, custom lifecycle owners, retained TauriView,
+iOS RN Linking, consistent session-open diagnostics, pending OS callback renderer
+retirement, migration and full parity/device/adopter acceptance remain open.
+This consumes an existing producer-deleted export; it is not a fresh export or
+a package release. #45 remains IN PROGRESS.

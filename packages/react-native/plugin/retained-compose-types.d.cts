@@ -1,5 +1,5 @@
 export interface AndroidCompositionOptions {
-  /** Complete immutable format 2 Android export. */
+  /** Complete immutable format 2 platform export. */
   artifactsDir: string;
   /** Generated consumer directory, separate from the input and renderer sources. */
   outputDir: string;
@@ -11,3 +11,7 @@ export interface AndroidCompositionOptions {
 }
 /** Stage and generate the original Tauri project plus package-owned RN attachment. */
 export function composeAndroid(options: AndroidCompositionOptions): { project: string; activity: string; changed: boolean };
+
+export interface IosCompositionOptions extends AndroidCompositionOptions {}
+/** macOS: validate the original Xcode app and generate its RN/CocoaPods integration without Rust. */
+export function composeIos(options: IosCompositionOptions): { project: string; target: string; workspace: string; minimumOsVersion: string; changed: boolean };
