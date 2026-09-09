@@ -1,0 +1,301 @@
+{
+  "instrumented": true,
+  "pageStartCacheDelayMs": 2000,
+  "productionCapture": true,
+  "results": [
+    {
+      "attempt": 1,
+      "pid": "4499",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    },
+    {
+      "attempt": 2,
+      "pid": "4740",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    },
+    {
+      "attempt": 3,
+      "pid": "4921",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    },
+    {
+      "attempt": 4,
+      "pid": "5084",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    },
+    {
+      "attempt": 5,
+      "pid": "5249",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    },
+    {
+      "attempt": 6,
+      "pid": "5390",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    },
+    {
+      "attempt": 7,
+      "pid": "5555",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    },
+    {
+      "attempt": 8,
+      "pid": "5754",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    },
+    {
+      "attempt": 9,
+      "pid": "5899",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    },
+    {
+      "attempt": 10,
+      "pid": "6034",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    }
+  ],
+  "passed": true,
+  "date": "2026-09-09",
+  "scope": "Real arm64 Android API 37 / 16 KB Release/R8 cold starts. Production copyAndroidRuntimeProject capture used a reconstructed native scaffold from the already source-free export; producer Rust/frontend/native libraries stayed unchanged. Consumer-only instrumentation delayed the page-start URL assignment by 2000 ms.",
+  "versions": {
+    "tauri": "2.11.5",
+    "wry": "0.55.1",
+    "webview": "152.0.7977.64",
+    "androidApi": 37,
+    "pageSize": 16384
+  },
+  "previousFailure": "retained-tauri-android-origin-race-2026-09-09.json: 2 of 10 fresh-data starts failed with about:blank IPC origins",
+  "firstStartOriginLog": "--------- beginning of main\n09-09 16:51:20.017  4499  4601 I RetainedOrigin: protocol-document=http://tauri.localhost/\n09-09 16:51:20.282  4499  4499 I RetainedOrigin: onPageStarted-cache-update-delayed=http://tauri.localhost/\n09-09 16:51:20.334  4499  4652 I RetainedOrigin: ipc=snapshot cached=http://tauri.localhost/\n09-09 16:51:20.336  4499  4652 I RetainedOrigin: ipc=plugin:event|listen cached=http://tauri.localhost/\n09-09 16:51:20.340  4499  4652 I RetainedOrigin: ipc=plugin:event|listen cached=http://tauri.localhost/\n09-09 16:51:20.342  4499  4652 I RetainedOrigin: ipc=plugin_snapshot cached=http://tauri.localhost/\n09-09 16:51:20.410  4499  4652 I RetainedOrigin: ipc=plugin:runtime-probe|read cached=http://tauri.localhost/\n09-09 16:51:20.411  4499  4652 I RetainedOrigin: ipc=record_report cached=http://tauri.localhost/\n09-09 16:51:20.703  4499  4652 I RetainedOrigin: ipc=plugin:event|listen cached=http://tauri.localhost/\n09-09 16:51:21.097  4499  4652 I RetainedOrigin: ipc=increment cached=http://tauri.localhost/\n09-09 16:51:21.099  4499  4652 I RetainedOrigin: ipc=plugin:event|unlisten cached=http://tauri.localhost/\n09-09 16:51:21.101  4499  4652 I RetainedOrigin: ipc=increment_async cached=http://tauri.localhost/\n09-09 16:51:21.144  4499  4652 I RetainedOrigin: ipc=increment cached=http://tauri.localhost/\n09-09 16:51:21.156  4499  4652 I RetainedOrigin: ipc=plugin:runtime-probe|forbidden cached=http://tauri.localhost/\n09-09 16:51:21.162  4499  4652 I RetainedOrigin: ipc=plugin:runtime-probe|read cached=http://tauri.localhost/\n09-09 16:51:21.320  4499  4499 I RetainedOrigin: onPageStarted-cache-update-delayed=http://tauri.localhost/\n09-09 16:51:21.388  4499  4652 I RetainedOrigin: ipc=snapshot cached=http://tauri.localhost/\n09-09 16:51:21.389  4499  4652 I RetainedOrigin: ipc=plugin:event|listen cached=http://tauri.localhost/\n09-09 16:51:21.393  4499  4652 I RetainedOrigin: ipc=plugin:event|listen cached=http://tauri.localhost/\n09-09 16:51:21.400  4499  4652 I RetainedOrigin: ipc=plugin_snapshot cached=http://tauri.localhost/\n09-09 16:51:21.541  4499  4652 I RetainedOrigin: ipc=plugin:runtime-probe|read cached=http://tauri.localhost/\n09-09 16:51:21.566  4499  4652 I RetainedOrigin: ipc=record_report cached=http://tauri.localhost/\n09-09 16:51:21.588  4499  4652 I RetainedOrigin: ipc=plugin:path|resolve_directory cached=http://tauri.localhost/\n09-09 16:51:21.598  4499  4652 I RetainedOrigin: ipc=record_report cached=http://tauri.localhost/\n",
+  "commands": [
+    "node --experimental-strip-types target/retained-origin-probe/prepare.ts <consumer-directory>",
+    "python3 target/retained-origin-probe/fixed.py",
+    "./gradlew --no-daemon assembleRelease",
+    "adb -s emulator-5554 shell pm clear dev.taurinative.mobilefieldnotes",
+    "adb -s emulator-5554 shell am start -W -n dev.taurinative.mobilefieldnotes/.MainActivity"
+  ],
+  "harnessLocation": "Ignored target/retained-origin-probe/{prepare.ts,fixed.py}; diagnostic logs in target/retained-origin-fixed-probe/. The normal checked-in full export/plugin/event gate remains packages/cli/test/runtime/portable.ts android --release.",
+  "captureSourceSha256": "5af21d70031d5d3d501d4a52a4908b8df2085b982cfb5012086a2930c924bee8",
+  "binarySha256": "d390d2fb1042dba163ba87d56b1ddb0aacb366ee3e7c232d3b09771709e58270",
+  "instrumentedClientSha256": "312629e51fcda3947d323a1ff448752fbc834b8c05ebde04d1349f4cc4c62565",
+  "originalNativeLibrariesUnchanged": true
+}

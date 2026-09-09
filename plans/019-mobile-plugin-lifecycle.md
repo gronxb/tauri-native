@@ -55,3 +55,5 @@ The format 2 Android artifact now also passes native Kotlin plugin calls through
 
 
 The Android source-free Release/R8 native event gate also passes cancellation and unlisten, the original save/deep-link notifications, listener cleanup on session replacement and exactly one new callback after remount. [Event evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-events-android-2026-09-09.json). This is native session/client evidence; RN/Expo/Lynx package-level acceptance remains open.
+
+The matching [iOS Release native event gate](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-events-ios-2026-09-09.json) now also passes after producer deletion and relocation: actual Swift plugin callbacks, explicit subscription cancellation/unlisten, original save and background deep-link events, exactly one new event after remount, and one live native listener. Native client readiness, OS permission retirement, setup counts and persistence remain intact.

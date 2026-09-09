@@ -36,11 +36,18 @@ export function copyAndroidRuntimeProject(native: string, destination: string) {
     .filter(file => file.endsWith('/generated/RustWebViewClient.kt'));
   if (clients.length !== 1) throw new Error('Expected one generated Wry Android WebView client.');
   const client = path.join(destination, 'app/src/main/java', clients[0]!);
-  // Wry 0.55.1 writes currentUrl on the UI thread and reads it from the
-  // JavascriptInterface thread. Preserve its origin selection, with visibility
-  // across threads; a stale about:blank otherwise rejects early local IPC.
-  writeFileSync(client, replaceOnce(readFileSync(client, 'utf8'),
-    /^    var currentUrl: String = "about:blank"$/m, '    @Volatile var currentUrl: String = "about:blank"', 'verified Wry 0.55.1 current URL field'));
+  // Wry's first document can invoke before onPageStarted updates currentUrl.
+  // Record the real main-frame request only after Tauri supplies its response,
+  // before that response can execute JS. Subresources and unhandled requests
+  // cannot set this context; no local URL or ACL grant is synthesized.
+  let clientSource = replaceOnce(readFileSync(client, 'utf8'),
+    /^    var currentUrl: String = "about:blank"$/m, '    @Volatile var currentUrl: String = "about:blank"', 'verified Wry 0.55.1 current URL field');
+  clientSource = replaceOnce(clientSource, /^            if \(response != null\) \{$/m,
+    `            if (response != null) {
+                if (request.isForMainFrame && currentUrl == "about:blank") {
+                    currentUrl = request.url.toString()
+                }`, 'Tauri protocol response before initial document execution');
+  writeFileSync(client, clientSource);
   const dependencies = path.join(destination, 'native-dependencies');
   mkdirSync(dependencies);
   for (const module of modules) {

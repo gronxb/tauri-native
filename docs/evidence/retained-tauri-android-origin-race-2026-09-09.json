@@ -240,5 +240,6 @@
   "date": "2026-09-09",
   "scope": "Instrumented ordinary Tauri frontend in copied Android Release/R8 artifact; no native renderer or native session UI installed. 2 of 10 fresh-data cold starts fail before the page-start callback updates the IPC URL.",
   "cause": "Wry currentUrl is still about:blank when the first real frontend IPC arrives. Volatile visibility does not enforce callback ordering. No capability has been broadened.",
-  "status": "Reproduced; fix and regression acceptance remain required."
+  "status": "Reproduced; fix and regression acceptance remain required.",
+  "followUp": "Pre-fix failure preserved; production capture recovery evidence is retained-tauri-android-origin-recovery-2026-09-09.json"
 }
