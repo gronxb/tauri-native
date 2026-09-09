@@ -1,0 +1,243 @@
+{
+  "passed": true,
+  "platform": "android",
+  "formatVersion": 2,
+  "abiVersion": 3,
+  "profile": "debug",
+  "target": "arm64 16 KB emulator",
+  "producerDeleted": true,
+  "producerUnchanged": true,
+  "sourceHashes": {
+    "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+    "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+  },
+  "sourceFreeBuild": "./gradlew --no-daemon assembleDebug; PATH=/usr/bin:/bin:/usr/sbin:/sbin; relocated path has spaces",
+  "apkAlignment": "zipalign -c -P 16 -v 4 passed",
+  "consumer": "Native Android acceptance UI; RN/Lynx package acceptance remains separate",
+  "artifactSha256": "c4db7a0de9129e769dd15aa01c4ceb320f13bd84feca165fb1fbc0ed53b42d5a",
+  "apkSha256": "553cc6b06c783e09c8ce9dd38328621c6e9182c879949ac9ff646d8c4d65ff49",
+  "baseline": {
+    "directory": "<application-data-directory>",
+    "passed": true,
+    "reloaded": true,
+    "scenarios": [
+      "setup",
+      "state",
+      "app-handle",
+      "async",
+      "rust-event",
+      "plugin-setup",
+      "plugin-allowed",
+      "plugin-denied",
+      "domain-error",
+      "reload"
+    ],
+    "state": {
+      "appIdentifier": "dev.taurinative.mobilefieldnotes",
+      "pluginSetupCount": 1,
+      "setupCount": 1,
+      "value": 45
+    }
+  },
+  "acl": {
+    "action": "acl",
+    "result": {
+      "error": "geolocation.watch_position explicitly denied on origin local\n\nreferenced by: capability: main, permission: deny-watch-position",
+      "ok": false
+    },
+    "generation": 1,
+    "retiredCallbacks": 0,
+    "retiredClosures": 0,
+    "pid": 14471
+  },
+  "denied": {
+    "action": "request",
+    "result": {
+      "coarseLocation": "prompt-with-rationale",
+      "location": "prompt-with-rationale"
+    },
+    "generation": 1,
+    "retiredCallbacks": 0,
+    "retiredClosures": 0,
+    "pid": 14471
+  },
+  "deniedPosition": {
+    "action": "position-denied",
+    "result": {
+      "error": "uid 10275 does not have android.permission.ACCESS_COARSE_LOCATION or android.permission.ACCESS_FINE_LOCATION.",
+      "ok": false
+    },
+    "generation": 1,
+    "retiredCallbacks": 0,
+    "retiredClosures": 0,
+    "pid": 14471
+  },
+  "granted": {
+    "action": "check",
+    "result": {
+      "coarseLocation": "granted",
+      "location": "granted"
+    },
+    "generation": 2,
+    "retiredCallbacks": 0,
+    "retiredClosures": 1,
+    "pid": 15634
+  },
+  "saved": {
+    "action": "save",
+    "result": {
+      "id": 1,
+      "latitude": 37.5664983,
+      "longitude": 126.9779983,
+      "text": "A native place to remember"
+    },
+    "generation": 2,
+    "retiredCallbacks": 0,
+    "retiredClosures": 1,
+    "pid": 15634
+  },
+  "linked": {
+    "action": "refresh",
+    "result": {
+      "links": [
+        "tauri-fieldnotes://notes/1"
+      ],
+      "notes": [
+        {
+          "id": 1,
+          "latitude": 37.5664983,
+          "longitude": 126.9779983,
+          "text": "A native place to remember"
+        }
+      ],
+      "platform": "android",
+      "pluginSetupCount": 1,
+      "setupCount": 1
+    },
+    "generation": 3,
+    "retiredCallbacks": 0,
+    "retiredClosures": 1,
+    "pid": 15634
+  },
+  "relaunched": {
+    "action": "refresh",
+    "result": {
+      "links": [],
+      "notes": [
+        {
+          "id": 1,
+          "latitude": 37.5664983,
+          "longitude": 126.9779983,
+          "text": "A native place to remember"
+        }
+      ],
+      "platform": "android",
+      "pluginSetupCount": 1,
+      "setupCount": 1
+    },
+    "generation": 1,
+    "retiredCallbacks": 0,
+    "retiredClosures": 0,
+    "pid": 16653
+  },
+  "date": "2026-09-09",
+  "reproduceWith": "nub --cwd packages/cli run test:runtime:portable:android",
+  "versions": {
+    "tauri": "2.11.5",
+    "tauriCli": "2.11.4",
+    "wry": "0.55.1",
+    "tauriRuntimeWry": "2.11.4",
+    "geolocation": "2.3.3",
+    "deepLink": "2.4.10",
+    "maestro": "2.4.0"
+  },
+  "executionNote": "The CLI exported the ABI 3 runtime successfully and the disposable producer was deleted. After correcting the consumer-only assertion to distinguish deliberate session_closed settlement from a late OS callback, the --consume gate rebuilt and passed against that unchanged exported receipt. The ordinary checked-in producer was unchanged.",
+  "scope": "Android arm64 Debug, real 16 KB emulator. This native Android consumer does not establish RN/Expo/Lynx package integration, Release, other slices, iOS ABI 3 artifacts or physical devices.",
+  "wryOriginVisibility": {
+    "change": "The captured Wry 0.55.1 currentUrl field is volatile; the original origin-selection and ACL logic remain unchanged.",
+    "reason": "UI-thread writes are read by the JavascriptInterface thread. Unpatched source-free cold starts rejected the first snapshot as non-local.",
+    "diagnosticColdStarts": [
+      {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      },
+      {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      },
+      {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    ]
+  }
+}

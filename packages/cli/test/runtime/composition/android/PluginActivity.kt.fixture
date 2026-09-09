@@ -1,0 +1,25 @@
+package dev.taurinative.mobilefieldnotes
+
+import android.webkit.WebView
+import android.widget.LinearLayout
+import android.view.ViewGroup
+
+class MainActivity : TauriActivity() {
+  private var acceptance: PluginAcceptance? = null
+  private var destroyed = false
+  override fun onWebViewCreate(webView: WebView) {
+    super.onWebViewCreate(webView)
+    // Keep the original bootstrap unobstructed until its first document commits.
+    val attach = object : Runnable { override fun run() {
+      if (destroyed) return
+      if (webView.progress < 100 || webView.url == null || webView.url == "about:blank") { webView.postDelayed(this, 100); return }
+      (webView.parent as? ViewGroup)?.removeView(webView)
+      val layout = LinearLayout(this@MainActivity).apply { orientation = LinearLayout.VERTICAL; setPadding(0, 80, 0, 70) }
+      layout.addView(webView, LinearLayout.LayoutParams(-1, 0, 1f))
+      setContentView(layout)
+      acceptance = PluginAcceptance(this@MainActivity, layout)
+    } }
+    webView.post(attach)
+  }
+  override fun onDestroy() { destroyed = true; acceptance?.close(); super.onDestroy() }
+}

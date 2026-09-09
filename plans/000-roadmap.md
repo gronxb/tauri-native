@@ -159,3 +159,6 @@ Independent evaluator contact and stable package publication follow the maintain
 - Live native-code replacement and a new plugin ecosystem separate from Tauri; existing Tauri Mobile plugin/event compatibility belongs to M6–M8.
 
 Each implementation issue includes concrete source evidence, scope, dependencies, verification commands, scenario tests, risks and acceptance criteria. Local mirrors are under `plans/`. The M6 baseline implementation is tracked in #41.
+
+
+#44 now exports format 2 / ABI 3 Android artifacts with the original Tauri bootstrap and official native plugins. The arm64 Debug source-free gate passes after deleting the disposable producer and relocating to a path with spaces, including native Kotlin permissions/callback retirement, deep-link remount, persistence and ELF/APK alignment. iOS ABI 3, Release/other slices, retained caching and production RN/Expo/Lynx integration remain open. See [#44](https://github.com/gronxb/tauri-native/issues/44) and the [native evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-portable-android-2026-09-09.json).

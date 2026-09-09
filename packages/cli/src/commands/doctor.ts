@@ -1,6 +1,7 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { ArtifactError } from '../../../../scripts/artifacts.ts';
+import { readRetainedArtifacts, type RetainedAndroidArtifact } from '../../../../scripts/retained-artifacts.ts';
 import { projectCopyRoot, projectFingerprints } from '../adapter/workspace.ts';
 import { androidTools } from '../artifacts/android.ts';
 import { inventory, sha256 } from '../artifacts/files.ts';
@@ -83,11 +84,14 @@ export function diagnose(options: DoctorOptions, knownProject?: ProjectModel) {
     }
   }
 
-  let artifact: ArtifactManifest | undefined;
+  let artifact: ArtifactManifest | RetainedAndroidArtifact | undefined;
   if (options.artifacts) {
     const directory = path.resolve(options.artifacts);
     artifact = check('artifacts', 'Copy a complete matching export; do not edit its receipt or individual members.', () => {
-      const value = validateArtifactManifest(directory);
+      let format: unknown;
+      try { format = JSON.parse(readFileSync(path.join(directory, 'manifest.json'), 'utf8')).formatVersion; }
+      catch { /* The receipt reader supplies the established missing/JSON diagnostic. */ }
+      const value = format === 2 ? readRetainedArtifacts(directory) : validateArtifactManifest(directory);
       if (options.platform && value.platform !== options.platform) throw new ArtifactError('artifact_platform', `Expected ${options.platform} artifacts, received ${value.platform}.`);
       return value;
     });

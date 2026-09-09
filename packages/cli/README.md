@@ -1,5 +1,7 @@
 # @tauri-native/cli
 
+Experimental retained Tauri Mobile export is available with `export android --runtime retained --caller-policy <file>`. It preserves the original Tauri bootstrap and uses format 2 / ABI 3; see [retained artifacts and verified scope](../../docs/retained-artifacts.md). The default exports described below continue to use the limited adapter.
+
 Export existing Tauri commands and a web frontend for React Native and Lynx hosts. The CLI owns the generated Rust workspace, dispatcher, C ABI and header. The producer does not need an application-specific core crate, new macros, a Rust SDK or a second command registry.
 
 ## Install and inspect

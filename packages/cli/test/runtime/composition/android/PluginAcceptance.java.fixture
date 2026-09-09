@@ -1,0 +1,92 @@
+package dev.taurinative.mobilefieldnotes;
+
+import android.app.Activity;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import dev.taurinative.runtime.RuntimeSession;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.io.File;
+import java.nio.file.Files;
+import java.util.function.Consumer;
+
+/** Consumer-only native acceptance UI. The ordinary producer has no test bridge. */
+public final class PluginAcceptance implements AutoCloseable {
+  final Activity activity;
+  final Handler main = new Handler(Looper.getMainLooper());
+  final TextView status;
+  final JSONObject evidence = new JSONObject();
+  RuntimeSession session;
+  int generation, retiredCallbacks, retiredClosures;
+  boolean closed;
+
+  static JSONObject object(Object... pairs) {
+    try { JSONObject value = new JSONObject(); for (int i = 0; i < pairs.length; i += 2) value.put((String)pairs[i], pairs[i+1]); return value; }
+    catch (Exception error) { throw new RuntimeException(error); }
+  }
+  public PluginAcceptance(Activity activity, LinearLayout parent) {
+    this.activity = activity;
+    LinearLayout controls = new LinearLayout(activity); controls.setOrientation(LinearLayout.VERTICAL);
+    ScrollView scroll = new ScrollView(activity); scroll.addView(controls);
+    parent.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 2f));
+    status = new TextView(activity); status.setTextSize(18); status.setText("Native starting"); controls.addView(status);
+    button(controls, "Native check permission", () -> call("plugin:geolocation|check_permissions", object(), result -> permission("check", result)));
+    button(controls, "Native request permission", () -> call("plugin:geolocation|request_permissions", object("permissions", new JSONArray().put("location")), result -> permission("request", result)));
+    button(controls, "Native deny capability", () -> call("plugin:geolocation|watch_position", object(), result -> {
+      String error = result.optString("error");
+      if (result.optBoolean("ok") || !(error.startsWith("geolocation.watch_position explicitly denied") || error.equals("Command plugin:geolocation|watch_position not allowed by ACL"))) throw new IllegalStateException(result.toString());
+      record("acl", "Native capability denied", result);
+    }));
+    button(controls, "Native save location", this::save);
+    button(controls, "Native refresh", () -> call("plugin_snapshot", object(), result -> {
+      JSONObject snapshot = value(result);
+      record("refresh", "Native links " + snapshot.optJSONArray("links").length() + " notes " + snapshot.optJSONArray("notes").length(), snapshot);
+    }));
+    button(controls, "Native retire permission", () -> {
+      session.invoke("plugin:geolocation|request_permissions", object("permissions", new JSONArray().put("location")), result -> {
+        if (result.optString("code").equals("session_closed")) { retiredClosures++; return; }
+        retiredCallbacks++; record("late-callback", "Unexpected retired callback", result);
+      });
+      main.postDelayed(() -> { if (!closed) { session.close(); session = new RuntimeSession("native"); generation++; record("retired", "Native session retired", object()); } }, 1500);
+    });
+    button(controls, "Native remount", () -> { session.close(); session = new RuntimeSession("native"); generation++; record("remount", "Native remounted", object()); });
+    awaitReady();
+  }
+  void button(LinearLayout controls, String title, Runnable action) {
+    Button button = new Button(activity); button.setText(title); controls.addView(button);
+    button.setOnClickListener(view -> { if (session != null) action.run(); });
+  }
+  void awaitReady() {
+    if (closed) return;
+    if (!new File(activity.getApplicationInfo().dataDir, "runtime-report.json").isFile()) { main.postDelayed(this::awaitReady, 100); return; }
+    session = new RuntimeSession("native"); generation++;
+    call("snapshot", object(), result -> record("ready", "Native ready", value(result)));
+  }
+  void call(String command, JSONObject payload, Consumer<JSONObject> callback) { session.invoke(command, payload, callback); }
+  JSONObject value(JSONObject result) {
+    if (!result.optBoolean("ok") || result.optJSONObject("value") == null) throw new IllegalStateException(result.toString());
+    return result.optJSONObject("value");
+  }
+  void permission(String action, JSONObject result) { record(action, "Native permission " + value(result).optString("location"), value(result)); }
+  void save() {
+    call("plugin:geolocation|get_current_position", object("options", object("enableHighAccuracy", true, "timeout", 10000, "maximumAge", 0)), position -> {
+      if (!position.optBoolean("ok")) { record("position-denied", "Native location denied", position); return; }
+      JSONObject coordinates = value(position).optJSONObject("coords");
+      call("save_note", object("text", "A native place to remember", "latitude", coordinates.optDouble("latitude"), "longitude", coordinates.optDouble("longitude")), note -> {
+        record("save", "Native note " + value(note).optInt("id"), value(note));
+      });
+    });
+  }
+  void record(String action, String text, JSONObject result) {
+    status.setText(text);
+    try {
+      evidence.put("action", action).put("result", result).put("generation", generation).put("retiredCallbacks", retiredCallbacks).put("retiredClosures", retiredClosures).put("pid", android.os.Process.myPid());
+      Files.write(new File(activity.getApplicationInfo().dataDir, "native-plugins-report.json").toPath(), evidence.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    } catch (Exception error) { throw new RuntimeException(error); }
+  }
+  public void close() { closed = true; main.removeCallbacksAndMessages(null); if (session != null) session.close(); }
+}

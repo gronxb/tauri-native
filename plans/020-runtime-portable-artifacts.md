@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: TODO
+- Status: IN PROGRESS — format 2 / ABI 3 Android export and real source-free native plugin acceptance pass on arm64 Debug.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#42](https://github.com/gronxb/tauri-native/issues/42) (plan 018), [#43](https://github.com/gronxb/tauri-native/issues/43) (plan 019)
@@ -52,3 +52,14 @@ Android inspection found the standard NDK 27 Tauri Rust library was initially 4 
 Concurrent standard mobile builds with the same app identity also overwrote Tauri CLI 2.11.4 connection options during M6. Its [options implementation](https://github.com/tauri-apps/tauri/blob/tauri-cli-v2.11.4/crates/tauri-cli/src/mobile/mod.rs#L334) keys the temporary server-address file by the original app identifier. The proof runs serialize across platforms; production export must isolate or serialize those options as well.
 
 M7 reruns also found that Tauri CLI 2.11.4 can successfully archive an iOS app and then fail to rename it into an existing nonempty `build/arm64-sim/*.app`. Build in disposable output directories and publish only fully validated artifacts; never treat a failed post-build move as a completed export. Mobile UI gates additionally share Maestro's local driver port and now acquire a common test lock for their full execution.
+
+
+## Implementation progress — 2026-09-09
+
+`export android --runtime retained --caller-policy <file>` now captures the actual Tauri bootstrap, JNI library, native Tauri/geolocation/deep-link Gradle projects and generated contracts in a distinct format 2 / ABI 3 receipt. Publication remains staged and atomic; unsupported plugin versions, custom build declarations, lifecycle owners, missing files, changed checksums and incompatible contracts fail explicitly. `doctor --artifacts` validates a copied receipt without Rust. Format 1 consumers reject format 2, preserving the limited-adapter boundary. [Usage and current limits](https://github.com/gronxb/tauri-native/blob/main/docs/retained-artifacts.md).
+
+The Android arm64 Debug gate exports, deletes its disposable producer, relocates to a path with spaces and builds with only system tools on PATH. The installed APK passes both the unchanged frontend baseline and package-owned JNI calls into actual Kotlin plugins: separate ACL/OS denial, location permission grant, no saved note after denied position, native location persistence, a pending request settled as `session_closed`, no late OS delivery to the retired session, remount, same-process deep-link delivery once and process-relaunch persistence. ELF and APK 16 KB checks pass. [Evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-portable-android-2026-09-09.json).
+
+Source-free cold-start testing exposed a Wry 0.55.1 cross-thread URL visibility issue. The captured generated Android client marks its existing `currentUrl` field volatile; original URL selection and ACL checks remain intact. Three diagnostic cold starts and the full native feature run pass with this correction. The producer source and installed Cargo registry remain unchanged.
+
+Remaining: iOS ABI 3 export/consumption; Release and other architecture execution; retained cache invalidation; debug/source path remapping; the full dependency/configuration receipt; package-owned RN/Expo/Lynx integration. This scoped Android result does not close #44 or certify a six-way release.
