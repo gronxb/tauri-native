@@ -33,7 +33,7 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 
 ## Acceptance
 
-- [ ] iOS and Android Lynx Release executions pass.
+- [x] iOS and Android Lynx Release executions pass (packed SDK gates with explicit consumer attachment; automatic composition remains open).
 - [ ] Same artifact contract and Tauri command/permission semantics as RN are demonstrated.
 - [ ] Standalone Tauri Mobile and producer source are preserved.
 
@@ -82,8 +82,30 @@ instead of accepting a pause count left by OS permission dialogs. Failure and
 completed evidence are distinguished in the receipt. Six package JS tests,
 typechecks and the 42-file npm tarball check pass.
 
-Automatic composition/autolinking, retained `TauriView`, the iOS package path,
-RN parity and complete release/device/adopter evidence remain open. The test
+The matching iOS package now provides `TNLynxHost`, a scoped NativeModule and a
+local CocoaPods integration. The packed SDK passes all seven native UI flows in
+a relocated arm64 Release simulator build without Rust: original frontend
+baseline, native/Tauri/OS permission decisions, location save, background deep
+links, renderer replacement and fresh events. Native listeners reach zero at
+replacement and one after registration. Removing Lynx leaves zero native
+listeners and the original Tauri frontend still handles commands in the same
+process with the original `AppDelegate`. The denial-to-grant test deliberately
+relaunches after resetting iOS privacy; process preservation is asserted across
+the subsequent background/remount/removal sequence. [iOS execution evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-lynx-ios-2026-09-09.json).
+
+CocoaPods' global `-ObjC` initially exposed repeated transitive Swift objects in
+the unchanged Tauri archive. The package's post-install helper scopes
+`-force_load` to the five pinned renderer libraries, preserving Objective-C
+categories and the original runtime bytes. It rejects extra pods or framework
+linkage pending compatibility evidence. The preceding link and configuration
+failures are recorded separately from the successful run. Six JS tests,
+typechecks and the 48-file package check pass.
+
+Automatic composition/autolinking, retained `TauriView`, RN parity and complete
+release/device/adopter evidence remain open. iOS session-open failures currently
+expose `runtime_error` with the platform client's NSError description; aligning
+that diagnostic with Android remains required. Command/event/permission errors
+retain their original structured responses. The test
 fixture currently owns the consumer layout/bootstrap hooks and telemetry;
 the package owns the actual NativeModule, renderer and session lifecycle.
 Native renderer destruction while an OS permission callback is pending remains

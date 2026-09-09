@@ -1,9 +1,9 @@
 # Retained Tauri integration
 
 This checkout adds `@tauri-native/lynx/retained` for an ordinary Tauri app exported
-with `--runtime retained`. The original Tauri Activity, Rust app, managed state,
-WebView, capabilities and plugin registry remain alive. Lynx is a renderer in
-that application. The producer has no Lynx dependency or command bridge.
+with `--runtime retained`. The original Tauri platform bootstrap, Rust app,
+managed state, WebView, capabilities and plugin registry remain alive. Lynx is a
+renderer in that application. The producer has no Lynx dependency or command bridge.
 
 ## JavaScript
 
@@ -77,12 +77,75 @@ with `ANDROID_SERIAL`, Android SDK/JDK and Maestro configured. It consumes an
 arm64 Release export of the ordinary mobile Fieldnotes fixture, packs this SDK,
 and builds a relocated native consumer without Rust on PATH. Its fixture owns
 layout/bootstrap hooks and telemetry; calls, events and renderer teardown use
-the packed package. It does not prove automatic composition or iOS support.
+the packed package. It does not prove automatic composition.
+
+## iOS integration under development
+
+In the exported original iOS project's Podfile, add the packed SDK as a local
+dependency:
+
+```ruby
+require_relative '../node_modules/@tauri-native/lynx/ios/retained/pods'
+platform :ios, '14.0'
+use_modular_headers!
+target 'your-original-tauri-target' do
+  pod 'TauriNativeLynxRetained', :path => '../node_modules/@tauri-native/lynx/ios'
+end
+post_install do |installer|
+  TauriNativeLynxRetained.post_install(installer, 'your-original-tauri-target')
+end
+```
+
+Use the original target name and the path to your installed package. Keep its
+existing build configuration mapping, run `pod install`, then build the
+workspace. The pod pins Lynx 4.0.1 and PrimJS 4.0.0 and uses the format 2
+`Sources/TauriNativeRuntime/TNRuntimeSession.h` beneath the original iOS project.
+The original app target already compiles that platform client; compile it only
+once. Link the original artifact's runtime and plugins and preserve Info.plist,
+entitlements and assets. Do not also link the default format 1 SDK pod.
+
+The post-install helper replaces CocoaPods' global `-ObjC` with `-force_load`
+for the five pinned renderer libraries. This preserves their Objective-C
+categories without eagerly loading repeated transitive Swift objects inside
+Tauri's original archive. It leaves that archive unchanged and rejects additional
+pods or framework linkage pending compatibility evidence. Keep this hook when
+running CocoaPods again; omitting it can cause duplicate Tauri/Swift symbols.
+
+After the original Tauri document is ready, create a host in a consumer-owned
+container on main:
+
+```objc
+#import <TauriNativeLynxRetained/TNLynxHost.h>
+
+TNLynxHost *host = [[TNLynxHost alloc] initWithContainer:container
+                                              bundle:bundleData
+                                                 url:@"main.lynx.bundle"];
+```
+
+Keep the host alive for the surface's lifetime. Call `reload` to replace its
+renderer or `close` to remove it, both on main. The host retires the native
+scope before clearing the Lynx engine and forwards application active/inactive
+notifications. It does not replace the original UIApplication delegate or call
+Tauri startup. Backgrounding and native permission dialogs preserve sessions.
+
+The native gate is
+`node --experimental-strip-types packages/lynx/test/retained-ios.ts <artifact>`
+with an arm64 `IOS_SIMULATOR_UDID`, Xcode, CocoaPods and Maestro configured. It
+packs the SDK and builds a relocated Release consumer without Rust. The fixture
+provides layout, launch notification registration and telemetry; the packed pod
+owns the module, renderer and session lifecycle. The gate also removes Lynx and
+continues interacting with the original Tauri frontend.
+
+The current exported iOS platform client exposes session-open failure details
+as an NSError description; the JS rejection therefore uses `runtime_error` for
+that operation. Command, event and permission responses retain their original
+structured errors and codes. Aligning open-failure diagnostics with Android is
+still required for full parity.
 
 ## Remaining roadmap
 
 Automatic source-free composition and Lynx autolinking, retained `TauriView`,
-iOS native integration, cross-renderer artifact parity, and complete M8
+cross-renderer artifact parity, and complete M8
 acceptance remain tracked in [#46](https://github.com/gronxb/tauri-native/issues/46)
 and [#47](https://github.com/gronxb/tauri-native/issues/47). The format 1 view cannot
 be used as a retained view. This API is not a claim of a published npm release.

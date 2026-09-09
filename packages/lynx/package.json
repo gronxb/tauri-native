@@ -31,6 +31,7 @@
     "android/retained",
     "generated",
     "ios/src",
+    "ios/retained",
     "ios/*.podspec",
     "LICENSE",
     "src",

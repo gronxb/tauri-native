@@ -1,0 +1,172 @@
+{
+  "passed": true,
+  "platform": "ios",
+  "profile": "release",
+  "formatVersion": 2,
+  "abiVersion": 3,
+  "renderer": "Lynx 4.0.1 / PrimJS 4.0.0",
+  "sourceFree": true,
+  "sourceFreeBuild": "PATH=/usr/bin:/bin:/usr/sbin:/sbin xcodebuild -configuration release -sdk iphonesimulator",
+  "packageSha256": "1f7018c34bcff8fe7bd73e3e131f1f401275f3cc95d34eb6e848bf1b7c7eac54",
+  "artifactSha256": "f153668064f66bd1c5f8dcfc1d1f340844e5437241ad0261d15faabfe65de53f",
+  "binarySha256": "32c185ca857cf950b6d6738419e269510eec64da2347c08f76915503c5deab9f",
+  "bundleSha256": "814c297ec517f042c498db2947b775b4f70c142eda444466a531e5bcbc66c7e8",
+  "baseline": {
+    "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/6A4B6A7D-9053-4630-AC7E-87A84AA3DF52/Library/Application Support/dev.taurinative.mobilefieldnotes",
+    "passed": true,
+    "reloaded": true,
+    "scenarios": [
+      "setup",
+      "state",
+      "app-handle",
+      "async",
+      "rust-event",
+      "plugin-setup",
+      "plugin-allowed",
+      "plugin-denied",
+      "domain-error",
+      "reload"
+    ],
+    "state": {
+      "appIdentifier": "dev.taurinative.mobilefieldnotes",
+      "pluginSetupCount": 1,
+      "setupCount": 1,
+      "value": 45
+    }
+  },
+  "denied": {
+    "paused": 2,
+    "listeners": 1,
+    "listenersAfterRelease": -1,
+    "generation": 1,
+    "stopped": 1,
+    "appDelegate": "AppDelegate",
+    "resumed": 3,
+    "hostClosed": false,
+    "pid": 28814
+  },
+  "saved": {
+    "paused": 1,
+    "listeners": 1,
+    "listenersAfterRelease": -1,
+    "generation": 1,
+    "stopped": 0,
+    "appDelegate": "AppDelegate",
+    "resumed": 2,
+    "hostClosed": false,
+    "pid": 29306
+  },
+  "remounted": {
+    "paused": 2,
+    "listeners": 1,
+    "listenersAfterRelease": 0,
+    "generation": 2,
+    "stopped": 1,
+    "appDelegate": "AppDelegate",
+    "resumed": 3,
+    "hostClosed": false,
+    "pid": 29306
+  },
+  "closed": {
+    "paused": 2,
+    "listeners": 0,
+    "listenersAfterRelease": 0,
+    "generation": 2,
+    "stopped": 1,
+    "appDelegate": "AppDelegate",
+    "resumed": 3,
+    "hostClosed": true,
+    "pid": 29306
+  },
+  "notes": [
+    {
+      "id": 1,
+      "text": "A Lynx place to remember",
+      "latitude": 37.5665,
+      "longitude": 126.978
+    }
+  ],
+  "uiScenarios": [
+    "shared original state/setup",
+    "Tauri ACL and native caller denial",
+    "OS permission denial/grant",
+    "save and event",
+    "background deep link and event",
+    "renderer replacement retires native subscriptions",
+    "fresh renderer receives only fresh events",
+    "removing Lynx preserves the independent original Tauri frontend"
+  ],
+  "testOnlyIntegration": "Consumer fixture layout and pre-start notification registration; actual packed SDK owns module, renderer and session lifetime. Original Tauri UIApplication delegate preserved. Automatic composition/autolinking remains open.",
+  "recordedAt": "2026-09-09T09:26:42.656Z",
+  "command": "PATH=\"$HOME/.cargo/bin:$HOME/.maestro/bin:$PATH\" IOS_SIMULATOR_UDID=0368C5D9-63CF-447E-B6BB-0E3184B1CD0A node --experimental-strip-types packages/lynx/test/retained-ios.ts",
+  "toolchain": {
+    "node": "v24.15.0",
+    "npm": "11.12.1",
+    "cocoaPods": "1.16.2",
+    "xcode": "26.4.1 (17E202)",
+    "maestro": "2.4.0",
+    "simulator": "iPhone 16, iOS 26.4.1 (23E254a), arm64"
+  },
+  "sdkSourceSha256": {
+    "packages/lynx/src/retained.ts": "f06cbea7664a98074494a8db58f106c1dc5a0360c3e873ee37a5fc713bf3223e",
+    "packages/lynx/src/retained-client.ts": "d54bec5bd9f7dab9a1192da661612089b821494417ac259990d4a1e4da45f53a",
+    "packages/lynx/ios/TauriNativeLynxRetained.podspec": "b6a559879d8231f326d390c1bc35e93d0821ade050c10c1481e09c08b6a4877e",
+    "packages/lynx/ios/retained/TNLynxHost.h": "811c334f0fb3f135e2009c30381e15790a1db88dae0b46ed6e46db10062b7382",
+    "packages/lynx/ios/retained/TNLynxHost.mm": "aaf66ac43951f76e2aad779b9854f15c2e28f8a2dd9eef4633cb43ee57e3cf99",
+    "packages/lynx/ios/retained/TNLynxRuntimeModule.h": "edbb1a2d2259337c8440473124aee5213b7f9a8c517b17c341a5bc368400e3ca",
+    "packages/lynx/ios/retained/TNLynxRuntimeModule.mm": "0271bcab1c1b50275c55ceaca7ddea0b80367c992519f7bba57fc5f0606b0d5a",
+    "packages/lynx/ios/retained/pods.rb": "bd67bf7c67d7071c8a4cd5b06bababf724c3c9566fc74dd9e18b2cde300a58f4"
+  },
+  "gateSourceSha256": {
+    "packages/lynx/test/retained-ios.ts": "ff0830582101300378006d4f46315c4e2557c6fdf71553c632cf70779535882c",
+    "packages/lynx/test/retained/App.tsx.fixture": "917bfa205995c860a2a1a352546ad0e2cbd958dcbddd16a472d67b8e428906eb",
+    "packages/lynx/test/retained/IosAcceptance.mm.fixture": "d1d2b4318aa79ebdcd10ba4bbf27e35e6c2d36060c856728dad6030454663642"
+  },
+  "junitSha256": {
+    "initial": "78c64b5ceeaf6110479c7dad7652bacb481ad191d8445f930056ed54357531ee",
+    "deny-permission": "aedd0cb7d16eeb6a34382b2d65895c54b67119100974bb8759364996e24d0d92",
+    "grant-permission": "61369e32695da8ca6aa92f9471b6ed31c573d7e3848a0fef0034d66c207c7d9f",
+    "background": "2d44e4dd508e6fb0a63315a5161cb00a8c6019c39dceed23bbcb2a80b6a0af2b",
+    "resume": "1b3c1ceaa650c2a8a5dc67e63dfcea4a0472fb34f7e87787a80882f33912ab35",
+    "fresh-events": "315b13e50de1c448fb35815c72484c8b5ccc6681e446f7d43f318d033214a38f",
+    "remove-renderer": "aea6e8c12cd96a1fecc894e39fedb13eaf727bc2b505082403139a9f4b07658d"
+  },
+  "buildLogSha256": "7d747ccadf8ddd8edf993e08de671ad887e8cecaac1bb1822b7dfe2a36431882",
+  "linking": {
+    "globalObjC": false,
+    "forceLoad": [
+      "Lynx",
+      "LynxBase",
+      "LynxServiceAPI",
+      "PrimJS",
+      "TauriNativeLynxRetained"
+    ],
+    "originalRuntimeBytes": "unchanged; no archive object stripping/deduplication or duplicate-symbol suppression",
+    "runtimeClient": "Original app compiles TNRuntimeSession once; the SDK references it"
+  },
+  "permissionProcessScope": "The denial leg uses PID 28814. The gate explicitly terminates it, resets iOS location privacy and relaunches for grant. PID 29306 then stays constant across grant, background/deep links, remount and Lynx removal.",
+  "scope": "Consumes the previously validated producer-deleted format 2 arm64 simulator Release artifact; this run does not re-export Rust or prove physical-device execution. All seven JUnit flows pass with eight scenario groups plus the unchanged ten-scenario frontend baseline.",
+  "earlierAttempts": [
+    {
+      "passed": false,
+      "stage": "source-free Release link",
+      "reason": "CocoaPods global -ObjC eagerly loaded duplicate transitive Tauri and SwiftRs objects already present in the original Rust static library. The linker reported 317 duplicate symbols. The package now scopes force_load to the five pinned renderer libraries and leaves the original Tauri library unchanged.",
+      "logSha256": "98f5053024099d291d0bba814ab8f299993eca816c6934107a6b09c87303a67f"
+    },
+    {
+      "passed": false,
+      "stage": "CocoaPods post-install configuration",
+      "reason": "The initial helper read OTHER_LDFLAGS through Xcodeproj::Config.attributes, but Xcodeproj stores linker flags separately. The helper now uses other_linker_flags and preserves library/framework flags.",
+      "logSha256": "379952252c5be0689f1b73c5732f12fb8af7207f17f9af4b9e1404b810bfd2ab"
+    }
+  ],
+  "remaining": [
+    "automatic native composition/autolinking",
+    "retained TauriView",
+    "RN/Expo parity",
+    "matching structured session-open failure diagnostics on iOS/Android",
+    "additional CocoaPods dependencies/framework linkage compatibility",
+    "native renderer destruction during a pending OS permission callback",
+    "full six-combination release/device/adopter evidence"
+  ]
+}

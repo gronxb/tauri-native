@@ -4,9 +4,9 @@ Experimental Lynx native library for `tauri-native`.
 
 The retained Tauri integration under `@tauri-native/lynx/retained` is being
 implemented in this checkout. It uses format 2 / ABI 3 exports and the original
-Tauri Mobile bootstrap. Its Android package owns the Lynx surface and native
-sessions; automatic native composition, retained `TauriView`, and iOS package
-integration are still open. The default entry point and autolinking configuration
+Tauri Mobile bootstrap. Its Android library and iOS pod own the Lynx surface and
+native sessions; automatic native composition and retained `TauriView` remain
+open. The default entry point and autolinking configuration
 below continue to describe format 1. See [retained integration](./RETAINED.md)
 before choosing the artifact mode.
 
