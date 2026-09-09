@@ -1,6 +1,6 @@
 # ADR 0008: Native callers of the retained Tauri application
 
-- Status: implementation in progress; desktop and Android Lynx native execution passed, remaining mobile and portable artifact acceptance pending
+- Status: implementation in progress; desktop and all four RN/Lynx mobile native executions passed, portable artifact acceptance pending
 - Date: 2026-09-09
 - Depends on: [ADR 0007](0007-tauri-mobile-composition.md)
 - Tracking: [#42](https://github.com/gronxb/tauri-native/issues/42), [#44](https://github.com/gronxb/tauri-native/issues/44)
