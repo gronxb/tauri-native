@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: TODO
+- Status: IN PROGRESS — ordinary official-plugin fixture and native permission/lifecycle gates are implemented; real desktop independence passes, mobile execution is next.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#41](https://github.com/gronxb/tauri-native/issues/41) (plan 017), [#42](https://github.com/gronxb/tauri-native/issues/42) (plan 018)
@@ -43,3 +43,9 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.
 
 Implementation is authorized directly on `main` in incremental commits, without PRs. Do not publish packages as part of this task.
+
+## Implementation progress — 2026-09-09
+
+`packages/cli/test/fixtures/mobile-plugin-tauri` is an ordinary location-note application using official geolocation 2.3.3 and deep-link 2.4.10. It keeps its own Builder/setup/State, Tauri capabilities, iOS usage description and custom URL scheme, with no renderer imports or maintained host bridge. Notes are saved from actual native location results and persisted in application storage. The desktop runtime baseline passes all ten existing scenarios; [evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/tauri-mobile-fieldnotes-desktop-2026-09-09.json) establishes desktop independence only.
+
+The new `test:runtime:plugins:ios` and `test:runtime:plugins:android` gates require separate Tauri ACL denial, OS permission denial and later UI grant, denied location without a saved note, native position callback, background/deep-link delivery once and process-relaunch persistence. Their implementation is not a passing mobile result. Swift/Kotlin execution, composed callers, pending-callback retirement and production dependency/manifest diagnostics remain open.

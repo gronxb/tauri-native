@@ -1,0 +1,18 @@
+{
+  "identifier": "main",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:path:allow-resolve-directory",
+    "runtime-probe:allow-read",
+    "runtime-probe:deny-forbidden",
+    "geolocation:allow-check-permissions",
+    "geolocation:allow-request-permissions",
+    "geolocation:allow-get-current-position",
+    "geolocation:deny-watch-position",
+    "deep-link:allow-get-current"
+  ]
+}

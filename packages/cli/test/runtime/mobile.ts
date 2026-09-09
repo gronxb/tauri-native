@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout } from 'node:timers/promises';
 import { snapshot } from '../native-export/source-integrity.ts';
+import { acquireMobileTest } from './mobile-lock.ts';
 
 const platform = process.argv[2];
 assert(platform === 'ios' || platform === 'android', 'Select ios or android');
@@ -17,12 +18,14 @@ const producer = path.join(evidence, `${platform} producer`);
 const appIdentifier = 'dev.taurinative.runtimeproof';
 const env = { ...process.env, CARGO_TARGET_DIR: path.join(root, 'target') };
 const original = snapshot(fixture);
+const releaseMobileTest = acquireMobileTest(root);
 mkdirSync(evidence, { recursive: true });
 rmSync(path.join(evidence, `${platform}-report.json`), { force: true });
 
 function run(label: string, command: string, args: string[]) {
   console.log(`> ${platform}: ${label}`);
-  const result = spawnSync(command, args, { cwd: producer, env, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  const result = spawnSync(command, args, { cwd: producer, env, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,
+    timeout: ['adb', 'xcrun'].includes(command) ? 120000 : undefined });
   writeFileSync(path.join(evidence, `${platform}-${label}.log`), `${result.stdout ?? ''}\n${result.stderr ?? ''}`);
   assert.equal(result.status, 0, `${label}: ${result.error ?? ''}\n${result.stdout}\n${result.stderr}`);
   return result.stdout.trim();
@@ -64,7 +67,7 @@ try {
     run('clear-report', 'adb', ['-s', device, 'shell', 'run-as', appIdentifier, 'rm', '-f', 'runtime-report.json']);
     run('launch', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-n', `${appIdentifier}/.MainActivity`]);
     readReport = () => {
-      const result = spawnSync('adb', ['-s', device, 'exec-out', 'run-as', appIdentifier, 'cat', 'runtime-report.json'], { env, encoding: 'utf8' });
+      const result = spawnSync('adb', ['-s', device, 'exec-out', 'run-as', appIdentifier, 'cat', 'runtime-report.json'], { env, encoding: 'utf8', timeout: 10000 });
       if (result.status !== 0) throw new Error(result.stderr);
       return result.stdout;
     };
@@ -93,4 +96,5 @@ try {
     else run('uninstall', 'adb', ['-s', device, 'uninstall', appIdentifier]);
   }
   assert.deepEqual(snapshot(fixture), original, 'The checked-in producer remains unchanged even on failure');
+  releaseMobileTest();
 }

@@ -1,6 +1,6 @@
 # ADR 0008: Native callers of the retained Tauri application
 
-- Status: implementation in progress; desktop native execution passed, mobile and portable artifact acceptance pending
+- Status: implementation in progress; desktop and Android Lynx native execution passed, remaining mobile and portable artifact acceptance pending
 - Date: 2026-09-09
 - Depends on: [ADR 0007](0007-tauri-mobile-composition.md)
 - Tracking: [#42](https://github.com/gronxb/tauri-native/issues/42), [#44](https://github.com/gronxb/tauri-native/issues/44)
@@ -36,6 +36,12 @@ ABI 3 provides `status`, `open`, `submit`, `poll`, `cancel` and `close` through 
 Each session and request has a monotonically increasing ID. Tauri work executes off the native UI caller thread. A cancelled queued request is skipped when dequeued; a command already entering/executing Tauri may finish its original side effects, but its cancelled or retired result cannot reach a replacement session. Closing a session retires its pending results. The bridge bounds sessions, pending requests, outstanding Tauri work and request/response sizes; cancelling running work does not free its execution capacity early.
 
 The first implementation handles JSON invocation and bounded raw responses. Native event/channel delivery, platform callback integration, package-owned renderer sessions and portable artifact packaging have their own remaining M7–M8 gates. The existing WebView's ordinary event/channel path is preserved.
+
+## Mobile session clients
+
+The CLI package owns `RuntimeSession.java` and `TNRuntimeSession.h/.mm`. Android forwards through JNI to the same Rust JSON C interface; iOS calls that interface directly. Both clients are main-thread-owned, poll pending results without blocking the UI, and retire callbacks on cancellation or close. A renderer must close its session when it is destroyed and open a new one on remount. Closing the renderer session does not stop the original Tauri application or discard its state.
+
+These clients do not load a second application runtime. Android's original TauriActivity loads the producer library, and iOS retains its original `ffi::start_app()` and Tauri application delegate. Package-owned RN/Expo/Lynx surface composition and portable artifact consumption still require their respective M7–M8 acceptance gates.
 
 ## Evidence
 

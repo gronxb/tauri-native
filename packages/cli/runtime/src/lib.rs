@@ -11,6 +11,9 @@ use tauri::{
     AppHandle, Manager, RunEvent, Wry,
 };
 
+#[cfg(target_os = "android")]
+mod android;
+
 const MAX_SESSIONS: usize = 32;
 const MAX_REQUESTS: usize = 128;
 const MAX_PAYLOAD: usize = 1024 * 1024;

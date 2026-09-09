@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
@@ -21,6 +21,25 @@ test('retained inspection excludes aliased Tauri injections while preserving ord
     assert.deepEqual(project.commands.find(command => command.name === 'increment_async')!.parameters.map(parameter => parameter.key), ['delta']);
     assert.throws(() => prepareRuntime(project, { version: 1, callers: { native: { webview: 'main', commands: ['*'] } } }), /wildcards/);
     assert.deepEqual(snapshot(directory), before, 'Rejected policy must not modify the ordinary producer');
+    // Tauri's mobile scaffolds may contain maintained OS declarations and
+    // native code even though build caches also live under gen/.
+    const manifest = 'gen/android/app/src/main/AndroidManifest.xml';
+    const info = 'gen/apple/App/Info.plist';
+    const cache = 'gen/android/app/build/generated-marker';
+    for (const file of [manifest, info, cache]) {
+      const target = path.join(directory, 'src-tauri', file);
+      mkdirSync(path.dirname(target), { recursive: true });
+      writeFileSync(target, file);
+    }
+    const generated = prepareRuntime(project, { version: 1, callers: { native: { webview: 'main', commands: ['snapshot'] } } });
+    try {
+      for (const file of [manifest, info]) {
+        assert.equal(readFileSync(path.join(generated.project.tauriDirectory, file), 'utf8'), file);
+        assert.equal(readFileSync(path.join(directory, 'src-tauri', file), 'utf8'), file);
+      }
+      assert.equal(existsSync(path.join(generated.project.tauriDirectory, cache)), false);
+      assert.equal(readFileSync(path.join(directory, 'src-tauri', cache), 'utf8'), cache);
+    } finally { generated.cleanup(); }
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 

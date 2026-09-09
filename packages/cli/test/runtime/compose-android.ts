@@ -5,36 +5,43 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout } from 'node:timers/promises';
 import { snapshot } from '../native-export/source-integrity.ts';
+import { prepareRetainedComposition, mobileCallerPolicy } from './retained-composition.ts';
+import { acquireMobileTest } from './mobile-lock.ts';
 
 const framework = process.argv[2] ?? 'lynx';
+const retained = process.argv[3] === 'retained';
+assert(process.argv[3] === undefined || retained, 'Select retained or omit the runtime argument');
 assert(framework === 'lynx' || framework === 'react-native', 'Select lynx or react-native');
 const device = process.env.ANDROID_SERIAL;
 assert(device, 'Select an ANDROID_SERIAL arm64 emulator');
 const root = fileURLToPath(new URL('../../../..', import.meta.url));
 const fixture = path.join(root, 'packages/cli/test/fixtures/runtime-tauri');
 const sources = fileURLToPath(new URL('./composition/', import.meta.url));
-const evidence = path.join(root, `target/tauri-mobile-composition/${framework}-android`);
-const producer = path.join(evidence, 'producer');
+const evidence = path.join(root, `target/${retained ? 'retained-composition' : 'tauri-mobile-composition'}/${framework}-android`);
+let producer = path.join(evidence, 'producer');
+let ordinary: { directory: string; hashes: ReturnType<typeof snapshot> } | undefined;
 const renderer = path.join(evidence, 'renderer');
-const native = path.join(producer, 'src-tauri/gen/android');
+let native = path.join(producer, 'src-tauri/gen/android');
 const appId = 'dev.taurinative.runtimeproof';
 const env = { ...process.env, CARGO_TARGET_DIR: path.join(root, 'target'), NODE_OPTIONS: '', PROOF_REPOSITORY: root,
   RUSTFLAGS: '-C link-arg=-landroid -C link-arg=-llog -C link-arg=-lOpenSLES -C link-arg=-Wl,-z,max-page-size=16384 -C link-arg=-Wl,-z,common-page-size=16384',
 };
 const original = snapshot(fixture);
+const releaseMobileTest = acquireMobileTest(root);
 mkdirSync(evidence, { recursive: true });
 rmSync(path.join(evidence, 'report.json'), { force: true });
 
 function run(label: string, command: string, args: string[], cwd = producer) {
   console.log(`> ${framework}-android: ${label}`);
-  const result = spawnSync(command, args, { cwd, env, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  const result = spawnSync(command, args, { cwd, env, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,
+    timeout: command === 'maestro' ? 180000 : command === 'adb' ? 120000 : undefined });
   writeFileSync(path.join(evidence, `${label}.log`), `${result.stdout ?? ''}\n${result.stderr ?? ''}`);
   assert.equal(result.status, 0, `${label}: ${result.error ?? ''}\n${result.stdout}\n${result.stderr}`);
   return result.stdout.trim();
 }
 
 function report(name: string) {
-  const result = spawnSync('adb', ['-s', device!, 'exec-out', 'run-as', appId, 'cat', name], { env, encoding: 'utf8' });
+  const result = spawnSync('adb', ['-s', device!, 'exec-out', 'run-as', appId, 'cat', name], { env, encoding: 'utf8', timeout: 10000 });
   assert.equal(result.status, 0, result.stderr);
   return JSON.parse(result.stdout);
 }
@@ -76,14 +83,27 @@ try {
     bundle = path.join(renderer, 'index.bundle.js');
   }
   run('producer-install', 'npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund']);
+  if (retained) {
+    ordinary = { directory: producer, hashes: snapshot(producer) };
+    const generated = path.join(evidence, 'generated-runtime');
+    rmSync(generated, { recursive: true, force: true });
+    producer = prepareRetainedComposition(producer, generated);
+    native = path.join(producer, 'src-tauri/gen/android');
+  }
   const before = snapshot(producer);
   run('native-init', 'npm', ['run', 'tauri', '--', 'android', 'init', '--ci', '--skip-targets-install']);
   const java = path.join(native, 'app/src/main/java/dev/taurinative/runtimeproof');
   for (const file of ['RuntimeProof.java', framework === 'lynx' ? 'LynxProofModule.java' : 'ReactProofPackage.java']) cpSync(path.join(sources, 'android', file), path.join(java, file));
   cpSync(path.join(sources, `android/${framework === 'lynx' ? 'Lynx' : 'React'}Activity.kt.fixture`), path.join(java, 'MainActivity.kt'));
+  if (retained) {
+    cpSync(path.join(sources, 'android/RetainedRuntimeProof.java.fixture'), path.join(java, 'RuntimeProof.java'));
+    const runtimeJava = path.join(native, 'app/src/main/java/dev/taurinative/runtime');
+    mkdirSync(runtimeJava, { recursive: true });
+    cpSync(path.join(evidence, 'generated-runtime/runtime/android/RuntimeSession.java'), path.join(runtimeJava, 'RuntimeSession.java'));
+  }
   const assets = path.join(native, 'app/src/main/assets'); mkdirSync(assets, { recursive: true });
   cpSync(bundle, path.join(assets, path.basename(bundle)));
-  cpSync(path.join(sources, 'probe.js.fixture'), path.join(assets, 'composition-probe.js'));
+  if (!retained) cpSync(path.join(sources, 'probe.js.fixture'), path.join(assets, 'composition-probe.js'));
   const gradle = path.join(native, 'app/build.gradle.kts');
   const dependencies = framework === 'lynx'
     ? ['org.lynxsdk.lynx:lynx:4.0.1', 'org.lynxsdk.lynx:lynx-jssdk:4.0.1', 'org.lynxsdk.lynx:lynx-trace:4.0.1', 'org.lynxsdk.lynx:primjs:4.0.0']
@@ -130,15 +150,19 @@ try {
   assert(result.resumed >= 2 && result.paused >= 1 && result.stopped >= 1);
   assert.deepEqual(result.lastProbe.state, { value: 45, setupCount: 1, pluginSetupCount: 1, appIdentifier: appId });
   assert.equal(result.lastProbe.denied, true); assert.equal(result.lastProbe.pluginCalls, 0);
+  if (retained) assert.equal(result.lastProbe.callerDenied, true);
   assert.equal(result.lastProbe.error, undefined);
   assert.deepEqual(snapshot(producer), before);
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, renderer: framework === 'lynx' ? 'Lynx 4.0.1' : 'React Native 0.86.3', platform: 'android',
     libraries, elfAlignment: 'Every packaged LOAD segment >= 16 KB', sourceHashes: original, producerUnchanged: true, originalFrontendUnchanged: true, result,
-    transport: 'Test-only native module proxies through the main real Tauri WebView IPC; production direct dispatch is M7 work',
+    transport: retained ? 'Package-owned ABI 3 native session calls actual Tauri Rust on_message with explicit native policy and original capabilities' : 'Test-only native module proxies through the main real Tauri WebView IPC; production direct dispatch is M7 work',
+    ...(retained ? { nativePolicy: mobileCallerPolicy } : {}),
     baseline: report('runtime-report.json'),
   }, null, 2) + '\n');
   console.log(`PASS: ${framework} and Tauri Android coexistence, real renderer interaction, remount and background/resume. ${evidence}/report.json`);
 } finally {
   if (installed) run('uninstall', 'adb', ['-s', device, 'uninstall', appId]);
+  if (ordinary) assert.deepEqual(snapshot(ordinary.directory), ordinary.hashes, 'Generated retained integration preserves the independently runnable producer');
   assert.deepEqual(snapshot(fixture), original, 'Checked-in producer must remain unchanged even on failure');
+  releaseMobileTest();
 }

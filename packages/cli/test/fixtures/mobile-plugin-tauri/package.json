@@ -1,0 +1,19 @@
+{
+  "name": "ordinary-tauri-mobile-fieldnotes",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.11.1",
+    "@tauri-apps/plugin-geolocation": "2.3.3",
+    "@tauri-apps/plugin-deep-link": "2.4.10"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.11.4",
+    "vite": "8.2.2"
+  }
+}

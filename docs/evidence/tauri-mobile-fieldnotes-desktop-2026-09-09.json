@@ -1,0 +1,54 @@
+{
+  "passed": true,
+  "runtime": "real Tauri 2.11.5 / Wry",
+  "target": "darwin-arm64",
+  "rust": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+  "sourceHashes": {
+    "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "src/main.ts": "61c16250e5a3897811842f7c5f464033b5096e5570efa4734849009c450d3dc5",
+    "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+  },
+  "producerUnchanged": true,
+  "result": {
+    "directory": "<application-data-directory>",
+    "passed": true,
+    "reloaded": true,
+    "scenarios": [
+      "setup",
+      "state",
+      "app-handle",
+      "async",
+      "rust-event",
+      "plugin-setup",
+      "plugin-allowed",
+      "plugin-denied",
+      "domain-error",
+      "reload"
+    ],
+    "state": {
+      "appIdentifier": "dev.taurinative.mobilefieldnotes",
+      "pluginSetupCount": 1,
+      "setupCount": 1,
+      "value": 45
+    }
+  },
+  "mobileComposition": "Desktop independence only; native geolocation/permission callbacks require iOS/Android execution in #43",
+  "date": "2026-09-09",
+  "command": "nub --cwd packages/cli run test:runtime:plugins:desktop",
+  "plugins": {
+    "geolocation": "2.3.3",
+    "deepLink": "2.4.10"
+  },
+  "scope": "Ordinary producer desktop startup, state, AppHandle, inline plugin ACL, async, events and reload. Native mobile plugin callbacks are not established by this desktop gate."
+}

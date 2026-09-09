@@ -30,3 +30,5 @@ examples/lynx/ios/vendor
 examples/tauri/dist
 examples/tauri/src-tauri/gen/tauri-native
 examples/tauri/src-tauri/gen/schemas
+packages/cli/test/fixtures/mobile-plugin-tauri/dist
+packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/gen

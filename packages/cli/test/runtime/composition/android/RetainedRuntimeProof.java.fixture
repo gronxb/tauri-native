@@ -1,0 +1,92 @@
+package dev.taurinative.runtimeproof;
+
+import android.app.Activity;
+import android.os.Handler;
+import android.os.Looper;
+import android.webkit.WebView;
+import dev.taurinative.runtime.RuntimeSession;
+import org.json.JSONObject;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.function.Consumer;
+
+/** Actual renderer calls use the package-owned JNI session and real Rust Tauri dispatch. */
+public final class RuntimeProof {
+  public static RuntimeProof active;
+  final Activity activity;
+  final Runnable remount;
+  final Handler main = new Handler(Looper.getMainLooper());
+  final HashMap<Integer, Consumer<String>> pending = new HashMap<>();
+  final JSONObject report = new JSONObject();
+  RuntimeSession runtime;
+  int generation, released, resumed, paused, stopped, sequence, completed;
+
+  RuntimeProof(Activity activity, WebView webview, Runnable remount) {
+    this.activity = activity;
+    this.remount = remount;
+    active = this;
+  }
+
+  File file(String name) { return new File(activity.getApplicationInfo().dataDir, name); }
+  void awaitBaseline(Runnable ready) {
+    if (file("runtime-report.json").isFile()) ready.run();
+    else main.postDelayed(() -> awaitBaseline(ready), 100);
+  }
+
+  void mounted() { runtime = new RuntimeSession("native"); generation++; persist(); }
+  void released() { pending.clear(); if (runtime != null) { released++; runtime.close(); runtime = null; } persist(); }
+  void resumed() { resumed++; persist(); }
+  void paused() { paused++; persist(); }
+  void stopped() { stopped++; persist(); }
+
+  public void inspect(Consumer<String> callback) {
+    main.post(() -> awaitBaseline(() -> {
+      int id = ++sequence;
+      int owner = generation;
+      pending.put(id, json -> { if (owner == generation) callback.accept(json); });
+      RuntimeSession current = runtime;
+      current.invoke("snapshot", new JSONObject(), state -> {
+        if (!pending.containsKey(id)) return;
+        if (!state.optBoolean("ok")) throw new IllegalStateException(state.toString());
+        current.invoke("increment", new JSONObject(), rejected -> {
+          if (!pending.containsKey(id)) return;
+          if (!rejected.optString("code").equals("caller_denied")) throw new IllegalStateException(rejected.toString());
+          current.invoke("plugin:runtime-probe|forbidden", new JSONObject(), denied -> {
+            if (!pending.containsKey(id)) return;
+            current.invoke("plugin:runtime-probe|read", new JSONObject(), calls -> {
+              if (!pending.containsKey(id)) return;
+              try {
+                if (!calls.optBoolean("ok")) throw new IllegalStateException(calls.toString());
+                JSONObject value = new JSONObject().put("id", id).put("state", state.get("value"))
+                  .put("denied", !denied.optBoolean("ok")).put("pluginCalls", calls.get("value")).put("callerDenied", true);
+                Consumer<String> result = pending.remove(id);
+                if (result == null) return;
+                value.put("generation", generation);
+                completed++;
+                report.put("lastProbe", value);
+                persist();
+                result.accept(value.toString());
+              } catch (org.json.JSONException error) { throw new IllegalStateException(error); }
+            });
+          });
+        });
+      });
+    }));
+  }
+
+  public void remount() { main.post(remount); }
+  void close() { main.removeCallbacksAndMessages(null); pending.clear(); if (runtime != null) runtime.close(); active = null; }
+
+  void persist() {
+    try {
+      report.put("generation", generation).put("released", released).put("resumed", resumed)
+        .put("paused", paused).put("stopped", stopped).put("completed", completed)
+        .put("activity", activity.getClass().getName()).put("pid", android.os.Process.myPid());
+      File temporary = file("composition-report.tmp");
+      Files.write(temporary.toPath(), report.toString().getBytes(StandardCharsets.UTF_8));
+      Files.move(temporary.toPath(), file("composition-report.json").toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+    } catch (Exception error) { throw new RuntimeException(error); }
+  }
+}

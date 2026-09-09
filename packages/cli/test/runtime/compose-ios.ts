@@ -5,28 +5,35 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout } from 'node:timers/promises';
 import { snapshot } from '../native-export/source-integrity.ts';
+import { prepareRetainedComposition, retainedIosController, mobileCallerPolicy } from './retained-composition.ts';
+import { acquireMobileTest } from './mobile-lock.ts';
 
 const framework = process.argv[2] ?? 'lynx';
+const retained = process.argv[3] === 'retained';
+assert(process.argv[3] === undefined || retained, 'Select retained or omit the runtime argument');
 assert(framework === 'lynx' || framework === 'react-native', 'Select lynx or react-native');
 const device = process.env.IOS_SIMULATOR_UDID;
 assert(device, 'Select an IOS_SIMULATOR_UDID arm64 simulator');
 const root = fileURLToPath(new URL('../../../..', import.meta.url));
 const fixture = path.join(root, 'packages/cli/test/fixtures/runtime-tauri');
 const sources = fileURLToPath(new URL('./composition/', import.meta.url));
-const evidence = path.join(root, `target/tauri-mobile-composition/${framework}-ios`);
-const producer = path.join(evidence, 'producer');
+const evidence = path.join(root, `target/${retained ? 'retained-composition' : 'tauri-mobile-composition'}/${framework}-ios`);
+let producer = path.join(evidence, 'producer');
+let ordinary: { directory: string; hashes: ReturnType<typeof snapshot> } | undefined;
 const renderer = path.join(evidence, 'renderer');
-const native = path.join(producer, 'src-tauri/gen/apple');
+let native = path.join(producer, 'src-tauri/gen/apple');
 const appId = 'dev.taurinative.runtimeproof';
 const env = { ...process.env, CARGO_TARGET_DIR: path.join(root, 'target'), NODE_OPTIONS: '', PROOF_REPOSITORY: root };
 let dataDirectory: string;
 const original = snapshot(fixture);
+const releaseMobileTest = acquireMobileTest(root);
 mkdirSync(evidence, { recursive: true });
 rmSync(path.join(evidence, 'report.json'), { force: true });
 
 function run(label: string, command: string, args: string[], cwd = producer) {
   console.log(`> ${framework}-ios: ${label}`);
-  const result = spawnSync(command, args, { cwd, env, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  const result = spawnSync(command, args, { cwd, env, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,
+    timeout: command === 'maestro' ? 180000 : command === 'xcrun' ? 120000 : undefined });
   writeFileSync(path.join(evidence, `${label}.log`), `${result.stdout ?? ''}\n${result.stderr ?? ''}`);
   assert.equal(result.status, 0, `${label}: ${result.error ?? ''}\n${result.stdout}\n${result.stderr}`);
   return result.stdout.trim();
@@ -69,18 +76,32 @@ try {
     bundle = path.join(renderer, 'index.bundle.js');
   }
   run('producer-install', 'npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund']);
+  if (retained) {
+    ordinary = { directory: producer, hashes: snapshot(producer) };
+    const generated = path.join(evidence, 'generated-runtime');
+    rmSync(generated, { recursive: true, force: true });
+    producer = prepareRetainedComposition(producer, generated);
+    native = path.join(producer, 'src-tauri/gen/apple');
+  }
   const before = snapshot(producer);
   run('native-init', 'npm', ['run', 'tauri', '--', 'ios', 'init', '--ci', '--skip-targets-install']);
   const integration = path.join(native, 'Sources/ordinary-tauri-runtime-fixture');
   const controller = framework === 'lynx' ? 'LynxProof' : 'ReactProof';
   for (const file of [`${controller}.h`, `${controller}.${framework === 'lynx' ? 'm' : 'mm'}`]) cpSync(path.join(sources, 'ios', file), path.join(integration, file));
+  if (retained) {
+    const runtime = path.join(evidence, 'generated-runtime/runtime');
+    for (const file of ['TNRuntimeSession.h', 'TNRuntimeSession.mm']) cpSync(path.join(runtime, 'ios', file), path.join(integration, file));
+    cpSync(path.join(runtime, 'tauri_native_runtime.h'), path.join(integration, 'tauri_native_runtime.h'));
+    const file = path.join(integration, `${controller}.${framework === 'lynx' ? 'm' : 'mm'}`);
+    writeFileSync(file, retainedIosController(readFileSync(file, 'utf8'), framework));
+  }
   const main = path.join(integration, 'main.mm');
   const originalMain = readFileSync(main, 'utf8');
   assert(originalMain.includes('ffi::start_app();'));
   writeFileSync(main, `#import "${controller}.h"\n` + originalMain.replace('ffi::start_app();', `@autoreleasepool { [${controller} install]; }\n\tffi::start_app();`));
   const assets = path.join(native, 'assets'); mkdirSync(assets, { recursive: true });
   cpSync(bundle, path.join(assets, path.basename(bundle)));
-  cpSync(path.join(sources, 'probe.js.fixture'), path.join(assets, 'composition-probe.js'));
+  if (!retained) cpSync(path.join(sources, 'probe.js.fixture'), path.join(assets, 'composition-probe.js'));
   if (framework === 'lynx') writeFileSync(path.join(native, 'Podfile'), `source 'https://cdn.cocoapods.org/'
 platform :ios, '14.0'
 use_modular_headers!
@@ -130,15 +151,19 @@ end
   assert(result.resumed >= 2 && result.paused >= 1 && result.stopped >= 1);
   assert.deepEqual(result.lastProbe.state, { value: 45, setupCount: 1, pluginSetupCount: 1, appIdentifier: appId });
   assert.equal(result.lastProbe.denied, true); assert.equal(result.lastProbe.pluginCalls, 0);
+  if (retained) assert.equal(result.lastProbe.callerDenied, true);
   assert.equal(result.lastProbe.error, undefined);
   assert.deepEqual(snapshot(producer), before);
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, renderer: framework === 'lynx' ? 'Lynx 4.0.1' : 'React Native 0.86.3', platform: 'ios',
     sourceHashes: original, producerUnchanged: true, originalFrontendUnchanged: true, result,
-    transport: 'Test-only native module proxies through the main real Tauri WebView IPC; production direct dispatch is M7 work',
+    transport: retained ? 'Package-owned ABI 3 native session calls actual Tauri Rust on_message with explicit native policy and original capabilities' : 'Test-only native module proxies through the main real Tauri WebView IPC; production direct dispatch is M7 work',
+    ...(retained ? { nativePolicy: mobileCallerPolicy } : {}),
     baseline: report('runtime-report.json'),
   }, null, 2) + '\n');
   console.log(`PASS: ${framework} and Tauri iOS coexistence, real renderer interaction, remount and background/resume. ${evidence}/report.json`);
 } finally {
   if (installed) run('uninstall', 'xcrun', ['simctl', 'uninstall', device, appId]);
+  if (ordinary) assert.deepEqual(snapshot(ordinary.directory), ordinary.hashes, 'Generated retained integration preserves the independently runnable producer');
   assert.deepEqual(snapshot(fixture), original, 'Checked-in producer must remain unchanged even on failure');
+  releaseMobileTest();
 }

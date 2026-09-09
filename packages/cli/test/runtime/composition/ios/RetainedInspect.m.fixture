@@ -1,0 +1,29 @@
+- (void)inspect:(PROOF_CALLBACK)callback {
+  NSNumber *request = @(++self.sequence);
+  self.pending[request] = [callback copy];
+  TNRuntimeSession *current = self.runtime;
+  [current invoke:@"snapshot" payload:@{} completion:^(NSDictionary *state) {
+    if (!self.pending[request]) return;
+    NSAssert([state[@"ok"] boolValue], @"Native snapshot failed: %@", state);
+    [current invoke:@"increment" payload:@{} completion:^(NSDictionary *rejected) {
+      if (!self.pending[request]) return;
+      NSAssert([rejected[@"code"] isEqual:@"caller_denied"], @"Missing native caller authorization: %@", rejected);
+      [current invoke:@"plugin:runtime-probe|forbidden" payload:@{} completion:^(NSDictionary *denied) {
+        if (!self.pending[request]) return;
+        [current invoke:@"plugin:runtime-probe|read" payload:@{} completion:^(NSDictionary *calls) {
+          if (!self.pending[request]) return;
+          NSAssert([calls[@"ok"] boolValue], @"Native plugin read failed: %@", calls);
+          PROOF_CALLBACK completion = self.pending[request];
+          if (!completion) return;
+          [self.pending removeObjectForKey:request];
+          NSDictionary *value = @{@"id": request, @"state": state[@"value"], @"denied": [denied[@"ok"] boolValue] ? @NO : @YES,
+            @"pluginCalls": calls[@"value"], @"callerDenied": @YES, @"generation": @(self.generation)};
+          self.report[@"lastProbe"] = value;
+          self.completed++;
+          [self persist];
+          completion([[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:value options:0 error:nil] encoding:NSUTF8StringEncoding]);
+        }];
+      }];
+    }];
+  }];
+}

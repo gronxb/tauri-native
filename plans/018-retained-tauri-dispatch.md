@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — retained Builder/dispatch and bounded native sessions pass real desktop execution; mobile native integration and export acceptance are next.
+- Status: IN PROGRESS — retained Builder/dispatch and bounded native sessions pass real desktop and Android Lynx execution; the remaining mobile combinations and export acceptance are in progress.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#41](https://github.com/gronxb/tauri-native/issues/41) (plan 017)
@@ -53,4 +53,8 @@ The generated runtime now keeps the original Builder, setup, registered commands
 
 The real macOS Wry gate passes twelve scenarios, including native/embedded shared State, setup/plugin initialization once, original rejection, real plugin denial without side effects, registered-command restrictions, cancellation and retired sessions while Rust work remains active. A separate actual failed setup preserves the original error and never advertises readiness. Source hashes match across preparation, execution and failure. Command models exclude injected State/AppHandle from host payloads. Existing adapter mode remains separate.
 
-Command: `nub --cwd packages/cli run test:runtime:retained`. The [desktop evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-dispatch-desktop-2026-09-09.json) is recorded; full logs are under `target/retained-runtime/`. Mobile direct C/JNI execution, broader native callback integration and source-free export acceptance remain open; this issue is not complete from desktop evidence alone.
+Command: `nub --cwd packages/cli run test:runtime:retained`. The [desktop evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-dispatch-desktop-2026-09-09.json) is recorded; full logs are under `target/retained-runtime/`. The remaining mobile direct C/JNI combinations, broader native callback integration and source-free export acceptance remain open; this issue is not complete from desktop evidence alone.
+
+Package-owned Android JNI/Java and iOS Objective-C++ session clients now use the same ABI 3 Rust dispatch. The [Android Lynx gate](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-dispatch-lynx-android-2026-09-09.json) passes five native UI calls, remount, background/resume, both caller-policy and actual Tauri capability denial, unchanged frontend/state and all packaged ELF alignment checks. The generated copy also preserves authored native Manifest/Info.plist/source files while excluding build caches and previous tauri-native exports. Existing CLI/package regressions pass (53 tests).
+
+All mobile gates must run serially, including UI: Tauri CLI shares app-identity options across platforms, and Maestro shares a local driver port. A repository-wide mobile test lock and bounded device/driver commands prevent overlapping gates or indefinite waits on an unresponsive device. Simulator/emulator infrastructure failures remain failures until a complete assertion-bearing rerun passes.

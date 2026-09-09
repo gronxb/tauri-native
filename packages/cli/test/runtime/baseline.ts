@@ -8,11 +8,13 @@ import { snapshot } from '../native-export/source-integrity.ts';
 import { waitForDesktopReport } from '../native-export/desktop-report.ts';
 
 const root = fileURLToPath(new URL('../../../..', import.meta.url));
-const fixture = path.join(root, 'packages/cli/test/fixtures/runtime-tauri');
-const evidence = path.join(root, 'target/tauri-mobile-runtime');
+const plugins = process.argv[2] === 'plugins';
+assert(process.argv[2] === undefined || plugins, 'Select plugins or omit the fixture argument');
+const fixture = path.join(root, 'packages/cli/test/fixtures', plugins ? 'mobile-plugin-tauri' : 'runtime-tauri');
+const evidence = path.join(root, plugins ? 'target/tauri-mobile-plugins/standalone-desktop' : 'target/tauri-mobile-runtime');
 const producer = path.join(evidence, 'desktop producer');
 const cargoTarget = path.join(root, 'target');
-const appIdentifier = 'dev.taurinative.runtimeproof';
+const appIdentifier = plugins ? 'dev.taurinative.mobilefieldnotes' : 'dev.taurinative.runtimeproof';
 const reportFile = path.join(homedir(), 'Library/Application Support', appIdentifier, 'runtime-report.json');
 const original = snapshot(fixture);
 
@@ -37,7 +39,7 @@ try {
   run('desktop-build', 'cargo', ['build', '--locked', '--offline', '--manifest-path', 'src-tauri/Cargo.toml', '--features', 'tauri/custom-protocol', '--target-dir', cargoTarget]);
   assert.deepEqual(snapshot(producer), before, 'Ordinary Tauri builds preserve authored producer files');
   rmSync(reportFile, { force: true });
-  desktop = spawn(path.join(cargoTarget, 'debug/ordinary-tauri-runtime-fixture'), [], { cwd: producer, stdio: 'inherit' });
+  desktop = spawn(path.join(cargoTarget, plugins ? 'debug/ordinary-tauri-mobile-fieldnotes' : 'debug/ordinary-tauri-runtime-fixture'), [], { cwd: producer, stdio: 'inherit' });
   const result = await waitForDesktopReport(reportFile, desktop) as { passed: boolean; reloaded: boolean; state: unknown; scenarios: string[]; directory: string };
   assert.equal(result.passed, true, JSON.stringify(result));
   assert.equal(result.reloaded, true);
@@ -48,7 +50,7 @@ try {
   writeFileSync(path.join(evidence, 'desktop-report.json'), JSON.stringify({ passed: true, runtime: 'real Tauri 2.11.5 / Wry',
     target: `${process.platform}-${process.arch}`, rust: run('rust-version', 'rustc', ['--version']).trim(),
     sourceHashes: original, producerUnchanged: true, result,
-    mobileComposition: 'Not established by the desktop baseline; tracked in #41',
+    mobileComposition: plugins ? 'Desktop independence only; native geolocation/permission callbacks require iOS/Android execution in #43' : 'Not established by the desktop baseline; tracked in #41',
   }, null, 2) + '\n');
   console.log(`PASS: actual Tauri setup, state, plugin ACL, async, events and reload. Evidence: ${evidence}/desktop-report.json`);
 } finally {

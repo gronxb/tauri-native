@@ -36,7 +36,13 @@ export function prepareRuntime(project: ProjectModel, policy: NativeCallerPolicy
   const cleanup = () => rmSync(directory, { recursive: true, force: true });
   try {
     const dependencies: [string, string][] = [];
-    const excluded = new Set([path.join(project.workspaceRoot, 'target'), path.join(project.tauriDirectory, 'target'), path.join(project.tauriDirectory, 'gen')]);
+    const excluded = new Set([
+      path.join(project.workspaceRoot, 'target'), path.join(project.tauriDirectory, 'target'),
+      ...['schemas', 'tauri-native', 'android/.gradle', 'android/.kotlin', 'android/build', 'android/app/build', 'android/app/.cxx',
+        'apple/build', 'apple/Pods', 'apple/Externals/arm64/debug', 'apple/Externals/arm64/release',
+        'apple/Externals/x86_64/debug', 'apple/Externals/x86_64/release']
+        .map(relative => path.join(project.tauriDirectory, 'gen', relative)),
+    ]);
     cpSync(sourceRoot, producer, { recursive: true, dereference: true, filter(source) {
       if (path.basename(source) === '.git' || excluded.has(source)) return false;
       if (path.basename(source) === 'node_modules') { dependencies.push([realpathSync(source), map(source)]); return false; }
@@ -50,7 +56,7 @@ export function prepareRuntime(project: ProjectModel, policy: NativeCallerPolicy
     }
     const runtime = path.join(directory, 'runtime');
     mkdirSync(runtime);
-    for (const file of ['Cargo.toml', 'src', 'tauri_native_runtime.h']) {
+    for (const file of ['Cargo.toml', 'src', 'android', 'ios', 'tauri_native_runtime.h']) {
       cpSync(path.join(nativeDirectory, '../runtime', file), path.join(runtime, file), { recursive: true });
     }
     const generated = path.join(directory, 'generated.rs');

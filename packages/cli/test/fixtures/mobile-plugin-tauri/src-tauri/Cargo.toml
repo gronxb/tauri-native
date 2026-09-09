@@ -1,0 +1,22 @@
+[package]
+name = "ordinary-tauri-mobile-fieldnotes"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[lib]
+name = "ordinary_tauri_mobile_fieldnotes_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "=2.6.3", features = [] }
+
+[dependencies]
+tauri = { version = "=2.11.5", features = [] }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.151"
+
+tauri-plugin-geolocation = "=2.3.3"
+tauri-plugin-deep-link = "=2.4.10"
