@@ -34,10 +34,11 @@ export type ArtifactManifest = (IosArtifacts | AndroidArtifacts) & {
 };
 
 export function writeArtifactManifest(directory: string, input: (IosArtifacts | AndroidArtifacts) & { source: Record<string, string> }, model?: SourceModel): void {
+  if (model?.abiVersion === 3) throw new Error('Retained runtime ABI 3 requires the retained-runtime artifact format.');
   if (model) writeFileSync(path.join(directory, 'commands.json'), JSON.stringify(model, null, 2) + '\n');
   if (model?.typeGraph) writeFileSync(path.join(directory, 'commands.ts'), generateCommands(model));
   const manifest: ArtifactManifest = {
-    formatVersion: 1, abiVersion: model ? model.abiVersion : 0,
+    formatVersion: 1, abiVersion: model ? model.abiVersion as 1 | 2 : 0,
     generator: { name: packageJson.name, version: packageJson.version },
     compatibility: { mode: model ? 'generated' : 'legacy', verifiedTauri: model ? '2.11.5' : null, verifiedApi: model ? '2.11.1' : null },
     ...input, commands: model ? 'commands.json' : null, bindings: model?.typeGraph ? 'commands.ts' : null,

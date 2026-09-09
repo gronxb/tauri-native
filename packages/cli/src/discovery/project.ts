@@ -15,7 +15,7 @@ export interface CommandModel {
 
 export interface SourceModel {
   schemaVersion: number;
-  abiVersion: 1 | 2;
+  abiVersion: 1 | 2 | 3;
   commands: CommandModel[];
   typeGraph?: TypeGraph;
 }
@@ -46,7 +46,7 @@ function reject(file: string, message: string): never {
   throw new DiscoveryError([{ file, message }]);
 }
 
-export function discoverProject(tauriDir: string, cwd = process.cwd(), readOnly = false): ProjectModel {
+export function discoverProject(tauriDir: string, cwd = process.cwd(), readOnly = false, runtime: 'adapter' | 'retained' = 'adapter'): ProjectModel {
   const requestedDirectory = path.resolve(cwd, tauriDir);
   const tauriDirectory = existsSync(requestedDirectory) ? realpathSync(requestedDirectory) : requestedDirectory;
   const manifest = path.join(tauriDirectory, 'Cargo.toml');
@@ -54,13 +54,13 @@ export function discoverProject(tauriDir: string, cwd = process.cwd(), readOnly 
   for (const file of [manifest]) {
     if (!existsSync(file)) reject(file, 'Required file does not exist; select the ordinary Tauri Rust directory with --tauri-dir.');
   }
-  for (const file of ['Tauri.toml', 'tauri.conf.json5', 'tauri.ios.conf.json', 'tauri.android.conf.json', 'tauri.macos.conf.json', 'tauri.windows.conf.json', 'tauri.linux.conf.json', 'permissions']) {
+  for (const file of ['Tauri.toml', 'tauri.conf.json5', 'tauri.ios.conf.json', 'tauri.android.conf.json', 'tauri.macos.conf.json', 'tauri.windows.conf.json', 'tauri.linux.conf.json', ...(runtime === 'adapter' ? ['permissions'] : [])]) {
     if (existsSync(path.join(tauriDirectory, file))) reject(path.join(tauriDirectory, file), 'Configuration overlays, alternate formats and application ACLs need an explicit compatibility proof.');
   }
   if (!existsSync(configPath)) reject(configPath, 'Required file does not exist: tauri.conf.json.');
   if (process.env.TAURI_CONFIG) reject(configPath, 'TAURI_CONFIG environment overrides require an explicit compatibility proof.');
   const config = JSON.parse(readFileSync(configPath, 'utf8'));
-  if (config.plugins && Object.keys(config.plugins).length) reject(configPath, 'Plugin configuration is not supported by native export.');
+  if (runtime === 'adapter' && config.plugins && Object.keys(config.plugins).length) reject(configPath, 'Plugin configuration is not supported by native export.');
   const dist = config.build?.frontendDist;
   if (typeof dist !== 'string' || /^[a-z][a-z\d+.-]*:/i.test(dist)) reject(configPath, 'build.frontendDist must name a local frontend directory.');
   let build: ProjectModel['frontend']['build'];
@@ -87,8 +87,8 @@ export function discoverProject(tauriDir: string, cwd = process.cwd(), readOnly 
   const lock = nativeTool<{ package: { name: string; version: string }[] }>('manifest', lockPath, undefined, readOnly);
   const versions = lock.package.filter(item => item.name === 'tauri');
   if (versions.length !== 1 || versions[0]!.version !== '2.11.5') reject(lockPath, 'Only resolved Tauri 2.11.5 is verified by this compatibility contract.');
-  for (const target of app.targets.filter(target => target.kind.includes('custom-build'))) nativeTool('inspect-build', target.src_path, undefined, readOnly);
-  const source = nativeTool<SourceModel>('inspect', library.src_path, undefined, readOnly);
+  if (runtime === 'adapter') for (const target of app.targets.filter(target => target.kind.includes('custom-build'))) nativeTool('inspect-build', target.src_path, undefined, readOnly);
+  const source = nativeTool<SourceModel>(runtime === 'retained' ? 'inspect-runtime' : 'inspect', library.src_path, undefined, readOnly);
   return {
     ...source, manifest, workspaceRoot: metadata.workspace_root, tauriDirectory,
     source: library.src_path, libraryName: library.name,

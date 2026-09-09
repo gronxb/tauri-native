@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: TODO
+- Status: IN PROGRESS — retained Builder/dispatch and bounded native sessions pass real desktop execution; mobile native integration and export acceptance are next.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#41](https://github.com/gronxb/tauri-native/issues/41) (plan 017)
@@ -46,3 +46,11 @@ Implementation is authorized directly on `main` in incremental commits, without 
 ## M6 handoff
 
 The executable M6 probes retain actual Tauri startup and proxy native requests through the original WebView IPC. Their fixed probe inherits that WebView's identity; it is deliberately not a production arbitrary-command bridge. Replace this test wiring with a declared native caller and real Tauri capability checks, including denial before side effects, shared state, readiness and late-result suppression after renderer teardown. Preserve the current exporter rejection checks until the production path has native evidence.
+
+## Implementation progress — 2026-09-09
+
+The generated runtime now keeps the original Builder, setup, registered commands and Tauri dependencies. Its ABI 3 native sessions call actual Tauri `on_message` in Rust, with an explicit artifact-owned caller policy intersected with the named WebView's existing capabilities. No JavaScript evaluation is used for native dispatch, and no invoke key leaves Rust. [ADR 0008](https://github.com/gronxb/tauri-native/blob/main/docs/adr/0008-retained-native-caller-boundary.md) records authorization, readiness and teardown semantics.
+
+The real macOS Wry gate passes twelve scenarios, including native/embedded shared State, setup/plugin initialization once, original rejection, real plugin denial without side effects, registered-command restrictions, cancellation and retired sessions while Rust work remains active. A separate actual failed setup preserves the original error and never advertises readiness. Source hashes match across preparation, execution and failure. Command models exclude injected State/AppHandle from host payloads. Existing adapter mode remains separate.
+
+Command: `nub --cwd packages/cli run test:runtime:retained`. The [desktop evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-dispatch-desktop-2026-09-09.json) is recorded; full logs are under `target/retained-runtime/`. Mobile direct C/JNI execution, broader native callback integration and source-free export acceptance remain open; this issue is not complete from desktop evidence alone.

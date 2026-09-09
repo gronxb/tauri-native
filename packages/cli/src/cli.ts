@@ -19,6 +19,7 @@ export function createProgram(): Command {
     .description('Inspect ordinary Tauri commands without building or starting the application')
     .option('--tauri-dir <path>', 'Tauri Rust directory', 'src-tauri')
     .option('--json', 'Print the command model or diagnostics as JSON')
+    .addOption(new Option('--runtime <runtime>', 'Inspect the limited adapter or retained Tauri runtime contract').choices(['adapter', 'retained']).default('adapter'))
     .action(inspectProject);
 
   program.command('doctor')

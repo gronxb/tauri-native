@@ -1,9 +1,9 @@
 import { discoverProject } from '../discovery/project.ts';
 import { DiscoveryError } from '../discovery/native-tool.ts';
 
-export function inspectProject(options: { tauriDir: string; json?: boolean }): void {
+export function inspectProject(options: { tauriDir: string; json?: boolean; runtime?: 'adapter' | 'retained' }): void {
   try {
-    const project = discoverProject(options.tauriDir);
+    const project = discoverProject(options.tauriDir, process.cwd(), false, options.runtime);
     if (options.json) console.log(JSON.stringify(project, null, 2));
     else {
       console.log(`${project.package.name} → ${project.libraryName}\n${project.source}`);

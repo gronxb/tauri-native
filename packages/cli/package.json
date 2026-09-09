@@ -14,6 +14,9 @@
     "native/Cargo.toml",
     "native/Cargo.lock",
     "native/src",
+    "runtime/Cargo.toml",
+    "runtime/src",
+    "runtime/tauri_native_runtime.h",
     "LICENSE",
     "README.md"
   ],
@@ -23,6 +26,7 @@
     "test": "nub run build && node --experimental-strip-types --test test/*.test.ts && nub run test:package",
     "test:export:spike": "node --experimental-strip-types test/native-export/spike.ts",
     "test:runtime:baseline": "node --experimental-strip-types test/runtime/baseline.ts",
+    "test:runtime:retained": "node --experimental-strip-types test/runtime/retained.ts",
     "test:runtime:ios": "node --experimental-strip-types test/runtime/mobile.ts ios",
     "test:runtime:compose:rn:ios": "node --experimental-strip-types test/runtime/compose-ios.ts react-native",
     "test:runtime:compose:rn:android": "node --experimental-strip-types test/runtime/compose-android.ts react-native",

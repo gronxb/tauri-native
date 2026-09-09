@@ -6,6 +6,7 @@ use std::{collections::HashSet, env, fs, process};
 use syn::spanned::Spanned;
 mod manifest;
 mod publication;
+mod retained;
 mod types;
 use syn::{
     parse::Parser, punctuated::Punctuated, Expr, FnArg, Item, Meta, Pat, ReturnType, Stmt, Token,
@@ -512,11 +513,11 @@ fn main() {
             manifest::prepare(&source, std::path::Path::new(output)).map_err(fail)?;
             return Ok(json!({"abiVersion": 2}));
         }
-        if args[1] != "inspect" && args[1] != "generate" {
+        if !["inspect", "generate", "inspect-runtime", "generate-runtime"].contains(&args[1].as_str()) {
             return Err(fail("unknown adapter operation"));
         }
-        let (generated, model) = generate(&source)?;
-        if args[1] == "generate" {
+        let (generated, model) = if args[1].ends_with("-runtime") { retained::generate(&source)? } else { generate(&source)? };
+        if args[1] == "generate" || args[1] == "generate-runtime" {
             let output = args
                 .get(3)
                 .ok_or_else(|| fail("missing generated source path"))?;

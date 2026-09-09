@@ -1,0 +1,107 @@
+mod retained_contract {
+    use serde_json::{json, Value};
+    use std::{ffi::{CString, CStr}, path::PathBuf, thread, time::{Duration, Instant}};
+
+    fn request(value: Value) -> Value {
+        let input = CString::new(value.to_string()).unwrap();
+        unsafe {
+            let raw = tauri_native_runtime::tauri_native_runtime_request(input.as_ptr());
+            let response: Value = serde_json::from_str(CStr::from_ptr(raw).to_str().unwrap()).unwrap();
+            tauri_native_runtime::tauri_native_runtime_string_free(raw);
+            assert_eq!(response["abiVersion"], 3);
+            response["response"].clone()
+        }
+    }
+
+    fn wait<T>(mut check: impl FnMut() -> Option<T>) -> T {
+        let until = Instant::now() + Duration::from_secs(30);
+        loop {
+            if let Some(value) = check() { return value; }
+            assert!(Instant::now() < until, "native runtime contract timed out");
+            thread::sleep(Duration::from_millis(10));
+        }
+    }
+
+    fn open(caller: &str) -> u64 {
+        let result = request(json!({"op": "open", "caller": caller}));
+        assert_eq!(result["ok"], true, "{result}");
+        result["session"].as_u64().unwrap()
+    }
+
+    fn submit(session: u64, command: &str, payload: Value) -> u64 {
+        let result = request(json!({"op": "submit", "session": session, "command": command, "payload": payload}));
+        assert_eq!(result["ok"], true, "{result}");
+        result["request"].as_u64().unwrap()
+    }
+
+    fn result(session: u64, id: u64) -> Value {
+        wait(|| {
+            let value = request(json!({"op": "poll", "session": session, "request": id}));
+            assert_eq!(value["ok"], true, "{value}");
+            (value["status"] == "completed").then(|| value["result"].clone())
+        })
+    }
+
+    fn invoke(session: u64, command: &str, payload: Value) -> Value {
+        result(session, submit(session, command, payload))
+    }
+
+    pub fn start() {
+        assert_eq!(request(json!({"op": "open", "caller": "writer"}))["code"], "runtime_not_ready");
+        thread::spawn(run);
+    }
+
+    fn run() {
+        let report = PathBuf::from(std::env::var("RETAINED_CONTRACT_REPORT").unwrap());
+        let baseline = PathBuf::from(std::env::var("RETAINED_BASELINE_REPORT").unwrap());
+        let outcome = std::panic::catch_unwind(|| {
+            wait(|| (request(json!({"op": "status"}))["status"] == "ready").then_some(()));
+            println!("retained-native-ready");
+            let baseline: Value = wait(|| std::fs::read_to_string(&baseline).ok().and_then(|s| serde_json::from_str::<Value>(&s).ok()).filter(|r| r["passed"] == true));
+            assert_eq!(baseline["state"]["value"], 45);
+            assert_eq!(request(json!({"op": "open", "caller": "undeclared"}))["code"], "caller_denied");
+            let reader = open("reader");
+            let writer = open("writer");
+            let first = invoke(reader, "snapshot", json!({}));
+            assert_eq!(first["value"]["value"], 45);
+            assert_eq!(first["value"]["setupCount"], 1);
+            assert_eq!(first["value"]["pluginSetupCount"], 1);
+            assert_eq!(request(json!({"op": "submit", "session": reader, "command": "increment", "payload": {"delta": 1}}))["code"], "caller_denied");
+            assert_eq!(invoke(writer, "increment", json!({"delta": -1}))["error"], "Use a positive delta.");
+            assert_eq!(invoke(writer, "plugin:runtime-probe|forbidden", json!({}))["ok"], false);
+            assert_eq!(invoke(writer, "plugin:runtime-probe|read", json!({}))["value"], 0);
+            assert_eq!(invoke(writer, "unregistered", json!({}))["ok"], false);
+            assert_eq!(invoke(writer, "increment_async", json!({"delta": 2}))["value"]["value"], 47);
+            assert_eq!(invoke(reader, "snapshot", json!({}))["value"]["value"], 47);
+            // A real command asks the unchanged WebView to invoke its original
+            // snapshot API. The native caller never synthesizes that result.
+            assert_eq!(invoke(writer, "observe_from_webview", json!({}))["ok"], true);
+            wait(|| (invoke(reader, "embedded_observation", json!({}))["value"] == 47).then_some(()));
+
+            let cancelled = submit(writer, "held_increment", json!({"delta": 3}));
+            wait(|| (invoke(reader, "pending_started", json!({}))["value"] == 1).then_some(()));
+            assert_eq!(request(json!({"op": "cancel", "session": writer, "request": cancelled}))["cancelled"], true);
+            let retired = submit(writer, "held_increment", json!({"delta": 5}));
+            wait(|| (invoke(reader, "pending_started", json!({}))["value"] == 2).then_some(()));
+            assert_eq!(request(json!({"op": "close", "session": writer}))["closed"], true);
+            let replacement = open("writer");
+            assert_ne!(replacement, writer);
+            assert_eq!(request(json!({"op": "poll", "session": replacement, "request": retired}))["code"], "request_missing");
+            assert_eq!(invoke(replacement, "release_pending", json!({}))["ok"], true);
+            wait(|| (invoke(reader, "snapshot", json!({}))["value"]["value"] == 55).then_some(()));
+            assert_eq!(request(json!({"op": "poll", "session": writer, "request": cancelled}))["code"], "session_closed");
+            assert_eq!(request(json!({"op": "poll", "session": replacement, "request": retired}))["code"], "request_missing");
+            let final_state = invoke(replacement, "snapshot", json!({}))["value"].clone();
+            assert_eq!(final_state["setupCount"], 1);
+            assert_eq!(final_state["pluginSetupCount"], 1);
+            request(json!({"op": "close", "session": reader}));
+            request(json!({"op": "close", "session": replacement}));
+            json!({"passed": true, "baseline": baseline, "state": final_state,
+                "scenarios": ["readiness", "declared-callers", "caller-denial", "real-tauri-acl", "denied-side-effects", "registered-commands", "original-errors", "async-state", "embedded-shared-state", "cancel-running", "retired-session", "single-initialization"]})
+        });
+        let value = outcome.unwrap_or_else(|_| json!({"passed": false, "error": "native retained-runtime contract failed; see process log"}));
+        let temporary = report.with_extension("tmp");
+        std::fs::write(&temporary, value.to_string()).unwrap();
+        std::fs::rename(temporary, report).unwrap();
+    }
+}
