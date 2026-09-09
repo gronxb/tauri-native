@@ -21,7 +21,7 @@ export interface RetainedExportOptions {
 }
 
 export function readRuntimeExport(options: RetainedExportOptions, platform: 'ios' | 'android') {
-  if (options.manifest || options.header || options.watch || options.incremental || options.force) throw new Error('Retained export currently requires a full ordinary-producer build; legacy manifests, incremental cache and watch need retained-runtime acceptance.');
+  if (options.manifest || options.header || options.watch) throw new Error('Retained export requires the ordinary producer; legacy manifests and watch need retained-runtime acceptance.');
   if (!options.callerPolicy) throw new Error('Retained export requires --caller-policy with explicit original WebView labels and exact command grants.');
   const policy = JSON.parse(readFileSync(path.resolve(options.callerPolicy), 'utf8'));
   validateCallerPolicy(policy);

@@ -4,7 +4,6 @@ import { commandOutput } from '../discovery/native-tool.ts';
 import { androidTools } from '../artifacts/android.ts';
 import { inventory, sha256 } from '../artifacts/files.ts';
 import { publishArtifacts } from '../artifacts/staging.ts';
-import { exportInputs } from '../artifacts/cache.ts';
 import { run } from '../utils/process.ts';
 import { message } from '../utils/output.ts';
 import { generateCommands } from '../types/commands.ts';
@@ -14,9 +13,10 @@ import { readRetainedArtifacts, retainedAndroidAbis, type RetainedAndroidArtifac
 import packageJson from '../../package.json' with { type: 'json' };
 
 import { readRuntimeExport, acquireRuntimeBuild, runtimeNpmDirectory, type RetainedExportOptions } from './export-project.ts';
+import { createRuntimeCache } from './cache.ts';
 
 const rustTargets = { aarch64: 'aarch64-linux-android', armv7: 'armv7-linux-androideabi', i686: 'i686-linux-android', x86_64: 'x86_64-linux-android' } as const;
-const roots = new Set(['manifest.json', 'commands.json', 'commands.ts', 'callers.json', 'include', 'android']);
+const roots = new Set(['manifest.json', 'build.json', 'commands.json', 'commands.ts', 'callers.json', 'include', 'android']);
 
 export function exportRetainedAndroid(options: RetainedExportOptions): void {
   const { project, output, config, applicationId, policy, plugins } = readRuntimeExport(options, 'android');
@@ -24,13 +24,14 @@ export function exportRetainedAndroid(options: RetainedExportOptions): void {
   if (!targets.length || new Set(targets).size !== targets.length || targets.some(target => !Object.hasOwn(retainedAndroidAbis, target))) throw new Error('Select unique retained Android --targets from aarch64,armv7,i686,x86_64.');
   if (!/^[a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)+$/.test(applicationId)) throw new Error('Retained Android export requires a Java-compatible Tauri identifier.');
   if (config.bundle?.android?.minSdkVersion != null && config.bundle.android.minSdkVersion !== 24) throw new Error('Retained Android export currently verifies API 24 native libraries.');
-  const before = sha256(JSON.stringify(exportInputs(project, output)));
   const release = acquireRuntimeBuild(applicationId);
   let runtime: ReturnType<typeof prepareRuntime> | undefined;
   try {
+    const cache = createRuntimeCache(project, output, 'android', targets, options.debug ? 'debug' : 'release', policy);
+    if (options.incremental && !options.force && cache.hit()) { cache.verify(); message(`Reused validated retained Android artifacts in ${output}`, '◆ '); return; }
     const tools = androidTools();
     publishArtifacts(output, stage => {
-      runtime = prepareRuntime(project, policy);
+      runtime = prepareRuntime(project, policy, cache);
       const cwd = runtimeNpmDirectory(runtime);
       const env = { ...process.env, NODE_OPTIONS: '',
         CARGO_TARGET_DIR: path.resolve(process.env.CARGO_TARGET_DIR ?? path.join(project.tauriDirectory, 'target/tauri-native/retained-build')),
@@ -63,7 +64,7 @@ export function exportRetainedAndroid(options: RetainedExportOptions): void {
       const manifest: RetainedAndroidArtifact = { formatVersion: 2, abiVersion: 3, platform: 'android', generator: { name: '@tauri-native/cli', version: packageJson.version },
         compatibility: { mode: 'retained', tauri: '2.11.5', tauriCli: '2.11.4', wry: '0.55.1', tauriRuntimeWry: '2.11.4' }, profile: options.debug ? 'debug' : 'release',
         bootstrap: { owner: 'tauri', project: 'android', applicationId, activity: `${applicationId}.MainActivity`, minimumApiLevel: 24 }, plugins, native,
-        commands: 'commands.json', callers: 'callers.json', source: { inputsSha256: before, callerPolicySha256: sha256(callerBytes) }, files: inventory(stage) };
+        commands: 'commands.json', callers: 'callers.json', source: { ...cache.receipt(stage), callerPolicySha256: sha256(callerBytes) }, files: inventory(stage) };
       writeFileSync(path.join(stage, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
     }, stage => {
       const manifest = readRetainedArtifacts(stage);
@@ -71,7 +72,7 @@ export function exportRetainedAndroid(options: RetainedExportOptions): void {
       const systemLibraries = JSON.parse(readFileSync(tools.systemLibraries, 'utf8'));
       for (const slice of manifest.native) validateRetainedAndroidElf(commandOutput(tools.readelf,
         ['--file-header', '--program-headers', '--notes', '--dynamic', '--dyn-symbols', path.join(stage, slice.path)]), slice.abi, project.libraryName, systemLibraries);
-      if (sha256(JSON.stringify(exportInputs(project, output))) !== before) throw new Error('Producer inputs changed during retained export; previous artifacts preserved.');
+      cache.verify();
     }, roots);
     message(`Created retained Tauri Android bootstrap and ABI 3 artifacts in ${output}`, '◆ ');
   } finally { try { runtime?.cleanup(); } finally { release(); } }

@@ -94,3 +94,18 @@ test('iOS rejects Intel device claims and external bootstrap paths before integr
   writeFileSync(file, JSON.stringify(external));
   assert.throws(() => readRetainedArtifacts(directory), { code: 'artifact_bootstrap' });
 }, 'ios'));
+
+test('a cached Debug build cannot be relabelled as Release by editing its manifest', () => receiptTest(directory => {
+  const file = path.join(directory, 'manifest.json');
+  const manifest = JSON.parse(readFileSync(file, 'utf8'));
+  const policy = JSON.parse(readFileSync(path.join(directory, 'callers.json'), 'utf8'));
+  const build = { schemaVersion: 1, platform: 'android', profile: 'debug', inputsSha256: manifest.source.inputsSha256,
+    callerPolicySha256: sha256(JSON.stringify(policy)) };
+  const bytes = JSON.stringify(build, null, 2) + '\n';
+  writeFileSync(path.join(directory, 'build.json'), bytes);
+  manifest.source.buildSha256 = sha256(JSON.stringify(build)); manifest.source.buildReceiptSha256 = sha256(bytes);
+  rmSync(file); manifest.files = inventory(directory); writeFileSync(file, JSON.stringify(manifest));
+  assert.equal(readRetainedArtifacts(directory).profile, 'debug');
+  manifest.profile = 'release'; writeFileSync(file, JSON.stringify(manifest));
+  assert.throws(() => readRetainedArtifacts(directory), { code: 'artifact_build' });
+}));

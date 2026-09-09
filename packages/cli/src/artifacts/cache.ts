@@ -14,7 +14,7 @@ function within(root: string, file: string): boolean {
   return relative === '' || (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative));
 }
 
-function outputPath(file: string): string {
+export function outputPath(file: string): string {
   const parent = path.dirname(file);
   // Resolve existing parents (including macOS /tmp and /var aliases), but keep
   // the output leaf so validation can still reject a linked destination.
@@ -22,7 +22,7 @@ function outputPath(file: string): string {
 }
 
 /** Hash actual bytes, including installed JS dependencies and linked local inputs. */
-function tree(root: string, excluded: (file: string) => boolean): Record<string, string> {
+export function tree(root: string, excluded: (file: string) => boolean): Record<string, string> {
   const files: Record<string, string> = {};
   const ancestors = new Set<string>();
   function visit(file: string) {
@@ -42,20 +42,20 @@ function tree(root: string, excluded: (file: string) => boolean): Record<string,
   visit(root); return files;
 }
 
-export function projectInputs(project: ProjectModel, output: string, copyRoot?: string) {
+export function projectInputs(project: ProjectModel, output: string, copyRoot?: string, generatedPaths?: string[]) {
   output = outputPath(path.resolve(output));
   const original = projectCopyRoot(project);
   if (within(output, original)) throw new Error('The export directory must not contain the producer root.');
   const root = copyRoot ?? original;
   const mapped = (file: string) => path.join(root, path.relative(original, file));
-  const generated = [path.join(project.workspaceRoot, 'target'), path.join(project.tauriDirectory, 'target'), path.join(project.tauriDirectory, 'gen'), output,
+  const generated = [...(generatedPaths ?? [path.join(project.workspaceRoot, 'target'), path.join(project.tauriDirectory, 'target'), path.join(project.tauriDirectory, 'gen')]), output,
     ...(project.frontend.build ? [project.frontend.dist] : [])].filter(file => within(original, file)).map(mapped);
   const stageParent = mapped(path.dirname(output));
   const stagePrefix = `.${path.basename(output)}-stage-`;
   return tree(root, file => path.basename(file) === '.git' || generated.some(directory => within(directory, file)) || file === mapped(`${output}.lock`) || (path.dirname(file) === stageParent && path.basename(file).startsWith(stagePrefix)));
 }
 
-export function exportInputs(project: ProjectModel, output: string) {
+export function exportInputs(project: ProjectModel, output: string, generatedPaths?: string[]) {
   const configs: Record<string, string | null> = {};
   const directories = new Set([process.env.CARGO_HOME ?? path.join(homedir(), '.cargo')]);
   for (const start of new Set([project.tauriDirectory, process.cwd()])) {
@@ -70,7 +70,7 @@ export function exportInputs(project: ProjectModel, output: string) {
   for (const directory of directories) for (const name of ['config', 'config.toml']) {
     const file = path.join(directory, name); configs[file] = existsSync(file) ? sha256(readFileSync(file)) : null;
   }
-  return { files: projectInputs(project, output), configs, environment: sha256(JSON.stringify(Object.entries(process.env).sort(([a], [b]) => a.localeCompare(b)))) };
+  return { files: projectInputs(project, output, undefined, generatedPaths), configs, environment: sha256(JSON.stringify(Object.entries(process.env).sort(([a], [b]) => a.localeCompare(b)))) };
 }
 
 export function createExportCache(project: ProjectModel, platform: 'ios' | 'android', output: string) {

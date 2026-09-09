@@ -31,6 +31,7 @@ let installed = false;
 let dataDirectory: string;
 let binary: string;
 let iosPid: number;
+let incrementalAcceptance: { unchangedHit: true; invalidCapabilityRejected: true; previousArtifactPreserved: true } | undefined;
 
 function run(label: string, command: string, args: string[], cwd = evidence, environment: NodeJS.ProcessEnv = env) {
   console.log(`> portable-${platform}: ${label}`);
@@ -89,8 +90,29 @@ try {
     writeFileSync(path.join(evidence, 'callers.json'), JSON.stringify({ version: 1, callers: { native: { webview: 'main', commands:
       ['snapshot', 'plugin_snapshot', 'list_notes', 'save_note', 'plugin:geolocation|check_permissions', 'plugin:geolocation|request_permissions',
         'plugin:geolocation|get_current_position', 'plugin:geolocation|watch_position', 'plugin:deep-link|get_current'] } } }, null, 2) + '\n');
-    run('export', process.execPath, [path.join(root, 'packages/cli/dist/index.mjs'), 'export', platform, '--runtime', 'retained',
-      '--tauri-dir', path.join(producer, 'src-tauri'), '--caller-policy', path.join(evidence, 'callers.json'), '--targets', platform === 'android' ? 'aarch64' : 'aarch64-sim', '--debug', '--output-dir', exported]);
+    const exportArguments = [path.join(root, 'packages/cli/dist/index.mjs'), 'export', platform, '--runtime', 'retained',
+      '--tauri-dir', path.join(producer, 'src-tauri'), '--caller-policy', path.join(evidence, 'callers.json'), '--targets', platform === 'android' ? 'aarch64' : 'aarch64-sim', '--debug', '--output-dir', exported, '--incremental'];
+    run('export', process.execPath, exportArguments);
+    const receipt = readFileSync(path.join(exported, 'manifest.json'), 'utf8');
+    assert.match(run('incremental-hit', process.execPath, exportArguments), /Reused validated retained/);
+    assert.equal(readFileSync(path.join(exported, 'manifest.json'), 'utf8'), receipt);
+    const capability = path.join(producer, 'src-tauri/capabilities/main.json');
+    const capabilityBytes = readFileSync(capability);
+    try {
+      const invalid = JSON.parse(capabilityBytes.toString('utf8'));
+      invalid.permissions.push('core:nonexistent-retained-cache-proof');
+      writeFileSync(capability, JSON.stringify(invalid, null, 2) + '\n');
+      console.log(`> portable-${platform}: capability-cache-invalidation`);
+      const rejected = spawnSync(process.execPath, exportArguments, { cwd: evidence, env, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 180000 });
+      const log = `${rejected.stdout ?? ''}\n${rejected.stderr ?? ''}`;
+      writeFileSync(path.join(evidence, 'capability-cache-invalidation.log'), log);
+      assert.equal(rejected.error, undefined, 'Capability rejection must finish, not time out');
+      assert.notEqual(rejected.status, 0, 'Changed invalid capabilities must not reuse the cached app');
+      assert.match(log, /Permission core:nonexistent-retained-cache-proof not found/);
+      assert.equal(readFileSync(path.join(exported, 'manifest.json'), 'utf8'), receipt, 'Failed native build preserves the previously validated artifact');
+      readRetainedArtifacts(exported);
+    } finally { writeFileSync(capability, capabilityBytes); }
+    incrementalAcceptance = { unchangedHit: true, invalidCapabilityRejected: true, previousArtifactPreserved: true };
     assert.deepEqual(snapshot(producer), before);
     rmSync(producer, { recursive: true });
   }
@@ -190,7 +212,7 @@ try {
     ...(platform === 'android' ? { apkAlignment: 'zipalign -c -P 16 -v 4 passed' } : {}),
     consumer: 'Native platform acceptance UI; RN/Lynx package acceptance remains separate',
     artifactSha256: sha256(readFileSync(path.join(exported, 'manifest.json'))), binarySha256: sha256(readFileSync(binary)),
-    baseline, acl, denied, deniedPosition, granted, saved, linked, relaunched,
+    incrementalAcceptance, baseline, acl, denied, deniedPosition, granted, saved, linked, relaunched,
   }, null, 2) + '\n');
   console.log(`PASS: source-free ABI 3 ${platform} bootstrap, native plugins, permission callback retirement, deep link and persistence`);
 } finally {

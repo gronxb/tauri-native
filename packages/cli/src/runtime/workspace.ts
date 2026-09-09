@@ -2,6 +2,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync,
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { projectCopyRoot } from '../adapter/workspace.ts';
+import { outputPath } from '../artifacts/cache.ts';
 import { commandOutput, nativeDirectory, nativeTool } from '../discovery/native-tool.ts';
 import { discoverProject, type ProjectModel, type SourceModel } from '../discovery/project.ts';
 
@@ -27,7 +28,15 @@ export function validateCallerPolicy(value: unknown): asserts value is NativeCal
   }
 }
 
-export function prepareRuntime(project: ProjectModel, policy: NativeCallerPolicy) {
+export function runtimeGeneratedPaths(project: ProjectModel) {
+  return [path.join(project.workspaceRoot, 'target'), path.join(project.tauriDirectory, 'target'),
+    ...['schemas', 'tauri-native', 'android/.gradle', 'android/.kotlin', 'android/build', 'android/app/build', 'android/app/.cxx',
+      'apple/build', 'apple/Pods', 'apple/Externals/arm64/debug', 'apple/Externals/arm64/release',
+      'apple/Externals/x86_64/debug', 'apple/Externals/x86_64/release']
+      .map(relative => path.join(project.tauriDirectory, 'gen', relative))];
+}
+
+export function prepareRuntime(project: ProjectModel, policy: NativeCallerPolicy, capture?: { output: string; verifyCopy: (producer: string) => void }) {
   validateCallerPolicy(policy);
   const sourceRoot = projectCopyRoot(project);
   const directory = realpathSync(mkdtempSync(path.join(tmpdir(), 'tauri-native-runtime-')));
@@ -36,19 +45,16 @@ export function prepareRuntime(project: ProjectModel, policy: NativeCallerPolicy
   const cleanup = () => rmSync(directory, { recursive: true, force: true });
   try {
     const dependencies: [string, string][] = [];
-    const excluded = new Set([
-      path.join(project.workspaceRoot, 'target'), path.join(project.tauriDirectory, 'target'),
-      ...['schemas', 'tauri-native', 'android/.gradle', 'android/.kotlin', 'android/build', 'android/app/build', 'android/app/.cxx',
-        'apple/build', 'apple/Pods', 'apple/Externals/arm64/debug', 'apple/Externals/arm64/release',
-        'apple/Externals/x86_64/debug', 'apple/Externals/x86_64/release']
-        .map(relative => path.join(project.tauriDirectory, 'gen', relative)),
-    ]);
+    const output = capture ? outputPath(path.resolve(capture.output)) : undefined;
+    const excluded = new Set([...runtimeGeneratedPaths(project), ...(output ? [output, `${output}.lock`] : [])]);
     cpSync(sourceRoot, producer, { recursive: true, dereference: true, filter(source) {
       if (path.basename(source) === '.git' || excluded.has(source)) return false;
+      if (output && path.dirname(source) === path.dirname(output) && path.basename(source).startsWith(`.${path.basename(output)}-stage-`)) return false;
       if (path.basename(source) === 'node_modules') { dependencies.push([realpathSync(source), map(source)]); return false; }
       return true;
     } });
     for (const [source, target] of dependencies) { mkdirSync(path.dirname(target), { recursive: true }); symlinkSync(source, target, 'dir'); }
+    capture?.verifyCopy(producer);
     const captured = discoverProject(map(project.tauriDirectory), producer, false, 'retained');
     const callersFile = path.join(path.dirname(captured.source), 'tauri-native-callers.json');
     if (existsSync(callersFile) || captured.cargoPackage.dependencies.some(dependency => dependency.name === 'tauri-native-runtime')) {

@@ -88,6 +88,14 @@ export function readRetainedArtifacts(directory: string): RetainedArtifact {
     const policy = JSON.parse(readFileSync(path.join(directory, manifest.callers), 'utf8'));
     if (policy?.version !== 1 || !policy.callers || !Object.keys(policy.callers).length) fail('artifact_policy', 'missing explicit native caller delegation');
     if (createHash('sha256').update(readFileSync(path.join(directory, 'callers.json'))).digest('hex') !== manifest.source.callerPolicySha256) fail('artifact_policy', 'caller policy differs from compiled policy receipt');
+    if (manifest.source.buildSha256 || manifest.source.buildReceiptSha256) {
+      const bytes = readFileSync(path.join(directory, 'build.json'));
+      const build = JSON.parse(bytes.toString('utf8'));
+      if (createHash('sha256').update(bytes).digest('hex') !== manifest.source.buildReceiptSha256 ||
+          createHash('sha256').update(JSON.stringify(build)).digest('hex') !== manifest.source.buildSha256 ||
+          build.schemaVersion !== 1 || build.platform !== manifest.platform || build.profile !== manifest.profile || build.inputsSha256 !== manifest.source.inputsSha256 ||
+          build.callerPolicySha256 !== createHash('sha256').update(JSON.stringify(policy)).digest('hex')) fail('artifact_build', 'build inputs differ from the compiled runtime receipt');
+    }
     return manifest;
   } catch (error) {
     if (error instanceof ArtifactError) throw error;

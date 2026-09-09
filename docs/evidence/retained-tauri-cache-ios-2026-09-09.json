@@ -25,7 +25,7 @@
   },
   "sourceFreeBuild": "xcodebuild -configuration debug -sdk iphonesimulator; PATH=/usr/bin:/bin:/usr/sbin:/sbin; relocated path has spaces",
   "consumer": "Native platform acceptance UI; RN/Lynx package acceptance remains separate",
-  "artifactSha256": "27a9992f5cf2c6c528c973faba2b50eb7af2e4ada016153a63cef3064d49df09",
+  "artifactSha256": "f8f128d69d46afec318a34b0cdcc7ccc87cfd6d915fb8fcf8a9640961c0acea7",
   "binarySha256": "870c5f1e4d06fba2c395af215ab64e83b7fd1f5e34f94cd6789e6985be8fc9b5",
   "baseline": {
     "directory": "<application-data-directory>",
@@ -60,7 +60,7 @@
     "retiredClosures": 0,
     "appDelegate": "AppDelegate",
     "retiredCallbacks": 0,
-    "pid": 43763
+    "pid": 66357
   },
   "denied": {
     "action": "request",
@@ -72,7 +72,7 @@
     "retiredClosures": 0,
     "appDelegate": "AppDelegate",
     "retiredCallbacks": 0,
-    "pid": 43763
+    "pid": 66357
   },
   "deniedPosition": {
     "action": "position-denied",
@@ -84,7 +84,7 @@
     "retiredClosures": 0,
     "appDelegate": "AppDelegate",
     "retiredCallbacks": 0,
-    "pid": 43763
+    "pid": 66357
   },
   "granted": {
     "action": "check",
@@ -96,7 +96,7 @@
     "retiredClosures": 1,
     "appDelegate": "AppDelegate",
     "retiredCallbacks": 0,
-    "pid": 44260
+    "pid": 68171
   },
   "saved": {
     "action": "save",
@@ -110,7 +110,7 @@
     "retiredClosures": 1,
     "appDelegate": "AppDelegate",
     "retiredCallbacks": 0,
-    "pid": 44260
+    "pid": 68171
   },
   "linked": {
     "action": "refresh",
@@ -134,7 +134,7 @@
     "retiredClosures": 1,
     "appDelegate": "AppDelegate",
     "retiredCallbacks": 0,
-    "pid": 44260
+    "pid": 68171
   },
   "relaunched": {
     "action": "refresh",
@@ -156,22 +156,37 @@
     "retiredClosures": 0,
     "appDelegate": "AppDelegate",
     "retiredCallbacks": 0,
-    "pid": 46073
+    "pid": 71871
   },
   "date": "2026-09-09",
   "reproduceWith": "nub --cwd packages/cli run test:runtime:portable:ios",
+  "incrementalAcceptance": {
+    "unchangedHit": true,
+    "invalidCapabilityRejected": true,
+    "previousArtifactPreserved": true
+  },
+  "buildReceipt": {
+    "sha256": "bd3d7bbf15efe4ad7587328531eef7e3cc702993aa462fd991ea6dc410cdf4bc",
+    "key": "9e7815f231ec082009d34056733e52d8cc36a2b490b3df51e80f8c8be475a174",
+    "authoredFiles": 379,
+    "cargoDependencies": 444,
+    "toolFingerprints": {
+      "rustc": "e794146d99fad54562fdcbd4a7c8b22b0240d2b0312ff6d879d67939b3131850",
+      "cargo": "873db53ff362e55b41e20a4e889cc164e15527771b7d79a2fbb5d0369ee4f674",
+      "npm": "608c86d3f47c084a7a0de5d4eb4bc18724c96c456f3fe6842d17f04004338c3f",
+      "node": "23301beac1c24c7103c920f1cc668f76ff104998c001a74f2ebe8fab9b4bac8f",
+      "xcode": "bbe969e3e1760bbc982b73129dcb3b303aa7e410a7a6d7f666d20df96e601bdf",
+      "clang": "e12bfc7e02a42a95f2e88f3b8e889eb2da20678749c0fbf975f33395401b67a0",
+      "iphoneos": "6fbf4425f969b566d7e910f1de7e701c2542c04b7a02470b5724e529acd3becb",
+      "iphonesimulator": "6fbf4425f969b566d7e910f1de7e701c2542c04b7a02470b5724e529acd3becb"
+    }
+  },
+  "scope": "Arm64 Debug simulator/emulator; real native bootstrap/plugin consumer, independent of RN/Lynx package acceptance. Release, other architectures, source-path remapping and physical devices remain open.",
   "versions": {
-    "tauri": "2.11.5",
-    "tauriCli": "2.11.4",
-    "wry": "0.55.1",
-    "tauriRuntimeWry": "2.11.4",
-    "geolocation": "2.3.3",
-    "deepLink": "2.4.10",
-    "maestro": "2.4.0",
     "xcode": "26.4.1 (17E202)",
     "iosSimulator": "26.4.1 (23E254a)",
-    "iosRuntimeName": "iOS 26.4"
+    "runtimeName": "iOS 26.4",
+    "maestro": "2.4.0"
   },
-  "executionNote": "The CLI exported the ABI 3 runtime and the disposable producer was deleted after source hashes matched. The first consumer run lost the foreground app when Maestro restarted its XCTest driver. The final --consume run rebuilds the unchanged copied artifact and explicitly activates the existing process with stopApp:false and an empty permission map. PID liveness is checked before and after every flow; actual OS denial and UI grant remain required. All final native scenarios pass.",
-  "scope": "iOS arm64 Debug simulator, source-free native UIKit consumer. This does not establish RN/Expo/Lynx package integration, Release, Intel simulator/device slices or physical-device execution."
+  "failureAcceptance": "After an unchanged incremental hit, adding core:nonexistent-retained-cache-proof to the disposable producer caused an actual Tauri native build rejection. The previous complete receipt was unchanged and remained valid. Original capability bytes were restored and source hashes matched before deletion. This retained artifact then passed the complete source-free native UI run."
 }
