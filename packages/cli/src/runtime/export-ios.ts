@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { commandOutput } from '../discovery/native-tool.ts';
 import { inventory, sha256 } from '../artifacts/files.ts';
@@ -29,15 +29,22 @@ export function exportRetainedIos(options: RetainedExportOptions) {
   const release = acquireRuntimeBuild(applicationId);
   const profile = options.debug ? 'debug' : 'release';
   let runtime: ReturnType<typeof prepareRuntime> | undefined;
+  let build: ReturnType<typeof runtimeBuildEnvironment> | undefined;
   try {
     const cache = createRuntimeCache(project, output, 'ios', targets, profile, policy);
     if (options.incremental && !options.force && cache.hit()) { cache.verify(); message(`Reused validated retained iOS artifacts in ${output}`, '◆ '); return; }
     publishArtifacts(output, stage => {
       runtime = prepareRuntime(project, policy, cache);
       const cwd = runtimeNpmDirectory(runtime);
-      const env = runtimeBuildEnvironment(runtime, path.resolve(process.env.CARGO_TARGET_DIR ?? path.join(project.tauriDirectory, 'target/tauri-native/retained-build')), 'ios');
-      run('npm', ['run', 'tauri-native:runtime', '--', 'ios', 'init', '--ci', '--skip-targets-install'], { cwd, env });
+      const targetDirectory = path.resolve(process.env.CARGO_TARGET_DIR ?? path.join(project.tauriDirectory, 'target/tauri-native/retained-build'));
+      build = runtimeBuildEnvironment(runtime, targetDirectory, 'ios');
+      const { env } = build;
       const native = path.join(runtime.project.tauriDirectory, 'gen/apple');
+      // ios init always runs xcodegen, which replaces authored Xcode settings
+      // and Info.plist entries. An existing ordinary native project is an input.
+      if (!existsSync(native) || !readdirSync(native).some(file => file.endsWith('.xcodeproj'))) {
+        run('npm', ['run', 'tauri-native:runtime', '--', 'ios', 'init', '--ci', '--skip-targets-install'], { cwd, env });
+      }
       const libraries = path.join(runtime.directory, 'libraries');
       mkdirSync(libraries);
       for (const target of targets) {
@@ -52,7 +59,7 @@ export function exportRetainedIos(options: RetainedExportOptions) {
         // Linker/Swift debug records are outside Rust's prefix remapping.
         // Public ABI/startup/plugin symbols are validated after stripping.
         run('xcrun', ['strip', '-S', library]);
-        assertNativePaths(library, runtime, env.CARGO_TARGET_DIR);
+        assertNativePaths(library, runtime, targetDirectory);
       }
       const frameworkArguments: string[] = [];
       for (const variant of ['device', 'simulator'] as const) {
@@ -104,7 +111,7 @@ export function exportRetainedIos(options: RetainedExportOptions) {
       cache.verify();
     }, roots);
     message(`Created retained Tauri iOS bootstrap and ABI 3 artifacts in ${output}`, '◆ ');
-  } finally { try { runtime?.cleanup(); } finally { release(); } }
+  } finally { try { build?.cleanup(); } finally { try { runtime?.cleanup(); } finally { release(); } } }
 }
 
 function retainedIosSlices(directory: string): RetainedIosArtifact['native'] {

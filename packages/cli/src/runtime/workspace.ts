@@ -30,6 +30,7 @@ export function validateCallerPolicy(value: unknown): asserts value is NativeCal
 
 export function runtimeGeneratedPaths(project: ProjectModel) {
   return [path.join(project.workspaceRoot, 'target'), path.join(project.tauriDirectory, 'target'),
+    ...(process.env.CARGO_TARGET_DIR ? [outputPath(path.resolve(process.env.CARGO_TARGET_DIR))] : []),
     ...['schemas', 'tauri-native', 'android/.gradle', 'android/.kotlin', 'android/build', 'android/app/build', 'android/app/.cxx',
       'apple/build', 'apple/Pods', 'apple/Externals/arm64/debug', 'apple/Externals/arm64/release',
       'apple/Externals/x86_64/debug', 'apple/Externals/x86_64/release']

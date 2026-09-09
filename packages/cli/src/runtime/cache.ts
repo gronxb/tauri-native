@@ -3,7 +3,7 @@ import path from 'node:path';
 import { exportInputs, projectInputs, tree } from '../artifacts/cache.ts';
 import { androidTools } from '../artifacts/android.ts';
 import { sha256 } from '../artifacts/files.ts';
-import { commandOutput, nativeDirectory } from '../discovery/native-tool.ts';
+import { commandOutput, nativeDirectory, nativeTool } from '../discovery/native-tool.ts';
 import type { ProjectModel } from '../discovery/project.ts';
 import { readRetainedArtifacts } from '../../../../scripts/retained-artifacts.ts';
 import { runtimeGeneratedPaths, type NativeCallerPolicy } from './workspace.ts';
@@ -30,6 +30,14 @@ function dependencies(project: ProjectModel) {
 
 export function createRuntimeCache(project: ProjectModel, output: string, platform: 'ios' | 'android', targets: string[], profile: 'debug' | 'release', policy: NativeCallerPolicy) {
   const before = retainedInputs(project, output);
+  // The generated path-remapping wrapper can compose an explicit environment
+  // wrapper. Cargo-config wrapper path resolution is not inferred or discarded.
+  if (process.env.RUSTC_WRAPPER === undefined && process.env.CARGO_BUILD_RUSTC_WRAPPER === undefined) for (const [file, fingerprint] of Object.entries(before.configs)) {
+    if (fingerprint && /[/\\]config(?:\.toml)?$/.test(file)) {
+      const config = nativeTool<{ build?: { 'rustc-wrapper'?: string } }>('manifest', file);
+      if (config.build?.['rustc-wrapper']) throw new Error('Retained export requires RUSTC_WRAPPER to explicitly select the producer Cargo compiler wrapper; its configured wrapper must not be silently replaced.');
+    }
+  }
   const inputsSha256 = sha256(JSON.stringify(before));
   const cargo = dependencies(project);
   const tools: Record<string, string> = {};

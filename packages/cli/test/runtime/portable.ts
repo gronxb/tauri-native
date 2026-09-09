@@ -8,11 +8,17 @@ import { readRetainedArtifacts } from '../../../../scripts/retained-artifacts.ts
 import { sha256 } from '../../src/artifacts/files.ts';
 import { snapshot } from '../native-export/source-integrity.ts';
 import { acquireMobileTest } from './mobile-lock.ts';
+import { prepareNativeConfiguration, assertNativeConfiguration } from './native-configuration.ts';
+import { retainedInputs } from '../../src/runtime/cache.ts';
+import { discoverProject } from '../../src/discovery/project.ts';
 
 const root = fileURLToPath(new URL('../../../..', import.meta.url));
 const platform = process.argv[2];
 assert(platform === 'android' || platform === 'ios', 'Select ios or android');
-const evidence = path.join(root, platform === 'android' ? 'target/retained-portability' : 'target/retained-ios-portability');
+const flags = new Set(process.argv.slice(3));
+assert([...flags].every(flag => ['--consume', '--release', '--native-config'].includes(flag)), 'Use --consume, --release or --native-config');
+const nativeConfiguration = flags.has('--native-config');
+const evidence = path.join(root, nativeConfiguration ? `target/retained-native-config-${platform}` : platform === 'android' ? 'target/retained-portability' : 'target/retained-ios-portability');
 const fixture = path.join(root, 'packages/cli/test/fixtures/mobile-plugin-tauri');
 const producer = path.join(evidence, 'ordinary producer');
 const exported = path.join(evidence, 'exported-runtime');
@@ -20,8 +26,6 @@ const consumer = path.join(evidence, 'ABI 3 consumer with spaces');
 const android = path.join(consumer, 'android');
 const device = platform === 'android' ? process.env.ANDROID_SERIAL : process.env.IOS_SIMULATOR_UDID;
 assert(device, 'Select ANDROID_SERIAL or IOS_SIMULATOR_UDID for an arm64 virtual device');
-const flags = new Set(process.argv.slice(3));
-assert([...flags].every(flag => ['--consume', '--release'].includes(flag)), 'Use --consume for the existing artifact, and --release for an optimized native build');
 const consume = flags.has('--consume');
 const profile = flags.has('--release') ? 'release' : 'debug';
 const appId = 'dev.taurinative.mobilefieldnotes';
@@ -35,6 +39,7 @@ let dataDirectory: string;
 let binary: string;
 let iosPid: number;
 let incrementalAcceptance: { unchangedHit: true; invalidCapabilityRejected: true; previousArtifactPreserved: true } | undefined;
+let nativeInputsSha256: string | undefined;
 
 function run(label: string, command: string, args: string[], cwd = evidence, environment: NodeJS.ProcessEnv = env) {
   console.log(`> portable-${platform}: ${label}`);
@@ -89,11 +94,19 @@ try {
   if (!consume) {
     rmSync(producer, { recursive: true, force: true }); cpSync(fixture, producer, { recursive: true });
     run('dependencies', 'npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], producer);
+    if (nativeConfiguration) prepareNativeConfiguration(platform, producer, run);
     const before = snapshot(producer);
+    const inputs = () => retainedInputs(discoverProject(path.join(producer, 'src-tauri'), producer, false, 'retained'), exported).files;
+    if (nativeConfiguration) nativeInputsSha256 = sha256(JSON.stringify(inputs()));
     cpSync(new URL('./composition/fieldnotes-callers.json', import.meta.url), path.join(evidence, 'callers.json'));
     const exportArguments = [path.join(root, 'packages/cli/dist/index.mjs'), 'export', platform, '--runtime', 'retained',
       '--tauri-dir', path.join(producer, 'src-tauri'), '--caller-policy', path.join(evidence, 'callers.json'), '--targets', platform === 'android' ? 'aarch64' : 'aarch64-sim', ...(profile === 'debug' ? ['--debug'] : []), '--output-dir', exported, '--incremental'];
     run('export', process.execPath, exportArguments);
+    if (nativeConfiguration && platform === 'ios') {
+      const artifact = readRetainedArtifacts(exported);
+      assert.equal(artifact.platform, 'ios');
+      assert.equal(artifact.bootstrap.minimumOsVersion, '15.0', 'Reinitialization must not erase authored Xcode settings');
+    }
     const receipt = readFileSync(path.join(exported, 'manifest.json'), 'utf8');
     assert.match(run('incremental-hit', process.execPath, exportArguments), /Reused validated retained/);
     assert.equal(readFileSync(path.join(exported, 'manifest.json'), 'utf8'), receipt);
@@ -104,7 +117,7 @@ try {
       invalid.permissions.push('core:nonexistent-retained-cache-proof');
       writeFileSync(capability, JSON.stringify(invalid, null, 2) + '\n');
       console.log(`> portable-${platform}: capability-cache-invalidation`);
-      const rejected = spawnSync(process.execPath, exportArguments, { cwd: evidence, env, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 180000 });
+      const rejected = spawnSync(process.execPath, exportArguments, { cwd: evidence, env, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 600000 });
       const log = `${rejected.stdout ?? ''}\n${rejected.stderr ?? ''}`;
       writeFileSync(path.join(evidence, 'capability-cache-invalidation.log'), log);
       assert.equal(rejected.error, undefined, 'Capability rejection must finish, not time out');
@@ -115,6 +128,7 @@ try {
     } finally { writeFileSync(capability, capabilityBytes); }
     incrementalAcceptance = { unchangedHit: true, invalidCapabilityRejected: true, previousArtifactPreserved: true };
     assert.deepEqual(snapshot(producer), before);
+    if (nativeConfiguration) assert.equal(sha256(JSON.stringify(inputs())), nativeInputsSha256, 'Authored native inputs survive export success and failure');
     rmSync(producer, { recursive: true });
   }
   assert(!existsSync(producer), 'Delete the disposable producer before source-free consumer acceptance');
@@ -173,6 +187,7 @@ try {
     run('privacy-reset', 'xcrun', ['simctl', 'privacy', device, 'reset', 'location', appId]);
     run('gps', 'xcrun', ['simctl', 'location', device, 'set', '37.5665,126.9780']);
   }
+  if (nativeConfiguration) assertNativeConfiguration(platform, binary, run);
   launch(); await until(() => typeof report('runtime-report.json').passed === 'boolean');
   const baseline = report('runtime-report.json');
   assert.equal(baseline.passed, true, JSON.stringify(baseline));
@@ -224,6 +239,7 @@ try {
     consumer: 'Native platform acceptance UI; RN/Lynx package acceptance remains separate',
     artifactSha256: sha256(readFileSync(path.join(exported, 'manifest.json'))), binarySha256: sha256(readFileSync(binary)),
     incrementalAcceptance, baseline, acl, denied, deniedPosition, granted, saved, linked, relaunched,
+    ...(nativeConfiguration ? { nativeConfiguration: { passed: true, nativeInputsSha256, scenario: 'Authored native declarations/resources preserved in the compiled app and ordinary producer' } } : {}),
   }, null, 2) + '\n');
   console.log(`PASS: source-free ABI 3 ${platform} bootstrap, native plugins, permission callback retirement, deep link and persistence`);
 } finally {

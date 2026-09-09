@@ -27,6 +27,7 @@ export function exportRetainedAndroid(options: RetainedExportOptions): void {
   if (config.bundle?.android?.minSdkVersion != null && config.bundle.android.minSdkVersion !== 24) throw new Error('Retained Android export currently verifies API 24 native libraries.');
   const release = acquireRuntimeBuild(applicationId);
   let runtime: ReturnType<typeof prepareRuntime> | undefined;
+  let build: ReturnType<typeof runtimeBuildEnvironment> | undefined;
   try {
     const cache = createRuntimeCache(project, output, 'android', targets, options.debug ? 'debug' : 'release', policy);
     if (options.incremental && !options.force && cache.hit()) { cache.verify(); message(`Reused validated retained Android artifacts in ${output}`, '◆ '); return; }
@@ -34,14 +35,19 @@ export function exportRetainedAndroid(options: RetainedExportOptions): void {
     publishArtifacts(output, stage => {
       runtime = prepareRuntime(project, policy, cache);
       const cwd = runtimeNpmDirectory(runtime);
-      const env = runtimeBuildEnvironment(runtime, path.resolve(process.env.CARGO_TARGET_DIR ?? path.join(project.tauriDirectory, 'target/tauri-native/retained-build')), 'android');
-      run('npm', ['run', 'tauri-native:runtime', '--', 'android', 'init', '--ci', '--skip-targets-install'], { cwd, env });
+      const targetDirectory = path.resolve(process.env.CARGO_TARGET_DIR ?? path.join(project.tauriDirectory, 'target/tauri-native/retained-build'));
+      build = runtimeBuildEnvironment(runtime, targetDirectory, 'android');
+      const { env } = build;
+      const nativeProject = path.join(runtime.project.tauriDirectory, 'gen/android');
+      if (!existsSync(path.join(nativeProject, 'app/build.gradle.kts'))) {
+        run('npm', ['run', 'tauri-native:runtime', '--', 'android', 'init', '--ci', '--skip-targets-install'], { cwd, env });
+      }
       // Native build.rs side effects must run for this fresh output directory.
       for (const target of targets) run('cargo', ['clean', '--package', 'tauri', ...Object.keys(plugins).flatMap(name => ['--package', name]),
         '--target', rustTargets[target], '--manifest-path', runtime.project.manifest], { cwd, env });
       run('npm', ['run', 'tauri-native:runtime', '--', 'android', 'build', '--ci', ...(options.debug ? ['--debug'] : []), '--target', ...targets, '--apk'], { cwd, env });
       const android = path.join(stage, 'android');
-      const captured = copyAndroidRuntimeProject(path.join(runtime.project.tauriDirectory, 'gen/android'), android);
+      const captured = copyAndroidRuntimeProject(nativeProject, android);
       if (captured.modules.slice().sort().join(',') !== ['tauri-android', ...Object.keys(plugins)].sort().join(',')) throw new Error('Resolved Rust plugins differ from generated Android native registrations.');
       const java = path.join(android, 'app/src/main/java/dev/taurinative/runtime');
       if (existsSync(java)) throw new Error('Producer already owns the generated retained runtime Java package.');
@@ -60,7 +66,7 @@ export function exportRetainedAndroid(options: RetainedExportOptions): void {
       for (const slice of native) {
         const library = path.join(stage, slice.path);
         run(path.join(tools.bin, `llvm-strip${process.platform === 'win32' ? '.exe' : ''}`), ['--strip-debug', library]);
-        assertNativePaths(library, runtime, env.CARGO_TARGET_DIR);
+        assertNativePaths(library, runtime, targetDirectory);
       }
       const packaged = readdirSync(path.join(android, 'app/src/main/jniLibs'), { recursive: true, encoding: 'utf8' }).filter(file => file.endsWith('.so')).map(file => `android/app/src/main/jniLibs/${file}`);
       if (packaged.sort().join(',') !== native.map(slice => slice.path).sort().join(',')) throw new Error('Unexpected or missing native Android library; every packaged ELF needs explicit validation.');
@@ -78,7 +84,7 @@ export function exportRetainedAndroid(options: RetainedExportOptions): void {
       cache.verify();
     }, roots);
     message(`Created retained Tauri Android bootstrap and ABI 3 artifacts in ${output}`, '◆ ');
-  } finally { try { runtime?.cleanup(); } finally { release(); } }
+  } finally { try { build?.cleanup(); } finally { try { runtime?.cleanup(); } finally { release(); } } }
 }
 
 export function validateRetainedAndroidElf(output: string, abi: RetainedAndroidArtifact['native'][number]['abi'], library: string, systemLibraries: Record<string, string>) {
