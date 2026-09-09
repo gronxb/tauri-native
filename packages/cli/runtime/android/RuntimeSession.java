@@ -45,9 +45,28 @@ public final class RuntimeSession implements AutoCloseable {
   }
 
   public long invoke(String command, JSONObject payload, Consumer<JSONObject> callback) {
+    return start(object("op", "submit", "session", session, "command", command, "payload", payload), callback);
+  }
+
+  /** Completion contains the subscription ID; cancel the request to abandon registration. */
+  public long listen(String event, Consumer<JSONObject> callback) {
+    return start(object("op", "listen", "session", session, "event", event), callback);
+  }
+
+  /** Each batch rechecks the original live WebView origin and Tauri capability. */
+  public long pollEvents(Consumer<JSONObject> callback) {
+    return start(object("op", "events", "session", session), callback);
+  }
+
+  public boolean unlisten(long subscription) {
+    assertMain();
+    return !closed && exchange(object("op", "unlisten", "session", session, "subscription", subscription)).optBoolean("removed");
+  }
+
+  private long start(JSONObject operation, Consumer<JSONObject> callback) {
     assertMain();
     if (closed) { callback.accept(object("ok", false, "code", "session_closed", "error", "Native session is closed")); return 0; }
-    JSONObject submitted = exchange(object("op", "submit", "session", session, "command", command, "payload", payload));
+    JSONObject submitted = exchange(operation);
     if (!submitted.optBoolean("ok")) { callback.accept(submitted); return 0; }
     long id = submitted.optLong("request");
     pending.put(id, callback);

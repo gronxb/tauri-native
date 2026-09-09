@@ -20,6 +20,10 @@ public final class PluginAcceptance implements AutoCloseable {
   final Handler main = new Handler(Looper.getMainLooper());
   final TextView status;
   final JSONObject evidence = new JSONObject();
+  final JSONArray eventHistory = new JSONArray();
+  JSONArray eventBatch = new JSONArray();
+  long subscription;
+  int cancelledListeners;
   RuntimeSession session;
   int generation, retiredCallbacks, retiredClosures;
   boolean closed;
@@ -44,16 +48,21 @@ public final class PluginAcceptance implements AutoCloseable {
     button(controls, "Native save location", this::save);
     button(controls, "Native refresh", () -> call("plugin_snapshot", object(), result -> {
       JSONObject snapshot = value(result);
-      record("refresh", "Native links " + snapshot.optJSONArray("links").length() + " notes " + snapshot.optJSONArray("notes").length(), snapshot);
+      session.pollEvents(batch -> {
+        if (!batch.optBoolean("ok")) throw new IllegalStateException(batch.toString());
+        eventBatch = batch.optJSONArray("events");
+        for (int i = 0; i < eventBatch.length(); i++) eventHistory.put(object("generation", generation, "event", eventBatch.optJSONObject(i)));
+        record("refresh", "Native links " + snapshot.optJSONArray("links").length() + " notes " + snapshot.optJSONArray("notes").length(), snapshot);
+      });
     }));
     button(controls, "Native retire permission", () -> {
       session.invoke("plugin:geolocation|request_permissions", object("permissions", new JSONArray().put("location")), result -> {
         if (result.optString("code").equals("session_closed")) { retiredClosures++; return; }
         retiredCallbacks++; record("late-callback", "Unexpected retired callback", result);
       });
-      main.postDelayed(() -> { if (!closed) { session.close(); session = new RuntimeSession("native"); generation++; record("retired", "Native session retired", object()); } }, 1500);
+      main.postDelayed(() -> { if (!closed) { session.close(); openSession(() -> record("retired", "Native session retired", object())); } }, 1500);
     });
-    button(controls, "Native remount", () -> { session.close(); session = new RuntimeSession("native"); generation++; record("remount", "Native remounted", object()); });
+    button(controls, "Native remount", () -> { session.close(); openSession(() -> record("remount", "Native remounted", object())); });
     awaitReady();
   }
   void button(LinearLayout controls, String title, Runnable action) {
@@ -63,8 +72,23 @@ public final class PluginAcceptance implements AutoCloseable {
   void awaitReady() {
     if (closed) return;
     if (!new File(activity.getApplicationInfo().dataDir, "runtime-report.json").isFile()) { main.postDelayed(this::awaitReady, 100); return; }
+    openSession(() -> call("snapshot", object(), result -> record("ready", "Native ready", value(result))));
+  }
+  void openSession(Runnable ready) {
     session = new RuntimeSession("native"); generation++;
-    call("snapshot", object(), result -> record("ready", "Native ready", value(result)));
+    long cancelled = session.listen("retired-proof", result -> {
+      if (!result.optString("code").equals("request_cancelled")) throw new IllegalStateException(result.toString());
+      cancelledListeners++;
+    });
+    session.cancel(cancelled);
+    session.listen("unlisten-proof", result -> {
+      if (!result.optBoolean("ok") || !session.unlisten(result.optLong("subscription"))) throw new IllegalStateException(result.toString());
+      session.listen("fieldnotes-updated", registered -> {
+        if (!registered.optBoolean("ok")) throw new IllegalStateException(registered.toString());
+        subscription = registered.optLong("subscription");
+        ready.run();
+      });
+    });
   }
   void call(String command, JSONObject payload, Consumer<JSONObject> callback) { session.invoke(command, payload, callback); }
   JSONObject value(JSONObject result) {
@@ -85,6 +109,8 @@ public final class PluginAcceptance implements AutoCloseable {
     status.setText(text);
     try {
       evidence.put("action", action).put("result", result).put("generation", generation).put("retiredCallbacks", retiredCallbacks).put("retiredClosures", retiredClosures).put("pid", android.os.Process.myPid());
+      evidence.put("eventBatch", eventBatch).put("eventHistory", eventHistory).put("subscription", subscription)
+        .put("cancelledListeners", cancelledListeners).put("nativeListeners", RuntimeSession.status().optInt("listeners", -1));
       Files.write(new File(activity.getApplicationInfo().dataDir, "native-plugins-report.json").toPath(), evidence.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
     } catch (Exception error) { throw new RuntimeException(error); }
   }

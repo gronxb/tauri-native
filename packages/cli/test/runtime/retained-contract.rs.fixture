@@ -2,7 +2,7 @@ mod retained_contract {
     use serde_json::{json, Value};
     use std::{ffi::{CString, CStr}, path::PathBuf, thread, time::{Duration, Instant}};
 
-    fn request(value: Value) -> Value {
+    pub(super) fn request(value: Value) -> Value {
         let input = CString::new(value.to_string()).unwrap();
         unsafe {
             let raw = tauri_native_runtime::tauri_native_runtime_request(input.as_ptr());
@@ -13,7 +13,7 @@ mod retained_contract {
         }
     }
 
-    fn wait<T>(mut check: impl FnMut() -> Option<T>) -> T {
+    pub(super) fn wait<T>(mut check: impl FnMut() -> Option<T>) -> T {
         let until = Instant::now() + Duration::from_secs(30);
         loop {
             if let Some(value) = check() { return value; }
@@ -22,7 +22,7 @@ mod retained_contract {
         }
     }
 
-    fn open(caller: &str) -> u64 {
+    pub(super) fn open(caller: &str) -> u64 {
         let result = request(json!({"op": "open", "caller": caller}));
         assert_eq!(result["ok"], true, "{result}");
         result["session"].as_u64().unwrap()
@@ -34,7 +34,7 @@ mod retained_contract {
         result["request"].as_u64().unwrap()
     }
 
-    fn result(session: u64, id: u64) -> Value {
+    pub(super) fn result(session: u64, id: u64) -> Value {
         wait(|| {
             let value = request(json!({"op": "poll", "session": session, "request": id}));
             assert_eq!(value["ok"], true, "{value}");
@@ -42,7 +42,7 @@ mod retained_contract {
         })
     }
 
-    fn invoke(session: u64, command: &str, payload: Value) -> Value {
+    pub(super) fn invoke(session: u64, command: &str, payload: Value) -> Value {
         result(session, submit(session, command, payload))
     }
 
@@ -96,8 +96,9 @@ mod retained_contract {
             assert_eq!(final_state["pluginSetupCount"], 1);
             request(json!({"op": "close", "session": reader}));
             request(json!({"op": "close", "session": replacement}));
-            json!({"passed": true, "baseline": baseline, "state": final_state,
-                "scenarios": ["readiness", "declared-callers", "caller-denial", "real-tauri-acl", "denied-side-effects", "registered-commands", "original-errors", "async-state", "embedded-shared-state", "cancel-running", "retired-session", "single-initialization"]})
+            let mut scenarios = vec!["readiness", "declared-callers", "caller-denial", "real-tauri-acl", "denied-side-effects", "registered-commands", "original-errors", "async-state", "embedded-shared-state", "cancel-running", "retired-session", "single-initialization"];
+            scenarios.extend(super::retained_events::run());
+            json!({"passed": true, "baseline": baseline, "state": final_state, "scenarios": scenarios})
         });
         let value = outcome.unwrap_or_else(|_| json!({"passed": false, "error": "native retained-runtime contract failed; see process log"}));
         let temporary = report.with_extension("tmp");

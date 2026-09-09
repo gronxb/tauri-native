@@ -13,6 +13,7 @@ use tauri::{
 
 #[cfg(target_os = "android")]
 mod android;
+mod events;
 
 const MAX_SESSIONS: usize = 32;
 const MAX_REQUESTS: usize = 128;
@@ -34,7 +35,29 @@ struct Policy {
 
 struct Session {
     caller: Caller,
-    requests: BTreeMap<u64, Option<Value>>,
+    requests: BTreeMap<u64, Request>,
+    events: events::Events,
+}
+
+#[derive(Default)]
+struct Request {
+    response: Option<Value>,
+    subscription: Option<u64>,
+}
+
+enum Operation {
+    Invoke { command: String, payload: Value },
+    Listen { event: String },
+    Events,
+}
+
+impl Operation {
+    fn permission(&self) -> &str {
+        match self {
+            Self::Invoke { command, .. } => command,
+            Self::Listen { .. } | Self::Events => "plugin:event|listen",
+        }
+    }
 }
 
 struct Bridge {
@@ -64,8 +87,12 @@ fn failed(message: String) {
     bridge.status = "failed";
     bridge.failure = Some(message);
     bridge.app = None;
-    bridge.sessions.clear();
+    let sessions = std::mem::take(&mut bridge.sessions);
     bridge.in_flight.clear();
+    drop(bridge);
+    for session in sessions.into_values() {
+        session.events.close();
+    }
 }
 
 pub fn setup<F>(
@@ -124,8 +151,12 @@ pub fn run(
             let mut bridge = BRIDGE.lock().unwrap();
             bridge.status = "closed";
             bridge.app = None;
-            bridge.sessions.clear();
+            let sessions = std::mem::take(&mut bridge.sessions);
             bridge.in_flight.clear();
+            drop(bridge);
+            for session in sessions.into_values() {
+                session.events.close();
+            }
         }
         _ => {}
     });
@@ -157,6 +188,7 @@ fn open(caller: &str) -> Value {
         Session {
             caller,
             requests: BTreeMap::new(),
+            events: Default::default(),
         },
     );
     json!({"ok": true, "session": id})
@@ -172,11 +204,11 @@ fn finish(session: u64, id: u64, response: Value) {
         .get_mut(&session)
         .and_then(|session| session.requests.get_mut(&id))
     {
-        *pending = Some(response);
+        pending.response = Some(response);
     }
 }
 
-fn submit(session: u64, command: String, payload: Value) -> Value {
+fn start(session: u64, operation: Operation) -> Value {
     let (app, caller, id) = {
         let mut bridge = BRIDGE.lock().unwrap();
         let Some(app) = bridge.app.clone() else {
@@ -185,10 +217,10 @@ fn submit(session: u64, command: String, payload: Value) -> Value {
         let Some(active) = bridge.sessions.get(&session) else {
             return error("session_closed", "Native session is closed");
         };
-        if !active.caller.commands.contains(&command) {
+        if !active.caller.commands.contains(operation.permission()) {
             return error(
                 "caller_denied",
-                format!("Native caller does not allow {command}"),
+                format!("Native caller does not allow {}", operation.permission()),
             );
         }
         if active.requests.len() >= MAX_REQUESTS || bridge.in_flight.len() >= MAX_REQUESTS {
@@ -202,7 +234,7 @@ fn submit(session: u64, command: String, payload: Value) -> Value {
             .get_mut(&session)
             .unwrap()
             .requests
-            .insert(id, None);
+            .insert(id, Request::default());
         bridge.in_flight.insert(id);
         (app, caller, id)
     };
@@ -257,6 +289,28 @@ fn submit(session: u64, command: String, payload: Value) -> Value {
                 return;
             }
         };
+        if !matches!(operation, Operation::Invoke { .. }) {
+            if !events::allowed(&webview) {
+                finish(
+                    session,
+                    id,
+                    error(
+                        "acl_denied",
+                        "Tauri capability does not allow plugin:event|listen",
+                    ),
+                );
+                return;
+            }
+            match operation {
+                Operation::Listen { event } => events::listen(session, id, webview, event),
+                Operation::Events => events::poll(session, id),
+                Operation::Invoke { .. } => unreachable!(),
+            }
+            return;
+        }
+        let Operation::Invoke { command, payload } = operation else {
+            unreachable!()
+        };
         let request = InvokeRequest {
             cmd: command,
             callback: CallbackFn(0),
@@ -309,7 +363,8 @@ fn operate(request: Value) -> Value {
     match request["op"].as_str() {
         Some("status") => {
             let bridge = BRIDGE.lock().unwrap();
-            json!({"ok": true, "status": bridge.status, "error": bridge.failure})
+            json!({"ok": true, "status": bridge.status, "error": bridge.failure,
+                "features": ["commands", "events"], "listeners": events::live_listeners()})
         }
         Some("open") => match request["caller"].as_str() {
             Some(caller) => open(caller),
@@ -320,12 +375,41 @@ fn operate(request: Value) -> Value {
             request["command"].as_str(),
             request.get("payload"),
         ) {
-            (Some(session), Some(command), Some(payload)) => {
-                submit(session, command.to_owned(), payload.clone())
-            }
+            (Some(session), Some(command), Some(payload)) => start(
+                session,
+                Operation::Invoke {
+                    command: command.to_owned(),
+                    payload: payload.clone(),
+                },
+            ),
             _ => error(
                 "invalid_request",
                 "submit requires session, command and payload",
+            ),
+        },
+        Some("listen") => match (request["session"].as_u64(), request["event"].as_str()) {
+            (Some(session), Some(event)) => start(
+                session,
+                Operation::Listen {
+                    event: event.to_owned(),
+                },
+            ),
+            _ => error("invalid_request", "listen requires session and event"),
+        },
+        Some("events") => match request["session"].as_u64() {
+            Some(session) => start(session, Operation::Events),
+            _ => error("invalid_request", "events requires session"),
+        },
+        Some("unlisten") => match (
+            request["session"].as_u64(),
+            request["subscription"].as_u64(),
+        ) {
+            (Some(session), Some(subscription)) => {
+                json!({"ok": true, "removed": events::unlisten(session, subscription)})
+            }
+            _ => error(
+                "invalid_request",
+                "unlisten requires session and subscription",
             ),
         },
         Some("poll" | "cancel") => {
@@ -339,13 +423,20 @@ fn operate(request: Value) -> Value {
                 return error("session_closed", "Native session is closed");
             };
             if request["op"] == "cancel" {
-                return json!({"ok": true, "cancelled": active.requests.remove(&id).is_some()});
+                let removed = active.requests.remove(&id);
+                drop(bridge);
+                if let Some(subscription) = removed.as_ref().and_then(|r| r.subscription) {
+                    events::unlisten(session, subscription);
+                }
+                return json!({"ok": true, "cancelled": removed.is_some()});
             }
             match active.requests.get(&id) {
-                Some(Some(_)) => {
-                    json!({"ok": true, "status": "completed", "result": active.requests.remove(&id).unwrap().unwrap()})
+                Some(Request {
+                    response: Some(_), ..
+                }) => {
+                    json!({"ok": true, "status": "completed", "result": active.requests.remove(&id).unwrap().response.unwrap()})
                 }
-                Some(None) => json!({"ok": true, "status": "pending"}),
+                Some(_) => json!({"ok": true, "status": "pending"}),
                 None => error(
                     "request_missing",
                     "Native request is retired or belongs to another session",
@@ -354,7 +445,12 @@ fn operate(request: Value) -> Value {
         }
         Some("close") => match request["session"].as_u64() {
             Some(session) => {
-                json!({"ok": true, "closed": BRIDGE.lock().unwrap().sessions.remove(&session).is_some()})
+                let removed = BRIDGE.lock().unwrap().sessions.remove(&session);
+                let closed = removed.is_some();
+                if let Some(session) = removed {
+                    session.events.close();
+                }
+                json!({"ok": true, "closed": closed})
             }
             None => error("invalid_request", "session must be an integer"),
         },

@@ -190,9 +190,12 @@ try {
   if (nativeConfiguration) assertNativeConfiguration(platform, binary, run);
   launch(); await until(() => typeof report('runtime-report.json').passed === 'boolean');
   const baseline = report('runtime-report.json');
+  writeFileSync(path.join(evidence, 'baseline-report.json'), JSON.stringify(baseline, null, 2) + '\n');
   assert.equal(baseline.passed, true, JSON.stringify(baseline));
   flow('initial-native', '- assertVisible: "Native ready"\n- tapOn: "Native check permission"\n- assertVisible: "Native permission prompt"\n- tapOn: "Native deny capability"\n- assertVisible: "Native capability denied"');
   const acl = report();
+  assert.equal(acl.nativeListeners, 1, 'Only the active native subscription survives cancellation/unlisten');
+  assert.equal(acl.cancelledListeners, 1);
   assert.equal(acl.result.ok, false);
   assert.match(acl.result.error, /^(?:geolocation\.watch_position explicitly denied|Command plugin:geolocation\|watch_position not allowed by ACL)/);
   flow('deny-native-permission', `- tapOn: "Native request permission"\n- tapOn: "(?i)(Don.t allow|허용 안 함)"\n- assertVisible: "Native permission ${platform === 'android' ? 'prompt-with-rationale' : 'denied'}"`);
@@ -202,6 +205,7 @@ try {
   assert.equal(deniedPosition.result.ok, false);
   assert.match(JSON.stringify(deniedPosition.result.error), platform === 'android' ? /android\.permission\.ACCESS_(?:COARSE|FINE)_LOCATION/ : /kCLErrorDomain error 1/);
   flow('native-no-denied-save', '- tapOn: "Native refresh"\n- assertVisible: "Native links 0 notes 0"');
+  assert.deepEqual(report().eventHistory, [], 'Denied side effects emit no fieldnotes event');
   stop();
   if (platform === 'ios') run('reset-denied-permission', 'xcrun', ['simctl', 'privacy', device, 'reset', 'location', appId]);
   else for (const permission of ['ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION']) run(`reset-${permission}`, 'adb', ['-s', device, 'shell', 'pm', 'clear-permission-flags', appId, `android.permission.${permission}`, 'user-set', 'user-fixed']);
@@ -219,11 +223,29 @@ try {
   const link = 'tauri-fieldnotes://notes/1';
   if (platform === 'ios') run('deep-link', 'xcrun', ['simctl', 'openurl', device, link]);
   else run('deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', link, '-p', appId]);
-  flow('native-link', (platform === 'ios' ? '- tapOn:\n    text: "(Open|열기)"\n    optional: true\n' : '') + '- tapOn: "Native refresh"\n- assertVisible: "Native links 1 notes 1"\n- tapOn: "Native remount"\n- tapOn: "Native refresh"\n- assertVisible: "Native links 1 notes 1"');
+  flow('native-link', (platform === 'ios' ? '- tapOn:\n    text: "(Open|열기)"\n    optional: true\n' : '') + '- tapOn: "Native refresh"\n- assertVisible: "Native links 1 notes 1"');
+  const nativeEvents = report();
+  assert.deepEqual(nativeEvents.eventHistory, Array.from({ length: 2 }, () => ({ generation: 2, event: { subscription: nativeEvents.subscription, event: 'fieldnotes-updated', payload: null } })), 'Original save and background deep-link callbacks each deliver one native event');
+  assert.equal(nativeEvents.nativeListeners, 1);
+  flow('native-remount', '- tapOn: "Native remount"\n- assertVisible: "Native remounted"\n- tapOn: "Native refresh"\n- assertVisible: "Native links 1 notes 1"');
   const linked = report(); assert.deepEqual(linked.result.links, [link]);
+  assert.deepEqual(linked.eventBatch, [], 'Replacement receives no retired subscription events');
+  assert.deepEqual(linked.eventHistory, nativeEvents.eventHistory);
+  assert.notEqual(linked.subscription, nativeEvents.subscription);
+  assert.equal(linked.nativeListeners, 1, 'Close/remount removes the original native handler');
+  assert.equal(linked.cancelledListeners, 3);
   assert.equal(linked.generation, 3); assert.equal(linked.retiredCallbacks, 0);
   assert.equal(linked.result.setupCount, 1); assert.equal(linked.result.pluginSetupCount, 1);
   assert.equal(linked.pid, saved.pid);
+  const remountedLink = 'tauri-fieldnotes://notes/1?remounted=1';
+  if (platform === 'ios') run('remounted-deep-link', 'xcrun', ['simctl', 'openurl', device, remountedLink]);
+  else run('remounted-deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', remountedLink, '-p', appId]);
+  flow('native-remounted-event', (platform === 'ios' ? '- tapOn:\n    text: "(Open|열기)"\n    optional: true\n' : '') + '- tapOn: "Native refresh"\n- assertVisible: "Native links 2 notes 1"');
+  const remountedEvents = report();
+  assert.deepEqual(remountedEvents.result.links, [link, remountedLink]);
+  assert.deepEqual(remountedEvents.eventBatch, [{ subscription: linked.subscription, event: 'fieldnotes-updated', payload: null }], 'Fresh native subscription delivers exactly once after remount');
+  assert.equal(remountedEvents.eventHistory.length, 3);
+  assert.equal(remountedEvents.nativeListeners, 1);
   stop(); launch();
   flow('native-persistence', '- assertVisible: "Native ready"\n- tapOn: "Native refresh"\n- assertVisible: "Native links 0 notes 1"');
   const relaunched = report();
@@ -238,7 +260,7 @@ try {
     ...(platform === 'android' ? { apkAlignment: 'zipalign -c -P 16 -v 4 passed' } : {}),
     consumer: 'Native platform acceptance UI; RN/Lynx package acceptance remains separate',
     artifactSha256: sha256(readFileSync(path.join(exported, 'manifest.json'))), binarySha256: sha256(readFileSync(binary)),
-    incrementalAcceptance, baseline, acl, denied, deniedPosition, granted, saved, linked, relaunched,
+    incrementalAcceptance, baseline, acl, denied, deniedPosition, granted, saved, nativeEvents, linked, remountedEvents, relaunched,
     ...(nativeConfiguration ? { nativeConfiguration: { passed: true, nativeInputsSha256, scenario: 'Authored native declarations/resources preserved in the compiled app and ordinary producer' } } : {}),
   }, null, 2) + '\n');
   console.log(`PASS: source-free ABI 3 ${platform} bootstrap, native plugins, permission callback retirement, deep link and persistence`);

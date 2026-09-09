@@ -8,6 +8,7 @@
         "plugin_snapshot",
         "list_notes",
         "save_note",
+        "plugin:event|listen",
         "plugin:geolocation|check_permissions",
         "plugin:geolocation|request_permissions",
         "plugin:geolocation|get_current_position",

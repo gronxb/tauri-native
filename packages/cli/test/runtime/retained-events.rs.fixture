@@ -1,0 +1,110 @@
+mod retained_events {
+    use super::retained_contract::{request, wait, open, result, invoke};
+    use serde_json::{json, Value};
+
+    fn operation(session: u64, mut value: Value) -> Value {
+        value["session"] = json!(session);
+        let submitted = request(value);
+        assert_eq!(submitted["ok"], true, "{submitted}");
+        result(session, submitted["request"].as_u64().unwrap())
+    }
+
+    fn listen(session: u64) -> u64 {
+        let response = operation(session, json!({"op": "listen", "event": "native-proof"}));
+        assert_eq!(response["ok"], true, "{response}");
+        response["subscription"].as_u64().unwrap()
+    }
+
+    fn events(session: u64) -> Value { operation(session, json!({"op": "events"})) }
+    fn emit(session: u64, target: Option<&str>, count: usize) {
+        assert_eq!(invoke(session, "emit_native_events", json!({"target": target, "count": count}))["ok"], true);
+    }
+    fn listeners(count: u64) {
+        wait(|| (request(json!({"op": "status"}))["listeners"] == count).then_some(()));
+    }
+
+    pub(super) fn run() -> Vec<&'static str> {
+        assert_eq!(request(json!({"op": "status"}))["features"], json!(["commands", "events"]));
+        listeners(0);
+        let writer = open("writer");
+        let reader = open("reader");
+        let denied = open("denied");
+        assert_eq!(request(json!({"op": "listen", "session": reader, "event": "native-proof"}))["code"], "caller_denied");
+        assert_eq!(operation(denied, json!({"op": "listen", "event": "native-proof"}))["code"], "acl_denied");
+        assert_eq!(events(denied)["code"], "acl_denied");
+        assert_eq!(operation(writer, json!({"op": "listen", "event": "bad event!"}))["code"], "invalid_event");
+        listeners(0);
+
+        let subscription = listen(writer);
+        listeners(1);
+        emit(writer, None, 1);
+        assert_eq!(events(writer), json!({"ok": true, "events": [{"subscription": subscription, "event": "native-proof", "payload": {"sequence": 0, "source": "original-tauri"}}]}));
+        assert_eq!(events(writer)["events"], json!([]));
+        emit(writer, Some("denied"), 1);
+        assert_eq!(events(writer)["events"], json!([]));
+        emit(writer, Some("main"), 1);
+        assert_eq!(events(writer)["events"].as_array().unwrap().len(), 1);
+        // Another session cannot remove or consume the owner's subscription.
+        let other = open("writer");
+        assert_eq!(request(json!({"op": "unlisten", "session": other, "subscription": subscription}))["removed"], false);
+        emit(writer, None, 1);
+        assert_eq!(events(other)["events"], json!([]));
+        assert_eq!(events(writer)["events"].as_array().unwrap().len(), 1);
+
+        emit(writer, None, 129);
+        assert_eq!(events(writer)["code"], "event_overflow");
+        emit(writer, None, 1);
+        assert_eq!(events(writer)["events"].as_array().unwrap().len(), 1);
+        assert_eq!(invoke(writer, "emit_large_event", json!({}))["ok"], true);
+        assert_eq!(events(writer)["code"], "event_overflow");
+        assert_eq!(invoke(writer, "emit_invalid_event", json!({}))["ok"], true);
+        assert_eq!(events(writer)["code"], "invalid_event_payload");
+        emit(writer, None, 1);
+        assert_eq!(events(writer)["events"].as_array().unwrap().len(), 1);
+
+        emit(writer, None, 1);
+        assert_eq!(request(json!({"op": "unlisten", "session": writer, "subscription": subscription}))["removed"], true);
+        listeners(0);
+        assert_eq!(events(writer)["events"], json!([]));
+        emit(writer, None, 1);
+        assert_eq!(events(writer)["events"], json!([]));
+        assert_eq!(request(json!({"op": "unlisten", "session": writer, "subscription": subscription}))["removed"], false);
+
+        // Leave an attached registration unread, then cancel its request.
+        let pending = request(json!({"op": "listen", "session": writer, "event": "native-proof"}));
+        listeners(1);
+        assert_eq!(request(json!({"op": "cancel", "session": writer, "request": pending["request"]}))["cancelled"], true);
+        listeners(0);
+        assert_eq!(events(writer)["events"], json!([]));
+        // Exercise close both before and after the asynchronous attachment wins.
+        for _ in 0..32 {
+            let temporary = open("writer");
+            request(json!({"op": "listen", "session": temporary, "event": "native-proof"}));
+            request(json!({"op": "close", "session": temporary}));
+        }
+        listen(writer);
+        listeners(1);
+        emit(writer, None, 1);
+        request(json!({"op": "close", "session": writer}));
+        listeners(0);
+        let replacement = open("writer");
+        let fresh = listen(replacement);
+        assert_ne!(fresh, subscription);
+        assert_eq!(events(replacement)["events"], json!([]));
+        emit(replacement, None, 1);
+        assert_eq!(events(replacement)["events"].as_array().unwrap().len(), 1);
+        // The listener bound must reject without leaking another native handler.
+        for _ in 1..32 { listen(replacement); }
+        assert_eq!(operation(replacement, json!({"op": "listen", "event": "native-proof"}))["code"], "listener_limit");
+        listeners(32);
+        assert_eq!(invoke(replacement, "navigate_native_context", json!({}))["ok"], true);
+        wait(|| (events(replacement)["code"] == "origin_denied").then_some(()));
+        assert_eq!(operation(replacement, json!({"op": "listen", "event": "native-proof"}))["code"], "origin_denied");
+        // Cleanup remains possible after the original permission context is gone.
+        assert_eq!(request(json!({"op": "unlisten", "session": replacement, "subscription": fresh}))["removed"], true);
+        listeners(31);
+        for session in [reader, denied, other, replacement] { request(json!({"op": "close", "session": session})); }
+        listeners(0);
+        vec!["event-caller-and-real-acl", "event-name-validation", "original-tauri-events", "event-window-target", "event-session-isolation", "event-count-and-byte-overflow-recovery", "event-invalid-payload-recovery", "native-unlisten-and-queue-cleanup", "cancel-unread-native-listener", "event-close-remount-no-duplicates", "event-listener-limit", "event-live-origin-recheck-and-cleanup"]
+    }
+}

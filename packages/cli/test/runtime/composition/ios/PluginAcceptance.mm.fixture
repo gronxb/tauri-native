@@ -9,6 +9,10 @@
 @property(nonatomic) UILabel *status;
 @property(nonatomic) NSString *directory;
 @property(nonatomic) NSInteger generation, retiredCallbacks, retiredClosures;
+@property(nonatomic) NSMutableArray *eventHistory;
+@property(nonatomic) NSArray *eventBatch;
+@property(nonatomic) NSNumber *subscription;
+@property(nonatomic) NSInteger cancelledListeners;
 @end
 
 // Consumer-only native UI; Tauri still owns UIApplication, WKWebView and plugins.
@@ -16,6 +20,8 @@ static PluginAcceptance *pluginAcceptance;
 @implementation PluginAcceptance
 + (void)install {
   pluginAcceptance = [PluginAcceptance new];
+  pluginAcceptance.eventHistory = [NSMutableArray new];
+  pluginAcceptance.eventBatch = @[];
   pluginAcceptance.directory = [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES).firstObject
     stringByAppendingPathComponent:NSBundle.mainBundle.bundleIdentifier];
   [NSNotificationCenter.defaultCenter addObserver:pluginAcceptance selector:@selector(launched:) name:UIApplicationDidFinishLaunchingNotification object:nil];
@@ -33,7 +39,9 @@ static PluginAcceptance *pluginAcceptance;
 - (void)record:(NSString *)action text:(NSString *)text result:(NSDictionary *)result {
   self.status.text = text;
   NSDictionary *report = @{@"action": action, @"result": result, @"generation": @(self.generation), @"retiredCallbacks": @(self.retiredCallbacks),
-    @"retiredClosures": @(self.retiredClosures), @"pid": @(NSProcessInfo.processInfo.processIdentifier), @"appDelegate": NSStringFromClass(UIApplication.sharedApplication.delegate.class)};
+    @"retiredClosures": @(self.retiredClosures), @"pid": @(NSProcessInfo.processInfo.processIdentifier), @"appDelegate": NSStringFromClass(UIApplication.sharedApplication.delegate.class),
+    @"eventBatch": self.eventBatch, @"eventHistory": self.eventHistory, @"subscription": self.subscription,
+    @"cancelledListeners": @(self.cancelledListeners), @"nativeListeners": [TNRuntimeSession status][@"listeners"]};
   NSData *data = [NSJSONSerialization dataWithJSONObject:report options:0 error:nil];
   BOOL recorded = [data writeToFile:[self.directory stringByAppendingPathComponent:@"native-plugins-report.json"] atomically:YES];
   NSAssert(recorded, @"Cannot record native plugin acceptance");
@@ -54,8 +62,6 @@ static PluginAcceptance *pluginAcceptance;
   if (!self.webview || ![NSFileManager.defaultManager fileExistsAtPath:[self.directory stringByAppendingPathComponent:@"runtime-report.json"]]) {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{ [self attachWhenReady]; }); return;
   }
-  self.session = [[TNRuntimeSession alloc] initWithCaller:@"native" error:nil];
-  NSAssert(self.session, @"Original Tauri runtime must be ready"); self.generation++;
   CGRect bounds = self.webview.superview.bounds;
   UIView *panel = [[UIView alloc] initWithFrame:CGRectMake(0, bounds.size.height / 3, bounds.size.width, bounds.size.height * 2 / 3)];
   panel.backgroundColor = UIColor.systemBackgroundColor;
@@ -82,7 +88,12 @@ static PluginAcceptance *pluginAcceptance;
   [self button:controls title:@"Native refresh" action:^{
     [self.session invoke:@"plugin_snapshot" payload:@{} completion:^(NSDictionary *result) {
       NSDictionary *value = [self value:result];
-      [self record:@"refresh" text:[NSString stringWithFormat:@"Native links %lu notes %lu", (unsigned long)[value[@"links"] count], (unsigned long)[value[@"notes"] count]] result:value];
+      [self.session pollEvents:^(NSDictionary *batch) {
+        if (![batch[@"ok"] boolValue]) [NSException raise:@"NativeEventFailure" format:@"%@", batch];
+        self.eventBatch = batch[@"events"];
+        for (NSDictionary *event in self.eventBatch) [self.eventHistory addObject:@{@"generation": @(self.generation), @"event": event}];
+        [self record:@"refresh" text:[NSString stringWithFormat:@"Native links %lu notes %lu", (unsigned long)[value[@"links"] count], (unsigned long)[value[@"notes"] count]] result:value];
+      }];
     }];
   }];
   [self button:controls title:@"Native retire permission" action:^{
@@ -91,15 +102,34 @@ static PluginAcceptance *pluginAcceptance;
       self.retiredCallbacks++; [self record:@"late-callback" text:@"Unexpected retired callback" result:result];
     }];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1500 * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
-      [self.session close]; self.session = [[TNRuntimeSession alloc] initWithCaller:@"native" error:nil]; self.generation++;
-      [self record:@"retired" text:@"Native session retired" result:@{}];
+      [self.session close];
+      [self openSession:^{ [self record:@"retired" text:@"Native session retired" result:@{}]; }];
     });
   }];
   [self button:controls title:@"Native remount" action:^{
-    [self.session close]; self.session = [[TNRuntimeSession alloc] initWithCaller:@"native" error:nil]; self.generation++;
-    [self record:@"remount" text:@"Native remounted" result:@{}];
+    [self.session close];
+    [self openSession:^{ [self record:@"remount" text:@"Native remounted" result:@{}]; }];
   }];
-  [self.session invoke:@"snapshot" payload:@{} completion:^(NSDictionary *result) { [self record:@"ready" text:@"Native ready" result:[self value:result]]; }];
+  [self openSession:^{
+    [self.session invoke:@"snapshot" payload:@{} completion:^(NSDictionary *result) { [self record:@"ready" text:@"Native ready" result:[self value:result]]; }];
+  }];
+}
+- (void)openSession:(void (^)(void))ready {
+  self.session = [[TNRuntimeSession alloc] initWithCaller:@"native" error:nil]; self.generation++;
+  if (!self.session) [NSException raise:@"NativeEventFailure" format:@"Original Tauri runtime must be ready"];
+  NSNumber *cancelled = [self.session listen:@"retired-proof" completion:^(NSDictionary *result) {
+    if (![result[@"code"] isEqual:@"request_cancelled"]) [NSException raise:@"NativeEventFailure" format:@"%@", result];
+    self.cancelledListeners++;
+  }];
+  [self.session cancel:cancelled];
+  [self.session listen:@"unlisten-proof" completion:^(NSDictionary *result) {
+    if (![result[@"ok"] boolValue] || ![self.session unlisten:result[@"subscription"]]) [NSException raise:@"NativeEventFailure" format:@"%@", result];
+    [self.session listen:@"fieldnotes-updated" completion:^(NSDictionary *registered) {
+      if (![registered[@"ok"] boolValue]) [NSException raise:@"NativeEventFailure" format:@"%@", registered];
+      self.subscription = registered[@"subscription"];
+      ready();
+    }];
+  }];
 }
 - (void)save {
   [self.session invoke:@"plugin:geolocation|get_current_position" payload:@{@"options": @{@"enableHighAccuracy": @YES, @"timeout": @10000, @"maximumAge": @0}} completion:^(NSDictionary *position) {

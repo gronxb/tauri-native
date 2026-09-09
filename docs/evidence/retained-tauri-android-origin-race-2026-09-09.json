@@ -1,0 +1,244 @@
+{
+  "instrumented": true,
+  "results": [
+    {
+      "attempt": 1,
+      "pid": "32412",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    },
+    {
+      "attempt": 2,
+      "pid": "32572",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    },
+    {
+      "attempt": 3,
+      "pid": "32756",
+      "report": {
+        "error": "Command snapshot not allowed by ACL",
+        "passed": false
+      },
+      "originLog": "--------- beginning of main\n09-09 16:37:55.199 32756   401 I RetainedOrigin: ipc=snapshot cached=about:blank\n09-09 16:37:55.203 32756   401 I RetainedOrigin: ipc=plugin:event|listen cached=about:blank\n09-09 16:37:55.208 32756   401 I RetainedOrigin: ipc=plugin:event|listen cached=about:blank\n09-09 16:37:55.208 32756   401 I RetainedOrigin: ipc=plugin_snapshot cached=about:blank\n09-09 16:37:57.680 32756 32756 I RetainedOrigin: onPageStarted=http://tauri.localhost/\n09-09 16:37:57.692 32756   401 I RetainedOrigin: ipc=record_report cached=http://tauri.localhost/\n"
+    },
+    {
+      "attempt": 4,
+      "pid": "622",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    },
+    {
+      "attempt": 5,
+      "pid": "1215",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    },
+    {
+      "attempt": 6,
+      "pid": "1719",
+      "report": {
+        "error": "Command snapshot not allowed by ACL",
+        "passed": false
+      },
+      "originLog": "--------- beginning of main\n09-09 16:38:24.368  1719  2069 I RetainedOrigin: ipc=snapshot cached=about:blank\n09-09 16:38:24.368  1719  2069 I RetainedOrigin: ipc=plugin:event|listen cached=about:blank\n09-09 16:38:24.369  1719  2069 I RetainedOrigin: ipc=plugin:event|listen cached=about:blank\n09-09 16:38:24.370  1719  2069 I RetainedOrigin: ipc=plugin_snapshot cached=about:blank\n09-09 16:38:25.486  1719  1719 I RetainedOrigin: onPageStarted=http://tauri.localhost/\n09-09 16:38:25.528  1719  2069 I RetainedOrigin: ipc=record_report cached=http://tauri.localhost/\n"
+    },
+    {
+      "attempt": 7,
+      "pid": "2270",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    },
+    {
+      "attempt": 8,
+      "pid": "2941",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    },
+    {
+      "attempt": 9,
+      "pid": "3430",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    },
+    {
+      "attempt": 10,
+      "pid": "3629",
+      "report": {
+        "directory": "<application-data-directory>",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      }
+    }
+  ],
+  "passed": false,
+  "date": "2026-09-09",
+  "scope": "Instrumented ordinary Tauri frontend in copied Android Release/R8 artifact; no native renderer or native session UI installed. 2 of 10 fresh-data cold starts fail before the page-start callback updates the IPC URL.",
+  "cause": "Wry currentUrl is still about:blank when the first real frontend IPC arrives. Volatile visibility does not enforce callback ordering. No capability has been broadened.",
+  "status": "Reproduced; fix and regression acceptance remain required."
+}

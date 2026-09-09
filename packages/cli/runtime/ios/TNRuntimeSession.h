@@ -8,6 +8,11 @@ typedef void (^TNRuntimeCompletion)(NSDictionary *result);
 + (NSDictionary *)status;
 - (nullable instancetype)initWithCaller:(NSString *)caller error:(NSError * _Nullable * _Nullable)error;
 - (NSNumber *)invoke:(NSString *)command payload:(NSDictionary *)payload completion:(TNRuntimeCompletion)completion;
+// Completion contains the subscription ID; cancel the request to abandon registration.
+- (NSNumber *)listen:(NSString *)event completion:(TNRuntimeCompletion)completion;
+// Each batch rechecks the original live WebView origin and Tauri capability.
+- (NSNumber *)pollEvents:(TNRuntimeCompletion)completion;
+- (BOOL)unlisten:(NSNumber *)subscription;
 - (void)cancel:(NSNumber *)request;
 - (void)close;
 @end

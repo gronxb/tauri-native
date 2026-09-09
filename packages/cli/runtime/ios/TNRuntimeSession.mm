@@ -40,13 +40,31 @@ static NSDictionary *closedError(void) {
 }
 
 - (NSNumber *)invoke:(NSString *)command payload:(NSDictionary *)payload completion:(TNRuntimeCompletion)completion {
+  return [self start:@{@"op": @"submit", @"session": _session, @"command": command, @"payload": payload} completion:completion];
+}
+
+- (NSNumber *)listen:(NSString *)event completion:(TNRuntimeCompletion)completion {
+  return [self start:@{@"op": @"listen", @"session": _session, @"event": event} completion:completion];
+}
+
+- (NSNumber *)pollEvents:(TNRuntimeCompletion)completion {
+  return [self start:@{@"op": @"events", @"session": _session} completion:completion];
+}
+
+- (BOOL)unlisten:(NSNumber *)subscription {
+  NSAssert(NSThread.isMainThread, @"Use TNRuntimeSession on the main thread");
+  return !_closed && [exchange(@{@"op": @"unlisten", @"session": _session, @"subscription": subscription})[@"removed"] boolValue];
+}
+
+- (NSNumber *)start:(NSDictionary *)operation completion:(TNRuntimeCompletion)completion {
   NSAssert(NSThread.isMainThread, @"Use TNRuntimeSession on the main thread");
   if (_closed) { completion(closedError()); return @0; }
-  NSDictionary *submitted = exchange(@{@"op": @"submit", @"session": _session, @"command": command, @"payload": payload});
+  NSDictionary *submitted = exchange(operation);
   if (![submitted[@"ok"] boolValue]) { completion(submitted); return @0; }
   NSNumber *request = submitted[@"request"];
   _pending[request] = [completion copy];
-  [self poll:request];
+  __weak TNRuntimeSession *weakSelf = self;
+  dispatch_async(dispatch_get_main_queue(), ^{ [weakSelf poll:request]; });
   return request;
 }
 

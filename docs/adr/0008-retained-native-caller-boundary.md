@@ -35,7 +35,19 @@ ABI 3 provides `status`, `open`, `submit`, `poll`, `cancel` and `close` through 
 
 Each session and request has a monotonically increasing ID. Tauri work executes off the native UI caller thread. A cancelled queued request is skipped when dequeued; a command already entering/executing Tauri may finish its original side effects, but its cancelled or retired result cannot reach a replacement session. Closing a session retires its pending results. The bridge bounds sessions, pending requests, outstanding Tauri work and request/response sizes; cancelling running work does not free its execution capacity early.
 
-The first implementation handles JSON invocation and bounded raw responses. Native event/channel delivery, platform callback integration, package-owned renderer sessions and portable artifact packaging have their own remaining M7–M8 gates. The existing WebView's ordinary event/channel path is preserved.
+The runtime handles JSON invocation, bounded raw responses and the native event extension below. Native channel delivery and package-owned renderer sessions retain their M7–M8 gates. The existing WebView's ordinary event/channel path is preserved.
+
+## Native event subscriptions
+
+ABI 3 runtimes advertising `status.features` containing `events` add `listen`, `events` and `unlisten`. Older ABI 3 binaries without that feature must be diagnosed by a consumer requiring events. `listen` and `events` return a request ID completed through the existing `poll` operation. A successful listen result contains a session-owned `subscription` ID; a successful events result contains an `events` array of `{ subscription, event, payload }`. `unlisten` accepts the session and subscription IDs and returns whether an owned listener was removed.
+
+Both registration and every batch drain require `plugin:event|listen` in the artifact's exact native caller grants, the original local WebView URL, and access resolved by the live Tauri `RuntimeAuthority` for that window/WebView. The runtime uses the original `WebviewWindow::listen`; ordinary producer `Emitter` calls and upstream event targeting remain authoritative. It neither creates JavaScript listeners nor intercepts frontend callback IDs. This uses pinned upstream internals through the `Manager` trait and must be reverified for any Tauri upgrade.
+
+Each session allows 32 subscriptions, 128 queued events and 1 MiB of aggregate serialized event payload. Names follow Tauri's alphanumeric/`-/:_` rule and are bounded to 256 bytes. An overflow drops the incomplete batch and returns `event_overflow` on the next drain; the caller must refetch state, then can resume receiving events. Invalid JSON from `emit_str` similarly rejects the batch with `invalid_event_payload`. Events are notifications, not durable state or a replay log.
+
+Events emitted after attachment and before acknowledgement are buffered. Cancelling an unread listen request removes its listener, including when attachment races cancellation. Once registration is read, its subscription belongs to the session until `unlisten` or `close`. Cleanup discards queued events for that subscription and removes the actual Tauri handler. Cleanup remains available after navigation invalidates the delegated context. Session replacement never inherits old listeners, queued events or callback results. The diagnostic `status.listeners` counts live Tauri callback ownership, including pending attachment, rather than counting only bridge-map entries.
+
+`RuntimeSession.listen` / `TNRuntimeSession.listen:completion:` return cancellable request IDs. Their `pollEvents` methods use the same nonblocking completion path as commands; `unlisten` removes an acknowledged subscription. Renderer SDKs must own scheduling, stop polling on destruction, close their native session and create fresh subscriptions after replacement. The native clients themselves do not create a renderer or a second Tauri startup.
 
 ## Mobile session clients
 

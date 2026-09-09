@@ -1,0 +1,345 @@
+{
+  "passed": true,
+  "platform": "android",
+  "formatVersion": 2,
+  "abiVersion": 3,
+  "profile": "release",
+  "target": "arm64 16 KB emulator",
+  "producerDeleted": true,
+  "producerUnchanged": true,
+  "sourceHashes": {
+    "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+    "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+  },
+  "sourceFreeBuild": "./gradlew --no-daemon assembleRelease; PATH=/usr/bin:/bin:/usr/sbin:/sbin; relocated path has spaces",
+  "testOnlySigning": "Release/R8 with debug test key and android:debuggable for run-as telemetry; exported project unchanged",
+  "apkAlignment": "zipalign -c -P 16 -v 4 passed",
+  "consumer": "Native platform acceptance UI; RN/Lynx package acceptance remains separate",
+  "artifactSha256": "111bbef2dfcdf57278717594837ffe8a72c592c932f521636068436a8b52e962",
+  "binarySha256": "f989d15858f8916fe84efb4ee90e876c0f1f55a3466f795867111df0716d6447",
+  "baseline": {
+    "directory": "<application-data-directory>",
+    "passed": true,
+    "reloaded": true,
+    "scenarios": [
+      "setup",
+      "state",
+      "app-handle",
+      "async",
+      "rust-event",
+      "plugin-setup",
+      "plugin-allowed",
+      "plugin-denied",
+      "domain-error",
+      "reload"
+    ],
+    "state": {
+      "appIdentifier": "dev.taurinative.mobilefieldnotes",
+      "pluginSetupCount": 1,
+      "setupCount": 1,
+      "value": 45
+    }
+  },
+  "acl": {
+    "action": "acl",
+    "result": {
+      "error": "Command plugin:geolocation|watch_position not allowed by ACL",
+      "ok": false
+    },
+    "generation": 1,
+    "retiredCallbacks": 0,
+    "retiredClosures": 0,
+    "pid": 29692,
+    "eventBatch": [],
+    "eventHistory": [],
+    "subscription": 7,
+    "cancelledListeners": 1,
+    "nativeListeners": 1
+  },
+  "denied": {
+    "action": "request",
+    "result": {
+      "coarseLocation": "prompt-with-rationale",
+      "location": "prompt-with-rationale"
+    },
+    "generation": 1,
+    "retiredCallbacks": 0,
+    "retiredClosures": 0,
+    "pid": 29692,
+    "eventBatch": [],
+    "eventHistory": [],
+    "subscription": 7,
+    "cancelledListeners": 1,
+    "nativeListeners": 1
+  },
+  "deniedPosition": {
+    "action": "position-denied",
+    "result": {
+      "error": "uid 10360 does not have android.permission.ACCESS_COARSE_LOCATION or android.permission.ACCESS_FINE_LOCATION.",
+      "ok": false
+    },
+    "generation": 1,
+    "retiredCallbacks": 0,
+    "retiredClosures": 0,
+    "pid": 29692,
+    "eventBatch": [],
+    "eventHistory": [],
+    "subscription": 7,
+    "cancelledListeners": 1,
+    "nativeListeners": 1
+  },
+  "granted": {
+    "action": "check",
+    "result": {
+      "coarseLocation": "granted",
+      "location": "granted"
+    },
+    "generation": 2,
+    "retiredCallbacks": 0,
+    "retiredClosures": 1,
+    "pid": 30674,
+    "eventBatch": [],
+    "eventHistory": [],
+    "subscription": 15,
+    "cancelledListeners": 2,
+    "nativeListeners": 1
+  },
+  "saved": {
+    "action": "save",
+    "result": {
+      "id": 1,
+      "latitude": 37.5664983,
+      "longitude": 126.9779983,
+      "text": "A native place to remember"
+    },
+    "generation": 2,
+    "retiredCallbacks": 0,
+    "retiredClosures": 1,
+    "pid": 30674,
+    "eventBatch": [],
+    "eventHistory": [],
+    "subscription": 15,
+    "cancelledListeners": 2,
+    "nativeListeners": 1
+  },
+  "nativeEvents": {
+    "action": "refresh",
+    "result": {
+      "links": [
+        "tauri-fieldnotes://notes/1"
+      ],
+      "notes": [
+        {
+          "id": 1,
+          "latitude": 37.5664983,
+          "longitude": 126.9779983,
+          "text": "A native place to remember"
+        }
+      ],
+      "platform": "android",
+      "pluginSetupCount": 1,
+      "setupCount": 1
+    },
+    "generation": 2,
+    "retiredCallbacks": 0,
+    "retiredClosures": 1,
+    "pid": 30674,
+    "eventBatch": [
+      {
+        "event": "fieldnotes-updated",
+        "payload": null,
+        "subscription": 15
+      },
+      {
+        "event": "fieldnotes-updated",
+        "payload": null,
+        "subscription": 15
+      }
+    ],
+    "eventHistory": [
+      {
+        "generation": 2,
+        "event": {
+          "event": "fieldnotes-updated",
+          "payload": null,
+          "subscription": 15
+        }
+      },
+      {
+        "generation": 2,
+        "event": {
+          "event": "fieldnotes-updated",
+          "payload": null,
+          "subscription": 15
+        }
+      }
+    ],
+    "subscription": 15,
+    "cancelledListeners": 2,
+    "nativeListeners": 1
+  },
+  "linked": {
+    "action": "refresh",
+    "result": {
+      "links": [
+        "tauri-fieldnotes://notes/1"
+      ],
+      "notes": [
+        {
+          "id": 1,
+          "latitude": 37.5664983,
+          "longitude": 126.9779983,
+          "text": "A native place to remember"
+        }
+      ],
+      "platform": "android",
+      "pluginSetupCount": 1,
+      "setupCount": 1
+    },
+    "generation": 3,
+    "retiredCallbacks": 0,
+    "retiredClosures": 1,
+    "pid": 30674,
+    "eventBatch": [],
+    "eventHistory": [
+      {
+        "generation": 2,
+        "event": {
+          "event": "fieldnotes-updated",
+          "payload": null,
+          "subscription": 15
+        }
+      },
+      {
+        "generation": 2,
+        "event": {
+          "event": "fieldnotes-updated",
+          "payload": null,
+          "subscription": 15
+        }
+      }
+    ],
+    "subscription": 26,
+    "cancelledListeners": 3,
+    "nativeListeners": 1
+  },
+  "remountedEvents": {
+    "action": "refresh",
+    "result": {
+      "links": [
+        "tauri-fieldnotes://notes/1",
+        "tauri-fieldnotes://notes/1?remounted=1"
+      ],
+      "notes": [
+        {
+          "id": 1,
+          "latitude": 37.5664983,
+          "longitude": 126.9779983,
+          "text": "A native place to remember"
+        }
+      ],
+      "platform": "android",
+      "pluginSetupCount": 1,
+      "setupCount": 1
+    },
+    "generation": 3,
+    "retiredCallbacks": 0,
+    "retiredClosures": 1,
+    "pid": 30674,
+    "eventBatch": [
+      {
+        "event": "fieldnotes-updated",
+        "payload": null,
+        "subscription": 26
+      }
+    ],
+    "eventHistory": [
+      {
+        "generation": 2,
+        "event": {
+          "event": "fieldnotes-updated",
+          "payload": null,
+          "subscription": 15
+        }
+      },
+      {
+        "generation": 2,
+        "event": {
+          "event": "fieldnotes-updated",
+          "payload": null,
+          "subscription": 15
+        }
+      },
+      {
+        "generation": 3,
+        "event": {
+          "event": "fieldnotes-updated",
+          "payload": null,
+          "subscription": 26
+        }
+      }
+    ],
+    "subscription": 26,
+    "cancelledListeners": 3,
+    "nativeListeners": 1
+  },
+  "relaunched": {
+    "action": "refresh",
+    "result": {
+      "links": [],
+      "notes": [
+        {
+          "id": 1,
+          "latitude": 37.5664983,
+          "longitude": 126.9779983,
+          "text": "A native place to remember"
+        }
+      ],
+      "platform": "android",
+      "pluginSetupCount": 1,
+      "setupCount": 1
+    },
+    "generation": 1,
+    "retiredCallbacks": 0,
+    "retiredClosures": 0,
+    "pid": 32047,
+    "eventBatch": [],
+    "eventHistory": [],
+    "subscription": 6,
+    "cancelledListeners": 1,
+    "nativeListeners": 1
+  },
+  "date": "2026-09-09",
+  "reproduceWith": "node --experimental-strip-types packages/cli/test/runtime/portable.ts android --release (export/cache phase); android --release --consume (completed native gate)",
+  "versions": {
+    "tauri": "2.11.5",
+    "tauriCli": "2.11.4",
+    "wry": "0.55.1",
+    "geolocation": "2.3.3",
+    "deepLink": "2.4.10",
+    "androidApi": 37,
+    "pageSize": 16384,
+    "ndk": "27.1.12297006",
+    "maestro": "2.4.0"
+  },
+  "scope": "Source-free arm64 Android Release/R8 native event/client/plugin execution; not RN/Expo/Lynx package or device acceptance. A separately reproduced early embedded IPC origin race remains open.",
+  "precedingFailure": {
+    "passed": false,
+    "phase": "original frontend baseline",
+    "error": "Command snapshot not allowed by ACL",
+    "nativeEventScenariosExecuted": false,
+    "note": "Initial Android Release export passed native build/cache/failure preservation; first cold-start baseline rejected before native event acceptance."
+  }
+}

@@ -20,7 +20,8 @@ const baseline = path.join(homedir(), 'Library/Application Support/dev.taurinati
 const target = path.join(root, 'target');
 const policy: NativeCallerPolicy = { version: 1, callers: {
   reader: { webview: 'main', commands: ['snapshot', 'embedded_observation', 'pending_started'] },
-  writer: { webview: 'main', commands: ['snapshot', 'increment', 'increment_async', 'plugin:runtime-probe|read', 'plugin:runtime-probe|forbidden', 'unregistered', 'observe_from_webview', 'held_increment', 'release_pending'] },
+  writer: { webview: 'main', commands: ['snapshot', 'increment', 'increment_async', 'plugin:runtime-probe|read', 'plugin:runtime-probe|forbidden', 'unregistered', 'observe_from_webview', 'held_increment', 'release_pending', 'plugin:event|listen', 'emit_native_events', 'emit_large_event', 'emit_invalid_event', 'navigate_native_context'] },
+  denied: { webview: 'denied', commands: ['plugin:event|listen'] },
 } };
 
 function run(label: string, command: string, args: string[], cwd: string) {
@@ -37,6 +38,12 @@ run('install', 'npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund']
 // Extra ordinary Tauri commands provide deterministic pending-work barriers and
 // observe the real embedded caller. They are authored before export begins.
 const source = path.join(producer, 'src-tauri/src/lib.rs');
+const configPath = path.join(producer, 'src-tauri/tauri.conf.json');
+const config = JSON.parse(readFileSync(configPath, 'utf8'));
+config.app.windows.push({ label: 'denied', visible: false, url: 'empty.html' });
+writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
+mkdirSync(path.join(producer, 'public'), { recursive: true });
+writeFileSync(path.join(producer, 'public/empty.html'), '<!doctype html><title>No event capability</title>');
 const extra = `
 static PENDING_STARTED: AtomicU32 = AtomicU32::new(0);
 static PENDING_RELEASED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
@@ -63,10 +70,25 @@ fn record_embedded(value: i32) { EMBEDDED.store(value, Ordering::SeqCst); }
 fn embedded_observation() -> i32 { EMBEDDED.load(Ordering::SeqCst) }
 #[tauri::command]
 fn unregistered() -> i32 { 999 }
+#[tauri::command]
+fn emit_native_events(app: AppHandle, target: Option<String>, count: usize) {
+    for sequence in 0..count {
+        let payload = serde_json::json!({"sequence": sequence, "source": "original-tauri"});
+        if let Some(label) = &target {
+            app.emit_to(tauri::EventTarget::webview_window(label), "native-proof", payload).unwrap();
+        } else { app.emit("native-proof", payload).unwrap(); }
+    }
+}
+#[tauri::command]
+fn emit_large_event(app: AppHandle) { app.emit("native-proof", "x".repeat(1024 * 1024)).unwrap(); }
+#[tauri::command]
+fn emit_invalid_event(app: AppHandle) { app.emit_str("native-proof", "not-json".to_string()).unwrap(); }
+#[tauri::command]
+fn navigate_native_context(app: AppHandle) { app.get_webview_window("main").unwrap().navigate("data:text/html,Native%20context%20revoked".parse().unwrap()).unwrap(); }
 `;
 writeFileSync(source, readFileSync(source, 'utf8')
   .replace('            SETUP_COUNT.fetch_add', '            if std::env::var_os("RETAINED_SETUP_FAILURE").is_some() { return Err("setup proof rejected".into()); }\n            SETUP_COUNT.fetch_add')
-  .replace('increment_async, record_report]', 'increment_async, record_report, pending_started, release_pending, held_increment, observe_from_webview, record_embedded, embedded_observation]') + extra);
+  .replace('increment_async, record_report]', 'increment_async, record_report, pending_started, release_pending, held_increment, observe_from_webview, record_embedded, embedded_observation, emit_native_events, emit_large_event, emit_invalid_event, navigate_native_context]') + extra);
 const before = snapshot(producer);
 const project = discoverProject('src-tauri', producer, false, 'retained');
 assert.equal(project.abiVersion, 3);
@@ -80,7 +102,8 @@ try {
   assert.deepEqual(snapshot(producer), before, 'Successful preparation preserves all producer files');
   // The native acceptance driver is linked only into this disposable test app.
   writeFileSync(runtime.project.source, readFileSync(runtime.project.source, 'utf8').replace('pub fn run() {', 'pub fn run() {\n    retained_contract::start();') +
-    readFileSync(fileURLToPath(new URL('retained-contract.rs.fixture', import.meta.url)), 'utf8'));
+    readFileSync(fileURLToPath(new URL('retained-contract.rs.fixture', import.meta.url)), 'utf8') +
+    readFileSync(fileURLToPath(new URL('retained-events.rs.fixture', import.meta.url)), 'utf8'));
   run('frontend', 'npm', ['run', 'build'], runtime.producer);
   run('build', 'cargo', ['build', '--offline', '--manifest-path', runtime.project.manifest, '--features', 'tauri/custom-protocol', '--target-dir', target], runtime.producer);
   rmSync(report, { force: true });
@@ -93,7 +116,7 @@ try {
   const result = await waitForDesktopReport(report, app) as { passed: boolean; scenarios: string[] };
   writeFileSync(path.join(work, 'execution.log'), log);
   assert.equal(result.passed, true, log);
-  assert.equal(result.scenarios.length, 12);
+  assert.equal(result.scenarios.length, 24);
   const exited = new Promise(resolve => app!.once('exit', resolve));
   app.kill();
   await exited;
@@ -111,7 +134,7 @@ try {
     fixtureHashes: original, scenarioProducerHashes: before, producerUnchanged: true, setupFailureObserved: true,
     nativePolicy: policy, command: 'nub --cwd packages/cli run test:runtime:retained', scope: 'macOS arm64; mobile execution remains required',
   }, null, 2) + '\n');
-  console.log('PASS: real retained Tauri dispatch, caller policy/ACL, shared state, setup failure and late-result suppression.');
+  console.log('PASS: real retained Tauri dispatch/events, caller policy/ACL, shared state, setup failure and native listener cleanup.');
 } finally {
   if (app && app.exitCode === null && app.signalCode === null) {
     const exited = new Promise(resolve => app!.once('exit', resolve));

@@ -64,3 +64,6 @@ All four retained mobile combinations now pass: [RN Android](https://github.com/
 This validates the runtime/native-session layer on Debug simulator/emulator builds. It does not close #43–#47 or establish source-free exports, native event/channel delivery, packaged SDK composition or Release/device/adopter acceptance.
 
 Production-format ABI 3 exports now build and run as source-free native iOS/Android consumers after producer deletion. They preserve original frontend initialization/state and actual Swift/Kotlin plugin calls. See [#44](https://github.com/gronxb/tauri-native/issues/44) for the receipts, failure boundaries and remaining Release/configuration/cache acceptance. The broader export success/failure contract remains open until those checks are complete.
+
+
+Native event subscriptions now use the original Tauri listener and live authority, with explicit caller grants and local-document rechecks on registration and each batch. The real desktop gate passes 24 scenarios, including bounded overflow recovery, native handler cleanup on cancel/unlisten/close, scoped delivery, remount without duplicates and cleanup after navigation revokes the context. [Event evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-events-desktop-2026-09-09.json). Native channel transport and SDK-owned renderer sessions remain open.
