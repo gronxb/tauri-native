@@ -1,0 +1,181 @@
+{
+  "passed": true,
+  "platform": "android",
+  "profile": "release",
+  "formatVersion": 2,
+  "abiVersion": 3,
+  "renderer": "Lynx 4.0.1 / PrimJS 4.0.0",
+  "sourceFree": true,
+  "sourceFreeBuild": "PATH=/usr/bin:/bin:/usr/sbin:/sbin ./gradlew --no-daemon assembleRelease",
+  "nonDebuggable": true,
+  "libraries": [
+    "lib/arm64-v8a/liblynx.so",
+    "lib/arm64-v8a/liblynx_service_api.so",
+    "lib/arm64-v8a/liblynx_v8_bridge.so",
+    "lib/arm64-v8a/liblynxbase.so",
+    "lib/arm64-v8a/liblynxtrace.so",
+    "lib/arm64-v8a/libnapi.so",
+    "lib/arm64-v8a/libnapi_adapter.so",
+    "lib/arm64-v8a/libnapi_v8.so",
+    "lib/arm64-v8a/libordinary_tauri_mobile_fieldnotes_lib.so",
+    "lib/arm64-v8a/libquick.so",
+    "lib/arm64-v8a/libwasm.so"
+  ],
+  "elfAlignment": "All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed",
+  "packageSha256": "8de275b7304a294d665a49b9c732c3b7aa0e39200e0eb9ebf903892e571fe185",
+  "artifactSha256": "111bbef2dfcdf57278717594837ffe8a72c592c932f521636068436a8b52e962",
+  "apkSha256": "0f137954e4538a9e62a435b2a545e860e64cd7571940b5fb73f1dab1281ff882",
+  "bundleSha256": "26cdbb64f7d605501782cc6a0ba0f18eaf1ee1e8cf0fc328618719f5fb904a24",
+  "baseline": {
+    "directory": "/data/user/0/dev.taurinative.mobilefieldnotes",
+    "passed": true,
+    "reloaded": true,
+    "scenarios": [
+      "setup",
+      "state",
+      "app-handle",
+      "async",
+      "rust-event",
+      "plugin-setup",
+      "plugin-allowed",
+      "plugin-denied",
+      "domain-error",
+      "reload"
+    ],
+    "state": {
+      "appIdentifier": "dev.taurinative.mobilefieldnotes",
+      "pluginSetupCount": 1,
+      "setupCount": 1,
+      "value": 45
+    }
+  },
+  "initial": {
+    "generation": 1,
+    "resumed": 1,
+    "paused": 0,
+    "stopped": 0,
+    "receivedIntents": [],
+    "listeners": 1,
+    "listenersAfterRelease": -1,
+    "pid": 11093,
+    "notes": []
+  },
+  "remounted": {
+    "generation": 2,
+    "resumed": 4,
+    "paused": 3,
+    "stopped": 1,
+    "receivedIntents": [
+      "tauri-fieldnotes://notes/1"
+    ],
+    "listeners": 1,
+    "listenersAfterRelease": 0,
+    "pid": 11093,
+    "notes": [
+      {
+        "id": 1,
+        "text": "A Lynx place to remember",
+        "latitude": 37.5664983,
+        "longitude": 126.9779983
+      }
+    ]
+  },
+  "final": {
+    "generation": 2,
+    "resumed": 5,
+    "paused": 4,
+    "stopped": 1,
+    "receivedIntents": [
+      "tauri-fieldnotes://notes/1",
+      "tauri-fieldnotes://notes/1?remounted=1"
+    ],
+    "listeners": 1,
+    "listenersAfterRelease": 0,
+    "pid": 11093,
+    "notes": [
+      {
+        "id": 1,
+        "text": "A Lynx place to remember",
+        "latitude": 37.5664983,
+        "longitude": 126.9779983
+      }
+    ]
+  },
+  "notes": [
+    {
+      "id": 1,
+      "text": "A Lynx place to remember",
+      "latitude": 37.5664983,
+      "longitude": 126.9779983
+    }
+  ],
+  "uiScenarios": [
+    "shared original state/setup",
+    "Tauri ACL and native caller denial",
+    "OS permission denial/grant",
+    "save and event",
+    "background deep link and event",
+    "renderer replacement retires native subscriptions",
+    "fresh renderer receives only fresh events"
+  ],
+  "testOnlyIntegration": "Consumer fixture layout/bootstrap hooks and RuntimeSession status telemetry; actual packed SDK owns Lynx NativeModule, surface and JS/native session lifetime. Automatic composition/autolinking and iOS acceptance remain open.",
+  "testOnlySigning": "Non-debuggable Release with R8 optimization and a debug test signing key; process-scoped logcat telemetry",
+  "recordedAt": "2026-09-09T17:40:00+09:00",
+  "command": "PATH=\"$HOME/.cargo/bin:$HOME/Library/Android/sdk/platform-tools:$HOME/.maestro/bin:$PATH\" JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" ANDROID_HOME=\"$HOME/Library/Android/sdk\" NDK_HOME=\"$HOME/Library/Android/sdk/ndk/27.1.12297006\" ANDROID_SERIAL=emulator-5554 node --experimental-strip-types packages/lynx/test/retained-android.ts",
+  "toolchain": {
+    "node": "v24.15.0",
+    "npm": "11.12.1",
+    "java": "21.0.10+-117844308-b1163.108",
+    "gradle": "8.14.3",
+    "androidGradlePlugin": "8.11.0",
+    "ndk": "27.1.12297006",
+    "maestro": "2.4.0",
+    "emulator": "Pixel 10 Pro XL, API 37, arm64, 16 KB",
+    "emulatorFingerprint": "google/sdk_gphone16k_arm64/emu64a16k:17/CP21.260330.005/15181570:user/dev-keys"
+  },
+  "sdkSourceSha256": {
+    "packages/lynx/src/retained.ts": "f06cbea7664a98074494a8db58f106c1dc5a0360c3e873ee37a5fc713bf3223e",
+    "packages/lynx/src/retained-client.ts": "d54bec5bd9f7dab9a1192da661612089b821494417ac259990d4a1e4da45f53a",
+    "packages/lynx/android/retained/build.gradle": "60ee712a5c85792bbdd9a673ea7df4c17c23bf2049d9a79e0014d548eaf04245",
+    "packages/lynx/android/retained/consumer-rules.pro": "94bad449ae68d84a19e9cc7f1e1f139b2df82d71fd567fb79f95acb2dc726013",
+    "packages/lynx/android/retained/src/main/java/dev/taurinative/lynx/retained/TauriRuntimeModule.java": "8bdd81da2db39cf3cab0614528e7817db4fe4763f398f15fe418a6d228fb94a8",
+    "packages/lynx/android/retained/src/main/java/dev/taurinative/lynx/retained/TauriLynxHost.java": "5fef73468fb0369768896f930db660e8cdfbbacfa5863e2927a0dac6586a86db"
+  },
+  "gateSourceSha256": {
+    "packages/lynx/test/retained-android.ts": "5a37177b370788053371848f3d0f5f5491bd580484f486ee617e1073b34d3bb7",
+    "packages/lynx/test/retained/App.tsx.fixture": "917bfa205995c860a2a1a352546ad0e2cbd958dcbddd16a472d67b8e428906eb",
+    "packages/lynx/test/retained/MainActivity.kt.fixture": "6313bbfd0527f33ef57b94ceacb8a5d02317dc383530eee14b9bd83f9862e207"
+  },
+  "r8HostMapping": "dev.taurinative.lynx.retained.TauriLynxHost -> b3.a:",
+  "junitSha256": {
+    "initial": "da5e5efc4062d9ac9060c8df6a39003c8a9c403a7304bd2163b01c7d86a30423",
+    "deny-permission": "6a000f28c8875dd02daf35dc12e643e82b354fc08fe5882c171fd1bedfa786e9",
+    "grant-permission": "c09e7bb44aaeab533cedf1990301d35421c1cd8b0a868b5491ceffdea645edcc",
+    "background": "2877c8206efca5cc419383f68891591bbbc30164a9722af00ab7abf4d962fafa",
+    "resume": "e36d3f6b11a36af0c6d0bb8f3bd8c7452e54f4a67286e08370266430fe801532",
+    "fresh-events": "99ba78435c4495fc19500e55c6fe298da633c9edf3963ced62f60881765cbf0a"
+  },
+  "scope": "Consumes the previously validated producer-deleted format 2 artifact; this run does not re-export Rust or re-prove the later Android origin capture fix. No producer-specific command bridge is used.",
+  "earlierAttempts": [
+    {
+      "passed": false,
+      "stage": "initial UI",
+      "reason": "A stale Android ANR dialog from PID 4499 at 16:51 blocked PID 8025 at 17:25. dumpsys activity lastanr identified the earlier process; it was dismissed after the old process ended.",
+      "junitSha256": "1143fb05c9f5865af85d8587192d973f5a3a160f79087f884ad857d868fa1a7b"
+    },
+    {
+      "passed": false,
+      "stage": "resume",
+      "reason": "Expected two events but observed one. Same-APK foreground and background diagnostics passed. The gate now waits for a new onStop and onPause after Home, instead of accepting a pause count already advanced by permission dialogs; the complete corrected fresh run passed.",
+      "junitSha256": "bdecf4d811c24941334cff7a8f367e5edc965497f55e647fcb0be54083274ac4"
+    }
+  ],
+  "remaining": [
+    "iOS retained SDK",
+    "automatic native composition/autolinking",
+    "retained TauriView",
+    "RN/Expo parity",
+    "native renderer destruction during a pending OS permission callback",
+    "full six-combination release/device/adopter evidence"
+  ]
+}

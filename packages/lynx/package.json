@@ -11,6 +11,10 @@
       "types": "./types/index.d.ts",
       "default": "./src/index.ts"
     },
+    "./retained": {
+      "types": "./src/retained.ts",
+      "default": "./src/retained.ts"
+    },
     "./lynx.lib.json": "./lynx.lib.json",
     "./package.json": "./package.json",
     "./artifacts": {
@@ -24,6 +28,7 @@
     "android/build.gradle",
     "android/consumer-rules.pro",
     "android/src",
+    "android/retained",
     "generated",
     "ios/src",
     "ios/*.podspec",
@@ -31,7 +36,8 @@
     "src",
     "types",
     "lynx.lib.json",
-    "README.md"
+    "README.md",
+    "RETAINED.md"
   ],
   "scripts": {
     "build": "node --experimental-strip-types ../../scripts/sync-host-files.ts lynx && nub run codegen && tsc --noEmit",

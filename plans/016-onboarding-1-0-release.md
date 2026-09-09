@@ -112,9 +112,26 @@ Use a `codex/onboarding-1-0-release` branch if creating one, follow the reposito
 
 The installed CLI gate permitted only package.json and package-lock.json to change during installation. Both exports preserved the installed producer; removing the CLI and generated output left a successful ordinary desktop Release build with no remaining JavaScript diff. The three RC tarballs match the previously verified actual npm publication dry-runs for the explicit experimental channel and public access. These are automated maintainer checks, not independent evaluator records.
 
-The [candidate release notes](../docs/releases/1.0.0-rc.0.md) record package hashes and bounded execution evidence. Main publication requires a fresh validated candidate for its own release commit; branch validation does not establish npm publication.
+The [candidate release notes](https://github.com/gronxb/tauri-native/blob/015191221e72fd62ecf04dca46e71ce35e5f5e25/docs/releases/1.0.0-rc.0.md) record package hashes and bounded execution evidence. Main publication requires a fresh validated candidate for its own release commit; branch validation does not establish npm publication.
 
 Physical iOS/Android RC execution and two independent documentation-only evaluations remain unperformed. Independent evaluations require real projects and consented evidence; maintainer automation cannot fill those records. Keep #20 and M5 open until these gates are evidenced, and retain the experimental channel.
+
+## Main publication
+
+[PR #39](https://github.com/gronxb/tauri-native/pull/39) preserved the original README demo GIF. Its [main release run at `e10d1d6`](https://github.com/gronxb/tauri-native/actions/runs/34130137022) failed during desktop event validation: the reader parsed a newly created report before its JSON body was written. The uploaded report is zero bytes. Async exports and real Tauri async IPC parity had already passed; mobile receiving jobs and publication did not run.
+
+[PR #40](https://github.com/gronxb/tauri-native/pull/40), merged as `1fbb5a3`, fixes report readiness in both desktop event and Fieldnotes probes. Four deterministic child-process regressions reproduce the prior failures and pass with the correction; CLI typecheck and both script syntax checks also pass. The [release workflow for main at `1fbb5a3`](https://github.com/gronxb/tauri-native/actions/runs/34133681385) completed successfully, including producer, iOS, Android, candidate aggregation and npm publication. Downloaded evidence was checked for this exact release commit; the earlier branch candidate was not substituted for the main gate.
+
+The [current main producer job](https://github.com/gronxb/tauri-native/actions/runs/34133681385/job/101779549883) passed. Downloaded input and evidence were checked against `1fbb5a3`: the archive and all three package hashes match their receipt, packed manifests match the checkout, the corrected desktop event report passed, and both original and changed-Rust Fieldnotes passed save/search/relaunch and source-preserving exports. Installing/exporting/removing the CLI left a successful ordinary desktop Release build with no remaining JavaScript diff. All three 1.0.0-rc.0 tarballs are byte-identical to the previously verified `eb1fab8` RC packages. These remain automated maintainer checks.
+
+The [current main Android job](https://github.com/gronxb/tauri-native/actions/runs/34133681385/job/101794431578) passed in 46m23s. Downloaded evidence matches the exact `1fbb5a3` commit, producer receipt and package hashes. All 13 required Android JUnit scenarios passed without failures, errors or skips. Original and changed-Rust Fieldnotes passed in RN, Lynx and Expo after producer deletion, with host builds requiring no Rust toolchain. Async/scoped-view lifetimes, pending navigation and fully minified Lynx acceptance passed. The copied standalone APK executed on API 36 x86_64 with 16 KB pages, observed the Rust update, and balanced all 11 responses with 11 frees. This execution evidence covers the named emulator, not physical hardware.
+
+The [current main iOS job](https://github.com/gronxb/tauri-native/actions/runs/34133681385/job/101794431602) passed in 1h29m43s. Downloaded evidence matches the same main commit, producer receipt and package hashes. All 13 required iOS JUnit scenarios passed without failures, errors or skips, covering original and changed-Rust Fieldnotes in RN/Lynx/Expo, pending navigation, and RN/Lynx async/scoped-view lifetimes. Both feature phases confirm producer deletion and host builds without Rust. This is simulator execution evidence.
+
+The aggregate candidate passed and contains the exact verified tarballs. The [release job](https://github.com/gronxb/tauri-native/actions/runs/34133681385/job/101816607728) published `@tauri-native/cli`, `@tauri-native/react-native` and `@tauri-native/lynx` at `1.0.0-rc.0` with public access on the `experimental` npm channel. Registry verification at 2026-09-07 16:58 UTC confirmed all three versions and tags; downloaded registry tarballs are byte-identical to the candidate and match npm SHA-1/SHA-512 integrity metadata. Publication is complete for this experimental candidate.
+
+Physical iOS/Android RC execution and two independent documentation-only integrations remain unperformed. These gates still keep #20, #21 and M5 open; automated maintainer checks and successful RC publication do not establish stable 1.0 readiness.
+
 
 
 ## Added release requirement — Tauri Mobile preservation (2026-09-09)
@@ -126,3 +143,5 @@ The published 1.0.0-rc.0 candidate remains evidence for the limited adapter. The
 - [ ] Keep physical-device and independent-onboarding gates; do not reinterpret old candidate passes as new runtime-preservation evidence.
 
 See [ADR 0007](https://github.com/gronxb/tauri-native/blob/main/docs/adr/0007-tauri-mobile-composition.md). Current release preparation is historical completed work; these added gates remain open.
+
+M8 #46 now has a first package-owned Android Lynx retained-runtime execution: [Lynx Android retained SDK evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-lynx-android-2026-09-09.json). The packed SDK passes on a non-debuggable arm64 Release/R8 emulator alongside the original Tauri frontend, including native plugins/permissions, background deep links and renderer event cleanup. This scoped result does not satisfy six-combination parity, physical-device or independent-onboarding requirements. Automatic composition, retained TauriView, iOS and RN/Expo package integration remain open; no new package publication is authorized or performed.

@@ -2,6 +2,14 @@
 
 Experimental Lynx native library for `tauri-native`.
 
+The retained Tauri integration under `@tauri-native/lynx/retained` is being
+implemented in this checkout. It uses format 2 / ABI 3 exports and the original
+Tauri Mobile bootstrap. Its Android package owns the Lynx surface and native
+sessions; automatic native composition, retained `TauriView`, and iOS package
+integration are still open. The default entry point and autolinking configuration
+below continue to describe format 1. See [retained integration](./RETAINED.md)
+before choosing the artifact mode.
+
 ## Install
 
 The earlier 0.1.0 release predates the source-export and async APIs documented here. For this checkout, install the matching candidate tarball using the [Fieldnotes walkthrough](https://github.com/gronxb/tauri-native/blob/main/docs/examples/fieldnotes.md). This checkout prepares 1.0.0-rc.0; its version alone does not establish npm availability. The registry command below selects the published experimental release. See [migration](https://github.com/gronxb/tauri-native/blob/main/docs/migration.md) for the API changes.

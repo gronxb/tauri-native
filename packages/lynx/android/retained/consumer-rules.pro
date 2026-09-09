@@ -1,0 +1,1 @@
+-keep class dev.taurinative.lynx.retained.TauriRuntimeModule { *; }

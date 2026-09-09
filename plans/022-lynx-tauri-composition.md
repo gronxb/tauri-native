@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: TODO
+- Status: IN PROGRESS
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#41](https://github.com/gronxb/tauri-native/issues/41) (plan 017), [#44](https://github.com/gronxb/tauri-native/issues/44) (plan 020)
@@ -46,3 +46,45 @@ Implementation is authorized directly on `main` in incremental commits, without 
 ## M6 handoff
 
 Lynx 4.0.1 native views now execute beside the real Tauri WebView on both platforms with unchanged producer sources. iOS attaches to the existing view parent without replacing the Tauri delegate; Android uses `TauriActivity.onWebViewCreate`. Actual background JS calls, view destruction/remount and background/resume preserve state and single Tauri/plugin initialization. Turn these version-pinned attachment seams into package-owned integration with explicit readiness and cleanup; production autolinking, native plugins, direct caller permissions and relocated artifacts remain required.
+
+## Package integration progress — 2026-09-09
+
+The package now provides an explicit `@tauri-native/lynx/retained` entry point,
+an Android `TauriNativeRuntime` module and `TauriLynxHost`. Each surface receives
+its own native scope through Lynx's module parameter API. Background calls are
+marshalled to the real Tauri platform session on main; renderer replacement
+retires requests/listeners before destroying the old Lynx engine. Backgrounding
+and permission dialogs keep the session alive. No producer imports, Rust state,
+command registry or second Tauri bootstrap are introduced.
+
+Four JS scenarios cover original structured command errors/concurrent results,
+cancelled request retirement, an event batch arriving before a new listener's
+acknowledgement, close during pending registration/permission work, and stream
+overflow/recovery versus origin revocation. The packed SDK native gate is
+`packages/lynx/test/retained-android.ts`; it builds from a relocated format 2
+Release artifact without Rust, uses a non-debuggable APK with R8 optimization,
+checks every packaged native ABI/16 KB segment and exercises real Lynx UI.
+
+The complete arm64 Android execution now passes with the actual packed SDK:
+the unchanged frontend baseline, shared value 45/setup counts 1, separate Tauri
+ACL/native caller denial, OS permission denial/grant, native location save and
+event, background deep link, renderer replacement and exactly one fresh event.
+The original Activity receives both deep-link Intents; the process stays the
+same, native listeners reach zero at replacement and one after registration.
+All eleven packaged ELF libraries and APK alignment pass. [Execution evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-lynx-android-2026-09-09.json).
+
+The gate pins application ABIs to the actual exported slices and includes Lynx's
+Gson dependency. It verifies a non-debuggable APK and an obfuscated SDK host;
+earlier native telemetry builds with `isDebuggable=true` do not establish this
+optimization scope. A preceding resume assertion failed; same-APK diagnostics
+passed, and the corrected complete gate waits for a new `onStop` after Home
+instead of accepting a pause count left by OS permission dialogs. Failure and
+completed evidence are distinguished in the receipt. Six package JS tests,
+typechecks and the 42-file npm tarball check pass.
+
+Automatic composition/autolinking, retained `TauriView`, the iOS package path,
+RN parity and complete release/device/adopter evidence remain open. The test
+fixture currently owns the consumer layout/bootstrap hooks and telemetry;
+the package owns the actual NativeModule, renderer and session lifecycle.
+Native renderer destruction while an OS permission callback is pending remains
+required separately; the new JS close scenario alone does not prove that case.
