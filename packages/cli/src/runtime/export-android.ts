@@ -14,6 +14,7 @@ import packageJson from '../../package.json' with { type: 'json' };
 
 import { readRuntimeExport, acquireRuntimeBuild, runtimeNpmDirectory, type RetainedExportOptions } from './export-project.ts';
 import { createRuntimeCache } from './cache.ts';
+import { assertNativePaths, runtimeBuildEnvironment } from './paths.ts';
 
 const rustTargets = { aarch64: 'aarch64-linux-android', armv7: 'armv7-linux-androideabi', i686: 'i686-linux-android', x86_64: 'x86_64-linux-android' } as const;
 const roots = new Set(['manifest.json', 'build.json', 'commands.json', 'commands.ts', 'callers.json', 'include', 'android']);
@@ -33,10 +34,7 @@ export function exportRetainedAndroid(options: RetainedExportOptions): void {
     publishArtifacts(output, stage => {
       runtime = prepareRuntime(project, policy, cache);
       const cwd = runtimeNpmDirectory(runtime);
-      const env = { ...process.env, NODE_OPTIONS: '',
-        CARGO_TARGET_DIR: path.resolve(process.env.CARGO_TARGET_DIR ?? path.join(project.tauriDirectory, 'target/tauri-native/retained-build')),
-        RUSTFLAGS: `${process.env.RUSTFLAGS ?? ''} -C link-arg=-landroid -C link-arg=-llog -C link-arg=-lOpenSLES -C link-arg=-Wl,-z,max-page-size=16384 -C link-arg=-Wl,-z,common-page-size=16384`,
-      };
+      const env = runtimeBuildEnvironment(runtime, path.resolve(process.env.CARGO_TARGET_DIR ?? path.join(project.tauriDirectory, 'target/tauri-native/retained-build')), 'android');
       run('npm', ['run', 'tauri-native:runtime', '--', 'android', 'init', '--ci', '--skip-targets-install'], { cwd, env });
       // Native build.rs side effects must run for this fresh output directory.
       for (const target of targets) run('cargo', ['clean', '--package', 'tauri', ...Object.keys(plugins).flatMap(name => ['--package', name]),
@@ -59,6 +57,11 @@ export function exportRetainedAndroid(options: RetainedExportOptions): void {
       const callerBytes = JSON.stringify(policy, null, 2) + '\n';
       writeFileSync(path.join(stage, 'callers.json'), callerBytes);
       const native = targets.map(target => ({ abi: retainedAndroidAbis[target], path: `android/app/src/main/jniLibs/${retainedAndroidAbis[target]}/lib${project.libraryName}.so` }));
+      for (const slice of native) {
+        const library = path.join(stage, slice.path);
+        run(path.join(tools.bin, `llvm-strip${process.platform === 'win32' ? '.exe' : ''}`), ['--strip-debug', library]);
+        assertNativePaths(library, runtime, env.CARGO_TARGET_DIR);
+      }
       const packaged = readdirSync(path.join(android, 'app/src/main/jniLibs'), { recursive: true, encoding: 'utf8' }).filter(file => file.endsWith('.so')).map(file => `android/app/src/main/jniLibs/${file}`);
       if (packaged.sort().join(',') !== native.map(slice => slice.path).sort().join(',')) throw new Error('Unexpected or missing native Android library; every packaged ELF needs explicit validation.');
       const manifest: RetainedAndroidArtifact = { formatVersion: 2, abiVersion: 3, platform: 'android', generator: { name: '@tauri-native/cli', version: packageJson.version },

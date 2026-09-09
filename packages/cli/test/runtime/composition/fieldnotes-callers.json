@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "callers": {
+    "native": {
+      "webview": "main",
+      "commands": [
+        "snapshot",
+        "plugin_snapshot",
+        "list_notes",
+        "save_note",
+        "plugin:geolocation|check_permissions",
+        "plugin:geolocation|request_permissions",
+        "plugin:geolocation|get_current_position",
+        "plugin:geolocation|watch_position",
+        "plugin:deep-link|get_current"
+      ]
+    }
+  }
+}

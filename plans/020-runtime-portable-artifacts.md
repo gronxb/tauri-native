@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — format 2 / ABI 3 iOS and Android exports and real source-free native plugin acceptance pass on arm64 Debug.
+- Status: IN PROGRESS — format 2 / ABI 3 iOS and Android exports and real source-free native plugin acceptance pass on arm64 Debug and Release.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#42](https://github.com/gronxb/tauri-native/issues/42) (plan 018), [#43](https://github.com/gronxb/tauri-native/issues/43) (plan 019)
@@ -66,6 +66,12 @@ iOS `export ios --runtime retained` now packages the actual `libapp.a` with Swif
 
 Retained `--incremental` now keys validated artifacts on authored files (including native declarations under `gen/`), installed Cargo dependency source bytes, configuration/environment, toolchain, generator, target/profile and caller policy. `build.json` records these fingerprints without absolute producer filenames. Copy verification runs before generated source changes, and producer/dependency checks run before publication. Known plugin Gradle/Swift output directories are excluded from source hashes; unknown source changes continue to invalidate. A source-free reader rejects relabelling a recorded Debug artifact as Release.
 
-Remaining: Release and other architecture execution; debug/source path remapping; package-owned RN/Expo/Lynx integration. These scoped native results do not close #44 or certify a six-way release.
+Remaining: other architecture execution, authored native-project/compiler configuration preservation and package-owned RN/Expo/Lynx integration. These scoped native results do not close #44 or certify a six-way release.
 
 The cache-enabled Android and iOS arm64 Debug exports both pass unchanged incremental hits followed by the full source-free native plugin/UI gate. iOS additionally changes an ordinary capability to an unknown permission and requires the real Tauri build to reject it; the previous complete receipt is preserved and subsequently passes native execution. The restored disposable producer hashes match before deletion. Evidence: [iOS](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-cache-ios-2026-09-09.json), [Android](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-cache-android-2026-09-09.json). CLI tests (61), package packing and typechecks pass. The Android iteration predates the added native invalid-capability scenario; the evidence states that limit explicitly.
+
+
+Arm64 Release native plugin acceptance now passes on both platforms after producer deletion and relocation: [iOS](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-release-ios-2026-09-09.json), [Android](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-release-android-2026-09-09.json). Both verify real invalid-capability failure preserves the last valid artifact; Android retains R8 and uses test-only signing/debuggability for telemetry. Rust prefix remapping and native debug stripping remove the producer/generated/target/Cargo-home paths checked in every library without dropping required native symbols. A compiler scenario with spaces verifies explicit environment flags and `file!()` remapping. These results establish the pinned fixture, not arbitrary custom Cargo/native build configurations.
+
+
+All seven Release slices and their independent consumer links now pass: [evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-release-slices-2026-09-09.json). The gate deletes the producer, relocates both complete exports to paths with spaces, links iOS device arm64 plus simulator arm64/x86_64 apps without Rust, and builds an unsigned Android universal Release/R8 APK with all four ABIs and 16 KB alignment. The pinned CLI's simulator host-architecture substitution is handled only in the generated iOS build script/settings and validated against actual native libraries. Two preceding architecture attempts failed explicitly and are recorded separately. CLI tests (62), package contents and typechecks pass. Authored native/compiler configuration, SDK composition and physical-device execution remain open.

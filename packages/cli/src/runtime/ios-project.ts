@@ -16,8 +16,30 @@ interface ProjectObject {
   buildSettings?: Record<string, unknown>;
 }
 
+/** Xcode, not the CLI archive's directory name, selects the Rust target. */
+export function selectIosRuntimeArchitecture(native: string, arch: 'arm64' | 'x86_64') {
+  const projects = readdirSync(native).filter(file => file.endsWith('.xcodeproj'));
+  if (projects.length !== 1) throw new Error('Retained iOS export requires one standard Tauri Xcode project.');
+  const file = path.join(native, projects[0]!, 'project.pbxproj');
+  let source = readFileSync(file, 'utf8');
+  // Keep OpenStep syntax: Tauri's agvtool version update cannot read XML plists.
+  for (const key of ['ARCHS', 'VALID_ARCHS']) {
+    const setting = new RegExp(`(^\\s*${key} = )[^;]+;`, 'gm');
+    if (!setting.test(source)) throw new Error(`Expected standard Tauri Xcode ${key} settings.`);
+    source = source.replace(setting, `$1${arch};`);
+  }
+  // CLI 2.11.4 xcode-script replaces every simulator ARCHS with its own host
+  // architecture. Its explicit x86_64 branch still selects the simulator Rust
+  // triple/SDK when the display-name shortcut is disabled. Keep the real SDKROOT.
+  const platform = '--platform ${PLATFORM_DISPLAY_NAME:?}';
+  source = source.replace('--platform iOS --sdk-root', `${platform} --sdk-root`);
+  if (!source.includes(`${platform} --sdk-root`)) throw new Error('Expected the standard Tauri iOS Rust build script platform argument.');
+  if (arch === 'x86_64') source = source.replace(platform, '--platform iOS');
+  writeFileSync(file, source);
+}
+
 /** Preserve the built Tauri iOS bootstrap/Info.plist and link a captured XCFramework. */
-export function copyIosRuntimeProject(native: string, destination: string, framework: string, runtime: string) {
+export function copyIosRuntimeProject(native: string, destination: string, framework: string, runtime: string, architectures: { device: string[]; simulator: string[] }) {
   if (existsSync(destination)) throw new Error('Capture iOS runtime into a new staging directory.');
   const projects = readdirSync(native).filter(file => file.endsWith('.xcodeproj'));
   if (projects.length !== 1) throw new Error('Retained iOS export requires one standard Tauri Xcode project.');
@@ -45,6 +67,15 @@ export function copyIosRuntimeProject(native: string, destination: string, frame
     if (object.children) object.children = object.children.filter(id => !removed.has(id));
     if (object.buildSettings) for (const [key, value] of Object.entries(object.buildSettings)) {
       if (key.startsWith('LIBRARY_SEARCH_PATHS') && typeof value === 'string') object.buildSettings[key] = value.replace(/\$\(PROJECT_DIR\)\/Externals\/(?:arm64|x86_64)\/\$\(CONFIGURATION\) ?/g, '');
+    }
+    // Tauri CLI narrows the generated project to its most recently built
+    // target. The portable project must expose every selected XCFramework slice.
+    if (object.buildSettings?.ARCHS) {
+      object.buildSettings.ARCHS = '$(ARCHS_STANDARD)';
+      object.buildSettings.VALID_ARCHS = [...new Set([...architectures.device, ...architectures.simulator])].join(' ');
+      object.buildSettings.SUPPORTED_PLATFORMS = [architectures.device.length ? 'iphoneos' : '', architectures.simulator.length ? 'iphonesimulator' : ''].filter(Boolean).join(' ');
+      if (architectures.device.length) object.buildSettings['ARCHS[sdk=iphoneos*]'] = architectures.device.join(' ');
+      if (architectures.simulator.length) object.buildSettings['ARCHS[sdk=iphonesimulator*]'] = architectures.simulator.join(' ');
     }
   }
   for (const id of removed) delete objects[id];

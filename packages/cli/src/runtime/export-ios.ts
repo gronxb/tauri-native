@@ -7,11 +7,12 @@ import { run } from '../utils/process.ts';
 import { message } from '../utils/output.ts';
 import { generateCommands } from '../types/commands.ts';
 import { prepareRuntime } from './workspace.ts';
-import { copyIosRuntimeProject } from './ios-project.ts';
+import { copyIosRuntimeProject, selectIosRuntimeArchitecture } from './ios-project.ts';
 import { readRuntimeExport, acquireRuntimeBuild, runtimeNpmDirectory, type RetainedExportOptions } from './export-project.ts';
 import { readRetainedArtifacts, type RetainedIosArtifact } from '../../../../scripts/retained-artifacts.ts';
 import packageJson from '../../package.json' with { type: 'json' };
 import { createRuntimeCache } from './cache.ts';
+import { assertNativePaths, runtimeBuildEnvironment } from './paths.ts';
 
 const iosTargets = {
   aarch64: { rust: 'aarch64-apple-ios', arch: 'arm64', variant: 'device' },
@@ -34,18 +35,24 @@ export function exportRetainedIos(options: RetainedExportOptions) {
     publishArtifacts(output, stage => {
       runtime = prepareRuntime(project, policy, cache);
       const cwd = runtimeNpmDirectory(runtime);
-      const env = { ...process.env, NODE_OPTIONS: '', CARGO_TARGET_DIR: path.resolve(process.env.CARGO_TARGET_DIR ?? path.join(project.tauriDirectory, 'target/tauri-native/retained-build')) };
+      const env = runtimeBuildEnvironment(runtime, path.resolve(process.env.CARGO_TARGET_DIR ?? path.join(project.tauriDirectory, 'target/tauri-native/retained-build')), 'ios');
       run('npm', ['run', 'tauri-native:runtime', '--', 'ios', 'init', '--ci', '--skip-targets-install'], { cwd, env });
       const native = path.join(runtime.project.tauriDirectory, 'gen/apple');
       const libraries = path.join(runtime.directory, 'libraries');
       mkdirSync(libraries);
       for (const target of targets) {
+        selectIosRuntimeArchitecture(native, iosTargets[target].arch);
         run('cargo', ['clean', '--package', 'tauri', ...Object.keys(plugins).flatMap(name => ['--package', name]),
           '--target', iosTargets[target].rust, '--manifest-path', runtime.project.manifest], { cwd, env });
         // The CLI's final app rename requires a fresh destination for each archive.
         rmSync(path.join(native, 'build'), { recursive: true, force: true });
         run('npm', ['run', 'tauri-native:runtime', '--', 'ios', 'build', '--ci', ...(options.debug ? ['--debug'] : []), '--target', target, '--no-sign'], { cwd, env });
-        cpSync(path.join(native, 'Externals', iosTargets[target].arch, profile, 'libapp.a'), path.join(libraries, `${target}.a`));
+        const library = path.join(libraries, `${target}.a`);
+        cpSync(path.join(native, 'Externals', iosTargets[target].arch, profile, 'libapp.a'), library);
+        // Linker/Swift debug records are outside Rust's prefix remapping.
+        // Public ABI/startup/plugin symbols are validated after stripping.
+        run('xcrun', ['strip', '-S', library]);
+        assertNativePaths(library, runtime, env.CARGO_TARGET_DIR);
       }
       const frameworkArguments: string[] = [];
       for (const variant of ['device', 'simulator'] as const) {
@@ -59,7 +66,10 @@ export function exportRetainedIos(options: RetainedExportOptions) {
       }
       const framework = path.join(runtime.directory, 'TauriNativeRuntime.xcframework');
       run('xcodebuild', ['-create-xcframework', ...frameworkArguments, '-output', framework]);
-      const captured = copyIosRuntimeProject(native, path.join(stage, 'ios'), framework, runtime.runtime);
+      const captured = copyIosRuntimeProject(native, path.join(stage, 'ios'), framework, runtime.runtime, {
+        device: targets.filter(target => iosTargets[target].variant === 'device').map(target => iosTargets[target].arch),
+        simulator: targets.filter(target => iosTargets[target].variant === 'simulator').map(target => iosTargets[target].arch),
+      });
       mkdirSync(path.join(stage, 'include'));
       cpSync(path.join(runtime.runtime, 'tauri_native_runtime.h'), path.join(stage, 'include/tauri_native_runtime.h'));
       writeFileSync(path.join(stage, 'commands.json'), JSON.stringify(runtime.model, null, 2) + '\n');

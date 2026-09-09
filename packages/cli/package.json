@@ -44,6 +44,7 @@
     "test:runtime:plugins:desktop": "node --experimental-strip-types test/runtime/baseline.ts plugins",
     "test:runtime:portable:ios": "nub run build && node --experimental-strip-types test/runtime/portable.ts ios",
     "test:runtime:portable:android": "nub run build && node --experimental-strip-types test/runtime/portable.ts android",
+    "test:runtime:slices": "nub run build && node --experimental-strip-types test/runtime/slices.ts",
     "test:export:contract": "node --experimental-strip-types test/native-export/contract.ts",
     "test:export:ios": "nub run build && node --experimental-strip-types test/native-export/ios.ts",
     "test:export:android": "nub run build && node --experimental-strip-types test/native-export/android.ts",

@@ -20,7 +20,10 @@ const consumer = path.join(evidence, 'ABI 3 consumer with spaces');
 const android = path.join(consumer, 'android');
 const device = platform === 'android' ? process.env.ANDROID_SERIAL : process.env.IOS_SIMULATOR_UDID;
 assert(device, 'Select ANDROID_SERIAL or IOS_SIMULATOR_UDID for an arm64 virtual device');
-assert(process.argv[3] === undefined || process.argv[3] === '--consume', 'Use --consume only to retry the existing exported artifact after source deletion');
+const flags = new Set(process.argv.slice(3));
+assert([...flags].every(flag => ['--consume', '--release'].includes(flag)), 'Use --consume for the existing artifact, and --release for an optimized native build');
+const consume = flags.has('--consume');
+const profile = flags.has('--release') ? 'release' : 'debug';
 const appId = 'dev.taurinative.mobilefieldnotes';
 const original = snapshot(fixture);
 const env = { ...process.env, CARGO_TARGET_DIR: path.join(root, 'target'), NODE_OPTIONS: '' };
@@ -83,15 +86,13 @@ try {
     assert.equal(run('emulator', 'adb', ['-s', device, 'shell', 'getprop', 'ro.kernel.qemu']), '1');
     assert.equal(run('abi', 'adb', ['-s', device, 'shell', 'getprop', 'ro.product.cpu.abi']), 'arm64-v8a');
   }
-  if (!process.argv[3]) {
+  if (!consume) {
     rmSync(producer, { recursive: true, force: true }); cpSync(fixture, producer, { recursive: true });
     run('dependencies', 'npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], producer);
     const before = snapshot(producer);
-    writeFileSync(path.join(evidence, 'callers.json'), JSON.stringify({ version: 1, callers: { native: { webview: 'main', commands:
-      ['snapshot', 'plugin_snapshot', 'list_notes', 'save_note', 'plugin:geolocation|check_permissions', 'plugin:geolocation|request_permissions',
-        'plugin:geolocation|get_current_position', 'plugin:geolocation|watch_position', 'plugin:deep-link|get_current'] } } }, null, 2) + '\n');
+    cpSync(new URL('./composition/fieldnotes-callers.json', import.meta.url), path.join(evidence, 'callers.json'));
     const exportArguments = [path.join(root, 'packages/cli/dist/index.mjs'), 'export', platform, '--runtime', 'retained',
-      '--tauri-dir', path.join(producer, 'src-tauri'), '--caller-policy', path.join(evidence, 'callers.json'), '--targets', platform === 'android' ? 'aarch64' : 'aarch64-sim', '--debug', '--output-dir', exported, '--incremental'];
+      '--tauri-dir', path.join(producer, 'src-tauri'), '--caller-policy', path.join(evidence, 'callers.json'), '--targets', platform === 'android' ? 'aarch64' : 'aarch64-sim', ...(profile === 'debug' ? ['--debug'] : []), '--output-dir', exported, '--incremental'];
     run('export', process.execPath, exportArguments);
     const receipt = readFileSync(path.join(exported, 'manifest.json'), 'utf8');
     assert.match(run('incremental-hit', process.execPath, exportArguments), /Reused validated retained/);
@@ -120,7 +121,7 @@ try {
   const manifest = readRetainedArtifacts(exported);
   assert.equal(manifest.platform, platform);
   assert.equal(manifest.bootstrap.applicationId, appId);
-  assert.equal(manifest.profile, 'debug', 'This run-as evidence gate requires a Debug app');
+  assert.equal(manifest.profile, profile);
   rmSync(consumer, { recursive: true, force: true }); cpSync(exported, consumer, { recursive: true });
   assert.deepEqual(readRetainedArtifacts(consumer), manifest, 'Relocation preserves the complete receipt');
   const diagnosis = JSON.parse(run('source-free-doctor', process.execPath, [path.join(root, 'packages/cli/dist/index.mjs'), 'doctor', '--artifacts', consumer, '--platform', platform, '--json'], evidence,
@@ -132,8 +133,15 @@ try {
     for (const [source, destination] of [['PluginActivity.kt.fixture', 'MainActivity.kt'], ['PluginAcceptance.java.fixture', 'PluginAcceptance.java']]) {
       cpSync(path.join(root, 'packages/cli/test/runtime/composition/android', source!), path.join(java, destination!));
     }
-    run('source-free-build', './gradlew', ['--no-daemon', 'assembleDebug'], android, { ...env, PATH: '/usr/bin:/bin:/usr/sbin:/sbin' });
-    const apk = path.join(android, 'app/build/outputs/apk/debug/app-debug.apk');
+    if (profile === 'release') {
+      // Consumer-only telemetry permits run-as; Release compilation and R8 stay on.
+      const gradle = path.join(android, 'app/build.gradle.kts');
+      const source = readFileSync(gradle, 'utf8');
+      assert(source.includes('getByName("release") {'));
+      writeFileSync(gradle, source.replace('getByName("release") {', 'getByName("release") {\n            isDebuggable = true\n            signingConfig = signingConfigs.getByName("debug")'));
+    }
+    run('source-free-build', './gradlew', ['--no-daemon', profile === 'debug' ? 'assembleDebug' : 'assembleRelease'], android, { ...env, PATH: '/usr/bin:/bin:/usr/sbin:/sbin' });
+    const apk = path.join(android, `app/build/outputs/apk/${profile}/app-${profile}.apk`);
     binary = apk;
     const buildTools = path.join(process.env.ANDROID_HOME!, 'build-tools');
     const zipalign = readdirSync(buildTools).filter(version => /^\d+\.\d+\.\d+$/.test(version))
@@ -151,9 +159,9 @@ try {
     const main = path.join(ios, 'Sources/ordinary-tauri-mobile-fieldnotes/main.mm');
     writeFileSync(main, '#import "../TauriNativeRuntime/PluginAcceptance.h"\n' + readFileSync(main, 'utf8').replace('ffi::start_app();', '[PluginAcceptance install];\n\tffi::start_app();'));
     const derived = path.join(evidence, 'consumer-derived-data');
-    run('source-free-build', 'xcodebuild', ['-project', manifest.bootstrap.xcodeProject, '-scheme', manifest.bootstrap.target, '-configuration', 'debug',
+    run('source-free-build', 'xcodebuild', ['-project', manifest.bootstrap.xcodeProject, '-scheme', manifest.bootstrap.target, '-configuration', profile,
       '-sdk', 'iphonesimulator', '-destination', 'generic/platform=iOS Simulator', '-derivedDataPath', derived, 'CODE_SIGNING_ALLOWED=NO', 'build'], ios, { ...env, PATH: '/usr/bin:/bin:/usr/sbin:/sbin' });
-    const app = path.join(derived, 'Build/Products/debug-iphonesimulator/Tauri Mobile Fieldnotes.app');
+    const app = path.join(derived, `Build/Products/${profile}-iphonesimulator/Tauri Mobile Fieldnotes.app`);
     const info = JSON.parse(run('app-info', 'plutil', ['-convert', 'json', '-o', '-', path.join(app, 'Info.plist')]));
     assert.equal(info.NSLocationWhenInUseUsageDescription, 'Attach your current location to a note when you request it.');
     assert(info.CFBundleURLTypes?.some((type: { CFBundleURLSchemes: string[] }) => type.CFBundleURLSchemes.includes('tauri-fieldnotes')));
@@ -170,6 +178,8 @@ try {
   assert.equal(baseline.passed, true, JSON.stringify(baseline));
   flow('initial-native', '- assertVisible: "Native ready"\n- tapOn: "Native check permission"\n- assertVisible: "Native permission prompt"\n- tapOn: "Native deny capability"\n- assertVisible: "Native capability denied"');
   const acl = report();
+  assert.equal(acl.result.ok, false);
+  assert.match(acl.result.error, /^(?:geolocation\.watch_position explicitly denied|Command plugin:geolocation\|watch_position not allowed by ACL)/);
   flow('deny-native-permission', `- tapOn: "Native request permission"\n- tapOn: "(?i)(Don.t allow|허용 안 함)"\n- assertVisible: "Native permission ${platform === 'android' ? 'prompt-with-rationale' : 'denied'}"`);
   const denied = report();
   flow('native-denied-position', '- tapOn: "Native save location"\n- assertVisible: "Native location denied"');
@@ -207,8 +217,9 @@ try {
   assert.deepEqual(readRetainedArtifacts(exported), manifest, 'Consumer integration preserves the original published artifact');
   assert(!existsSync(producer));
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform, formatVersion: 2, abiVersion: 3,
-    profile: 'debug', target: platform === 'android' ? 'arm64 16 KB emulator' : 'arm64 simulator', producerDeleted: true, producerUnchanged: true, sourceHashes: original,
-    sourceFreeBuild: `${platform === 'android' ? './gradlew --no-daemon assembleDebug' : 'xcodebuild -configuration debug -sdk iphonesimulator'}; PATH=/usr/bin:/bin:/usr/sbin:/sbin; relocated path has spaces`,
+    profile, target: platform === 'android' ? 'arm64 16 KB emulator' : 'arm64 simulator', producerDeleted: true, producerUnchanged: true, sourceHashes: original,
+    sourceFreeBuild: `${platform === 'android' ? `./gradlew --no-daemon assemble${profile === 'debug' ? 'Debug' : 'Release'}` : `xcodebuild -configuration ${profile} -sdk iphonesimulator`}; PATH=/usr/bin:/bin:/usr/sbin:/sbin; relocated path has spaces`,
+    ...(platform === 'android' && profile === 'release' ? { testOnlySigning: 'Release/R8 with debug test key and android:debuggable for run-as telemetry; exported project unchanged' } : {}),
     ...(platform === 'android' ? { apkAlignment: 'zipalign -c -P 16 -v 4 passed' } : {}),
     consumer: 'Native platform acceptance UI; RN/Lynx package acceptance remains separate',
     artifactSha256: sha256(readFileSync(path.join(exported, 'manifest.json'))), binarySha256: sha256(readFileSync(binary)),

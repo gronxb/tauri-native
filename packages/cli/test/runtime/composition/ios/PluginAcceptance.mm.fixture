@@ -35,7 +35,8 @@ static PluginAcceptance *pluginAcceptance;
   NSDictionary *report = @{@"action": action, @"result": result, @"generation": @(self.generation), @"retiredCallbacks": @(self.retiredCallbacks),
     @"retiredClosures": @(self.retiredClosures), @"pid": @(NSProcessInfo.processInfo.processIdentifier), @"appDelegate": NSStringFromClass(UIApplication.sharedApplication.delegate.class)};
   NSData *data = [NSJSONSerialization dataWithJSONObject:report options:0 error:nil];
-  NSAssert([data writeToFile:[self.directory stringByAppendingPathComponent:@"native-plugins-report.json"] atomically:YES], @"Cannot record native plugin acceptance");
+  BOOL recorded = [data writeToFile:[self.directory stringByAppendingPathComponent:@"native-plugins-report.json"] atomically:YES];
+  NSAssert(recorded, @"Cannot record native plugin acceptance");
 }
 - (void)permission:(NSString *)action result:(NSDictionary *)result {
   NSDictionary *value = [self value:result];

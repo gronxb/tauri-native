@@ -1,0 +1,115 @@
+{
+  "passed": true,
+  "profile": "release",
+  "producerDeleted": true,
+  "sourceHashes": {
+    "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+    "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+  },
+  "sourceFreeBuild": "Relocated paths with spaces; PATH=/usr/bin:/bin:/usr/sbin:/sbin",
+  "scope": "All seven native slices and source-free consumer linking. Runtime feature execution is separately verified on arm64 simulator/emulator; this does not claim physical devices or execution on every architecture.",
+  "artifacts": {
+    "ios": {
+      "native": [
+        {
+          "path": "ios/TauriNativeRuntime.xcframework/ios-arm64/libapp.a",
+          "architectures": [
+            "arm64"
+          ],
+          "variant": "device"
+        },
+        {
+          "path": "ios/TauriNativeRuntime.xcframework/ios-arm64_x86_64-simulator/libapp.a",
+          "architectures": [
+            "arm64",
+            "x86_64"
+          ],
+          "variant": "simulator"
+        }
+      ],
+      "manifestSha256": "5d7d02591c61ca3846b7dfc4bc1225da43efdcb1df4809d786c409bec38f0727"
+    },
+    "android": {
+      "native": [
+        {
+          "abi": "arm64-v8a",
+          "path": "android/app/src/main/jniLibs/arm64-v8a/libordinary_tauri_mobile_fieldnotes_lib.so"
+        },
+        {
+          "abi": "armeabi-v7a",
+          "path": "android/app/src/main/jniLibs/armeabi-v7a/libordinary_tauri_mobile_fieldnotes_lib.so"
+        },
+        {
+          "abi": "x86",
+          "path": "android/app/src/main/jniLibs/x86/libordinary_tauri_mobile_fieldnotes_lib.so"
+        },
+        {
+          "abi": "x86_64",
+          "path": "android/app/src/main/jniLibs/x86_64/libordinary_tauri_mobile_fieldnotes_lib.so"
+        }
+      ],
+      "manifestSha256": "7ee54734c2ac85c01f284e4dd5da8198a2b92b62b8e3ef65bff14889fd5bb26e"
+    }
+  },
+  "binaries": [
+    {
+      "target": "iphoneos-arm64",
+      "architectures": "arm64",
+      "sha256": "f89eaea6ced0b77d4c4f818fde9f22254bc096c6a9ff795ed3053af7d81defad"
+    },
+    {
+      "target": "iphonesimulator-arm64",
+      "architectures": "arm64",
+      "sha256": "1ffee9aea7a1884ad536127dabdca8b2baa3511b64aa8f2145256d9c39a8b0f6"
+    },
+    {
+      "target": "iphonesimulator-x86_64",
+      "architectures": "x86_64",
+      "sha256": "cf5418a29c6229226566c69a63b6ca57c6ac60364a68bd1a93310f41e13903b8"
+    },
+    {
+      "target": "Android universal Release/R8 APK, all four ABIs",
+      "sha256": "a54ff1bf9e803512a0462f04d4db97955bacccff8a126fc844cb355b8f77f32b"
+    }
+  ],
+  "date": "2026-09-09",
+  "reproduceWith": "nub --cwd packages/cli run test:runtime:slices",
+  "versions": {
+    "tauri": "2.11.5",
+    "tauriCli": "2.11.4",
+    "wry": "0.55.1",
+    "geolocation": "2.3.3",
+    "deepLink": "2.4.10",
+    "rust": "1.97.1",
+    "xcode": "26.4.1 (17E202)",
+    "ndk": "27.1.12297006",
+    "androidMinApi": 24
+  },
+  "diagnostics": {
+    "priorFailures": [
+      "Tauri CLI archived an arm64 simulator app under the x86_64 directory; the missing requested slice correctly failed publication.",
+      "Setting only Xcode ARCHS to x86_64 still failed to link because CLI xcode-script substituted its host simulator architecture."
+    ],
+    "correction": "Generated-only explicit Xcode architecture plus the pinned xcode-script display-name compatibility adjustment, preserving simulator SDKROOT and actual upstream x86_64 Rust target. OpenStep project syntax preserves agvtool version updates."
+  },
+  "validation": {
+    "cliScenarioTests": 62,
+    "cliAndScriptsTypechecks": true,
+    "cliPackageContents": true,
+    "producerBuildPathsAbsent": true,
+    "androidElf16KbAlignment": true,
+    "androidApk16KbAlignment": true
+  }
+}
