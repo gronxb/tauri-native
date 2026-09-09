@@ -1,0 +1,112 @@
+#import "PluginAcceptance.h"
+#import "TNRuntimeSession.h"
+#import <UIKit/UIKit.h>
+#import <WebKit/WebKit.h>
+
+@interface PluginAcceptance ()
+@property(nonatomic) WKWebView *webview;
+@property(nonatomic) TNRuntimeSession *session;
+@property(nonatomic) UILabel *status;
+@property(nonatomic) NSString *directory;
+@property(nonatomic) NSInteger generation, retiredCallbacks, retiredClosures;
+@end
+
+// Consumer-only native UI; Tauri still owns UIApplication, WKWebView and plugins.
+static PluginAcceptance *pluginAcceptance;
+@implementation PluginAcceptance
++ (void)install {
+  pluginAcceptance = [PluginAcceptance new];
+  pluginAcceptance.directory = [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES).firstObject
+    stringByAppendingPathComponent:NSBundle.mainBundle.bundleIdentifier];
+  [NSNotificationCenter.defaultCenter addObserver:pluginAcceptance selector:@selector(launched:) name:UIApplicationDidFinishLaunchingNotification object:nil];
+}
+- (void)launched:(NSNotification *)notification { [self attachWhenReady]; }
+- (WKWebView *)findWebview:(UIView *)view {
+  if ([view isKindOfClass:WKWebView.class]) return (WKWebView *)view;
+  for (UIView *child in view.subviews) { WKWebView *found = [self findWebview:child]; if (found) return found; }
+  return nil;
+}
+- (NSDictionary *)value:(NSDictionary *)result {
+  NSAssert([result[@"ok"] boolValue] && [result[@"value"] isKindOfClass:NSDictionary.class], @"Native plugin failed: %@", result);
+  return result[@"value"];
+}
+- (void)record:(NSString *)action text:(NSString *)text result:(NSDictionary *)result {
+  self.status.text = text;
+  NSDictionary *report = @{@"action": action, @"result": result, @"generation": @(self.generation), @"retiredCallbacks": @(self.retiredCallbacks),
+    @"retiredClosures": @(self.retiredClosures), @"pid": @(NSProcessInfo.processInfo.processIdentifier), @"appDelegate": NSStringFromClass(UIApplication.sharedApplication.delegate.class)};
+  NSData *data = [NSJSONSerialization dataWithJSONObject:report options:0 error:nil];
+  NSAssert([data writeToFile:[self.directory stringByAppendingPathComponent:@"native-plugins-report.json"] atomically:YES], @"Cannot record native plugin acceptance");
+}
+- (void)permission:(NSString *)action result:(NSDictionary *)result {
+  NSDictionary *value = [self value:result];
+  [self record:action text:[@"Native permission " stringByAppendingString:value[@"location"]] result:value];
+}
+- (void)button:(UIStackView *)controls title:(NSString *)title action:(void (^)(void))action {
+  UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
+  [button setTitle:title forState:UIControlStateNormal];
+  [button.heightAnchor constraintEqualToConstant:42].active = YES;
+  [button addAction:[UIAction actionWithHandler:^(UIAction *unused) { action(); }] forControlEvents:UIControlEventTouchUpInside];
+  [controls addArrangedSubview:button];
+}
+- (void)attachWhenReady {
+  for (UIWindow *window in UIApplication.sharedApplication.windows) { self.webview = [self findWebview:window]; if (self.webview) break; }
+  if (!self.webview || ![NSFileManager.defaultManager fileExistsAtPath:[self.directory stringByAppendingPathComponent:@"runtime-report.json"]]) {
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{ [self attachWhenReady]; }); return;
+  }
+  self.session = [[TNRuntimeSession alloc] initWithCaller:@"native" error:nil];
+  NSAssert(self.session, @"Original Tauri runtime must be ready"); self.generation++;
+  CGRect bounds = self.webview.superview.bounds;
+  UIView *panel = [[UIView alloc] initWithFrame:CGRectMake(0, bounds.size.height / 3, bounds.size.width, bounds.size.height * 2 / 3)];
+  panel.backgroundColor = UIColor.systemBackgroundColor;
+  panel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleTopMargin;
+  [self.webview.superview addSubview:panel];
+  UIStackView *controls = [[UIStackView alloc] initWithFrame:CGRectInset(panel.bounds, 12, 12)]; controls.axis = UILayoutConstraintAxisVertical;
+  controls.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  [panel addSubview:controls];
+  self.status = [UILabel new]; self.status.numberOfLines = 2; [controls addArrangedSubview:self.status];
+  [self button:controls title:@"Native check permission" action:^{
+    [self.session invoke:@"plugin:geolocation|check_permissions" payload:@{} completion:^(NSDictionary *result) { [self permission:@"check" result:result]; }];
+  }];
+  [self button:controls title:@"Native request permission" action:^{
+    [self.session invoke:@"plugin:geolocation|request_permissions" payload:@{@"permissions": @[@"location"]} completion:^(NSDictionary *result) { [self permission:@"request" result:result]; }];
+  }];
+  [self button:controls title:@"Native deny capability" action:^{
+    [self.session invoke:@"plugin:geolocation|watch_position" payload:@{} completion:^(NSDictionary *result) {
+      NSString *error = result[@"error"];
+      NSAssert(![result[@"ok"] boolValue] && ([error hasPrefix:@"geolocation.watch_position explicitly denied"] || [error isEqual:@"Command plugin:geolocation|watch_position not allowed by ACL"]), @"Expected actual Tauri ACL denial: %@", result);
+      [self record:@"acl" text:@"Native capability denied" result:result];
+    }];
+  }];
+  [self button:controls title:@"Native save location" action:^{ [self save]; }];
+  [self button:controls title:@"Native refresh" action:^{
+    [self.session invoke:@"plugin_snapshot" payload:@{} completion:^(NSDictionary *result) {
+      NSDictionary *value = [self value:result];
+      [self record:@"refresh" text:[NSString stringWithFormat:@"Native links %lu notes %lu", (unsigned long)[value[@"links"] count], (unsigned long)[value[@"notes"] count]] result:value];
+    }];
+  }];
+  [self button:controls title:@"Native retire permission" action:^{
+    [self.session invoke:@"plugin:geolocation|request_permissions" payload:@{@"permissions": @[@"location"]} completion:^(NSDictionary *result) {
+      if ([result[@"code"] isEqual:@"session_closed"]) { self.retiredClosures++; return; }
+      self.retiredCallbacks++; [self record:@"late-callback" text:@"Unexpected retired callback" result:result];
+    }];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1500 * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
+      [self.session close]; self.session = [[TNRuntimeSession alloc] initWithCaller:@"native" error:nil]; self.generation++;
+      [self record:@"retired" text:@"Native session retired" result:@{}];
+    });
+  }];
+  [self button:controls title:@"Native remount" action:^{
+    [self.session close]; self.session = [[TNRuntimeSession alloc] initWithCaller:@"native" error:nil]; self.generation++;
+    [self record:@"remount" text:@"Native remounted" result:@{}];
+  }];
+  [self.session invoke:@"snapshot" payload:@{} completion:^(NSDictionary *result) { [self record:@"ready" text:@"Native ready" result:[self value:result]]; }];
+}
+- (void)save {
+  [self.session invoke:@"plugin:geolocation|get_current_position" payload:@{@"options": @{@"enableHighAccuracy": @YES, @"timeout": @10000, @"maximumAge": @0}} completion:^(NSDictionary *position) {
+    if (![position[@"ok"] boolValue]) { [self record:@"position-denied" text:@"Native location denied" result:position]; return; }
+    NSDictionary *coordinates = [self value:position][@"coords"];
+    [self.session invoke:@"save_note" payload:@{@"text": @"A native place to remember", @"latitude": coordinates[@"latitude"], @"longitude": coordinates[@"longitude"]} completion:^(NSDictionary *result) {
+      NSDictionary *note = [self value:result]; [self record:@"save" text:[NSString stringWithFormat:@"Native note %@", note[@"id"]] result:note];
+    }];
+  }];
+}
+@end

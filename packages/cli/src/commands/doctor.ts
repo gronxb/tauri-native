@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { ArtifactError } from '../../../../scripts/artifacts.ts';
-import { readRetainedArtifacts, type RetainedAndroidArtifact } from '../../../../scripts/retained-artifacts.ts';
+import { readRetainedArtifacts, type RetainedArtifact } from '../../../../scripts/retained-artifacts.ts';
 import { projectCopyRoot, projectFingerprints } from '../adapter/workspace.ts';
 import { androidTools } from '../artifacts/android.ts';
 import { inventory, sha256 } from '../artifacts/files.ts';
@@ -84,7 +84,7 @@ export function diagnose(options: DoctorOptions, knownProject?: ProjectModel) {
     }
   }
 
-  let artifact: ArtifactManifest | RetainedAndroidArtifact | undefined;
+  let artifact: ArtifactManifest | RetainedArtifact | undefined;
   if (options.artifacts) {
     const directory = path.resolve(options.artifacts);
     artifact = check('artifacts', 'Copy a complete matching export; do not edit its receipt or individual members.', () => {

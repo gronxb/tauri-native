@@ -7,7 +7,9 @@ import { exportIos, type ExportIosOptions } from './commands/export-ios.ts';
 import { inspectProject } from './commands/inspect.ts';
 import { doctor } from './commands/doctor.ts';
 import { watchExport } from './commands/watch.ts';
-import { exportRetainedAndroid, type RetainedAndroidOptions } from './runtime/export-android.ts';
+import { exportRetainedAndroid } from './runtime/export-android.ts';
+import type { RetainedExportOptions } from './runtime/export-project.ts';
+import { exportRetainedIos } from './runtime/export-ios.ts';
 
 export function createProgram(): Command {
   const program = new Command();
@@ -38,6 +40,10 @@ export function createProgram(): Command {
   exportCommand
     .command('ios')
     .description('Export an XCFramework and a Tauri web asset bundle')
+    .addOption(new Option('--runtime <runtime>', 'Select limited adapter or retained Tauri bootstrap').choices(['adapter', 'retained']).default('adapter'))
+    .option('--caller-policy <path>', 'Retained runtime: explicit native caller delegation JSON')
+    .option('--targets <targets>', 'Retained runtime: comma-separated aarch64,aarch64-sim,x86_64 (default: all)')
+    .option('--debug', 'Retained runtime: export Debug Rust libraries for native acceptance')
     .option('--tauri-dir <path>', 'Tauri Rust directory', 'src-tauri')
     .option('--manifest <path>', 'legacy application-owned core Cargo.toml')
     .option('--header <path>', 'legacy application-owned C ABI header')
@@ -45,7 +51,11 @@ export function createProgram(): Command {
     .option('--incremental', 'Reuse a validated export when recorded build inputs are unchanged')
     .option('--force', 'Bypass the incremental result cache and rerun build steps')
     .option('--watch', 'Watch inputs and serialize incremental exports; host rebuild/install remains explicit')
-    .action((options: ExportIosOptions & { watch?: boolean }) => options.watch ? watchExport('ios', options) : exportIos(options));
+    .action((options: ExportIosOptions & RetainedExportOptions & { runtime: string }) => {
+      if (options.runtime === 'retained') return exportRetainedIos(options);
+      if (options.callerPolicy || options.targets || options.debug) throw new Error('--caller-policy, --targets and --debug require --runtime retained.');
+      return options.watch ? watchExport('ios', options) : exportIos(options);
+    });
 
   exportCommand
     .command('android')
@@ -60,7 +70,7 @@ export function createProgram(): Command {
     .option('--incremental', 'Reuse a validated export when recorded build inputs are unchanged')
     .option('--force', 'Bypass the incremental result cache and rerun build steps')
     .option('--watch', 'Watch inputs and serialize incremental exports; host rebuild/install remains explicit')
-    .action((options: ExportAndroidOptions & RetainedAndroidOptions & { runtime: string }) => {
+    .action((options: ExportAndroidOptions & RetainedExportOptions & { runtime: string }) => {
       if (options.runtime === 'retained') return exportRetainedAndroid(options);
       if (options.callerPolicy || options.targets || options.debug) throw new Error('--caller-policy, --targets and --debug require --runtime retained.');
       return options.watch ? watchExport('android', options) : exportAndroid(options);

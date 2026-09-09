@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — format 2 / ABI 3 Android export and real source-free native plugin acceptance pass on arm64 Debug.
+- Status: IN PROGRESS — format 2 / ABI 3 iOS and Android exports and real source-free native plugin acceptance pass on arm64 Debug.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#42](https://github.com/gronxb/tauri-native/issues/42) (plan 018), [#43](https://github.com/gronxb/tauri-native/issues/43) (plan 019)
@@ -62,4 +62,6 @@ The Android arm64 Debug gate exports, deletes its disposable producer, relocates
 
 Source-free cold-start testing exposed a Wry 0.55.1 cross-thread URL visibility issue. The captured generated Android client marks its existing `currentUrl` field volatile; original URL selection and ACL checks remain intact. Three diagnostic cold starts and the full native feature run pass with this correction. The producer source and installed Cargo registry remain unchanged.
 
-Remaining: iOS ABI 3 export/consumption; Release and other architecture execution; retained cache invalidation; debug/source path remapping; the full dependency/configuration receipt; package-owned RN/Expo/Lynx integration. This scoped Android result does not close #44 or certify a six-way release.
+iOS `export ios --runtime retained` now packages the actual `libapp.a` with Swift geolocation in an XCFramework, the original native Tauri project/Info.plist/entitlements and the package-owned Objective-C++ session client. The captured project removes the Rust build phase and producer navigation group, preserves its UIApplication bootstrap and links only relative runtime files. Source-free Xcode build, original frontend baseline and the same native permissions/retirement/location/deep-link/persistence scenarios pass after source deletion and relocation. [iOS evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-portable-ios-2026-09-09.json). Export validates selected slice metadata, architecture, C ABI/startup symbols and the Swift geolocation entry point. Deep-link on iOS uses the original Tauri `RunEvent::Opened`; it has no separate Swift plugin entry point.
+
+Remaining: Release and other architecture execution; retained cache invalidation; debug/source path remapping; the full dependency/configuration receipt; package-owned RN/Expo/Lynx integration. These scoped native results do not close #44 or certify a six-way release.

@@ -1,9 +1,6 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { tmpdir } from 'node:os';
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { discoverProject } from '../discovery/project.ts';
-import { commandOutput, nativeTool } from '../discovery/native-tool.ts';
+import { commandOutput } from '../discovery/native-tool.ts';
 import { androidTools } from '../artifacts/android.ts';
 import { inventory, sha256 } from '../artifacts/files.ts';
 import { publishArtifacts } from '../artifacts/staging.ts';
@@ -11,74 +8,30 @@ import { exportInputs } from '../artifacts/cache.ts';
 import { run } from '../utils/process.ts';
 import { message } from '../utils/output.ts';
 import { generateCommands } from '../types/commands.ts';
-import { prepareRuntime, validateCallerPolicy } from './workspace.ts';
+import { prepareRuntime } from './workspace.ts';
 import { copyAndroidRuntimeProject } from './android-project.ts';
 import { readRetainedArtifacts, retainedAndroidAbis, type RetainedAndroidArtifact } from '../../../../scripts/retained-artifacts.ts';
 import packageJson from '../../package.json' with { type: 'json' };
 
-export interface RetainedAndroidOptions {
-  tauriDir: string;
-  outputDir?: string;
-  callerPolicy?: string;
-  targets?: string;
-  debug?: boolean;
-  incremental?: boolean;
-  force?: boolean;
-  manifest?: string;
-  watch?: boolean;
-}
+import { readRuntimeExport, acquireRuntimeBuild, runtimeNpmDirectory, type RetainedExportOptions } from './export-project.ts';
 
 const rustTargets = { aarch64: 'aarch64-linux-android', armv7: 'armv7-linux-androideabi', i686: 'i686-linux-android', x86_64: 'x86_64-linux-android' } as const;
 const roots = new Set(['manifest.json', 'commands.json', 'commands.ts', 'callers.json', 'include', 'android']);
 
-export function exportRetainedAndroid(options: RetainedAndroidOptions): void {
-  if (options.manifest || options.watch || options.incremental || options.force) throw new Error('Retained export currently requires a full ordinary-producer build; legacy manifests, incremental cache and watch need retained-runtime acceptance.');
-  if (!options.callerPolicy) throw new Error('Retained export requires --caller-policy with explicit original WebView labels and exact command grants.');
-  const policy = JSON.parse(readFileSync(path.resolve(options.callerPolicy), 'utf8'));
-  validateCallerPolicy(policy);
+export function exportRetainedAndroid(options: RetainedExportOptions): void {
+  const { project, output, config, applicationId, policy, plugins } = readRuntimeExport(options, 'android');
   const targets = (options.targets ?? Object.keys(retainedAndroidAbis).join(',')).split(',') as (keyof typeof retainedAndroidAbis)[];
   if (!targets.length || new Set(targets).size !== targets.length || targets.some(target => !Object.hasOwn(retainedAndroidAbis, target))) throw new Error('Select unique retained Android --targets from aarch64,armv7,i686,x86_64.');
-  const project = discoverProject(options.tauriDir, process.cwd(), false, 'retained');
-  const output = path.resolve(options.outputDir ?? path.join(project.tauriDirectory, 'gen/tauri-native/retained-android'));
-  const config = JSON.parse(readFileSync(path.join(project.tauriDirectory, 'tauri.conf.json'), 'utf8'));
-  const applicationId = config.identifier;
-  if (typeof applicationId !== 'string' || !/^[a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)+$/.test(applicationId)) throw new Error('Retained Android export requires a Java-compatible Tauri identifier.');
+  if (!/^[a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)+$/.test(applicationId)) throw new Error('Retained Android export requires a Java-compatible Tauri identifier.');
   if (config.bundle?.android?.minSdkVersion != null && config.bundle.android.minSdkVersion !== 24) throw new Error('Retained Android export currently verifies API 24 native libraries.');
-  const require = createRequire(path.join(path.dirname(project.tauriDirectory), 'package.json'));
-  const cliPackage = require.resolve('@tauri-apps/cli/package.json');
-  if (JSON.parse(readFileSync(cliPackage, 'utf8')).version !== '2.11.4') throw new Error('Retained mobile export verifies @tauri-apps/cli 2.11.4; install it in the ordinary producer.');
-  const lock = nativeTool<{ package: { name: string; version: string }[] }>('manifest', path.join(project.workspaceRoot, 'Cargo.lock'));
-  for (const [name, version] of [['wry', '0.55.1'], ['tauri-runtime-wry', '2.11.4']]) {
-    const found = lock.package.filter(dependency => dependency.name === name);
-    if (found.length !== 1 || found[0]!.version !== version) throw new Error(`Retained Android native integration verifies ${name}@${version}.`);
-  }
-  const plugins: Record<string, string> = {};
-  for (const dependency of lock.package.filter(dependency => dependency.name.startsWith('tauri-plugin-'))) {
-    if (!['tauri-plugin-geolocation@2.3.3', 'tauri-plugin-deep-link@2.4.10'].includes(`${dependency.name}@${dependency.version}`)) {
-      throw new Error(`Retained mobile export has no native compatibility evidence for ${dependency.name}@${dependency.version}. Desktop-only plugins keep their upstream restriction.`);
-    }
-    plugins[dependency.name] = dependency.version;
-  }
   const before = sha256(JSON.stringify(exportInputs(project, output)));
-  // Tauri CLI uses an app-identity options file even across platforms/output paths.
-  const bootstrapLock = path.join(tmpdir(), `tauri-native-mobile-${sha256(applicationId).slice(0, 24)}.lock`);
-  try { writeFileSync(bootstrapLock, `${process.pid}\n`, { flag: 'wx' }); }
-  catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
-    throw new Error(`Another retained mobile export owns ${bootstrapLock}. Remove it only after its recorded process has stopped.`);
-  }
+  const release = acquireRuntimeBuild(applicationId);
   let runtime: ReturnType<typeof prepareRuntime> | undefined;
   try {
     const tools = androidTools();
     publishArtifacts(output, stage => {
       runtime = prepareRuntime(project, policy);
-      const cwd = path.dirname(runtime.project.tauriDirectory);
-      // Tauri's generated Gradle task reconstructs the package-manager command.
-      // An absolute `node tauri.js` invocation becomes an invalid `node tauri`.
-      const npmManifest = path.join(cwd, 'package.json');
-      const npmPackage = JSON.parse(readFileSync(npmManifest, 'utf8'));
-      npmPackage.scripts = { ...npmPackage.scripts, 'tauri-native:runtime': 'tauri' };
-      writeFileSync(npmManifest, JSON.stringify(npmPackage, null, 2) + '\n');
+      const cwd = runtimeNpmDirectory(runtime);
       const env = { ...process.env, NODE_OPTIONS: '',
         CARGO_TARGET_DIR: path.resolve(process.env.CARGO_TARGET_DIR ?? path.join(project.tauriDirectory, 'target/tauri-native/retained-build')),
         RUSTFLAGS: `${process.env.RUSTFLAGS ?? ''} -C link-arg=-landroid -C link-arg=-llog -C link-arg=-lOpenSLES -C link-arg=-Wl,-z,max-page-size=16384 -C link-arg=-Wl,-z,common-page-size=16384`,
@@ -114,13 +67,14 @@ export function exportRetainedAndroid(options: RetainedAndroidOptions): void {
       writeFileSync(path.join(stage, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
     }, stage => {
       const manifest = readRetainedArtifacts(stage);
+      if (manifest.platform !== 'android') throw new Error('Expected retained Android artifacts.');
       const systemLibraries = JSON.parse(readFileSync(tools.systemLibraries, 'utf8'));
       for (const slice of manifest.native) validateRetainedAndroidElf(commandOutput(tools.readelf,
         ['--file-header', '--program-headers', '--notes', '--dynamic', '--dyn-symbols', path.join(stage, slice.path)]), slice.abi, project.libraryName, systemLibraries);
       if (sha256(JSON.stringify(exportInputs(project, output))) !== before) throw new Error('Producer inputs changed during retained export; previous artifacts preserved.');
     }, roots);
     message(`Created retained Tauri Android bootstrap and ABI 3 artifacts in ${output}`, '◆ ');
-  } finally { try { runtime?.cleanup(); } finally { rmSync(bootstrapLock, { force: true }); } }
+  } finally { try { runtime?.cleanup(); } finally { release(); } }
 }
 
 export function validateRetainedAndroidElf(output: string, abi: RetainedAndroidArtifact['native'][number]['abi'], library: string, systemLibraries: Record<string, string>) {

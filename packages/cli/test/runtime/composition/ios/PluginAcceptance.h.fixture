@@ -1,0 +1,4 @@
+#import <Foundation/Foundation.h>
+@interface PluginAcceptance : NSObject
++ (void)install;
+@end

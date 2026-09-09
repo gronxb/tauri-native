@@ -1,0 +1,176 @@
+{
+  "passed": true,
+  "platform": "ios",
+  "formatVersion": 2,
+  "abiVersion": 3,
+  "profile": "debug",
+  "target": "arm64 simulator",
+  "producerDeleted": true,
+  "producerUnchanged": true,
+  "sourceHashes": {
+    "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+    "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+  },
+  "sourceFreeBuild": "xcodebuild -configuration debug -sdk iphonesimulator; PATH=/usr/bin:/bin:/usr/sbin:/sbin; relocated path has spaces",
+  "consumer": "Native platform acceptance UI; RN/Lynx package acceptance remains separate",
+  "artifactSha256": "27a9992f5cf2c6c528c973faba2b50eb7af2e4ada016153a63cef3064d49df09",
+  "binarySha256": "870c5f1e4d06fba2c395af215ab64e83b7fd1f5e34f94cd6789e6985be8fc9b5",
+  "baseline": {
+    "directory": "<application-data-directory>",
+    "passed": true,
+    "reloaded": true,
+    "scenarios": [
+      "setup",
+      "state",
+      "app-handle",
+      "async",
+      "rust-event",
+      "plugin-setup",
+      "plugin-allowed",
+      "plugin-denied",
+      "domain-error",
+      "reload"
+    ],
+    "state": {
+      "appIdentifier": "dev.taurinative.mobilefieldnotes",
+      "pluginSetupCount": 1,
+      "setupCount": 1,
+      "value": 45
+    }
+  },
+  "acl": {
+    "action": "acl",
+    "result": {
+      "error": "geolocation.watch_position explicitly denied on origin local\n\nreferenced by: capability: main, permission: deny-watch-position",
+      "ok": false
+    },
+    "generation": 1,
+    "retiredClosures": 0,
+    "appDelegate": "AppDelegate",
+    "retiredCallbacks": 0,
+    "pid": 43763
+  },
+  "denied": {
+    "action": "request",
+    "result": {
+      "location": "denied",
+      "coarseLocation": "denied"
+    },
+    "generation": 1,
+    "retiredClosures": 0,
+    "appDelegate": "AppDelegate",
+    "retiredCallbacks": 0,
+    "pid": 43763
+  },
+  "deniedPosition": {
+    "action": "position-denied",
+    "result": {
+      "error": "The operation couldn’t be completed. (kCLErrorDomain error 1.)",
+      "ok": false
+    },
+    "generation": 1,
+    "retiredClosures": 0,
+    "appDelegate": "AppDelegate",
+    "retiredCallbacks": 0,
+    "pid": 43763
+  },
+  "granted": {
+    "action": "check",
+    "result": {
+      "location": "granted",
+      "coarseLocation": "granted"
+    },
+    "generation": 2,
+    "retiredClosures": 1,
+    "appDelegate": "AppDelegate",
+    "retiredCallbacks": 0,
+    "pid": 44260
+  },
+  "saved": {
+    "action": "save",
+    "result": {
+      "id": 1,
+      "latitude": 37.5665,
+      "longitude": 126.978,
+      "text": "A native place to remember"
+    },
+    "generation": 2,
+    "retiredClosures": 1,
+    "appDelegate": "AppDelegate",
+    "retiredCallbacks": 0,
+    "pid": 44260
+  },
+  "linked": {
+    "action": "refresh",
+    "result": {
+      "links": [
+        "tauri-fieldnotes://notes/1"
+      ],
+      "pluginSetupCount": 1,
+      "notes": [
+        {
+          "id": 1,
+          "latitude": 37.5665,
+          "longitude": 126.978,
+          "text": "A native place to remember"
+        }
+      ],
+      "setupCount": 1,
+      "platform": "ios"
+    },
+    "generation": 3,
+    "retiredClosures": 1,
+    "appDelegate": "AppDelegate",
+    "retiredCallbacks": 0,
+    "pid": 44260
+  },
+  "relaunched": {
+    "action": "refresh",
+    "result": {
+      "links": [],
+      "pluginSetupCount": 1,
+      "notes": [
+        {
+          "id": 1,
+          "latitude": 37.5665,
+          "longitude": 126.978,
+          "text": "A native place to remember"
+        }
+      ],
+      "setupCount": 1,
+      "platform": "ios"
+    },
+    "generation": 1,
+    "retiredClosures": 0,
+    "appDelegate": "AppDelegate",
+    "retiredCallbacks": 0,
+    "pid": 46073
+  },
+  "date": "2026-09-09",
+  "reproduceWith": "nub --cwd packages/cli run test:runtime:portable:ios",
+  "versions": {
+    "tauri": "2.11.5",
+    "tauriCli": "2.11.4",
+    "wry": "0.55.1",
+    "tauriRuntimeWry": "2.11.4",
+    "geolocation": "2.3.3",
+    "deepLink": "2.4.10",
+    "maestro": "2.4.0",
+    "xcode": "26.4.1 (17E202)",
+    "iosSimulator": "26.4"
+  },
+  "executionNote": "The CLI exported the ABI 3 runtime and the disposable producer was deleted after source hashes matched. The first consumer run lost the foreground app when Maestro restarted its XCTest driver. The final --consume run rebuilds the unchanged copied artifact and explicitly activates the existing process with stopApp:false and an empty permission map. PID liveness is checked before and after every flow; actual OS denial and UI grant remain required. All final native scenarios pass.",
+  "scope": "iOS arm64 Debug simulator, source-free native UIKit consumer. This does not establish RN/Expo/Lynx package integration, Release, Intel simulator/device slices or physical-device execution."
+}
