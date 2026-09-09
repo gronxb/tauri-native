@@ -6,5 +6,5 @@
     "lib": ["ES2023", "DOM"],
     "types": ["node"]
   },
-  "include": ["**/*.ts", "../packages/react-native/test/**/*.test.ts", "../packages/react-native/test/native-artifacts/prepare.ts", "../packages/lynx/test/**/*.ts"]
+  "include": ["**/*.ts", "../packages/react-native/test/**/*.test.ts", "../packages/react-native/test/native-artifacts/prepare.ts", "../packages/lynx/test/**/*.ts", "../packages/lynx/plugin/*.cts"]
 }

@@ -19,7 +19,7 @@ async function compile(source: string) {
 const artifacts = await compile('artifacts.ts');
 const retainedArtifacts = await compile('retained-artifacts.ts');
 const plugin = host === 'react-native' ? await compile('../packages/react-native/plugin/app.plugin.cts') : undefined;
-const compose = host === 'react-native' ? await compile('../packages/react-native/plugin/retained-compose.cts') : undefined;
+const compose = await compile(`../packages/${host}/plugin/retained-compose.cts`);
 const client = (android: boolean) => webViewClient
   .replace("'__TAURI_NATIVE_HOST__'", JSON.stringify(host))
   .replace('__TAURI_NATIVE_POST_MESSAGE__', android
@@ -30,7 +30,8 @@ for (const [source, destination] of [
   ['retained-artifacts.ts', host === 'lynx' ? 'retained-artifacts.cjs' : 'retained-artifacts.js'],
   ['retained-artifacts.d.cts', 'retained-artifacts.d.ts'],
   ...(host === 'react-native' ? [['../packages/react-native/plugin/app.plugin.cts', 'app.plugin.js']] : []),
-  ...(host === 'react-native' ? [['../packages/react-native/plugin/retained-compose.cts', 'compose.js'], ['../packages/react-native/plugin/retained-compose-types.d.cts', 'compose.d.ts']] : []),
+  [`../packages/${host}/plugin/retained-compose.cts`, host === 'lynx' ? 'compose.cjs' : 'compose.js'],
+  [`../packages/${host}/plugin/retained-compose-types.d.cts`, 'compose.d.ts'],
   ['artifacts.d.cts', 'artifacts.d.ts'],
   ['async-client.ts', 'src/async-client.ts'],
   ['retained-client.ts', 'src/retained-client.ts'],

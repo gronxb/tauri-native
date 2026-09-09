@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { setTimeout } from 'node:timers/promises';
 import { readRetainedArtifacts } from '../../../scripts/retained-artifacts.ts';
@@ -18,7 +19,8 @@ assert(device, 'Choose an arm64 ANDROID_SERIAL emulator');
 const evidence = path.join(root, 'target/lynx-retained-android');
 const consumer = path.join(evidence, 'source free consumer');
 const renderer = path.join(consumer, 'renderer');
-const android = path.join(consumer, 'android');
+const generated = path.join(consumer, 'composed application');
+const android = path.join(generated, 'android');
 const appId = manifest.bootstrap.applicationId;
 const env: NodeJS.ProcessEnv = { ...process.env, NODE_OPTIONS: '' };
 const release = acquireMobileTest(root);
@@ -39,7 +41,7 @@ function report(kind = 'lifecycle') {
   assert.equal(result.status, 0, result.stderr);
   const reports = result.stdout.split('\n').filter(line => line.startsWith('{')).map(line => JSON.parse(line));
   const found = reports.filter(report => report.kind === kind).at(-1);
-  assert(found, `No ${kind} report for process ${pid}`);
+  assert(found, `No ${kind} report for process ${pid}; readiness: ${JSON.stringify(reports.filter(report => report.kind === 'readiness').at(-1))}`);
   return found.report;
 }
 async function until(condition: () => boolean) {
@@ -56,8 +58,9 @@ function flow(label: string, steps: string) {
   run(label, 'maestro', ['--udid', device!, 'test', '--format', 'junit', '--output', path.join(evidence, `${label}.xml`), file]);
 }
 try {
-  rmSync(consumer, { recursive: true, force: true }); cpSync(artifact, consumer, { recursive: true });
-  assert.deepEqual(readRetainedArtifacts(consumer), manifest);
+  rmSync(consumer, { recursive: true, force: true }); mkdirSync(consumer, { recursive: true });
+  const copied = path.join(consumer, 'copied runtime'); cpSync(artifact, copied, { recursive: true });
+  assert.deepEqual(readRetainedArtifacts(copied), manifest);
   assert.equal(run('emulator', 'adb', ['-s', device, 'shell', 'getprop', 'ro.kernel.qemu']), '1');
   assert.equal(run('abi', 'adb', ['-s', device, 'shell', 'getprop', 'ro.product.cpu.abi']), 'arm64-v8a');
   // The consumer uses the actual npm tarball. No workspace source alias supplies the module.
@@ -73,19 +76,19 @@ try {
   writeFileSync(path.join(renderer, 'lynx.config.ts'), `import { defineConfig } from '@lynx-js/rspeedy';\nimport { pluginReactLynx } from '@lynx-js/react-rsbuild-plugin';\nexport default defineConfig({ plugins: [pluginReactLynx()], source: { alias: { '@tauri-native/lynx/retained': ${JSON.stringify(path.join(sdk, 'src/retained.ts'))} } } });\n`);
   run('renderer-build', path.join(renderer, 'node_modules/.bin/rspeedy'), ['build', '--mode', 'production'], renderer);
   const bundle = path.join(renderer, 'dist/main.lynx.bundle');
-  const assets = path.join(android, 'app/src/main/assets'); mkdirSync(assets, { recursive: true });
-  cpSync(bundle, path.join(assets, 'main.lynx.bundle'));
-  const client = path.join(android, 'tauri-native-runtime-client');
-  const clientJava = path.join(client, 'src/main/java/dev/taurinative/runtime'); mkdirSync(clientJava, { recursive: true });
-  const originalClient = path.join(android, 'app/src/main/java/dev/taurinative/runtime/RuntimeSession.java');
-  cpSync(originalClient, path.join(clientJava, 'RuntimeSession.java')); rmSync(originalClient);
-  writeFileSync(path.join(client, 'build.gradle'), `plugins { id 'com.android.library' }\nandroid {\n namespace 'dev.taurinative.runtime'\n compileSdk 35\n defaultConfig { minSdk 24 }\n compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }\n}\n`);
-  cpSync(path.join(sdk, 'android/retained'), path.join(android, 'tauri-native-lynx'), { recursive: true });
-  const settings = path.join(android, 'settings.gradle');
-  writeFileSync(settings, readFileSync(settings, 'utf8') + "\ninclude ':tauri-native-runtime-client', ':tauri-native-lynx'\n");
-  cpSync(new URL('./retained/MainActivity.kt.fixture', import.meta.url), path.join(android, 'app/src/main/java/dev/taurinative/mobilefieldnotes/MainActivity.kt'));
+  const { composeAndroid } = createRequire(import.meta.url)(path.join(sdk, 'compose.cjs'));
+  const { readRetainedArtifacts: packedReader } = createRequire(import.meta.url)(path.join(sdk, 'retained-artifacts.cjs'));
+  assert.deepEqual(packedReader(copied), manifest);
+  const options = { artifactsDir: copied, outputDir: generated, bundleFile: bundle };
+  const composition = composeAndroid(options); assert.equal(composition.changed, true);
+  assert.equal(composeAndroid(options).changed, false);
+  const receipt = JSON.parse(readFileSync(path.join(generated, 'tauri-native-composition.json'), 'utf8'));
+  const manifestFile = path.join(android, 'app/src/main/AndroidManifest.xml');
+  const compositionManifest = readFileSync(manifestFile, 'utf8');
+  writeFileSync(manifestFile, compositionManifest.replace(composition.activity, `${appId}.AcceptanceActivity`));
+  cpSync(new URL('./retained/AcceptanceActivity.kt.fixture', import.meta.url), path.join(android, 'app/src/main/java/dev/taurinative/mobilefieldnotes/AcceptanceActivity.kt'));
   const gradle = path.join(android, 'app/build.gradle.kts');
-  writeFileSync(gradle, readFileSync(gradle, 'utf8').replace('getByName("release") {', 'getByName("release") {\n            signingConfig = signingConfigs.getByName("debug")') + `\nandroid { defaultConfig { ndk { abiFilters += listOf(${manifest.native.map(slice => JSON.stringify(slice.abi)).join(', ')}) } } }\ndependencies { implementation(project(":tauri-native-lynx")); implementation(project(":tauri-native-runtime-client")) }\n`);
+  writeFileSync(gradle, readFileSync(gradle, 'utf8').replace('getByName("release") {', 'getByName("release") {\n            signingConfig = signingConfigs.getByName("debug")'));
   run('source-free-build', './gradlew', ['--no-daemon', 'assembleRelease'], android, { ...env, PATH: '/usr/bin:/bin:/usr/sbin:/sbin' });
   const apk = path.join(android, 'app/build/outputs/apk/release/app-release.apk');
   const apkMetadata = run('apk-metadata', path.join(process.env.ANDROID_HOME!, 'build-tools/36.0.0/aapt'), ['dump', 'badging', apk]);
@@ -104,7 +107,7 @@ try {
   }
   run('install', 'adb', ['-s', device, 'install', apk]); installed = true;
   run('gps', 'adb', ['-s', device, 'emu', 'geo', 'fix', '126.9780', '37.5665']);
-  run('launch', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-n', `${appId}/.MainActivity`]);
+  run('launch', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-n', `${appId}/.AcceptanceActivity`]);
   pid = run('pid', 'adb', ['-s', device, 'shell', 'pidof', appId]);
   await until(() => report('baseline').passed === true);
   flow('initial', '- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "Lynx events 0"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"\n- tapOn: "Check permission"\n- assertVisible: "Permission prompt"');
@@ -127,15 +130,43 @@ try {
   const notes = report().notes; assert.equal(notes.length, 1);
   assert.equal(notes[0].text, 'A Lynx place to remember');
   assert(Math.abs(notes[0].latitude - 37.5665) < 0.01 && Math.abs(notes[0].longitude - 126.978) < 0.01);
+  flow('remove-renderer', '- tapOn: "Close Lynx"\n- tapOn: "Refresh notes and links"\n- assertVisible: "Links received 2"');
+  const closed = report(); assert.equal(closed.listeners, 0); assert.equal(closed.hostClosed, true);
+  assert.equal(closed.pid, initial.pid);
+  assert.equal(run('final-pid', 'adb', ['-s', device, 'shell', 'pidof', appId]), pid);
+  const baseline = report('baseline');
+  const acceptanceApk = path.join(evidence, 'acceptance-release.apk'); cpSync(apk, acceptanceApk);
+  run('uninstall-acceptance', 'adb', ['-s', device, 'uninstall', appId]); installed = false;
+  writeFileSync(manifestFile, compositionManifest);
+  rmSync(path.join(android, 'app/src/main/java/dev/taurinative/mobilefieldnotes/AcceptanceActivity.kt'));
+  run('default-source-free-build', './gradlew', ['--no-daemon', 'assembleRelease'], android, { ...env, PATH: '/usr/bin:/bin:/usr/sbin:/sbin' });
+  const defaultMetadata = run('default-apk-metadata', path.join(process.env.ANDROID_HOME!, 'build-tools/36.0.0/aapt'), ['dump', 'badging', apk]);
+  assert(!defaultMetadata.includes('application-debuggable'));
+  run('default-apk-alignment', path.join(process.env.ANDROID_HOME!, 'build-tools/36.0.0/zipalign'), ['-c', '-P', '16', '-v', '4', apk]);
+  const defaultLibraries = run('default-apk-libraries', 'unzip', ['-Z1', apk]).split('\n').filter(file => file.startsWith('lib/') && file.endsWith('.so'));
+  assert.deepEqual(defaultLibraries, libraries);
+  for (const library of libraries) {
+    const bytes = spawnSync('unzip', ['-p', apk, library], { maxBuffer: 128 * 1024 * 1024 });
+    assert.equal(bytes.status, 0); assert.equal(sha256(bytes.stdout), sha256(readFileSync(path.join(elf, library))));
+  }
+  run('default-install', 'adb', ['-s', device, 'install', apk]); installed = true;
+  run('default-launch', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-n', `${appId}/${composition.activity}`]);
+  pid = run('default-pid', 'adb', ['-s', device, 'shell', 'pidof', appId]);
+  flow('default-integration', '- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "Lynx events 0"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"');
+  run('default-deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', 'tauri-fieldnotes://notes/default', '-p', appId]);
+  flow('default-link', '- assertVisible: "Lynx events 1"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 0 setup 1 plugins 1"');
+  assert.equal(run('default-final-pid', 'adb', ['-s', device, 'shell', 'pidof', appId]), pid);
+  assert.deepEqual(packedReader(copied), manifest);
   assert.deepEqual(readRetainedArtifacts(artifact), manifest);
   assert(!existsSync(path.join(consumer, 'src-tauri')), 'Consumer has no Rust producer');
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform: 'android', profile: 'release', formatVersion: 2, abiVersion: 3,
     renderer: 'Lynx 4.0.1 / PrimJS 4.0.0', sourceFree: true, sourceFreeBuild: 'PATH=/usr/bin:/bin:/usr/sbin:/sbin ./gradlew --no-daemon assembleRelease',
     nonDebuggable: true, libraries, elfAlignment: 'All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed',
     packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-lynx-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
-    apkSha256: sha256(readFileSync(apk)), bundleSha256: sha256(readFileSync(bundle)), baseline: report('baseline'), initial, remounted, final: report(), notes,
-    uiScenarios: ['shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'save and event', 'background deep link and event', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events'],
-    testOnlyIntegration: 'Consumer fixture layout/bootstrap hooks and RuntimeSession status telemetry; actual packed SDK owns Lynx NativeModule, surface and JS/native session lifetime. Automatic composition/autolinking and iOS acceptance remain open.',
+    apkSha256: sha256(readFileSync(acceptanceApk)), bundleSha256: sha256(readFileSync(bundle)), baseline, initial, remounted, closed, notes,
+    composition: receipt, defaultActivity: { activity: composition.activity, pid, apkSha256: sha256(readFileSync(apk)), overriddenHooks: false, identicalNativeLibraries: libraries.length },
+    uiScenarios: ['shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'save and event', 'background deep link and event', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'remove Lynx and keep original Tauri frontend', 'unmodified generated Activity/default layout', 'default SDK composition retains original Tauri ACL/state/deep-link events'],
+    testOnlyIntegration: 'Acceptance subclass provides layout, baseline readiness and telemetry only. The packed composer/SDK own startup, document readiness, attachment and lifecycle forwarding. A second Release APK executes the unmodified generated Activity/default layout without acceptance hooks. Original MainActivity/TauriActivity and plugin/bootstrap ownership remain. iOS automatic composition, third-party autolinking and retained TauriView remain open.',
     testOnlySigning: 'Non-debuggable Release with R8 optimization and a debug test signing key; process-scoped logcat telemetry',
   }, null, 2) + '\n');
   console.log(`PASS: packed Lynx retained Android SDK native acceptance. ${evidence}/report.json`);

@@ -49,6 +49,52 @@ Registering another listener after a fatal stream error requires a new session.
 
 ## Android integration under development
 
+The package exposes a source-free composer for a validated format 2 artifact and
+an offline Lynx bundle. No React Native dependency or Rust toolchain is needed:
+
+```js
+const { composeAndroid } = require('@tauri-native/lynx/compose');
+
+const result = composeAndroid({
+  artifactsDir: './runtime/android',
+  outputDir: './generated-android',
+  bundleFile: './dist/main.lynx.bundle',
+});
+console.log(result.project, result.activity);
+```
+
+Build the bundle with the consumer's normal Lynx toolchain first and create the
+output's parent directory. Keep the artifact, installed SDK and bundle outside
+the output directory. Build `result.project` with Gradle; the consumer supplies
+Release signing. The integration pins Lynx 4.0.1/PrimJS 4.0.0 with the standard
+Tauri AGP 8.11.0, Kotlin 1.9.25 and compile SDK 36 configuration.
+
+The composer copies the original project and preserves its plugin/bootstrap,
+manifest permissions, assets and native libraries. It opens the copied original
+`MainActivity` for inheritance, keeping its `enableEdgeToEdge` and superclass
+startup. Generated `TauriNativeActivity` initializes Lynx, waits for actual Tauri
+runtime/document readiness, attaches the surface and forwards resume/pause and
+destruction. The original Tauri/Wry Activity retains plugin and Intent handling.
+The SDK compiles the original `RuntimeSession.java` exactly once in a shared
+library and selects only ABIs present in the export.
+
+The default surface fills a container above the original WebView, with system-bar
+and cutout insets. A native consumer subclass can override
+`createLynxContainer(webView)`, `isTauriDocumentReady(webView)` and
+`onLynxHostAttached()` and use `tauriLynxHost` for reload/removal. Preserve original
+superclass callbacks. These hooks do not implement the planned Lynx `TauriView`.
+
+The RN and Lynx packages share generated-file ownership and replacement logic
+while remaining independently installable. A repeated invocation is a no-op;
+bundle/artifact upgrades preserve unrelated consumer files. Changed generated
+files, corrupt input, incompatible owners/toolchains, competing renderer setup,
+symlinks and new file collisions receive diagnostics. Failed replacement restores
+the previous output; failed rollback preserves it in the reported backup.
+The current automatic path requires the pinned standard single Tauri Activity;
+custom Activity/Application owners need separate integration evidence.
+
+For explicit native integration, the lower-level host remains available:
+
 Use `android/retained` as the `:tauri-native-lynx` Gradle library, with the exported
 `RuntimeSession.java` compiled once in `:tauri-native-runtime-client`. The latter
 is an Android library with namespace `dev.taurinative.runtime`, minimum SDK 24,
@@ -75,9 +121,13 @@ The checked-in native gate is
 `node --experimental-strip-types packages/lynx/test/retained-android.ts <artifact>`
 with `ANDROID_SERIAL`, Android SDK/JDK and Maestro configured. It consumes an
 arm64 Release export of the ordinary mobile Fieldnotes fixture, packs this SDK,
-and builds a relocated native consumer without Rust on PATH. Its fixture owns
-layout/bootstrap hooks and telemetry; calls, events and renderer teardown use
-the packed package. It does not prove automatic composition.
+and builds a relocated non-debuggable Release/R8 consumer without Rust on PATH.
+The acceptance subclass owns only layout, baseline readiness and telemetry;
+the packed composer owns attachment/startup/lifecycle integration. The gate
+removes Lynx and continues interacting with the original Tauri frontend. A
+second clean-installed Release APK executes the unmodified generated Activity
+and default layout without acceptance hooks. Both APKs retain identical native
+libraries and undergo 16 KB alignment checks.
 
 ## iOS integration under development
 
@@ -144,7 +194,7 @@ still required for full parity.
 
 ## Remaining roadmap
 
-Automatic source-free composition and Lynx autolinking, retained `TauriView`,
+iOS automatic source-free composition, third-party Lynx autolinking, retained `TauriView`,
 cross-renderer artifact parity, and complete M8
 acceptance remain tracked in [#46](https://github.com/gronxb/tauri-native/issues/46)
 and [#47](https://github.com/gronxb/tauri-native/issues/47). The format 1 view cannot
@@ -156,4 +206,5 @@ be used as a retained view. This API is not a claim of a published npm release.
 for complete format 2 / ABI 3 validation before integration. It uses Node.js
 without loading Lynx, Rust or producer sources, and checks the native inventory,
 pinned runtime/plugin versions and build receipts. It shares its implementation
-with the RN package. This reader does not automatically compose a Lynx native app.
+with the RN package. Use the separate `compose` entry point to generate Android
+integration; iOS automatic composition remains under development.

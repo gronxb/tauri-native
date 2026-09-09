@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS
+- Status: IN PROGRESS — packed SDK execution on both platforms and Android automatic composition pass; fresh-export startup reliability and remaining M8 integration stay open.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#41](https://github.com/gronxb/tauri-native/issues/41) (plan 017), [#44](https://github.com/gronxb/tauri-native/issues/44) (plan 020)
@@ -33,7 +33,7 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 
 ## Acceptance
 
-- [x] iOS and Android Lynx Release executions pass (packed SDK gates with explicit consumer attachment; automatic composition remains open).
+- [x] iOS and Android Lynx Release executions pass (Android automatic composition and iOS explicit consumer attachment; fresh-export startup reliability and iOS automatic composition remain open).
 - [ ] Same artifact contract and Tauri command/permission semantics as RN are demonstrated.
 - [ ] Standalone Tauri Mobile and producer source are preserved.
 
@@ -110,3 +110,37 @@ fixture currently owns the consumer layout/bootstrap hooks and telemetry;
 the package owns the actual NativeModule, renderer and session lifecycle.
 Native renderer destruction while an OS permission callback is pending remains
 required separately; the new JS close scenario alone does not prove that case.
+
+## Android automatic composition (2026-09-09)
+
+`@tauri-native/lynx/compose` now generates a native consumer from a copied format
+2 artifact and offline bundle without React Native or Rust dependencies. The
+original `MainActivity` becomes open only in the generated copy, retaining its
+upstream edge-to-edge setup and superclass startup. Generated `TauriNativeActivity`
+owns Lynx initialization, actual runtime/document readiness, attachment and
+resume/pause/destruction forwarding. The original Tauri/Wry Activity continues
+to own native plugins and Intents. Default Lynx layout respects system-bar/cutout
+insets; native consumer hooks support explicit layout and readiness customization.
+
+Both SDKs share output validation, generated-file ownership and atomic replacement
+without depending on each other. The RN refactor preserves identical generated
+files and receipts on Android (98 files) and iOS (38 files) relative to `c4409fa`.
+Ten existing RN configuration scenarios and nine Lynx JS/configuration scenarios
+pass. The Lynx public API typecheck and 53-file package check also pass.
+
+The first Release/R8 attempt passed the native build and all eleven libraries'
+16 KB alignment, then failed while waiting for the original Tauri baseline.
+The next run adds readiness telemetry to the acceptance subclass; it does not
+change production startup. The complete second run passes nine UI flows, including the unmodified generated
+Activity in a separate clean-installed APK. Both APKs are non-debuggable and keep
+the same eleven native libraries. [Execution evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-lynx-compose-android-2026-09-09.json). The
+initial failure's root cause is unconfirmed. This gate currently consumes an
+older producer-deleted export; fresh latest-exporter validation is required
+before claiming startup reliability.
+
+The gate now includes Lynx removal with original frontend continuity and a second
+clean-installed Release APK running the unmodified generated Activity/default
+layout, with no acceptance subclass. iOS automatic composition, third-party
+autolinking, retained TauriView, consistent session-open diagnostics, pending OS
+callback renderer retirement and full parity/device/adopter acceptance remain
+open. This increment does not complete #46 or authorize a package release.

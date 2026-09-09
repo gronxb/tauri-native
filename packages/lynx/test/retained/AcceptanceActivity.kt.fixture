@@ -1,0 +1,93 @@
+package dev.taurinative.mobilefieldnotes
+
+import android.content.Intent
+import android.webkit.WebView
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.LinearLayout
+import dev.taurinative.runtime.RuntimeSession
+import java.io.File
+import org.json.JSONObject
+
+// Test layout and telemetry only. The generated SDK Activity owns startup and forwarding.
+class AcceptanceActivity : TauriNativeActivity() {
+  private val host get() = tauriLynxHost
+  private lateinit var observedWebView: WebView
+  private var destroyed = false
+  private var generation = 0
+  private var resumed = 0
+  private var paused = 0
+  private var stopped = 0
+  private var listenersAfterRelease = -1
+  private var hostClosed = false
+  private val receivedIntents = org.json.JSONArray()
+
+  override fun onWebViewCreate(webView: WebView) {
+    super.onWebViewCreate(webView)
+    observedWebView = webView
+    val telemetry = object : Runnable { override fun run() { if (!destroyed) { record(); webView.postDelayed(this, 100) } } }
+    webView.post(telemetry)
+  }
+  override fun isTauriDocumentReady(webView: WebView): Boolean {
+    val baseline = File(applicationInfo.dataDir, "runtime-report.json")
+    return super.isTauriDocumentReady(webView) && baseline.exists() && JSONObject(baseline.readText()).optBoolean("passed")
+  }
+  override fun createLynxContainer(webView: WebView): ViewGroup {
+      observedWebView = webView
+      val baseline = File(applicationInfo.dataDir, "runtime-report.json")
+      android.util.Log.i("TauriLynxAcceptance", JSONObject().put("kind", "baseline").put("report", JSONObject(baseline.readText())).toString())
+      (webView.parent as? ViewGroup)?.removeView(webView)
+      val layout = LinearLayout(this@AcceptanceActivity).apply { orientation = LinearLayout.VERTICAL; setPadding(0, 80, 0, 60) }
+      layout.addView(webView, LinearLayout.LayoutParams(-1, 0, 1f))
+      val container = FrameLayout(this@AcceptanceActivity)
+      val remount = Button(this@AcceptanceActivity).apply {
+        text = "Remount Lynx"
+        setOnClickListener {
+          host!!.reload()
+          generation++
+          listenersAfterRelease = RuntimeSession.status().getInt("listeners")
+          record()
+        }
+      }
+      val controls = LinearLayout(this@AcceptanceActivity)
+      controls.addView(remount, LinearLayout.LayoutParams(0, -2, 1f))
+      val close = Button(this@AcceptanceActivity).apply {
+        text = "Close Lynx"
+        setOnClickListener {
+          host!!.close(); hostClosed = true
+          layout.removeView(container); layout.removeView(controls)
+          record()
+        }
+      }
+      controls.addView(close, LinearLayout.LayoutParams(0, -2, 1f))
+      layout.addView(controls)
+      layout.addView(container, LinearLayout.LayoutParams(-1, 0, 2f))
+      setContentView(layout)
+      return container
+  }
+  override fun onLynxHostAttached() {
+      super.onLynxHostAttached()
+      generation++
+  }
+  private fun record() {
+    if (host == null && ::observedWebView.isInitialized) {
+      val baseline = File(applicationInfo.dataDir, "runtime-report.json")
+      val readiness = JSONObject().put("runtime", RuntimeSession.status()).put("progress", observedWebView.progress)
+        .put("url", observedWebView.url).put("baseline", if (baseline.exists()) baseline.readText() else "missing")
+      android.util.Log.i("TauriLynxAcceptance", JSONObject().put("kind", "readiness").put("report", readiness).toString())
+    }
+    val report = JSONObject().put("generation", generation).put("resumed", resumed).put("paused", paused)
+      .put("stopped", stopped).put("hostClosed", hostClosed)
+      .put("receivedIntents", receivedIntents)
+      .put("listeners", RuntimeSession.status().getInt("listeners")).put("listenersAfterRelease", listenersAfterRelease).put("pid", android.os.Process.myPid())
+    val notes = File(applicationInfo.dataDir, "notes.json")
+    report.put("notes", if (notes.exists()) org.json.JSONArray(notes.readText()) else org.json.JSONArray())
+    android.util.Log.i("TauriLynxAcceptance", JSONObject().put("kind", "lifecycle").put("report", report).toString())
+  }
+  override fun onResume() { super.onResume(); resumed++ }
+  override fun onPause() { paused++; super.onPause() }
+  override fun onStop() { super.onStop(); stopped++; record() }
+  override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); receivedIntents.put(intent.dataString); record() }
+  override fun onDestroy() { destroyed = true; super.onDestroy() }
+}

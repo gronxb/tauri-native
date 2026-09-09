@@ -22,9 +22,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 	enumerable: true
 }) : target, mod));
 //#endregion
-let node_child_process = require("node:child_process");
 let node_fs = require("node:fs");
-let node_module = require("node:module");
 let node_path = require("node:path");
 let node_path$1 = __toESM(node_path, 1);
 node_path = __toESM(node_path);
@@ -238,12 +236,7 @@ function publishComposition(context, metadata, generate) {
 	}
 }
 //#endregion
-//#region packages/react-native/plugin/retained-compose.cts
-const kotlin = (value) => JSON.stringify(value).replaceAll("$", "\\$");
-const groovy = (value) => `'${value.replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`;
-function fail(message) {
-	throw new Error(`Retained RN composition: ${message}`);
-}
+//#region packages/lynx/plugin/retained-compose.cts
 function read(root, file) {
 	return (0, node_fs.readFileSync)(node_path.default.join(root, file), "utf8");
 }
@@ -251,75 +244,51 @@ function write(root, file, bytes) {
 	(0, node_fs.mkdirSync)(node_path.default.dirname(node_path.default.join(root, file)), { recursive: true });
 	(0, node_fs.writeFileSync)(node_path.default.join(root, file), bytes);
 }
-function replaceOnce(value, from, to, description) {
-	if (value.split(from).length !== 2) fail(`unsupported ${description}; expected one ${JSON.stringify(from)}`);
-	return value.replace(from, to);
-}
-function compositionInputs(options, platform) {
-	const context = prepareComposition(options, platform, "react-native", __dirname);
-	const renderer = (0, node_fs.realpathSync)(options.rendererDir);
-	if (renderer === context.output || renderer.startsWith(context.output + node_path.default.sep)) fail("output must be separate from the artifact and SDK, and must not contain the renderer or bundle");
-	if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(options.moduleName)) fail("moduleName must be an AppRegistry identifier");
-	const requireRenderer = (0, node_module.createRequire)(node_path.default.join(renderer, "package.json"));
-	const rn = (0, node_fs.realpathSync)(node_path.default.dirname(requireRenderer.resolve("react-native/package.json")));
-	const codegen = (0, node_fs.realpathSync)(node_path.default.dirname((0, node_module.createRequire)(node_path.default.join(rn, "package.json")).resolve("@react-native/codegen/package.json")));
-	if ([rn, codegen].some((dir) => JSON.parse(read(dir, "package.json")).version !== "0.86.3")) fail("React Native and codegen must both be 0.86.3");
-	return {
-		...context,
-		rendererDirectory: renderer,
-		rn,
-		codegen
-	};
-}
-/** The output owns generated integration; the original artifact is never modified. */
+const groovy = (value) => `'${value.replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`;
 function composeAndroid(options) {
-	const context = compositionInputs(options, "android");
-	const { artifact, sdk, output, manifest, rn, codegen, bundled } = context;
-	if (manifest.platform !== "android") fail("requires an Android format 2 artifact");
+	const context = prepareComposition(options, "android", "lynx", __dirname);
+	const { artifact, sdk, output, manifest, bundled, fail } = context;
+	if (manifest.platform !== "android") return fail("requires an Android format 2 artifact");
 	const android = node_path.default.join(artifact, "android");
 	const appId = manifest.bootstrap.applicationId, activity = `${appId}.TauriNativeActivity`;
 	const source = `app/src/main/java/${appId.replaceAll(".", "/")}/MainActivity.kt`;
 	const main = read(android, source);
-	if (main.replace(/\s+/g, " ").trim() !== `package ${appId} import android.os.Bundle import androidx.activity.enableEdgeToEdge class MainActivity : TauriActivity() { override fun onCreate(savedInstanceState: Bundle?) { enableEdgeToEdge() super.onCreate(savedInstanceState) } }`) fail("custom MainActivity requires verified lifecycle integration; original source was left unchanged");
-	const rootGradle = read(android, "build.gradle.kts");
-	if (!rootGradle.includes("com.android.tools.build:gradle:8.11.0")) fail("requires the verified AGP 8.11.0 build");
-	const updatedRoot = replaceOnce(rootGradle, "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.25", "org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20", "root Kotlin dependency");
-	const appGradle = read(android, "app/build.gradle.kts");
-	const settings = read(android, "settings.gradle");
-	const properties = read(android, "gradle.properties");
-	const xml = read(android, "app/src/main/AndroidManifest.xml");
+	const standard = `package ${appId} import android.os.Bundle import androidx.activity.enableEdgeToEdge class MainActivity : TauriActivity() { override fun onCreate(savedInstanceState: Bundle?) { enableEdgeToEdge() super.onCreate(savedInstanceState) } }`;
+	if (main.replace(/\s+/g, " ").trim() !== standard) fail("custom MainActivity requires verified lifecycle integration; original source was left unchanged");
+	const rootGradle = read(android, "build.gradle.kts"), appGradle = read(android, "app/build.gradle.kts");
+	const settings = read(android, "settings.gradle"), xml = read(android, "app/src/main/AndroidManifest.xml");
+	if (!rootGradle.includes("com.android.tools.build:gradle:8.11.0") || !rootGradle.includes("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.25") || !/compileSdk\s*=\s*36\b/.test(appGradle)) fail("requires the verified AGP 8.11.0, Kotlin 1.9.25 and compile SDK 36 build");
 	if (/<application\b[^>]*android:name\s*=/.test(xml) || (xml.match(/<activity\b/g) ?? []).length !== 1 || /<activity-alias\b/.test(xml)) fail("custom Application or multiple Activity owners require verified integration");
 	if ([
 		rootGradle,
 		appGradle,
 		settings,
-		properties,
+		read(android, "gradle.properties"),
 		xml
-	].some((value) => /tauri-native-react|tauri-native-runtime-client|tauriNativeReact|com\.facebook\.react|expo\.modules|android\.lint\.useK2Uast/.test(value))) fail("existing renderer or lint configuration conflicts with retained composition");
-	if ((0, node_fs.existsSync)(node_path.default.join(android, "tauri-native-runtime-client"))) fail("artifact already owns the generated runtime client project");
-	if (!/compileSdk\s*=\s*36\b/.test(appGradle)) fail("requires the verified Android compile SDK 36 build");
-	const nativeActivity = replaceOnce(xml, "android:name=\".MainActivity\"", `android:name="${activity}"`, "launcher Activity");
-	const relative = (directory) => node_path.default.relative(node_path.default.join(output, "android"), directory).split(node_path.default.sep).join("/");
+	].some((value) => /tauri-native-(?:react|lynx|runtime-client)|com\.facebook\.react|expo\.modules|org\.lynxsdk/.test(value))) fail("existing renderer configuration conflicts with retained composition");
+	if (xml.split("android:name=\".MainActivity\"").length !== 2) fail("unsupported launcher Activity");
+	const generated = `app/src/main/java/${appId.replaceAll(".", "/")}/TauriNativeActivity.kt`;
+	if ([
+		"tauri-native-runtime-client",
+		"app/src/main/assets/tauri-native-lynx",
+		generated
+	].some((file) => (0, node_fs.existsSync)(node_path.default.join(android, file)))) fail("artifact already owns generated Lynx integration");
+	const sdkPath = node_path.default.relative(node_path.default.join(output, "android"), node_path.default.join(sdk, "android/retained")).split(node_path.default.sep).join("/");
 	const template = read(sdk, "retained/android/TauriNativeActivity.kt.template");
 	const changed = publishComposition(context, {
-		moduleName: options.moduleName,
+		platform: "android",
 		activity
 	}, (stage) => {
-		write(stage, `android/${source}`, replaceOnce(main, "class MainActivity", "open class MainActivity", "original Activity"));
-		const generated = `android/app/src/main/java/${appId.replaceAll(".", "/")}/TauriNativeActivity.kt`;
-		if ((0, node_fs.existsSync)(node_path.default.join(stage, generated))) fail("artifact already owns TauriNativeActivity");
-		write(stage, generated, template.replaceAll("__APPLICATION_ID__", appId).replaceAll("__MODULE__", kotlin(options.moduleName)));
-		write(stage, "android/app/src/main/AndroidManifest.xml", nativeActivity);
-		write(stage, "android/build.gradle.kts", updatedRoot + `\nextra["tauriNativeReactNativeDir"] = file(${kotlin(relative(rn))}).canonicalPath\nextra["tauriNativeReactCodegenDir"] = file(${kotlin(relative(codegen))}).canonicalPath\nextra["tauriNativeNode"] = ${kotlin(process.execPath)}\nextra["tauriNativeAbis"] = listOf(${manifest.native.map((slice) => kotlin(slice.abi)).join(", ")})\n`);
-		write(stage, "android/settings.gradle", settings + `\ninclude ':tauri-native-runtime-client', ':tauri-native-react'\nproject(':tauri-native-react').projectDir = new File(settingsDir, ${groovy(relative(node_path.default.join(sdk, "android/retained")))})\n`);
-		write(stage, "android/gradle.properties", properties + "\nandroid.lint.useK2Uast=false\n");
-		write(stage, "android/app/build.gradle.kts", appGradle + `\nandroid { packaging { jniLibs.pickFirsts += "**/libc++_shared.so" }; defaultConfig { ndk { abiFilters += listOf(${manifest.native.map((slice) => kotlin(slice.abi)).join(", ")}) } } }\ndependencies { implementation(project(":tauri-native-react")); implementation(project(":tauri-native-runtime-client")) }\n`);
+		write(stage, `android/${source}`, main.replace("class MainActivity", "open class MainActivity"));
+		write(stage, `android/${generated}`, template.replaceAll("__APPLICATION_ID__", appId));
+		write(stage, "android/app/src/main/AndroidManifest.xml", xml.replace("android:name=\".MainActivity\"", `android:name="${activity}"`));
+		write(stage, "android/settings.gradle", settings + `\ninclude ':tauri-native-runtime-client', ':tauri-native-lynx'\nproject(':tauri-native-lynx').projectDir = new File(settingsDir, ${groovy(sdkPath)})\n`);
+		write(stage, "android/app/build.gradle.kts", appGradle + `\nandroid { defaultConfig { ndk { abiFilters += listOf(${manifest.native.map((slice) => JSON.stringify(slice.abi)).join(", ")}) } } }\ndependencies { implementation(project(":tauri-native-lynx")); implementation(project(":tauri-native-runtime-client")) }\n`);
 		const client = "app/src/main/java/dev/taurinative/runtime/RuntimeSession.java";
 		write(stage, "android/tauri-native-runtime-client/src/main/java/dev/taurinative/runtime/RuntimeSession.java", read(android, client));
 		(0, node_fs.rmSync)(node_path.default.join(stage, "android", client));
-		write(stage, "android/tauri-native-runtime-client/build.gradle", "plugins { id 'com.android.library' }\nandroid {\n namespace 'dev.taurinative.runtime'\n compileSdk 36\n defaultConfig { minSdk 24 }\n compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }\n}\n");
-		if ((0, node_fs.existsSync)(node_path.default.join(stage, "android/app/src/main/assets/tauri-native-react"))) fail("artifact already owns renderer assets");
-		write(stage, "android/app/src/main/assets/tauri-native-react/index.bundle.js", bundled);
+		write(stage, "android/tauri-native-runtime-client/build.gradle", "plugins { id 'com.android.library' }\nandroid {\n namespace 'dev.taurinative.runtime'\n compileSdk 35\n defaultConfig { minSdk 24 }\n compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }\n}\n");
+		write(stage, "android/app/src/main/assets/tauri-native-lynx/main.lynx.bundle", bundled);
 	});
 	return {
 		project: node_path.default.join(output, "android"),
@@ -327,146 +296,5 @@ function composeAndroid(options) {
 		changed
 	};
 }
-function plist(file) {
-	const result = (0, node_child_process.spawnSync)("/usr/bin/plutil", [
-		"-convert",
-		"json",
-		"-o",
-		"-",
-		file
-	], { encoding: "utf8" });
-	if (result.status !== 0) fail(`cannot read Apple project metadata: ${file}: ${result.error ?? result.stderr}`);
-	return JSON.parse(result.stdout);
-}
-const ruby = (value) => `'${value.replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`;
-const shell = (value) => `'${value.replaceAll("'", "'\\''")}'`;
-function iosVersion(value) {
-	if (typeof value !== "string" || !/^\d+\.\d+(?:\.\d+)?$/.test(value)) fail("iOS deployment targets must be explicit numeric versions");
-	return value;
-}
-function greaterVersion(a, b) {
-	const left = a.split(".").map(Number), right = b.split(".").map(Number);
-	for (let i = 0; i < 3; i++) if ((left[i] ?? 0) !== (right[i] ?? 0)) return (left[i] ?? 0) > (right[i] ?? 0) ? a : b;
-	return a;
-}
-/** Use the original Tauri Xcode app and Apple plist tools; neither export nor build Rust. */
-function composeIos(options) {
-	if (process.platform !== "darwin") fail("iOS composition requires macOS Apple project tools");
-	const context = compositionInputs(options, "ios");
-	const { artifact, sdk, output, manifest, rn, rendererDirectory: renderer, bundled } = context;
-	if (manifest.platform !== "ios") fail("requires an iOS format 2 artifact");
-	const ios = node_path.default.join(artifact, "ios"), bootstrap = manifest.bootstrap;
-	if ([
-		"Podfile",
-		"Podfile.lock",
-		"Pods",
-		".xcode.env",
-		".xcode.env.local",
-		"assets/tauri-native-react"
-	].some((file) => (0, node_fs.existsSync)(node_path.default.join(ios, file)))) fail("existing CocoaPods, Node environment or renderer assets require explicit integration");
-	const projectFile = `${bootstrap.xcodeProject}/project.pbxproj`;
-	const project = plist(node_path.default.join(ios, projectFile));
-	const objects = project.objects;
-	const targets = Object.values(objects).filter((item) => item.isa === "PBXNativeTarget");
-	const target = targets[0];
-	if (targets.length !== 1 || target?.name !== bootstrap.target || target.productType !== "com.apple.product-type.application") fail("requires one original Tauri application target");
-	if (Object.values(objects).some((item) => item.isa === "PBXShellScriptBuildPhase")) fail("existing native build scripts require explicit integration");
-	const rootGroup = objects[project.rootObject]?.mainGroup;
-	function sourcePath(id, visited = /* @__PURE__ */ new Set()) {
-		const item = objects[id];
-		if (!item || visited.has(id)) fail("invalid Xcode source group graph");
-		visited.add(id);
-		if (id === rootGroup) return "";
-		if (item.sourceTree === "SOURCE_ROOT") return item.path ?? "";
-		if (item.sourceTree !== "<group>") fail("unsupported Xcode source path");
-		const parents = Object.entries(objects).filter(([, parent]) => parent.children?.includes(id));
-		if (parents.length !== 1) fail("ambiguous Xcode source group");
-		return node_path.default.posix.join(sourcePath(parents[0][0], visited), item.path ?? "");
-	}
-	const sources = [], resources = [];
-	for (const phase of target.buildPhases ?? []) {
-		const item = objects[phase];
-		if (!item || !["PBXSourcesBuildPhase", "PBXResourcesBuildPhase"].includes(item.isa)) continue;
-		for (const file of item.files ?? []) {
-			const ref = objects[file]?.fileRef;
-			if (!ref) fail("invalid original Xcode build input");
-			(item.isa === "PBXSourcesBuildPhase" ? sources : resources).push(sourcePath(ref));
-		}
-	}
-	const mains = sources.filter((file) => /^Sources\/[^/]+\/main\.mm$/.test(file));
-	if (mains.length !== 1 || sources.filter((file) => file === "Sources/TauriNativeRuntime/TNRuntimeSession.mm").length !== 1 || !resources.includes("assets")) fail("requires the original main, one retained session client and bundled assets folder");
-	const main = mains[0];
-	const originalMain = read(ios, main);
-	if (originalMain.replace(/\s+/g, " ").trim() !== "#include \"bindings/bindings.h\" int main(int argc, char * argv[]) { ffi::start_app(); return 0; }") fail("custom iOS application entry point requires verified lifecycle integration");
-	const configurations = objects[target.buildConfigurationList ?? ""]?.buildConfigurations;
-	if (!configurations?.length) fail("missing original Xcode build configurations");
-	for (const id of configurations) {
-		const infoFile = (objects[id]?.buildSettings)?.INFOPLIST_FILE;
-		if (typeof infoFile !== "string" || !/^[\w.-]+\/Info\.plist$/.test(infoFile)) fail("unsupported original Info.plist path");
-		const info = plist(node_path.default.join(ios, infoFile));
-		if (info.UIApplicationSceneManifest || info.UIApplicationDelegateClassName) fail("custom iOS scene/delegate ownership requires verified integration");
-	}
-	let minimumOsVersion = greaterVersion("16.4", iosVersion(bootstrap.minimumOsVersion));
-	for (const item of Object.values(objects)) {
-		const value = item.buildSettings?.IPHONEOS_DEPLOYMENT_TARGET;
-		if (value !== void 0) minimumOsVersion = greaterVersion(minimumOsVersion, iosVersion(value));
-	}
-	for (const item of Object.values(objects)) if (item.isa === "XCBuildConfiguration" && item.buildSettings) item.buildSettings.IPHONEOS_DEPLOYMENT_TARGET = minimumOsVersion;
-	const encodedProject = (0, node_child_process.spawnSync)("/usr/bin/plutil", [
-		"-convert",
-		"xml1",
-		"-o",
-		"-",
-		"-"
-	], {
-		input: JSON.stringify(project),
-		encoding: "utf8"
-	});
-	if (encodedProject.status !== 0) fail(`cannot encode the composed Xcode project: ${encodedProject.stderr}`);
-	const relative = (dir) => node_path.default.relative(node_path.default.join(output, "ios"), dir).split(node_path.default.sep).join("/");
-	const workspace = bootstrap.xcodeProject.replace(/\.xcodeproj$/, ".xcworkspace");
-	const changed = publishComposition(context, {
-		moduleName: options.moduleName,
-		platform: "ios",
-		minimumOsVersion,
-		target: bootstrap.target
-	}, (stage) => {
-		write(stage, `ios/${projectFile}`, encodedProject.stdout);
-		write(stage, `ios/${main}`, "#import <TauriNativeReactRetained/TNReactComposition.h>\n" + originalMain.replace("ffi::start_app();", `@autoreleasepool {\n\t\tNSURL *bundle = [NSBundle.mainBundle URLForResource:@"index.bundle" withExtension:@"js" subdirectory:@"assets/tauri-native-react"];\n\t\t[TNReactComposition installWithModule:@${JSON.stringify(options.moduleName)} bundle:bundle];\n\t}\n\tffi::start_app();`));
-		write(stage, "ios/assets/tauri-native-react/index.bundle.js", bundled);
-		write(stage, "ios/.xcode.env", `export NODE_BINARY=${shell(process.execPath)}\n`);
-		write(stage, "ios/.xcode.env.local", `export NODE_BINARY=${shell(process.execPath)}\n`);
-		write(stage, "ios/Podfile", `ENV['RCT_USE_RN_DEP'] = '1'
-ENV['RCT_USE_PREBUILT_RNCORE'] = '1'
-rn = File.expand_path(${ruby(relative(rn))}, __dir__)
-require_relative ${ruby(relative(node_path.default.join(sdk, "ios/retained/pods")))}
-composition = TauriNativeReactRetained.composition_receipt(__dir__)
-require File.join(rn, 'scripts/react_native_pods')
-platform :ios, ${ruby(minimumOsVersion)}
-prepare_react_native_project!
-TauriNativeReactRetained.prepare(rn, ${ruby(process.execPath)})
-project ${ruby(bootstrap.xcodeProject)}, 'debug' => :debug, 'release' => :release
-target ${ruby(bootstrap.target)} do
-  use_react_native!(:path => rn, :app_path => File.expand_path(${ruby(relative(renderer))}, __dir__))
-  pod 'TauriNativeReactRetained', :path => ${ruby(relative(node_path.default.join(sdk, "ios")))}
-end
-post_install do |installer|
-  react_native_post_install(installer, rn, :mac_catalyst_enabled => false)
-  TauriNativeReactRetained.post_install(installer, ${ruby(bootstrap.target)})
-end
-post_integrate do |installer|
-  TauriNativeReactRetained.finish_composition(__dir__, composition)
-end
-`);
-	});
-	return {
-		project: node_path.default.join(output, "ios"),
-		target: bootstrap.target,
-		workspace,
-		minimumOsVersion,
-		changed
-	};
-}
 //#endregion
 exports.composeAndroid = composeAndroid;
-exports.composeIos = composeIos;

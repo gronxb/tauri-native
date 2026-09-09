@@ -24,6 +24,10 @@
     "./retained-artifacts": {
       "types": "./retained-artifacts.d.ts",
       "default": "./retained-artifacts.cjs"
+    },
+    "./compose": {
+      "types": "./compose.d.ts",
+      "default": "./compose.cjs"
     }
   },
   "files": [
@@ -44,7 +48,10 @@
     "README.md",
     "RETAINED.md",
     "retained-artifacts.cjs",
-    "retained-artifacts.d.ts"
+    "retained-artifacts.d.ts",
+    "compose.cjs",
+    "compose.d.ts",
+    "retained"
   ],
   "scripts": {
     "build": "node --experimental-strip-types ../../scripts/sync-host-files.ts lynx && nub run codegen && tsc --noEmit",

@@ -1,12 +1,10 @@
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
-import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
-import { readRetainedArtifacts } from '../../../scripts/retained-artifacts.ts';
+import { prepareComposition, publishComposition } from '../../../scripts/retained-composition.ts';
 import type { AndroidCompositionOptions, IosCompositionOptions } from './retained-compose-types.d.cts';
 
-const hash = (bytes: Buffer | string) => createHash('sha256').update(bytes).digest('hex');
 const kotlin = (value: string) => JSON.stringify(value).replaceAll('$', '\\$');
 const groovy = (value: string) => `'${value.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
 function fail(message: string): never { throw new Error(`Retained RN composition: ${message}`); }
@@ -18,96 +16,17 @@ function replaceOnce(value: string, from: string, to: string, description: strin
   if (value.split(from).length !== 2) fail(`unsupported ${description}; expected one ${JSON.stringify(from)}`);
   return value.replace(from, to);
 }
-function inventory(root: string, prefix = ''): Record<string, string> {
-  const result: Record<string, string> = {};
-  for (const entry of readdirSync(path.join(root, prefix), { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-    const file = path.posix.join(prefix, entry.name);
-    if (entry.isDirectory()) Object.assign(result, inventory(root, file));
-    else if (entry.isFile()) result[file] = hash(readFileSync(path.join(root, file)));
-    else fail(`generated path must be regular: ${file}`);
-  }
-  return result;
-}
-
 function compositionInputs(options: AndroidCompositionOptions, platform: 'android' | 'ios') {
-  const artifact = realpathSync(options.artifactsDir), renderer = realpathSync(options.rendererDir);
-  const bundle = realpathSync(options.bundleFile), sdk = realpathSync(__dirname);
-  const requestedOutput = path.resolve(options.outputDir);
-  // Canonicalize the parent before checking aliases and before any output mutation.
-  const output = path.join(realpathSync(path.dirname(requestedOutput)), path.basename(requestedOutput));
-  const overlaps = (a: string, b: string) => a === b || a.startsWith(b + path.sep) || b.startsWith(a + path.sep);
-  if ([artifact, sdk].some(input => overlaps(output, input)) || [renderer, bundle].some(input => input === output || input.startsWith(output + path.sep)))
+  const context = prepareComposition(options, platform, 'react-native', __dirname);
+  const renderer = realpathSync(options.rendererDir);
+  if (renderer === context.output || renderer.startsWith(context.output + path.sep))
     fail('output must be separate from the artifact and SDK, and must not contain the renderer or bundle');
   if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(options.moduleName)) fail('moduleName must be an AppRegistry identifier');
-  const manifest = readRetainedArtifacts(artifact);
-  if (manifest.platform !== platform) fail(`requires an ${platform} format 2 artifact`);
   const requireRenderer = createRequire(path.join(renderer, 'package.json'));
   const rn = realpathSync(path.dirname(requireRenderer.resolve('react-native/package.json')));
   const codegen = realpathSync(path.dirname(createRequire(path.join(rn, 'package.json')).resolve('@react-native/codegen/package.json')));
   if ([rn, codegen].some(dir => JSON.parse(read(dir, 'package.json')).version !== '0.86.3')) fail('React Native and codegen must both be 0.86.3');
-  return { options, artifact, renderer, bundle, sdk, output, manifest, rn, codegen, bundled: readFileSync(bundle) };
-}
-
-function publishComposition(context: ReturnType<typeof compositionInputs>, metadata: Record<string, string>, generate: (stage: string) => void) {
-  const { options, artifact, bundle, bundled, output, manifest } = context;
-  const receiptPath = 'tauri-native-composition.json';
-  let previous: { files: Record<string, string> } | undefined;
-  if (existsSync(output)) {
-    if (!lstatSync(output).isDirectory() || !existsSync(path.join(output, receiptPath)) || !lstatSync(path.join(output, receiptPath)).isFile()) fail('existing output is not an owned composition directory');
-    const value = JSON.parse(read(output, receiptPath));
-    if (value.formatVersion !== 1 || value.renderer !== 'react-native' || (value.platform ?? 'android') !== manifest.platform || !value.files || typeof value.files !== 'object' || Array.isArray(value.files)) fail('invalid prior composition receipt');
-    previous = value;
-    for (const [file, digest] of Object.entries(previous!.files)) {
-      if (!file || file.split('/').some(part => !part || part === '.' || part === '..') || /[\\:\0]/.test(file) || !/^[a-f0-9]{64}$/.test(digest)) fail('invalid prior composition file receipt');
-      const target = path.join(output, file);
-      // Check ancestors as well: never follow a replaced directory into unrelated files.
-      let cursor = output;
-      for (const part of file.split('/')) { cursor = path.join(cursor, part); if (!existsSync(cursor) || lstatSync(cursor).isSymbolicLink()) fail(`generated file removed or linked: ${file}`); }
-      if (!lstatSync(target).isFile() || hash(readFileSync(target)) !== digest) fail(`generated file changed: ${file}; preserve the edit before regenerating`);
-    }
-  }
-  const work = mkdtempSync(path.join(path.dirname(output), '.tauri-react-compose-'));
-  const stage = path.join(work, 'next');
-  const backup = path.join(work, 'previous');
-  let published = false;
-  try {
-    mkdirSync(stage); cpSync(path.join(artifact, manifest.platform), path.join(stage, manifest.platform), { recursive: true });
-    generate(stage);
-    const files = inventory(stage);
-    const receipt = JSON.stringify({ formatVersion: 1, renderer: 'react-native', artifact: hash(readFileSync(path.join(artifact, 'manifest.json'))), moduleName: options.moduleName, ...metadata, files }, null, 2) + '\n';
-    write(stage, receiptPath, receipt);
-    // Revalidate inputs before publication. A changed export can never produce a partial consumer.
-    if (JSON.stringify(readRetainedArtifacts(artifact)) !== JSON.stringify(manifest) || !readFileSync(bundle).equals(bundled)) fail('inputs changed during composition');
-    if (previous && read(output, receiptPath) === receipt) return false;
-    if (previous) {
-      // Preserve build outputs and unrelated consumer files; refuse collisions with newly generated files.
-      const merged = path.join(work, 'merged'); cpSync(output, merged, { recursive: true });
-      for (const file of Object.keys(previous.files)) rmSync(path.join(merged, file));
-      rmSync(path.join(merged, receiptPath));
-      for (const file of Object.keys(files)) {
-        let cursor = merged;
-        for (const part of file.split('/')) {
-          cursor = path.join(cursor, part);
-          let entry;
-          try { entry = lstatSync(cursor); } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') break; throw error; }
-          if (entry.isSymbolicLink() || !entry.isDirectory()) fail(`new generated file conflicts with consumer file: ${file}`);
-        }
-      }
-      cpSync(stage, merged, { recursive: true }); rmSync(stage, { recursive: true }); renameSync(merged, stage);
-      renameSync(output, backup);
-      try { renameSync(stage, output); }
-      catch (error) {
-        try { renameSync(backup, output); }
-        catch (restoreError) { throw new AggregateError([error, restoreError], `Composition replacement and rollback failed; previous output preserved at ${backup}`); }
-        throw error;
-      }
-    } else renameSync(stage, output);
-    published = true;
-    return true;
-  } finally {
-    // A failed rollback must never erase the only remaining copy of the previous consumer.
-    if (published || !existsSync(backup)) rmSync(work, { recursive: true, force: true });
-  }
+  return { ...context, rendererDirectory: renderer, rn, codegen };
 }
 
 /** The output owns generated integration; the original artifact is never modified. */
@@ -137,7 +56,7 @@ export function composeAndroid(options: AndroidCompositionOptions) {
   const nativeActivity = replaceOnce(xml, 'android:name=".MainActivity"', `android:name="${activity}"`, 'launcher Activity');
   const relative = (directory: string) => path.relative(path.join(output, 'android'), directory).split(path.sep).join('/');
   const template = read(sdk, 'retained/android/TauriNativeActivity.kt.template');
-  const changed = publishComposition(context, { activity }, stage => {
+  const changed = publishComposition(context, { moduleName: options.moduleName, activity }, stage => {
     write(stage, `android/${source}`, replaceOnce(main, 'class MainActivity', 'open class MainActivity', 'original Activity'));
     const generated = `android/app/src/main/java/${appId.replaceAll('.', '/')}/TauriNativeActivity.kt`;
     if (existsSync(path.join(stage, generated))) fail('artifact already owns TauriNativeActivity');
@@ -184,7 +103,7 @@ function greaterVersion(a: string, b: string) {
 export function composeIos(options: IosCompositionOptions) {
   if (process.platform !== 'darwin') fail('iOS composition requires macOS Apple project tools');
   const context = compositionInputs(options, 'ios');
-  const { artifact, sdk, output, manifest, rn, renderer, bundled } = context;
+  const { artifact, sdk, output, manifest, rn, rendererDirectory: renderer, bundled } = context;
   if (manifest.platform !== 'ios') fail('requires an iOS format 2 artifact');
   const ios = path.join(artifact, 'ios'), bootstrap = manifest.bootstrap;
   if (['Podfile', 'Podfile.lock', 'Pods', '.xcode.env', '.xcode.env.local', 'assets/tauri-native-react'].some(file => existsSync(path.join(ios, file))))
@@ -245,7 +164,7 @@ export function composeIos(options: IosCompositionOptions) {
   if (encodedProject.status !== 0) fail(`cannot encode the composed Xcode project: ${encodedProject.stderr}`);
   const relative = (dir: string) => path.relative(path.join(output, 'ios'), dir).split(path.sep).join('/');
   const workspace = bootstrap.xcodeProject.replace(/\.xcodeproj$/, '.xcworkspace');
-  const changed = publishComposition(context, { platform: 'ios', minimumOsVersion, target: bootstrap.target }, stage => {
+  const changed = publishComposition(context, { moduleName: options.moduleName, platform: 'ios', minimumOsVersion, target: bootstrap.target }, stage => {
     write(stage, `ios/${projectFile}`, encodedProject.stdout);
     write(stage, `ios/${main}`, '#import <TauriNativeReactRetained/TNReactComposition.h>\n' + originalMain.replace('ffi::start_app();',
       `@autoreleasepool {\n\t\tNSURL *bundle = [NSBundle.mainBundle URLForResource:@"index.bundle" withExtension:@"js" subdirectory:@"assets/tauri-native-react"];\n\t\t[TNReactComposition installWithModule:@${JSON.stringify(options.moduleName)} bundle:bundle];\n\t}\n\tffi::start_app();`));
