@@ -109,10 +109,62 @@ Release/R8 consumer without Rust on PATH. The fixture owns consumer layout,
 Activity hooks and telemetry; the SDK owns the generated module, RN engine,
 surface, back routing and native session lifetime.
 
+## iOS integration under development
+
+This path pins RN/codegen 0.86.3 and its matching prebuilt React,
+ReactNativeDependencies and Hermes frameworks. The composed consumer requires
+iOS 16.4 or later. The ordinary producer and immutable exported artifact keep
+their original deployment settings; the RN consumer raises its minimum OS.
+
+Keep the original format 2 Xcode project, `ffi::start_app()`, Tauri application
+delegate, runtime archive, permission descriptions and URL schemes. Its app
+target already compiles `TNRuntimeSession.mm`; do not compile another copy.
+
+In the consumer Podfile, set `RCT_USE_RN_DEP` and `RCT_USE_PREBUILT_RNCORE` to `1`,
+load RN's `react_native_pods.rb` and the installed SDK's `ios/retained/pods.rb`,
+then call `TauriNativeReactRetained.prepare(rn_path, absolute_node_path)` before
+declaring pods. The helper validates versions and runs standard RN codegen for
+the isolated SDK specs. Generated sources stay in the installed SDK's
+`ios/retained/generated` directory and are excluded from npm packing.
+
+Use `use_react_native!` for the consumer app and add
+`pod 'TauriNativeReactRetained', :path => '<installed-sdk>/ios'`. After
+`react_native_post_install`, call
+`TauriNativeReactRetained.post_install(installer, original_tauri_target_name)`.
+The helper replaces CocoaPods' global `-ObjC` with explicit loading of the three
+RN static libraries. RN's prebuilt frameworks load dynamically; the Tauri
+archive is unchanged. Other frameworks/static pods or non-prebuilt RN receive
+an explicit compatibility diagnostic. Keep the normal RN Node environment for
+its Xcode build scripts; Rust and the producer checkout are not needed.
+
+Attach after the original Tauri document is ready, on main:
+
+```objc
+#import <TauriNativeReactRetained/TNReactHost.h>
+
+host = [[TNReactHost alloc] initWithContainer:container
+                                     module:@"YourApp"
+                                     bundle:bundleURL];
+```
+
+`reload` closes native sessions and replaces the Factory, Fabric surface and RN
+host. `close` closes sessions before releasing RN's surface and host, allowing
+RN's own asynchronous instance invalidation to finish. Neither operation
+replaces Tauri's root view controller or application delegate. RN's AppState
+module observes ordinary UIApplication notifications. Forwarding original URL
+callbacks into RN Linking is separate work; Tauri's own deep-link plugin and
+events remain available through the retained session.
+
+The native gate is
+`node --experimental-strip-types packages/react-native/test/retained-ios.ts <artifact>`
+with `IOS_SIMULATOR_UDID`, Xcode, CocoaPods and Maestro configured. Its consumer
+fixture owns layout, pre-start notification registration and process telemetry.
+The SDK owns the actual generated module, Factory and native session lifetime.
+
 ## Remaining roadmap
 
-Automatic composition/autolinking, Expo CNG, iOS integration, retained
-`TauriView`, broader lifecycle/device/adopter acceptance and full framework
+Automatic composition/autolinking, Expo CNG, iOS Linking URL forwarding, retained
+`TauriView`, consistent session-open diagnostics, broader lifecycle/device/adopter acceptance and full framework
 parity remain tracked in [#45](https://github.com/gronxb/tauri-native/issues/45)
 and [#47](https://github.com/gronxb/tauri-native/issues/47). Forwarded hooks alone
 do not establish every native scenario: activity recreation, RN-owned permission

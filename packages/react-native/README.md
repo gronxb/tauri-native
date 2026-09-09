@@ -3,9 +3,9 @@
 Experimental iOS and Android React Native bridge for a Tauri microfrontend and its Rust commands.
 
 The retained Tauri mode under `@tauri-native/react-native/retained` is being
-implemented in this checkout. Its Android host uses format 2 / ABI 3 artifacts
-and the original Tauri Activity, Rust state, capabilities and native plugins.
-iOS, Expo/automatic composition and retained `TauriView` remain open. The default
+implemented in this checkout. Its iOS and Android hosts use format 2 / ABI 3
+artifacts and the original Tauri bootstrap, Rust state, capabilities and native plugins.
+Expo/automatic composition and retained `TauriView` remain open. The default
 entry point and integration below describe format 1; see [retained integration](./RETAINED.md).
 
 ## Install

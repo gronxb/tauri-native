@@ -17,6 +17,7 @@ Pod::Spec.new do |s|
     "cpp/**/*.{h,cpp}",
     "ios/**/*.{h,m,mm,swift}"
   ]
+  s.exclude_files = "ios/retained/**/*"
   s.private_header_files = ["cpp/**/*.h", "ios/TNTauriView.h"]
   s.public_header_files = "ios/TNTauriRustBridge.h"
   s.swift_version = "5.0"

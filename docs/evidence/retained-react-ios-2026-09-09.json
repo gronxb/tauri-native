@@ -1,0 +1,227 @@
+{
+  "passed": true,
+  "platform": "ios",
+  "profile": "release",
+  "formatVersion": 2,
+  "abiVersion": 3,
+  "renderer": "React Native/codegen 0.86.3 / Hermes / generated TurboModule and Fabric",
+  "sourceFree": true,
+  "sourceFreeBuild": "PATH=/usr/bin:/bin:/usr/sbin:/sbin xcodebuild -configuration release -sdk iphonesimulator",
+  "packageSha256": "86108f9b371f82b579aeaa340a30f2cfc653b72f4ada9a50cf7b0b86cd959068",
+  "artifactSha256": "f153668064f66bd1c5f8dcfc1d1f340844e5437241ad0261d15faabfe65de53f",
+  "binarySha256": "970439f8b81e04c7ebd4140821855f9a09ab887d65c04c72755f0f2ece7f4bd2",
+  "bundleSha256": "068de4b14673f2b31845229fd7252a2c2050c0a0d6420706ca3edfc1894f96b1",
+  "baseline": {
+    "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/26651413-D2D1-4AB3-8E30-CCCEFDFC29B7/Library/Application Support/dev.taurinative.mobilefieldnotes",
+    "passed": true,
+    "reloaded": true,
+    "scenarios": [
+      "setup",
+      "state",
+      "app-handle",
+      "async",
+      "rust-event",
+      "plugin-setup",
+      "plugin-allowed",
+      "plugin-denied",
+      "domain-error",
+      "reload"
+    ],
+    "state": {
+      "appIdentifier": "dev.taurinative.mobilefieldnotes",
+      "pluginSetupCount": 1,
+      "setupCount": 1,
+      "value": 45
+    }
+  },
+  "denied": {
+    "paused": 1,
+    "listeners": 1,
+    "listenersAfterRelease": -1,
+    "generation": 1,
+    "stopped": 0,
+    "appDelegate": "AppDelegate",
+    "resumed": 2,
+    "hostClosed": false,
+    "reactThreads": [
+      "com.facebook.react.runtime.JavaScript"
+    ],
+    "pid": 5650
+  },
+  "saved": {
+    "paused": 1,
+    "listeners": 1,
+    "listenersAfterRelease": -1,
+    "generation": 1,
+    "stopped": 0,
+    "appDelegate": "AppDelegate",
+    "resumed": 2,
+    "hostClosed": false,
+    "reactThreads": [
+      "com.facebook.react.runtime.JavaScript"
+    ],
+    "pid": 7026
+  },
+  "remounted": {
+    "paused": 2,
+    "listeners": 1,
+    "listenersAfterRelease": 0,
+    "generation": 2,
+    "stopped": 1,
+    "appDelegate": "AppDelegate",
+    "resumed": 3,
+    "hostClosed": false,
+    "reactThreads": [
+      "com.facebook.react.runtime.JavaScript"
+    ],
+    "pid": 7026
+  },
+  "closed": {
+    "paused": 2,
+    "listeners": 0,
+    "listenersAfterRelease": 0,
+    "generation": 2,
+    "stopped": 1,
+    "appDelegate": "AppDelegate",
+    "resumed": 3,
+    "hostClosed": true,
+    "reactThreads": [],
+    "pid": 7026
+  },
+  "notes": [
+    {
+      "id": 1,
+      "text": "A RN place to remember",
+      "latitude": 37.5665,
+      "longitude": 126.978
+    }
+  ],
+  "uiScenarios": [
+    "shared original state/setup",
+    "Tauri ACL and native caller denial",
+    "OS permission denial/grant",
+    "save and event",
+    "background deep link and event",
+    "renderer replacement retires native subscriptions",
+    "fresh renderer receives only fresh events",
+    "removing RN terminates its JS thread and preserves the independent original Tauri frontend"
+  ],
+  "testOnlyIntegration": "Consumer fixture layout and pre-start notification registration; actual packed SDK owns module, renderer and session lifetime. Original Tauri UIApplication delegate preserved. Automatic composition/autolinking, Expo and RN Linking URL forwarding remain open.",
+  "recordedAt": "2026-09-09T10:31:07.151682+00:00",
+  "command": "PATH=\"$HOME/.local/share/mise/installs/ruby/3.3.10/bin:$HOME/.maestro/bin:$PATH\" IOS_SIMULATOR_UDID=0368C5D9-63CF-447E-B6BB-0E3184B1CD0A node --experimental-strip-types packages/react-native/test/retained-ios.ts",
+  "toolchain": {
+    "node": "v24.15.0",
+    "npm": "11.12.1",
+    "reactNative": "0.86.3",
+    "codegen": "0.86.3",
+    "hermes": "250829098.0.17",
+    "ruby": "3.3.10",
+    "cocoaPods": "1.16.2",
+    "xcode": "26.4.1 (17E202)",
+    "simulator": "iPhone 16 / iOS 26.4.1 (23E254a) / arm64",
+    "simulatorUdid": "0368C5D9-63CF-447E-B6BB-0E3184B1CD0A",
+    "maestro": "2.4.0",
+    "consumerMinimumIos": "16.4",
+    "originalArtifactMinimumIos": "14.0"
+  },
+  "sdkSourceSha256": {
+    "packages/react-native/package.json": "ed4f515fada5cf496950ef902f685bcb48283bb37d8ab3efc582a1113826417b",
+    "packages/react-native/TauriNativeReactNative.podspec": "33ff45936392732da2bb4dc16376add1f00ffdf91512dd7224dbd66dda5ae2cb",
+    "packages/react-native/retained/specs/NativeTauriRuntime.ts": "7bf7588e0073c96a84fb2832c52c947a24956431a915fa5d1afaae33c684f64a",
+    "packages/react-native/src/retained.ts": "80d8e7c02c54e430986e4851c65788fb883d90f2a4d43a0cfefbff57f1bb28bf",
+    "packages/react-native/src/retained-client.ts": "d54bec5bd9f7dab9a1192da661612089b821494417ac259990d4a1e4da45f53a",
+    "packages/react-native/ios/TauriNativeReactRetained.podspec": "762b2aeb282af23de94d2136c88309ca86a8a61cbb1acc29f62909ac57bbea39",
+    "packages/react-native/ios/retained/TNReactHost.h": "4d5fe0d54567628c043991daeb4a6e027ab0de786553a055d2d3963cc3cb410e",
+    "packages/react-native/ios/retained/TNReactHost.mm": "de0b9474682c765d5acceca987c4aa469039900b54c59fbe8721272c470ac654",
+    "packages/react-native/ios/retained/TNReactRuntimeModule.h": "ae0e780b6870393ba61339203ef0eeac4cff59642d737c0d685868f32523d4dc",
+    "packages/react-native/ios/retained/TNReactRuntimeModule.mm": "352b89d39db29fb46d2aaff71c7d3aec3ac865d89d31ac1502160dfcbe014a84",
+    "packages/react-native/ios/retained/pods.rb": "a9133a1ef1a08208b1f15671554813ba85e20d4f3889edc6f5ad75042a614203"
+  },
+  "gateSourceSha256": {
+    "packages/react-native/test/retained-ios.ts": "194b2f8bea3de49c026bb6d084563a40eb5a8b5992d45e5f316b4c419b3beed1",
+    "packages/react-native/test/retained/IosAcceptance.mm.fixture": "c4f96ab98381d6a9fdc7c00fbe03a5bcbe4e90b3e22362d66221031cd4c18613",
+    "packages/react-native/test/retained/index.tsx.fixture": "34a4fa35a0014a529f65d052ac65aea77890e09c2ef22eea6e6bfe8bdae7e530",
+    "packages/react-native/test/retained/build.cjs.fixture": "5af288db15080da38c5cf493badc3b80dc87ee731f41dd42ac37b69a9a65f740"
+  },
+  "generatedCodeSha256": {
+    "ios/TauriNativeRetainedSpec/TauriNativeRetainedSpec-generated.mm": "8234bc5da06ee40e86d74dcf19b4bed0c92d2f02f6ea3c2ca6c9d061bec6296c",
+    "ios/TauriNativeRetainedSpec/TauriNativeRetainedSpec.h": "676032cc00a8004fea4cadd9c239319843bb29e8b4d542ec9f244587b761dd1f",
+    "ios/TauriNativeRetainedSpecJSI.h": "98729e6dbf39cca317eb1a791f1fc04f54c3b92d4f9197083dd0f41a31ed8bf5",
+    "schema.json": "636ce7820e61e42f31cd000cd4e09c5dd1065118ea5c438185464fef7ed84038"
+  },
+  "junitSha256": {
+    "initial": "7bd268cd5b47c184f973e04183f0e11e6c42ed1a211620cf178995b9713ac480",
+    "deny-permission": "c2a954510f66ca8f3b3d7c773d10ebb22c3128291e04e7fcbf9003b19ae3e86f",
+    "grant-permission": "64a86ebf379730e9f5ce312690af21b0631aa13104a7da997ebed2c41c30309a",
+    "background": "2d44e4dd508e6fb0a63315a5161cb00a8c6019c39dceed23bbcb2a80b6a0af2b",
+    "resume": "1b3c1ceaa650c2a8a5dc67e63dfcea4a0472fb34f7e87787a80882f33912ab35",
+    "fresh-events": "315b13e50de1c448fb35815c72484c8b5ccc6681e446f7d43f318d033214a38f",
+    "remove-renderer": "5577015b402fa9adf7de501b4f802dbb63115c5a008f59cbffbb4e4e497945a3"
+  },
+  "verification": {
+    "junitFlows": 7,
+    "skippedFlows": 0,
+    "baselineScenarios": 10,
+    "existingReactNativeJsTests": 9,
+    "sharedRetainedClientTests": 4,
+    "packageFiles": 95,
+    "typechecks": [
+      "packages/react-native/tsconfig.json",
+      "scripts/tsconfig.json"
+    ],
+    "jsThreads": "Own-process Mach/pthread inspection finds one RN runtime JS thread after grant and replacement, zero after close."
+  },
+  "buildLogSha256": "930297086020a204142706010e7c889903b6bfe0b6f8e49c2c214d16e45fd8a8",
+  "releaseLinkerFlags": "OTHER_LDFLAGS = $(inherited) -l\"ReactAppDependencyProvider\" -l\"ReactCodegen\" -l\"TauriNativeReactRetained\" -framework \"Accelerate\" -framework \"AudioToolbox\" -framework \"CoreGraphics\" -framework \"ImageIO\" -framework \"MobileCoreServices\" -framework \"QuartzCore\" -framework \"React\" -framework \"ReactNativeDependencies\" -framework \"UIKit\" -framework \"hermesvm\" -weak_framework \"JavaScriptCore\" -force_load \"$(PODS_CONFIGURATION_BUILD_DIR)/ReactAppDependencyProvider/libReactAppDependencyProvider.a\" -force_load \"$(PODS_CONFIGURATION_BUILD_DIR)/ReactCodegen/libReactCodegen.a\" -force_load \"$(PODS_CONFIGURATION_BUILD_DIR)/TauriNativeReactRetained/libTauriNativeReactRetained.a\"",
+  "unchangedTauriArchiveSha256": "7718abe7d0e3448ee101c98f4cec26c6abcf837ef4795fac1cf95ce6cf1ceec9",
+  "podfileLockSha256": "9bc0e5c9aecc7e2dc86059145fcd40d7f858957b8916e84aeff70a2772c5c75f",
+  "executableArchitectures": "arm64",
+  "embeddedFrameworkSha256": {
+    "React": "6bb7c4b8c0fcadd038a422c2580a581041777145575e7622dc8ce5947f893e04",
+    "ReactNativeDependencies": "fac8e1599978a2296991770cb5f3588df82591fe9a46b862684bb10a2fc572f7",
+    "hermesvm": "d93d6fb893ffcdd49017168c2381d527cd81fd924f95fcdf9129b602a8c51dc8"
+  },
+  "earlierAttempts": [
+    {
+      "passed": false,
+      "stage": "link",
+      "reason": "CocoaPods global -ObjC forced repeated Tauri/SwiftRs objects in the original archive, yielding 317 duplicate symbols. Scoped loading of only the three RN static libraries preserves archive bytes; pinned RN frameworks are dynamic.",
+      "logSha256": "ef4dbdb4da8c51e59bb6ae085154344f0cd8e9b142be68a2450469bf88fc91d3"
+    },
+    {
+      "passed": false,
+      "stage": "native assertion after successful resume UI flow",
+      "reason": "The factory tracked a module-provider placeholder instead of the actual ObjC module instance constructed by RN. listenersAfterRelease was 1, expected 0. Tracking actual instances through getModuleInstanceFromClass closes sessions before RN invalidation. Final same-scenario runs pass.",
+      "actualListenersAfterRelease": 1,
+      "expectedListenersAfterRelease": 0,
+      "uiFlowPassed": true,
+      "junitSha256": "e57f91cc8ecb287703cf1fb1fbbad95ca3a2d1c7317e3cc6c8edfc1e4b712400",
+      "buildLogSha256": "9b766225bfe9caa6791da98183e8bade8587a84496245fd6107ac7971505a1be"
+    }
+  ],
+  "diagnosticChecks": [
+    {
+      "scope": "CocoaPods configuration only, using the real generated xcconfig",
+      "passed": true,
+      "scenario": "Adding an unverified framework is rejected before changing the existing output configuration.",
+      "probeSha256": "0b22464b263235353b2ffe4e14e390ee38288ab060946e670608adc02fd1ec26"
+    },
+    {
+      "scope": "Installed RN package versions and SDK codegen output",
+      "passed": true,
+      "scenario": "Installed RN 0.87.1 is rejected before replacing existing generated code.",
+      "probeSha256": "92f214e25916c64378a19167a06ab19f04b7205d7d780216a476451280fda7b4",
+      "logSha256": "b0f30cec1ab0506829ac4a07368d43e0b1a99c378660f1db1bf55385d5826b40"
+    }
+  ],
+  "scope": "Consumes the previously validated producer-deleted format 2 iOS artifact after relocation; no Rust re-export. The unchanged Tauri archive links once. Native codegen and normal RN prebuilt-framework scripts use Node. iOS permission denial and grant use separate explicit process legs after privacy reset; grant/background/replacement/removal retain one process and the original AppDelegate. Consumer fixtures own attachment/layout/telemetry; no producer-specific bridge.",
+  "remaining": [
+    "automatic composition/autolinking",
+    "Expo CNG and native-module integration",
+    "retained TauriView",
+    "forwarding original URL callbacks into RN Linking on iOS",
+    "consistent structured session-open failures across platforms",
+    "native renderer destruction during a pending OS permission callback",
+    "broader lifecycle and full six-combination/device/independent-adopter release acceptance"
+  ]
+}

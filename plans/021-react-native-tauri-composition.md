@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — packed RN Android Release/R8 execution passes with retained artifacts; iOS, Expo and automatic composition remain open.
+- Status: IN PROGRESS — packed RN iOS/Android Release execution passes with retained artifacts and explicit consumer attachment; Expo and automatic composition remain open.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#41](https://github.com/gronxb/tauri-native/issues/41) (plan 017), [#44](https://github.com/gronxb/tauri-native/issues/44) (plan 020)
@@ -33,7 +33,7 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 
 ## Acceptance
 
-- [ ] iOS and Android RN Release executions pass with copied runtime artifacts.
+- [x] iOS and Android RN Release executions pass with copied runtime artifacts (packed SDK gates with explicit consumer attachment; automatic composition remains open).
 - [ ] Ordinary standalone Tauri Mobile remains independently runnable.
 - [ ] Existing limited-adapter users have an explicit migration path.
 
@@ -84,3 +84,37 @@ OS permission callback, migration and full parity/device/adopter gates remain
 required. The input artifact is unchanged; this consumption run does not re-export
 Rust or re-prove the later Android origin-capture fix. No acceptance item is
 closed by the Android-only result.
+
+## iOS SDK execution (2026-09-09)
+
+The packed iOS SDK now provides `TNReactHost`, an isolated generated TurboModule
+and CocoaPods integration helpers. It uses RN/codegen 0.86.3 with matching
+prebuilt React/Hermes frameworks. The consumer requires iOS 16.4; the original
+producer and immutable artifact keep their deployment settings. The ordinary
+Tauri bootstrap, `AppDelegate`, native session client and archive remain in place.
+
+`packages/react-native/test/retained-ios.ts` passes seven Release simulator UI
+flows after relocation, with no Rust toolchain access: separate Tauri/native/OS
+permission decisions, real Swift geolocation/save/events, background deep links,
+RN engine replacement and removal. Setup/state stay shared, native listeners go
+to zero before replacement and after removal, and fresh events reach only the
+new renderer. Own-process thread inspection finds one RN JS thread after
+replacement and zero after removal. The original frontend continues handling
+commands in the same process with the original delegate.
+[Execution evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-react-ios-2026-09-09.json).
+
+The first link failed because global `-ObjC` forced duplicate Swift objects in
+the original Tauri archive. The helper now loads only the three RN static
+libraries explicitly; the RN frameworks are dynamic and Tauri archive bytes
+remain identical. An actual lifecycle assertion also found that RN constructs a
+different module instance from the provider placeholder; the factory now tracks
+actual instances through `getModuleInstanceFromClass`, closing their sessions
+before RN invalidation. Both failures are recorded separately from final passes.
+Unsupported framework configuration and RN 0.87.1 produce explicit diagnostics
+without overwriting the prior configuration/generated code in the checked cases.
+
+The iOS consumer fixture still owns attachment/layout and telemetry. RN Linking
+URL forwarding, consistent structured session-open diagnostics, Expo CNG,
+automatic composition/autolinking, retained TauriView, pending-OS-callback
+renderer retirement and full lifecycle/parity/device/adopter gates remain open.
+The two platform SDK executions do not complete this issue or authorize a release.
