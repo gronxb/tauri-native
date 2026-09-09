@@ -3,30 +3,9 @@ import { lstatSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { ArtifactError } from './artifacts.ts';
 
+import type { RetainedArtifact } from './retained-artifacts.d.cts';
+export type { RetainedArtifact, RetainedAndroidArtifact, RetainedIosArtifact } from './retained-artifacts.d.cts';
 export const retainedAndroidAbis = { aarch64: 'arm64-v8a', armv7: 'armeabi-v7a', i686: 'x86', x86_64: 'x86_64' } as const;
-interface RetainedArtifactBase {
-  formatVersion: 2;
-  abiVersion: 3;
-  generator: { name: '@tauri-native/cli'; version: string };
-  compatibility: { mode: 'retained'; tauri: '2.11.5'; tauriCli: '2.11.4'; wry: '0.55.1'; tauriRuntimeWry: '2.11.4' };
-  profile: 'debug' | 'release';
-  plugins: Record<string, string>;
-  commands: 'commands.json';
-  callers: 'callers.json';
-  source: Record<string, string>;
-  files: { path: string; sha256: string; size: number }[];
-}
-export interface RetainedAndroidArtifact extends RetainedArtifactBase {
-  platform: 'android';
-  bootstrap: { owner: 'tauri'; project: 'android'; applicationId: string; activity: string; minimumApiLevel: 24 };
-  native: { abi: typeof retainedAndroidAbis[keyof typeof retainedAndroidAbis]; path: string }[];
-}
-export interface RetainedIosArtifact extends RetainedArtifactBase {
-  platform: 'ios';
-  bootstrap: { owner: 'tauri'; project: 'ios'; xcodeProject: string; target: string; applicationId: string; minimumOsVersion: string };
-  native: { path: string; variant: 'device' | 'simulator'; architectures: ('arm64' | 'x86_64')[] }[];
-}
-export type RetainedArtifact = RetainedAndroidArtifact | RetainedIosArtifact;
 
 /** Source-free consumer validation. Format 1 hosts deliberately reject this format. */
 export function readRetainedArtifacts(directory: string): RetainedArtifact {
@@ -55,7 +34,7 @@ export function readRetainedArtifacts(directory: string): RetainedArtifact {
           !Array.isArray(slice.architectures) || !slice.architectures.length || new Set(slice.architectures).size !== slice.architectures.length ||
           slice.architectures.some(arch => !['arm64', ...(slice.variant === 'simulator' ? ['x86_64'] : [])].includes(arch))))) fail('artifact_slice', 'invalid iOS native slices');
     if (!Array.isArray(manifest.files)) fail('artifact_inventory', 'missing file inventory');
-    const files = new Map<string, RetainedArtifactBase['files'][number]>();
+    const files = new Map<string, RetainedArtifact['files'][number]>();
     for (const file of manifest.files) {
       if (!file || typeof file.path !== 'string' || !file.path || /[\\:\0]/.test(file.path) || file.path.split('/').some(part => !part || part === '.' || part === '..') ||
           file.path === 'manifest.json' || files.has(file.path) || !/^[a-f0-9]{64}$/.test(file.sha256) || !Number.isSafeInteger(file.size) || file.size < 0) fail('artifact_inventory', 'invalid or duplicate file receipt');

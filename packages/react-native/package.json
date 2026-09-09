@@ -22,7 +22,15 @@
       "types": "./artifacts.d.ts",
       "default": "./artifacts.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./retained-artifacts": {
+      "types": "./retained-artifacts.d.ts",
+      "default": "./retained-artifacts.js"
+    },
+    "./compose": {
+      "types": "./compose.d.ts",
+      "default": "./compose.js"
+    }
   },
   "files": [
     "app.plugin.js",
@@ -49,7 +57,11 @@
     "README.md",
     "RETAINED.md",
     "src",
-    "*.podspec"
+    "*.podspec",
+    "retained-artifacts.js",
+    "retained-artifacts.d.ts",
+    "compose.js",
+    "compose.d.ts"
   ],
   "scripts": {
     "build": "node --experimental-strip-types ../../scripts/sync-host-files.ts react-native && bob build",

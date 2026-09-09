@@ -1,0 +1,255 @@
+{
+  "passed": true,
+  "platform": "android",
+  "profile": "release",
+  "formatVersion": 2,
+  "abiVersion": 3,
+  "renderer": "React Native 0.86.3 / Hermes 250829098.0.17 / generated TurboModule and Fabric",
+  "sourceFree": true,
+  "sourceFreeBuild": "PATH=/usr/bin:/bin:/usr/sbin:/sbin ./gradlew --no-daemon assembleRelease",
+  "nonDebuggable": true,
+  "libraries": [
+    "lib/arm64-v8a/libappmodules.so",
+    "lib/arm64-v8a/libc++_shared.so",
+    "lib/arm64-v8a/libfbjni.so",
+    "lib/arm64-v8a/libhermestooling.so",
+    "lib/arm64-v8a/libhermesvm.so",
+    "lib/arm64-v8a/libimagepipeline.so",
+    "lib/arm64-v8a/libjsi.so",
+    "lib/arm64-v8a/libnative-filters.so",
+    "lib/arm64-v8a/libnative-imagetranscoder.so",
+    "lib/arm64-v8a/libordinary_tauri_mobile_fieldnotes_lib.so",
+    "lib/arm64-v8a/libreactnative.so"
+  ],
+  "elfAlignment": "All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed",
+  "packageSha256": "0fbdb4bb2b9f849e23f8f64e7dc0ae7b87a970be3d932527db4116edea5913cc",
+  "artifactSha256": "111bbef2dfcdf57278717594837ffe8a72c592c932f521636068436a8b52e962",
+  "apkSha256": "a9247f680842dc326ad634b8dc3a8b4043733c190cfa89ea594ec026046f3a60",
+  "defaultActivity": {
+    "activity": "dev.taurinative.mobilefieldnotes.TauriNativeActivity",
+    "pid": "23970",
+    "apkSha256": "0d3d95190d52c94010fa4bca78f74acc7515645c14b50e9f64c5f4ccb2e98771",
+    "overriddenHooks": false
+  },
+  "bundleSha256": "c1eb6899fefce07ef01a2289d194daf75f93e357213cc38e3552616ec8a3a94b",
+  "baseline": {
+    "directory": "/data/user/0/dev.taurinative.mobilefieldnotes",
+    "passed": true,
+    "reloaded": true,
+    "scenarios": [
+      "setup",
+      "state",
+      "app-handle",
+      "async",
+      "rust-event",
+      "plugin-setup",
+      "plugin-allowed",
+      "plugin-denied",
+      "domain-error",
+      "reload"
+    ],
+    "state": {
+      "appIdentifier": "dev.taurinative.mobilefieldnotes",
+      "pluginSetupCount": 1,
+      "setupCount": 1,
+      "value": 45
+    }
+  },
+  "initial": {
+    "generation": 1,
+    "resumed": 1,
+    "paused": 0,
+    "stopped": 0,
+    "hostClosed": false,
+    "hostDestroyed": false,
+    "receivedIntents": [],
+    "listeners": 1,
+    "listenersAfterRelease": -1,
+    "pid": 22314,
+    "notes": []
+  },
+  "remounted": {
+    "generation": 2,
+    "resumed": 4,
+    "paused": 3,
+    "stopped": 1,
+    "hostClosed": false,
+    "hostDestroyed": false,
+    "receivedIntents": [
+      "tauri-fieldnotes://notes/1"
+    ],
+    "listeners": 1,
+    "listenersAfterRelease": 0,
+    "pid": 22314,
+    "notes": [
+      {
+        "id": 1,
+        "text": "A RN place to remember",
+        "latitude": 37.5664983,
+        "longitude": 126.9779983
+      }
+    ]
+  },
+  "closed": {
+    "generation": 2,
+    "resumed": 5,
+    "paused": 4,
+    "stopped": 1,
+    "hostClosed": true,
+    "hostDestroyed": true,
+    "receivedIntents": [
+      "tauri-fieldnotes://notes/1",
+      "tauri-fieldnotes://notes/1?remounted=1"
+    ],
+    "listeners": 0,
+    "listenersAfterRelease": 0,
+    "pid": 22314,
+    "notes": [
+      {
+        "id": 1,
+        "text": "A RN place to remember",
+        "latitude": 37.5664983,
+        "longitude": 126.9779983
+      }
+    ]
+  },
+  "notes": [
+    {
+      "id": 1,
+      "text": "A RN place to remember",
+      "latitude": 37.5664983,
+      "longitude": 126.9779983
+    }
+  ],
+  "uiScenarios": [
+    "shared original state/setup",
+    "Tauri ACL and native caller denial",
+    "OS permission denial/grant",
+    "save and event",
+    "background deep link and event",
+    "renderer replacement retires native subscriptions",
+    "fresh renderer receives only fresh events",
+    "RN BackHandler and Linking routing",
+    "remove RN and keep original Tauri frontend",
+    "unmodified generated Activity/default layout with system insets",
+    "default generated Activity BackHandler/Linking and original Tauri event/ACL state"
+  ],
+  "testOnlyIntegration": "Acceptance subclass supplies layout, baseline readiness and telemetry; packed composeAndroid generates Tauri/RN attachment, startup and lifecycle forwarding. A second Release APK runs the unmodified generated Activity/default layout without that subclass. The original MainActivity and TauriActivity remain in the inheritance chain. Expo, iOS automatic composition and broader source-form coverage remain open.",
+  "testOnlySigning": "Non-debuggable Release with R8 optimization and a debug test signing key; process-scoped logcat telemetry",
+  "recordedAt": "2026-09-09T11:06:03.287458+00:00",
+  "command": "PATH=\"$HOME/.cargo/bin:$HOME/Library/Android/sdk/platform-tools:$HOME/.maestro/bin:$PATH\" JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" ANDROID_HOME=\"$HOME/Library/Android/sdk\" NDK_HOME=\"$HOME/Library/Android/sdk/ndk/27.1.12297006\" ANDROID_SERIAL=emulator-5554 node --experimental-strip-types packages/react-native/test/retained-android.ts",
+  "toolchain": {
+    "node": "v24.15.0",
+    "npm": "11.12.1",
+    "java": "21.0.10+-117844308-b1163.108",
+    "gradle": "8.14.3",
+    "androidGradlePlugin": "8.11.0",
+    "kotlin": "2.1.20",
+    "ndk": "27.1.12297006",
+    "cmake": "3.22.1",
+    "reactNative": "0.86.3",
+    "codegen": "0.86.3",
+    "hermes": "250829098.0.17",
+    "maestro": "2.4.0",
+    "emulator": "Pixel 10 Pro XL, API 37, arm64, 16 KB",
+    "emulatorFingerprint": "google/sdk_gphone16k_arm64/emu64a16k:17/CP21.260330.005/15181570:user/dev-keys"
+  },
+  "sdkSourceSha256": {
+    "packages/react-native/plugin/retained-compose.cts": "53282ead93f568ffceaf990ad7b471f1af161b254cd0eee8352e518135100b2a",
+    "packages/react-native/plugin/retained-compose-types.d.cts": "039fd4db598bd7b1d0b0317ffbe53fc468450827b17d310500723d9131937f96",
+    "packages/react-native/compose.js": "b7313916793c0c8e9c37511d2034c4090499cb1e32fa6caede5cf5aa03c91deb",
+    "packages/react-native/compose.d.ts": "039fd4db598bd7b1d0b0317ffbe53fc468450827b17d310500723d9131937f96",
+    "packages/react-native/retained/android/TauriNativeActivity.kt.template": "9f508789f2451a1e64f4b52f8f2320063b31e02a0487b9f63fa5335350310388",
+    "packages/react-native/package.json": "8ab435d8cd7ef2f02993374edf02dd9ada46de25400f4556d9f07503139a8ac0",
+    "scripts/retained-artifacts.ts": "31aa122c198db8f112f4279b59a2525bba4325e4c5753473efce3d0cbdbd7380",
+    "scripts/retained-artifacts.d.cts": "72c512132b056e6e30250644309e8678e0143ea66969a89e6959c35f4ca4d2c6",
+    "scripts/sync-host-files.ts": "edb3e461da417bebfe94aa483a07c41db4667d5b20713138406252ddd7662974"
+  },
+  "gateSourceSha256": {
+    "packages/react-native/test/retained-android.ts": "d40889b4dcf47522049961596974c1021551ff9a11f54795d1f9809365e259f8",
+    "packages/react-native/test/retained/AcceptanceActivity.kt.fixture": "0ae3c3b69b7a29e1809013d6d3bf3d56943c546075b7c8511d40cdab21f9c07d",
+    "packages/react-native/test/retained/index.tsx.fixture": "34a4fa35a0014a529f65d052ac65aea77890e09c2ef22eea6e6bfe8bdae7e530",
+    "packages/react-native/test/retained/build.cjs.fixture": "5af288db15080da38c5cf493badc3b80dc87ee731f41dd42ac37b69a9a65f740",
+    "packages/react-native/test/retained-compose.test.ts": "6077a9602468bc675a979cced3ae156e5acc895e887481d953f4ce81976ff129"
+  },
+  "junitSha256": {
+    "initial": "e2412ea7d981a4014d0f6fbe7d3c308aea0bcdcf3434c566cd18cea3c14e136e",
+    "back": "c21cc25bacdc840ac8efd2874fa8df4fe2d66b053f3f93729f214b3074ccefa3",
+    "deny-permission": "551afe6cc9911758be7ebf4beec70ad9034b90a705b213f56d22ce9dce9cfa44",
+    "grant-permission": "c09e7bb44aaeab533cedf1990301d35421c1cd8b0a868b5491ceffdea645edcc",
+    "background": "2877c8206efca5cc419383f68891591bbbc30164a9722af00ab7abf4d962fafa",
+    "resume": "e36d3f6b11a36af0c6d0bb8f3bd8c7452e54f4a67286e08370266430fe801532",
+    "fresh-events": "99ba78435c4495fc19500e55c6fe298da633c9edf3963ced62f60881765cbf0a",
+    "remove-renderer": "111a4383deca631400b23f15b232afb5b1f0e912cbe1cbde265c2f5f0b1a3fdd",
+    "default-integration": "16fde3042f8c2073992a3d252fafbb5d5769172d75080125d1dea071cca316a0",
+    "default-link": "deaf88341588c4bd07f67c75e0c21940be52afdb9c9f5bd81d37fd834d486995"
+  },
+  "composition": {
+    "activity": "dev.taurinative.mobilefieldnotes.TauriNativeActivity",
+    "receiptSha256": "a29b1e0ae29943f020ae1cc314c7831cf5d683d51bea6991b08f4c26ef9dcf86",
+    "generatedFiles": 98,
+    "artifactSha256": "111bbef2dfcdf57278717594837ffe8a72c592c932f521636068436a8b52e962",
+    "integrationSha256": {
+      "android/app/build.gradle.kts": "e054dc21758f286946a36c575e63bd7b237461040e62addd0040ddada467e6e7",
+      "android/app/src/main/AndroidManifest.xml": "c63f0ebe051dfe6967fc7393013282f49924ab90d83246a081270cdc60d2017f",
+      "android/app/src/main/java/dev/taurinative/mobilefieldnotes/MainActivity.kt": "50022da11613f2399150094a011844a86397848866b00e6a621670d6d5e2cd9a",
+      "android/app/src/main/java/dev/taurinative/mobilefieldnotes/TauriNativeActivity.kt": "93de9e98b859a775240ab1064f8bd3e117a5985e6782d86066aee05a5227ec05",
+      "android/build.gradle.kts": "0351a0edcf9bb8cafc6e713497e31900af903a146305170472910e474d752517",
+      "android/settings.gradle": "a6ca0600009e689f9c02cdfc350f97468aefd9f9297ed8f8aa9197a3534cf518",
+      "android/tauri-native-runtime-client/build.gradle": "cf41383ebdc6302d78a37fbf92f73e3005965eb6fb413fb085254c9031ddf4c6"
+    }
+  },
+  "verification": {
+    "nativeJUnitFlows": 10,
+    "skippedFlows": 0,
+    "baselineScenarios": 10,
+    "jsTests": 19,
+    "compositionScenarios": 6,
+    "nativeGatePackageMatchesCurrentSdkFiles": true,
+    "reactPackageFiles": 100,
+    "lynxPackageFiles": 50,
+    "publicApiTypecheck": "Actual packed compose and retained-artifacts entry points consumed by an independent TypeScript file",
+    "unitScope": "Generation, idempotency, upgrade preservation, corrupt input, owner/version conflicts, edited outputs, alias/symlink collisions, injected replacement and rollback failures. Metadata fixtures are not native execution evidence.",
+    "defaultApkNonDebuggable": true,
+    "bothApksHaveIdenticalNativeLibraries": 11
+  },
+  "buildLogs": {
+    "source-free-build": "959ba264e4045ad30d811104492d7a73616da38efe30480767588af41a0d4e2b",
+    "default-source-free-build": "a64db974514f347f048d7332b62dd3a33f7cd74200926f122d6d05d22b87eebe",
+    "apk-alignment": "199dd1314075ea3a06af32777b391dca24a9013cc2c4c60525b44cfb52736ade",
+    "default-apk-alignment": "647966b7ed0ae11bc476c06843b3eb1ebd95c2037bf0c5806241cff649e4f8c1",
+    "default-apk-metadata": "aeaee77848b545d464136ea896a30dd52957bb2b0c42fc1dc2da3f95538823ed"
+  },
+  "earlierAttempts": [
+    {
+      "passed": false,
+      "stage": "default generated Activity UI",
+      "reason": "The original MainActivity enableEdgeToEdge behavior was retained; default RN container omitted system-bar insets. RN executed, but its heading overlapped the status bar and failed the visible assertion. The acceptance subclass layout had masked this default-layout issue.",
+      "nativePid": 21850,
+      "fix": "Apply actual systemBars/displayCutout insets only to the default RN container; preserve the original Tauri window and WebView.",
+      "evidence": {
+        "failed-default-run.log": "af95b8cbd732aa978c2ac3fc9bbd32d9fa95d8bc492f117d03b2d3825ede7e60",
+        "default-integration.log": "79a2409de9b33cf05f994d9720bb725777ebf63342f9f6079655722f5603fa5e",
+        "default-integration.xml": "a92daa2432b7aaa8c581acbedef28afc0e663466963747bc8a9d2e1993fd721f",
+        "failed-default-insets.png": "611816c1c38e7fad4253b7e5c9419413f0da291ae8cb15411569ad8393e7af53",
+        "default-source-free-build.log": "036e1184d92de320294f47d26d3ffd883964dd3f93397a62626a32e29a5d01d7"
+      },
+      "precedingAcceptanceFlowsPassed": 8
+    }
+  ],
+  "scope": "Packed composeAndroid and public reader generate a copied artifact-only consumer at a path with spaces. Native library and producer input bytes remain unchanged. The standard original MainActivity is opened for inheritance in the generated copy; original TauriActivity, bootstrap and plugin routing remain. The first APK uses an acceptance subclass only for layout/readiness/telemetry; the second removes that subclass and executes the unmodified generated Activity/default layout. Both use Release/R8 and no Rust on PATH. This is consumption of the previous validated export, not a fresh Rust export or renewed Android origin-capture regression.",
+  "remaining": [
+    "iOS and Lynx automatic composition",
+    "Expo CNG and third-party module autolinking",
+    "retained TauriView and navigation contract",
+    "custom producer Activity/Application source forms",
+    "RN-owned permissions and Activity recreation",
+    "renderer retirement while an actual OS permission callback is pending",
+    "iOS Linking and structured session-open diagnostic parity",
+    "full six-combination parity, physical devices and independent adopters"
+  ],
+  "primaryReferences": [
+    "https://developer.android.com/develop/ui/views/layout/edge-to-edge",
+    "https://issuetracker.google.com/issues/430991549"
+  ]
+}

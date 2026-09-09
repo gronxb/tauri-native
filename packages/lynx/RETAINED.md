@@ -149,3 +149,11 @@ cross-renderer artifact parity, and complete M8
 acceptance remain tracked in [#46](https://github.com/gronxb/tauri-native/issues/46)
 and [#47](https://github.com/gronxb/tauri-native/issues/47). The format 1 view cannot
 be used as a retained view. This API is not a claim of a published npm release.
+
+## Source-free artifact reader
+
+`@tauri-native/lynx/retained-artifacts` exports `readRetainedArtifacts(directory)`
+for complete format 2 / ABI 3 validation before integration. It uses Node.js
+without loading Lynx, Rust or producer sources, and checks the native inventory,
+pinned runtime/plugin versions and build receipts. It shares its implementation
+with the RN package. This reader does not automatically compose a Lynx native app.

@@ -17,7 +17,9 @@ async function compile(source: string) {
   return '// Generated from TypeScript by scripts/sync-host-files.ts.\n' + chunk.code;
 }
 const artifacts = await compile('artifacts.ts');
+const retainedArtifacts = await compile('retained-artifacts.ts');
 const plugin = host === 'react-native' ? await compile('../packages/react-native/plugin/app.plugin.cts') : undefined;
+const compose = host === 'react-native' ? await compile('../packages/react-native/plugin/retained-compose.cts') : undefined;
 const client = (android: boolean) => webViewClient
   .replace("'__TAURI_NATIVE_HOST__'", JSON.stringify(host))
   .replace('__TAURI_NATIVE_POST_MESSAGE__', android
@@ -25,7 +27,10 @@ const client = (android: boolean) => webViewClient
     : 'window.webkit.messageHandlers.tauriNative.postMessage(JSON.parse(JSON.stringify(message)))');
 for (const [source, destination] of [
   ['artifacts.ts', host === 'lynx' ? 'artifacts.cjs' : 'artifacts.js'],
+  ['retained-artifacts.ts', host === 'lynx' ? 'retained-artifacts.cjs' : 'retained-artifacts.js'],
+  ['retained-artifacts.d.cts', 'retained-artifacts.d.ts'],
   ...(host === 'react-native' ? [['../packages/react-native/plugin/app.plugin.cts', 'app.plugin.js']] : []),
+  ...(host === 'react-native' ? [['../packages/react-native/plugin/retained-compose.cts', 'compose.js'], ['../packages/react-native/plugin/retained-compose-types.d.cts', 'compose.d.ts']] : []),
   ['artifacts.d.cts', 'artifacts.d.ts'],
   ['async-client.ts', 'src/async-client.ts'],
   ['retained-client.ts', 'src/retained-client.ts'],
@@ -39,7 +44,7 @@ for (const [source, destination] of [
   ['webview-bridge.java', host === 'lynx' ? 'android/src/main/java/dev/taurinative/lynx/TauriJavascriptBridge.java' : 'android/src/main/java/com/reactnativetauri/TauriJavascriptBridge.java'],
   ['android-view-state.java', host === 'lynx' ? 'android/src/main/java/dev/taurinative/lynx/TauriViewState.java' : 'android/src/main/java/com/reactnativetauri/TauriViewState.java'],
 ] as [string, string][]) {
-  const contents: string = (source === 'artifacts.ts' ? artifacts : source.endsWith('app.plugin.cts') ? plugin! : readFileSync(new URL(source, import.meta.url), 'utf8'))
+  const contents: string = (source === 'artifacts.ts' ? artifacts : source === 'retained-artifacts.ts' ? retainedArtifacts : source.endsWith('app.plugin.cts') ? plugin! : source.endsWith('retained-compose.cts') ? compose! : readFileSync(new URL(source, import.meta.url), 'utf8'))
     .replaceAll('__TAURI_NATIVE_JNI_CLASS__', host === 'lynx' ? 'Java_dev_taurinative_lynx_TauriNativeRust' : 'Java_com_reactnativetauri_TauriNativeRust')
     .replaceAll('__TAURI_NATIVE_OBJC_BRIDGE__', host === 'lynx' ? 'TNTauriLynxRustBridge' : 'TNTauriRustBridge')
     .replaceAll('__TAURI_NATIVE_SWIFT_VIEW__', host === 'lynx' ? 'TNTauriLynxWebView' : 'TNTauriWebView')

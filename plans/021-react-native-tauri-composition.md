@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — packed RN iOS/Android Release execution passes with retained artifacts and explicit consumer attachment; Expo and automatic composition remain open.
+- Status: IN PROGRESS — packed RN iOS/Android Release execution and Android automatic composition pass; Expo and iOS automatic composition remain open.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#41](https://github.com/gronxb/tauri-native/issues/41) (plan 017), [#44](https://github.com/gronxb/tauri-native/issues/44) (plan 020)
@@ -118,3 +118,37 @@ URL forwarding, consistent structured session-open diagnostics, Expo CNG,
 automatic composition/autolinking, retained TauriView, pending-OS-callback
 renderer retirement and full lifecycle/parity/device/adopter gates remain open.
 The two platform SDK executions do not complete this issue or authorize a release.
+
+## Android automatic composition (2026-09-09)
+
+`@tauri-native/react-native/compose` now generates a native consumer from a
+validated copied artifact and an offline RN bundle. The original `MainActivity`
+keeps its implementation and becomes open only in the generated copy; a generated
+subclass owns RN startup, document readiness, attachment and lifecycle forwarding.
+The original Tauri/Wry Activity and native plugin bootstrap remain in the chain.
+Both SDKs now ship the same source-free `retained-artifacts` reader.
+
+The revised packed gate passes ten Release/R8 UI flows without Rust. An acceptance
+subclass supplies only layout, baseline readiness and telemetry for shared state,
+permissions, native plugins/events, BackHandler/Linking and RN replacement/removal.
+A second clean-installed APK removes that subclass and executes the unmodified
+generated Activity/default layout, including readiness, state, ACL, BackHandler
+and deep links. Both APKs are non-debuggable, have identical eleven native
+libraries and pass 16 KB alignment.
+[Execution evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-react-compose-android-2026-09-09.json).
+
+The first default-layout run exposed text behind the system status bar: the
+original Tauri `enableEdgeToEdge` was correctly preserved but RN's container
+needed system-bar/cutout insets. The SDK applies those insets without changing
+the original window or WebView. The failed run and corrected pass are separate
+evidence. Six configuration tests cover regeneration, upgrades, corrupt inputs,
+owner/version conflicts, edited files, aliases/symlinks and publication/rollback
+failure preservation. These metadata/fault-injection cases are distinct from
+native execution. All nineteen RN/shared JS tests and public package typechecks
+pass. No producer or input artifact files change.
+
+This automatic path supports the pinned standard Android Activity and a bundled
+RN 0.86.3 renderer. iOS/Lynx automatic composition, Expo CNG, third-party module
+autolinking, custom lifecycle owners, retained TauriView, remaining permission/
+lifecycle scenarios and complete parity/device/adopter evidence remain open.
+This increment does not close #45 or authorize package publication.

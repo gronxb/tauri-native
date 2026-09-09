@@ -20,6 +20,10 @@
     "./artifacts": {
       "types": "./artifacts.d.ts",
       "default": "./artifacts.cjs"
+    },
+    "./retained-artifacts": {
+      "types": "./retained-artifacts.d.ts",
+      "default": "./retained-artifacts.cjs"
     }
   },
   "files": [
@@ -38,7 +42,9 @@
     "types",
     "lynx.lib.json",
     "README.md",
-    "RETAINED.md"
+    "RETAINED.md",
+    "retained-artifacts.cjs",
+    "retained-artifacts.d.ts"
   ],
   "scripts": {
     "build": "node --experimental-strip-types ../../scripts/sync-host-files.ts lynx && nub run codegen && tsc --noEmit",

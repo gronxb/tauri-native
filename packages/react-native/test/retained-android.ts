@@ -19,7 +19,8 @@ assert(device, 'Choose an arm64 ANDROID_SERIAL emulator');
 const evidence = path.join(root, 'target/react-retained-android');
 const consumer = path.join(evidence, 'source free consumer');
 const renderer = path.join(consumer, 'renderer');
-const android = path.join(consumer, 'android');
+const generated = path.join(consumer, 'composed application');
+const android = path.join(generated, 'android');
 const appId = manifest.bootstrap.applicationId;
 const env: NodeJS.ProcessEnv = { ...process.env, NODE_OPTIONS: '' };
 const release = acquireMobileTest(root);
@@ -57,8 +58,9 @@ function flow(label: string, steps: string) {
   run(label, 'maestro', ['--udid', device!, 'test', '--format', 'junit', '--output', path.join(evidence, `${label}.xml`), file]);
 }
 try {
-  rmSync(consumer, { recursive: true, force: true }); cpSync(artifact, consumer, { recursive: true });
-  assert.deepEqual(readRetainedArtifacts(consumer), manifest);
+  rmSync(consumer, { recursive: true, force: true }); mkdirSync(consumer, { recursive: true });
+  const copied = path.join(consumer, 'copied runtime'); cpSync(artifact, copied, { recursive: true });
+  assert.deepEqual(readRetainedArtifacts(copied), manifest);
   assert.equal(run('emulator', 'adb', ['-s', device, 'shell', 'getprop', 'ro.kernel.qemu']), '1');
   assert.equal(run('abi', 'adb', ['-s', device, 'shell', 'getprop', 'ro.product.cpu.abi']), 'arm64-v8a');
   // The consumer uses the actual npm tarball. No workspace source alias supplies the module.
@@ -73,29 +75,20 @@ try {
   writeFileSync(path.join(renderer, 'babel.config.json'), '{"presets":["babel-preset-expo"]}\n');
   run('renderer-build', process.execPath, ['build.cjs', 'android'], renderer, { ...env, PROOF_REPOSITORY: root, RETAINED_SDK_DIR: sdk });
   const bundle = path.join(renderer, 'index.bundle.js');
-  const assets = path.join(android, 'app/src/main/assets'); mkdirSync(assets, { recursive: true });
-  cpSync(bundle, path.join(assets, 'index.bundle.js'));
-  const reactRequire = createRequire(path.join(root, 'examples/react-native/node_modules/react-native/package.json'));
-  const reactNative = path.dirname(reactRequire.resolve('react-native/package.json'));
-  const codegen = path.dirname(createRequire(path.join(reactNative, 'package.json')).resolve('@react-native/codegen/package.json'));
-  assert.equal(JSON.parse(readFileSync(path.join(reactNative, 'package.json'), 'utf8')).version, '0.86.3');
-  assert.equal(JSON.parse(readFileSync(path.join(codegen, 'package.json'), 'utf8')).version, '0.86.3');
-  const rootGradle = path.join(android, 'build.gradle.kts');
-  writeFileSync(rootGradle, readFileSync(rootGradle, 'utf8').replace('1.9.25', '2.1.20') + `\nextra["tauriNativeReactNativeDir"] = ${JSON.stringify(reactNative)}\nextra["tauriNativeReactCodegenDir"] = ${JSON.stringify(codegen)}\nextra["tauriNativeNode"] = ${JSON.stringify(process.execPath)}\nextra["tauriNativeAbis"] = listOf(${manifest.native.map(slice => JSON.stringify(slice.abi)).join(', ')})\n`);
-  // AGP 8.11 K2 lint crashes on Tauri's apply(from = "tauri.build.gradle.kts") (b/430991549).
-  // Keep Release lint enabled, using its supported K1 analyzer with this pinned toolchain.
-  const properties = path.join(android, 'gradle.properties');
-  writeFileSync(properties, readFileSync(properties, 'utf8') + '\nandroid.lint.useK2Uast=false\n');
-  const client = path.join(android, 'tauri-native-runtime-client');
-  const clientJava = path.join(client, 'src/main/java/dev/taurinative/runtime'); mkdirSync(clientJava, { recursive: true });
-  const originalClient = path.join(android, 'app/src/main/java/dev/taurinative/runtime/RuntimeSession.java');
-  cpSync(originalClient, path.join(clientJava, 'RuntimeSession.java')); rmSync(originalClient);
-  writeFileSync(path.join(client, 'build.gradle'), `plugins { id 'com.android.library' }\nandroid {\n namespace 'dev.taurinative.runtime'\n compileSdk 35\n defaultConfig { minSdk 24 }\n compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }\n}\n`);
-  const settings = path.join(android, 'settings.gradle');
-  writeFileSync(settings, readFileSync(settings, 'utf8') + "\ninclude ':tauri-native-runtime-client', ':tauri-native-react'\nproject(':tauri-native-react').projectDir = new File(settingsDir, '../package/android/retained')\n");
-  cpSync(new URL('./retained/MainActivity.kt.fixture', import.meta.url), path.join(android, 'app/src/main/java/dev/taurinative/mobilefieldnotes/MainActivity.kt'));
+  const { composeAndroid } = createRequire(path.join(consumer, 'consumer.cjs'))(path.join(sdk, 'compose.js'));
+  const { readRetainedArtifacts: packedReader } = createRequire(path.join(consumer, 'consumer.cjs'))(path.join(sdk, 'retained-artifacts.js'));
+  assert.deepEqual(packedReader(copied), manifest);
+  const options = { artifactsDir: copied, outputDir: generated, rendererDir: renderer, moduleName: 'RetainedFieldnotes', bundleFile: bundle };
+  const composition = composeAndroid(options); assert.equal(composition.changed, true);
+  assert.equal(composeAndroid(options).changed, false, 'Identical composition must preserve generated files');
+  const receipt = JSON.parse(readFileSync(path.join(generated, 'tauri-native-composition.json'), 'utf8'));
+  // A subclass adds only acceptance layout/telemetry. All attachment and lifecycle forwarding remain generated.
+  cpSync(new URL('./retained/AcceptanceActivity.kt.fixture', import.meta.url), path.join(android, 'app/src/main/java/dev/taurinative/mobilefieldnotes/AcceptanceActivity.kt'));
+  const manifestFile = path.join(android, 'app/src/main/AndroidManifest.xml');
+  const compositionManifest = readFileSync(manifestFile, 'utf8');
+  writeFileSync(manifestFile, compositionManifest.replace(`android:name="${composition.activity}"`, `android:name="${appId}.AcceptanceActivity"`));
   const gradle = path.join(android, 'app/build.gradle.kts');
-  writeFileSync(gradle, readFileSync(gradle, 'utf8').replace('getByName("release") {', 'getByName("release") {\n            signingConfig = signingConfigs.getByName("debug")') + `\nandroid { packaging { jniLibs.pickFirsts += "**/libc++_shared.so" }; defaultConfig { ndk { abiFilters += listOf(${manifest.native.map(slice => JSON.stringify(slice.abi)).join(', ')}) } } }\ndependencies { implementation(project(":tauri-native-react")); implementation(project(":tauri-native-runtime-client")) }\n`);
+  writeFileSync(gradle, readFileSync(gradle, 'utf8').replace('getByName("release") {', 'getByName("release") {\n            signingConfig = signingConfigs.getByName("debug")'));
   run('source-free-build', './gradlew', ['--no-daemon', 'assembleRelease'], android, { ...env, PATH: '/usr/bin:/bin:/usr/sbin:/sbin' });
   const apk = path.join(android, 'app/build/outputs/apk/release/app-release.apk');
   const apkMetadata = run('apk-metadata', path.join(process.env.ANDROID_HOME!, 'build-tools/36.0.0/aapt'), ['dump', 'badging', apk]);
@@ -114,7 +107,7 @@ try {
   }
   run('install', 'adb', ['-s', device, 'install', apk]); installed = true;
   run('gps', 'adb', ['-s', device, 'emu', 'geo', 'fix', '126.9780', '37.5665']);
-  run('launch', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-n', `${appId}/.MainActivity`]);
+  run('launch', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-n', `${appId}/.AcceptanceActivity`]);
   pid = run('pid', 'adb', ['-s', device, 'shell', 'pidof', appId]);
   await until(() => report('baseline').passed === true);
   flow('initial', '- assertVisible: "RN 86 Hermes"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"\n- tapOn: "Check permission"\n- assertVisible: "Permission prompt"');
@@ -143,15 +136,33 @@ try {
   const closed = report(); assert.equal(closed.listeners, 0); assert.equal(closed.hostClosed, true);
   assert.equal(closed.pid, initial.pid);
   assert.equal(run('final-pid', 'adb', ['-s', device, 'shell', 'pidof', appId]), pid);
+  const baseline = report('baseline');
+  const acceptanceApk = path.join(evidence, 'acceptance-release.apk'); cpSync(apk, acceptanceApk);
+  // Execute the unmodified generated Activity too: no acceptance subclass, readiness override or native layout hooks.
+  run('uninstall-acceptance', 'adb', ['-s', device, 'uninstall', appId]); installed = false;
+  writeFileSync(manifestFile, compositionManifest);
+  rmSync(path.join(android, 'app/src/main/java/dev/taurinative/mobilefieldnotes/AcceptanceActivity.kt'));
+  run('default-source-free-build', './gradlew', ['--no-daemon', 'assembleRelease'], android, { ...env, PATH: '/usr/bin:/bin:/usr/sbin:/sbin' });
+  run('default-apk-alignment', path.join(process.env.ANDROID_HOME!, 'build-tools/36.0.0/zipalign'), ['-c', '-P', '16', '-v', '4', apk]);
+  run('default-install', 'adb', ['-s', device, 'install', apk]); installed = true;
+  run('default-launch', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-n', `${appId}/${composition.activity}`]);
+  pid = run('default-pid', 'adb', ['-s', device, 'shell', 'pidof', appId]);
+  flow('default-integration', '- assertVisible: "RN 86 Hermes"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- pressKey: Back\n- assertVisible: "RN links 0 back 1"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"');
+  run('default-deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', 'tauri-fieldnotes://notes/default', '-p', appId]);
+  flow('default-link', '- assertVisible: "RN links 1 back 1"\n- assertVisible: "RN events 1"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 0 setup 1 plugins 1"');
+  assert.equal(run('default-final-pid', 'adb', ['-s', device, 'shell', 'pidof', appId]), pid);
   assert.deepEqual(readRetainedArtifacts(artifact), manifest);
+  assert.deepEqual(packedReader(copied), manifest);
   assert(!existsSync(path.join(consumer, 'src-tauri')), 'Consumer has no Rust producer');
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform: 'android', profile: 'release', formatVersion: 2, abiVersion: 3,
     renderer: 'React Native 0.86.3 / Hermes 250829098.0.17 / generated TurboModule and Fabric', sourceFree: true, sourceFreeBuild: 'PATH=/usr/bin:/bin:/usr/sbin:/sbin ./gradlew --no-daemon assembleRelease',
     nonDebuggable: true, libraries, elfAlignment: 'All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed',
     packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-react-native-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
-    apkSha256: sha256(readFileSync(apk)), bundleSha256: sha256(readFileSync(bundle)), baseline: report('baseline'), initial, remounted, closed, notes,
+    apkSha256: sha256(readFileSync(acceptanceApk)), defaultActivity: { activity: composition.activity, pid, apkSha256: sha256(readFileSync(apk)), overriddenHooks: false },
+    bundleSha256: sha256(readFileSync(bundle)), baseline, initial, remounted, closed, notes,
     uiScenarios: ['shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'save and event', 'background deep link and event', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'RN BackHandler and Linking routing', 'remove RN and keep original Tauri frontend'],
-    testOnlyIntegration: 'Consumer fixture layout/bootstrap hooks and RuntimeSession status telemetry; actual packed SDK owns its generated TurboModule, ReactHost/Fabric surface, native event/request lifetime and BackHandler dispatch. Consumer forwards Activity lifecycle/results/intents. Automatic composition/Expo and iOS acceptance remain open.',
+    composition: receipt,
+    testOnlyIntegration: 'Acceptance subclass supplies layout, baseline readiness and telemetry; packed composeAndroid generates Tauri/RN attachment, startup and lifecycle forwarding. A second Release APK runs the unmodified generated Activity/default layout without that subclass. The original MainActivity and TauriActivity remain in the inheritance chain. Expo, iOS automatic composition and broader source-form coverage remain open.',
     testOnlySigning: 'Non-debuggable Release with R8 optimization and a debug test signing key; process-scoped logcat telemetry',
   }, null, 2) + '\n');
   console.log(`PASS: packed RN retained Android SDK native acceptance. ${evidence}/report.json`);

@@ -45,55 +45,68 @@ This path pins RN/codegen 0.86.3, Hermes 250829098.0.17, Kotlin 2.1.20, NDK
 with a separate `ReactHost` owned by the package. It does not use RN's global
 default host cache or replace the Tauri Activity/Application.
 
-Keep the complete format 2 export. In its original Android project, compile
-the exported `RuntimeSession.java` once in an Android library named
-`:tauri-native-runtime-client`, with namespace `dev.taurinative.runtime`, minimum
-SDK 24 and Java 17. Link the original runtime and native plugin projects from
-the app. Include the installed SDK's `android/retained` directory as
-`:tauri-native-react` and add both libraries as app dependencies. Do not also
-link the default format 1 SDK library or another `appmodules` library.
+The package now exposes a source-free reader and Android composer:
 
-The original root Gradle build must provide these `extra` values:
+```js
+const { readRetainedArtifacts } = require('@tauri-native/react-native/retained-artifacts');
+const { composeAndroid } = require('@tauri-native/react-native/compose');
 
-| Value | Meaning |
-| --- | --- |
-| `tauriNativeReactNativeDir` | Resolved installed React Native directory. |
-| `tauriNativeReactCodegenDir` | Resolved `@react-native/codegen` directory for that RN installation. |
-| `tauriNativeNode` | Absolute Node executable for standard RN codegen. |
-| `tauriNativeAbis` | List of Android ABI names in the artifact's native slices. |
-
-Resolve dependency paths through Node's `require.resolve` from the installed RN
-package, including pnpm's real package path. The SDK runs RN's standard schema
-and native code generators on its isolated `retained/specs` source. These specs
-are separate from the format 1 package's codegen input. The host needs its normal
-Node/RN toolchain; it needs neither Rust nor the producer checkout.
-
-Use compile SDK 36 and Kotlin 2.1.20 for the original app's native compilation.
-Constrain application `ndk.abiFilters` to `tauriNativeAbis` and select one matching
-`libc++_shared.so` when merging RN/Hermes native dependencies. Preserve the
-artifact's R8 rules, permission declarations, assets and native Tauri projects.
-
-With the original AGP 8.11.0 build, set `android.lint.useK2Uast=false` in the
-consumer's `gradle.properties`. Its K2 lint analyzer crashes on applied Kotlin
-Gradle scripts ([upstream issue](https://issuetracker.google.com/issues/430991549)),
-including Tauri's `tauri.build.gradle.kts`. This selects the K1 analyzer while
-keeping Release lint checks enabled; it does not change Kotlin compilation.
-
-Call `TauriReactHost.initialize(application)` on main before the original
-Activity's `super.onCreate`. After the original Tauri document is ready, attach
-to a consumer-owned container:
-
-```kotlin
-host = TauriReactHost(this, container, "YourApp", "index.android.bundle")
+readRetainedArtifacts('./runtime/android');
+const result = composeAndroid({
+  artifactsDir: './runtime/android',
+  outputDir: './generated-android',
+  rendererDir: '.',
+  moduleName: 'YourApp',
+  bundleFile: './index.android.bundle',
+});
+console.log(result.project, result.activity);
 ```
 
-Forward Activity resume/pause, new Intents, activity results, window focus and
-configuration changes to the corresponding host methods, preserving original
-`super` calls. Apply the current resume/focus state when attaching after launch.
-The package installs its own lifecycle-bound AndroidX back callback: RN's
-`BackHandler` receives the event, and an unhandled back delegates to the original
-dispatcher. `onNewIntent` forwarding lets RN `Linking` receive the same Intent
-that the original Tauri plugin path receives.
+Build the offline Metro bundle first with the consumer's normal RN toolchain.
+Create the output's parent directory before calling the composer. The complete
+artifact, installed SDK and bundle must stay outside the generated output; the
+output may be a child of the renderer project. Build the returned Android
+project with Gradle. Release signing stays under the consumer's control.
+
+The composer validates every input file and the pinned RN/codegen versions
+before generating a copy. It preserves the original Tauri/native plugin projects,
+permissions, schemes, assets and libraries. The original `MainActivity` keeps
+its upstream `enableEdgeToEdge` and superclass startup; the generated
+`TauriNativeActivity` subclasses it. Only the copied original class is opened
+for inheritance. Its generated launcher owns RN initialization, waits for the
+real runtime and original document, attaches a Fabric surface, forwards Activity
+lifecycle/results/intents and closes RN at Activity destruction. The original
+Tauri/Wry Activity and application bootstrap remain in the inheritance chain.
+
+The default RN surface fills a container above the retained original WebView.
+A consumer subclass may override `createReactContainer(webView)` to choose a
+native layout and use the protected `tauriReactHost` for reload/removal. The
+`onReactHostAttached()` hook runs after attachment. Keep all original superclass
+calls. These hooks do not replace the planned React `TauriView` component.
+
+The generated Gradle integration compiles `RuntimeSession.java` once in a shared
+library, links the installed SDK, resolves RN/codegen through Node (including
+pnpm layouts), selects exported ABIs and keeps R8/Release lint. AGP 8.11.0 uses
+its K1 lint analyzer because its K2 analyzer crashes on applied Kotlin scripts
+([upstream issue](https://issuetracker.google.com/issues/430991549)). The producer
+and input receipt remain byte-identical and no Rust build is invoked.
+
+Generation stages a complete replacement of an owned output directory.
+Validation failures leave the old output intact; a failed rename restores it. If
+rollback also fails, the error identifies the preserved backup instead of deleting
+it. An identical invocation leaves generated files and build cache untouched. Upgrades
+preserve unrelated consumer files; edits to generated files, new file conflicts,
+symlink collisions, custom Activity/Application owners, competing renderer
+configuration and unverified toolchain versions receive explicit diagnostics.
+The current automatic path accepts the pinned standard Tauri `MainActivity`;
+custom lifecycle owners require separate integration evidence. The iOS composer,
+Expo CNG and third-party module autolinking remain open.
+
+`TauriReactHost` remains available for explicit native attachment. Its lifecycle
+methods must receive the original Activity callbacks; the generated Activity
+supplies these calls automatically. Its lifecycle-bound AndroidX back callback
+sends events to RN `BackHandler` and delegates unhandled events to the original
+dispatcher. RN `Linking` receives the same forwarded Intent as Tauri's own path.
 
 `reload()` replaces the RN engine and re-renders its surface while retaining
 Tauri. `close()` retires native sessions immediately, removes the RN view/back
@@ -105,9 +118,11 @@ The native gate is
 `node --experimental-strip-types packages/react-native/test/retained-android.ts <artifact>`
 with `ANDROID_SERIAL`, Android SDK/JDK and Maestro configured. It packs the real
 SDK, bundles its compiled public entry, and builds a relocated non-debuggable
-Release/R8 consumer without Rust on PATH. The fixture owns consumer layout,
-Activity hooks and telemetry; the SDK owns the generated module, RN engine,
-surface, back routing and native session lifetime.
+Release/R8 consumer without Rust on PATH. The acceptance subclass owns only layout, baseline readiness and telemetry;
+the packed composer owns the Activity and its startup/lifecycle integration. A
+second Release APK executes the unmodified generated Activity and default layout
+without acceptance hooks. The SDK owns the generated module, RN engine, surface,
+back routing and native session lifetime.
 
 ## iOS integration under development
 
@@ -163,7 +178,7 @@ The SDK owns the actual generated module, Factory and native session lifetime.
 
 ## Remaining roadmap
 
-Automatic composition/autolinking, Expo CNG, iOS Linking URL forwarding, retained
+iOS automatic composition, third-party autolinking, Expo CNG, iOS Linking URL forwarding, retained
 `TauriView`, consistent session-open diagnostics, broader lifecycle/device/adopter acceptance and full framework
 parity remain tracked in [#45](https://github.com/gronxb/tauri-native/issues/45)
 and [#47](https://github.com/gronxb/tauri-native/issues/47). Forwarded hooks alone
