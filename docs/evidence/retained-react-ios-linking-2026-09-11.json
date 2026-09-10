@@ -1,0 +1,494 @@
+{
+  "passed": true,
+  "platform": "ios",
+  "profile": "release",
+  "formatVersion": 2,
+  "abiVersion": 3,
+  "renderer": "React Native/codegen 0.86.3 / Hermes / generated TurboModule and Fabric",
+  "sourceFree": true,
+  "sourceFreeBuild": "PATH=/usr/bin:/bin:/usr/sbin:/sbin xcodebuild -configuration release -sdk iphonesimulator",
+  "packageSha256": "40e25fdb1a32ecac82d9b0951c228a75818c008736ea49031a7878bc13bead35",
+  "artifactSha256": "38e1592e2dddd3fca1fe197b9cf7220aea389fb9e7367a0af3592ed813d1c4a9",
+  "binarySha256": "619e026ff7c1cb4992c5d81a71c748ed38f5231c463141302858bd925a27a1f8",
+  "defaultIntegration": {
+    "pid": 83995,
+    "overriddenHooks": false,
+    "baseline": {
+      "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/92D0D69D-5E66-4BE8-9834-EF0869C8D432/Library/Application Support/dev.taurinative.mobilefieldnotes",
+      "passed": true,
+      "reloaded": true,
+      "scenarios": [
+        "setup",
+        "state",
+        "app-handle",
+        "async",
+        "rust-event",
+        "plugin-setup",
+        "plugin-allowed",
+        "plugin-denied",
+        "domain-error",
+        "reload"
+      ],
+      "state": {
+        "appIdentifier": "dev.taurinative.mobilefieldnotes",
+        "pluginSetupCount": 1,
+        "setupCount": 1,
+        "value": 45
+      }
+    },
+    "binarySha256": "bee176e1d64ef9075d12f63a2e3276475f2d3e70e147bd5463e5cec7d60399cd"
+  },
+  "coldIntegration": {
+    "pid": 84253,
+    "initialURL": "tauri-fieldnotes://notes/cold",
+    "baseline": {
+      "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/92D0D69D-5E66-4BE8-9834-EF0869C8D432/Library/Application Support/dev.taurinative.mobilefieldnotes",
+      "passed": true,
+      "reloaded": true,
+      "scenarios": [
+        "setup",
+        "state",
+        "app-handle",
+        "async",
+        "rust-event",
+        "plugin-setup",
+        "plugin-allowed",
+        "plugin-denied",
+        "domain-error",
+        "reload"
+      ],
+      "state": {
+        "appIdentifier": "dev.taurinative.mobilefieldnotes",
+        "pluginSetupCount": 1,
+        "setupCount": 1,
+        "value": 45
+      }
+    }
+  },
+  "coldRemount": {
+    "pid": 83748,
+    "initialURL": "tauri-fieldnotes://notes/cold-remount",
+    "baseline": {
+      "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/64757656-9AF5-499D-B311-CC0D5A05DA71/Library/Application Support/dev.taurinative.mobilefieldnotes",
+      "passed": true,
+      "reloaded": true,
+      "scenarios": [
+        "setup",
+        "state",
+        "app-handle",
+        "async",
+        "rust-event",
+        "plugin-setup",
+        "plugin-allowed",
+        "plugin-denied",
+        "domain-error",
+        "reload"
+      ],
+      "state": {
+        "appIdentifier": "dev.taurinative.mobilefieldnotes",
+        "pluginSetupCount": 1,
+        "setupCount": 1,
+        "value": 45
+      }
+    }
+  },
+  "coldRemounted": {
+    "paused": 0,
+    "unrelatedActivityHandled": false,
+    "browsingActivityHandled": false,
+    "generation": 2,
+    "restorationCalls": 0,
+    "hostClosed": false,
+    "stopped": 0,
+    "retireOnPause": false,
+    "resumed": 1,
+    "urlCallbacksRestored": false,
+    "delegateUnchanged": true,
+    "listeners": 1,
+    "permissionRetirement": null,
+    "reactThreads": [
+      "com.facebook.react.runtime.JavaScript"
+    ],
+    "launchURL": "tauri-fieldnotes://notes/cold-remount",
+    "pid": 83748,
+    "listenersAfterRelease": 0,
+    "appDelegate": "AppDelegate"
+  },
+  "delayedStartup": {
+    "pid": 83491,
+    "baseline": {
+      "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/64757656-9AF5-499D-B311-CC0D5A05DA71/Library/Application Support/dev.taurinative.mobilefieldnotes",
+      "passed": true,
+      "reloaded": true,
+      "scenarios": [
+        "setup",
+        "state",
+        "app-handle",
+        "async",
+        "rust-event",
+        "plugin-setup",
+        "plugin-allowed",
+        "plugin-denied",
+        "domain-error",
+        "reload"
+      ],
+      "state": {
+        "appIdentifier": "dev.taurinative.mobilefieldnotes",
+        "pluginSetupCount": 1,
+        "setupCount": 1,
+        "value": 45
+      }
+    },
+    "lifecycle": {
+      "paused": 0,
+      "unrelatedActivityHandled": false,
+      "browsingActivityHandled": false,
+      "generation": 1,
+      "restorationCalls": 0,
+      "hostClosed": false,
+      "stopped": 0,
+      "retireOnPause": false,
+      "resumed": 1,
+      "urlCallbacksRestored": false,
+      "delegateUnchanged": true,
+      "listeners": 1,
+      "permissionRetirement": null,
+      "reactThreads": [
+        "com.facebook.react.runtime.JavaScript"
+      ],
+      "launchURL": null,
+      "pid": 83491,
+      "listenersAfterRelease": -1,
+      "appDelegate": "AppDelegate"
+    }
+  },
+  "activityRouting": {
+    "paused": 2,
+    "unrelatedActivityHandled": false,
+    "browsingActivityHandled": true,
+    "generation": 3,
+    "restorationCalls": 0,
+    "hostClosed": false,
+    "stopped": 1,
+    "retireOnPause": false,
+    "resumed": 3,
+    "urlCallbacksRestored": false,
+    "delegateUnchanged": true,
+    "listeners": 1,
+    "permissionRetirement": {
+      "listeners": 0,
+      "generation": 2,
+      "runtimeStatus": "ready",
+      "paused": 1,
+      "pid": 82360
+    },
+    "reactThreads": [
+      "com.facebook.react.runtime.JavaScript"
+    ],
+    "launchURL": null,
+    "pid": 82360,
+    "listenersAfterRelease": 0,
+    "appDelegate": "AppDelegate"
+  },
+  "bundleSha256": "75804a9a43af72cf3ffcf9c4017895ac786d2584f502c2ae1a7ddace0dd44f5c",
+  "baseline": {
+    "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/64757656-9AF5-499D-B311-CC0D5A05DA71/Library/Application Support/dev.taurinative.mobilefieldnotes",
+    "passed": true,
+    "reloaded": true,
+    "scenarios": [
+      "setup",
+      "state",
+      "app-handle",
+      "async",
+      "rust-event",
+      "plugin-setup",
+      "plugin-allowed",
+      "plugin-denied",
+      "domain-error",
+      "reload"
+    ],
+    "state": {
+      "appIdentifier": "dev.taurinative.mobilefieldnotes",
+      "pluginSetupCount": 1,
+      "setupCount": 1,
+      "value": 45
+    }
+  },
+  "denied": {
+    "paused": 1,
+    "unrelatedActivityHandled": false,
+    "browsingActivityHandled": false,
+    "generation": 1,
+    "restorationCalls": 0,
+    "hostClosed": false,
+    "stopped": 0,
+    "retireOnPause": false,
+    "resumed": 2,
+    "urlCallbacksRestored": false,
+    "delegateUnchanged": true,
+    "listeners": 1,
+    "permissionRetirement": null,
+    "reactThreads": [
+      "com.facebook.react.runtime.JavaScript"
+    ],
+    "launchURL": null,
+    "pid": 82042,
+    "listenersAfterRelease": -1,
+    "appDelegate": "AppDelegate"
+  },
+  "permissionRetired": {
+    "paused": 1,
+    "unrelatedActivityHandled": false,
+    "browsingActivityHandled": false,
+    "generation": 2,
+    "restorationCalls": 0,
+    "hostClosed": false,
+    "stopped": 0,
+    "retireOnPause": false,
+    "resumed": 1,
+    "urlCallbacksRestored": false,
+    "delegateUnchanged": true,
+    "listeners": 1,
+    "permissionRetirement": {
+      "listeners": 0,
+      "generation": 2,
+      "runtimeStatus": "ready",
+      "paused": 1,
+      "pid": 82360
+    },
+    "reactThreads": [
+      "com.facebook.react.runtime.JavaScript"
+    ],
+    "launchURL": null,
+    "pid": 82360,
+    "listenersAfterRelease": 0,
+    "appDelegate": "AppDelegate"
+  },
+  "saved": {
+    "paused": 1,
+    "unrelatedActivityHandled": false,
+    "browsingActivityHandled": false,
+    "generation": 2,
+    "restorationCalls": 0,
+    "hostClosed": false,
+    "stopped": 0,
+    "retireOnPause": false,
+    "resumed": 2,
+    "urlCallbacksRestored": false,
+    "delegateUnchanged": true,
+    "listeners": 1,
+    "permissionRetirement": {
+      "listeners": 0,
+      "generation": 2,
+      "runtimeStatus": "ready",
+      "paused": 1,
+      "pid": 82360
+    },
+    "reactThreads": [
+      "com.facebook.react.runtime.JavaScript"
+    ],
+    "launchURL": null,
+    "pid": 82360,
+    "listenersAfterRelease": 0,
+    "appDelegate": "AppDelegate"
+  },
+  "remounted": {
+    "paused": 2,
+    "unrelatedActivityHandled": false,
+    "browsingActivityHandled": false,
+    "generation": 3,
+    "restorationCalls": 0,
+    "hostClosed": false,
+    "stopped": 1,
+    "retireOnPause": false,
+    "resumed": 3,
+    "urlCallbacksRestored": false,
+    "delegateUnchanged": true,
+    "listeners": 1,
+    "permissionRetirement": {
+      "listeners": 0,
+      "generation": 2,
+      "runtimeStatus": "ready",
+      "paused": 1,
+      "pid": 82360
+    },
+    "reactThreads": [
+      "com.facebook.react.runtime.JavaScript"
+    ],
+    "launchURL": null,
+    "pid": 82360,
+    "listenersAfterRelease": 0,
+    "appDelegate": "AppDelegate"
+  },
+  "closed": {
+    "paused": 2,
+    "unrelatedActivityHandled": false,
+    "browsingActivityHandled": true,
+    "generation": 3,
+    "restorationCalls": 0,
+    "hostClosed": true,
+    "stopped": 1,
+    "retireOnPause": false,
+    "resumed": 3,
+    "urlCallbacksRestored": true,
+    "delegateUnchanged": true,
+    "listeners": 0,
+    "permissionRetirement": {
+      "listeners": 0,
+      "generation": 2,
+      "runtimeStatus": "ready",
+      "paused": 1,
+      "pid": 82360
+    },
+    "reactThreads": [],
+    "launchURL": null,
+    "pid": 82360,
+    "listenersAfterRelease": 0,
+    "appDelegate": "AppDelegate"
+  },
+  "notes": [
+    {
+      "id": 1,
+      "text": "A RN place to remember",
+      "latitude": 37.5665,
+      "longitude": 126.978
+    }
+  ],
+  "uiScenarios": [
+    "shared original state/setup",
+    "Tauri ACL and native caller denial",
+    "OS permission denial/grant",
+    "renderer retirement during pending OS permission prevents the old continuation save",
+    "undeclared session preserves original caller_denied code/message",
+    "save and event",
+    "background deep link and event",
+    "RN Linking exact URL once per invocation including repeated identical URLs",
+    "URL during delayed renderer startup stays an event and does not become the initial URL",
+    "injected native browsing/unrelated activity preserves Tauri return values and does not duplicate restoration callbacks",
+    "cold URL reaches getInitialURL across renderer replacement and a later foreground URL event",
+    "original AppDelegate URL callbacks restored after RN removal",
+    "renderer replacement retires native subscriptions",
+    "fresh renderer receives only fresh events",
+    "removing RN terminates its JS thread and preserves the independent original Tauri frontend"
+  ],
+  "testOnlyIntegration": "Acceptance subclass supplies layout, baseline readiness and telemetry; the packed composer/SDK own startup, notification observation, readiness and attachment. A second Release app executes the unmodified generated startup/default layout with no acceptance subclass. Original Tauri UIApplication delegate preserved. Expo, third-party autolinking and OS universal-link association remain open. Cold-start URL proof also uses the default generated app without a launchApp step.",
+  "recordedAt": "2026-09-10T15:38:24.240582+00:00",
+  "baseCommit": "dcffff16d6a30425797be34443ee0dd2846a1fb5",
+  "command": "PATH=\"$HOME/.local/share/mise/installs/ruby/3.3.10/bin:$HOME/.maestro/bin:$PATH\" IOS_SIMULATOR_UDID=0368C5D9-63CF-447E-B6BB-0E3184B1CD0A node --experimental-strip-types packages/react-native/test/retained-ios.ts",
+  "toolchain": {
+    "node": "v24.15.0",
+    "npm": "11.12.1",
+    "xcode": "Xcode 26.4.1\nBuild version 17E202",
+    "ruby": "ruby 3.3.10 (2025-10-23 revision 343ea05002) [arm64-darwin23]",
+    "cocoaPods": "1.16.2 (from successful pod install logs)",
+    "maestro": "2.4.0",
+    "simulator": {
+      "name": "iPhone 16",
+      "udid": "0368C5D9-63CF-447E-B6BB-0E3184B1CD0A"
+    },
+    "runtime": {
+      "BuildID": "847B2196-33E0-11F1-8760-4B155098FBAC",
+      "ProductBuildVersion": "23E254a",
+      "ProductCopyright": "1983-2026 Apple Inc.",
+      "ProductName": "iPhone OS",
+      "ProductVersion": "26.4.1",
+      "SystemImageID": "51BF0F28-5041-4C74-A7B0-61172EA732C6"
+    },
+    "react-native": "0.86.3"
+  },
+  "reportSha256": "1e9d95a488d97fc91f47a02ec3d85c7b165bfa8be35f6262088885d6132f9815",
+  "nativeJUnitFlows": 18,
+  "skippedFlows": 0,
+  "junitSha256": {
+    "activity-routing": "3b50c8c12570c94e848114e5029738b57b1a8e9a285f87943133e89c13e1eed7",
+    "background": "5c99c1b60019af16739b8a9a080957ad91ac1a4ab6f1ef9e07a24fa611513145",
+    "closed-link": "0e1572b713602208c734c63930994adfcf33ce3fa9e41957705a201088996145",
+    "cold-initial": "52a7fd5d845b8eb8bdbedec309b94845edabc38ede091d4328da207819c7586b",
+    "cold-next-link": "a73630bb2922942f8c94f09fa32a7d6574762b64deeb1fdbdf21c19b8090412d",
+    "cold-remount": "2629cf77259de927ee8a5f4a81469385802157512525aafd7fbb82cfacadb418",
+    "default-integration": "7f8e1d91c8b903e071098dcf7d6f2c149f776f7e274a41c59799f3958bdabd9a",
+    "default-link": "11b83cfb06c395e2790bc20b35e43fb0fd623477d9d6040ce452698dec2bdd0f",
+    "delayed-original-link": "55a8094417c978770a2712bbc647688657ebe88cc5cdde28dceed1be29cc6d7c",
+    "delayed-renderer-link": "fedeaff7340608125b5c567aa3b8433624e9944fbbc3ebb36749c5fb040cfb07",
+    "deny-permission": "c2a954510f66ca8f3b3d7c773d10ebb22c3128291e04e7fcbf9003b19ae3e86f",
+    "fresh-events": "315b13e50de1c448fb35815c72484c8b5ccc6681e446f7d43f318d033214a38f",
+    "grant-permission": "64a86ebf379730e9f5ce312690af21b0631aa13104a7da997ebed2c41c30309a",
+    "initial": "7bd268cd5b47c184f973e04183f0e11e6c42ed1a211620cf178995b9713ac480",
+    "remove-renderer": "5577015b402fa9adf7de501b4f802dbb63115c5a008f59cbffbb4e4e497945a3",
+    "repeated-link": "191afe66905770771f8acf68131103f2dd4738beb3b83ba88b5b00de53467331",
+    "resume": "e57f91cc8ecb287703cf1fb1fbbad95ca3a2d1c7317e3cc6c8edfc1e4b712400",
+    "retire-permission": "711043bd4dcc92f31b8362c4ed0ef1c88dccf3b95e95a53841562e17410c0aba"
+  },
+  "sourceSha256": {
+    "packages/react-native/ios/retained/TNReactHost.h": "19e2aca565ec910dbd2c2664bfd01b44b1c82cd15a424420d2421962cbf5ea66",
+    "packages/react-native/ios/retained/TNReactHost.mm": "7bedad3b21bee813f0b04e5a25b2abd5ef7fff88e688f88068d6ad1168d975d5",
+    "packages/react-native/ios/retained/TNReactComposition.mm": "a6a88e28ba8a4fa9deb420519d60a459975292368659c05867d380fc12b73d9c",
+    "packages/react-native/ios/TauriNativeReactRetained.podspec": "764c3ec906d5ab914fa6e8cdbf6878a4cfc17817a38f1854429996434780f073",
+    "packages/react-native/test/retained-ios.ts": "7e931c46bd4b513440721034c6f52eff68419c708414a9e604c29eeb682ac900",
+    "packages/react-native/test/retained/IosAcceptance.mm.fixture": "1d4b808829442e4b60b86c8bb133aac6b2cb38b7dd853e75b2c070344db90015",
+    "packages/react-native/test/retained/index.tsx.fixture": "6d3dd4ecd0e2232b7309d6d9dc88d4670f20e9a3de2dfb05c00773c848c64444"
+  },
+  "composition": {
+    "generatedFiles": 38,
+    "target": "ordinary-tauri-mobile-fieldnotes_iOS",
+    "minimumOsVersion": "16.4",
+    "successfulPodInstallations": 2,
+    "regeneratedBetweenInstallations": true,
+    "receiptAfterPodsSha256": "7331ba2522b56f7d1a924e6c57f93897438af05540573c7a242b43170040f9e8"
+  },
+  "buildLogSha256": {
+    "pods": "e0a3007c3fa234ca177896007d20b87ac320df14bb95404d5c46db4e63600bf1",
+    "pods-regenerated": "1a400b9624d72153101a387317a36519635e9c55718da36ccadea7071c06a478",
+    "source-free-build": "d6a05c3ec6c8f4a762d498232d6fbc0a4230d49aa3421476891dc56417d52226",
+    "default-source-free-build": "d29c322d2e4436d523273bebef5423efd9b62031d57037fc71cc7e33c00cf1a9"
+  },
+  "unchangedTauriArchiveSha256": "79efbf339a5ec51c7ebe7eeab6ed3a1fa253286e5a82f63b18d56766b3a4e3dd",
+  "podfileLockSha256": "0eb053c97e32a63db265d2644a860c65067e72c369c81956e71126af30fc71ab",
+  "packageVerification": {
+    "files": 103,
+    "allPackedExecutableFilesMatchCurrentSdk": true,
+    "documentationChangedAfterPacking": [
+      "RETAINED.md"
+    ],
+    "verificationLogSha256": "bcb068e934faf0e7a915e592d6a18c348c73bb4b4b25ecee97b5a4d9355be6b3"
+  },
+  "typecheckLogSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "previousBehavior": {
+    "observedMissingRNLink": true,
+    "expectedRNLinkCount": 1,
+    "actualRNLinkCount": 0,
+    "originalTauriLinkCount": 1,
+    "packageSha256": "f458bf6a6a6ab074a3864f5f7497298a5593c6bba0d1858b2821134fb9dc4297",
+    "binarySha256": "28659302a8cd6fb795f0bdb93531171c9dbf1007ba17848b94f86386e443d4c6",
+    "artifactSha256": "38e1592e2dddd3fca1fe197b9cf7220aea389fb9e7367a0af3592ed813d1c4a9",
+    "scope": "Previous unchanged generated Release app, actual OS custom URL delivery. UI confirms Tauri received exactly one URL and one event while the RN Linking counter remained zero.",
+    "baselineScriptSha256": "9d2e869709f5d598119a5697d7e836292a5d09a901d9fa9d6799bb5104005a67",
+    "junitSha256": {
+      "baseline-initial": "db8032b5af99a9c5c3bd80c1589930a84167b1d94351e435736e92637cc86a71",
+      "baseline-missing-rn-link": "341c37dc10466a7f649ec006bbc502a443a61259864dd3a1afca86e5381fa0c5"
+    }
+  },
+  "scope": "Actual packed RN SDK arm64 iOS Simulator Release execution using the existing immutable producer-deleted artifact, without a new Rust export. The original Tauri AppDelegate object is retained. SDK wrappers call its original URL/activity methods first and return their original result; the current engine owns native Linking delivery. Real OS custom URLs pass during background/foreground execution, as repeated identical URLs, after RN removal, and at process startup. The original callback implementations are restored after removal; Tauri still handles the next URL. A test-only file gate delays renderer attachment while the ordinary Tauri app receives a warm URL; the eventual RN event does not become getInitialURL. Cold launch options reach the real RN getInitialURL across renderer replacement and later foreground events. Both cold flows contain no launchApp step; an already-visible app PID is observed afterward. The second app has no native acceptance class and uses unmodified generated startup/default layout. Permissions, stale-continuation retirement, original state/setup, notes, events and native thread/listener cleanup still pass.",
+  "universalLinkScope": "The native acceptance button explicitly injects one unrelated NSUserActivity without a webpage URL and one browsing activity. Original Tauri returns NO and YES respectively, emits only the browsing URL, and the SDK preserves those return values without adding a restoration callback. This exercises the real native delegate/Rust plugin/RN path but is not OS associated-domain or live Universal Link acceptance.",
+  "references": [
+    {
+      "url": "https://reactnative.dev/docs/0.86/linking",
+      "purpose": "Native URL events and getInitialURL contract."
+    },
+    {
+      "url": "https://developer.apple.com/documentation/uikit/uiapplication/didfinishlaunchingnotification",
+      "purpose": "Launch notification userInfo distinguishes URL-driven and normal startup.",
+      "retrievedMarkdownSha256": "1a217c77177b43b322e37998d62d3efa98fe000f12df63f768b6c35e12c9fd5c"
+    }
+  ],
+  "remaining": [
+    "OS associated-domain/universal-link acceptance",
+    "Expo CNG and third-party autolinking",
+    "retained TauriView/navigation",
+    "custom scene/delegate/source forms",
+    "Activity recreation and RN-owned permissions",
+    "repeated Android startup reliability",
+    "complete parity/CI/migration",
+    "physical devices and independent adopters"
+  ]
+}

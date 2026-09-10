@@ -218,19 +218,36 @@ host = [[TNReactHost alloc] initWithContainer:container
 host. `close` closes sessions before releasing RN's surface and host, allowing
 RN's own asynchronous instance invalidation to finish. Neither operation
 replaces Tauri's root view controller or application delegate. RN's AppState
-module observes ordinary UIApplication notifications. Forwarding original URL
-callbacks into RN Linking is separate work; Tauri's own deep-link plugin and
-events remain available through the retained session.
+module observes ordinary UIApplication notifications. Automatic composition
+forwards incoming URLs: it calls the original Tauri handler
+first, keeps its return value, then delivers the URL to the current RN engine.
+Closing composition restores its own URL/activity wrappers while preserving any
+later wrapper installed by another integration. The original delegate object stays
+in place. Custom scene/delegate owners still require separate integration.
+
+For explicit native integration, use the initializer's `launchOptions:` overload
+with the original UIKit launch options and forward incoming URLs through
+`handleOpenURL:` after the original Tauri handler. Automatic composition already
+performs that forwarding. UIKit launch URLs reach `Linking.getInitialURL()` across
+RN reload. Later URLs, including those received while renderer attachment is
+pending, arrive as `Linking` URL events. The SDK retains events until that engine's
+first URL listener, then follows ordinary listener registration/removal; retiring
+the engine discards its pending delivery.
 
 The native gate is
 `node --experimental-strip-types packages/react-native/test/retained-ios.ts <artifact>`
 with `IOS_SIMULATOR_UDID`, Xcode, CocoaPods and Maestro configured. It packs the
 actual SDK, composes a relocated artifact, installs pods, regenerates, installs
 pods again and builds Release without Rust on PATH. An acceptance subclass adds
-only layout, baseline readiness and telemetry; the SDK owns startup observation,
+layout, controlled readiness, native activity injection and telemetry; the SDK owns startup observation,
 attachment and lifetime. A second Release app runs the unmodified generated
-startup/default layout without that subclass. Ten UI flows cover permissions,
-plugins/events, replacement/removal and default integration. Run the separate
+startup/default layout without that subclass. Eighteen UI flows cover permissions,
+plugins/events, replacement/removal, URL-driven startup, delayed attachment and
+default integration. [Native execution evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-react-ios-linking-2026-09-11.json)
+records the previous missing RN delivery and the corrected packed SDK. Custom
+scheme URLs use the OS. The browsing/unrelated activity checks inject native
+delegate callbacks; OS associated-domain/Universal Link acceptance remains open.
+Run the separate
 macOS metadata/ownership scenarios with
 `node --experimental-strip-types --test packages/react-native/test/retained/compose-ios.test.ts`.
 
@@ -244,12 +261,12 @@ The native gates also require an undeclared caller's original error code/message
 Test-only controls replace the renderer while its OS permission request is pending.
 After the grant, the old continuation must not save a note; the new renderer must
 observe the permission, retain original Tauri state and save through the real plugin.
-All four packed arm64 Release gates pass these scenarios on iOS Simulator and
-Android emulator: [41 native UI flows](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-sdk-permission-retirement-2026-09-11.json).
+The earlier four-platform packed arm64 Release execution records these scenarios
+on iOS Simulator and Android emulator: [41 native UI flows](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-sdk-permission-retirement-2026-09-11.json).
 
 ## Remaining roadmap
 
-Third-party autolinking, Expo CNG, iOS Linking URL forwarding, retained
+Third-party autolinking, Expo CNG, OS Universal Link association, retained
 `TauriView`, broader lifecycle/device/adopter acceptance and full framework
 parity remain tracked in [#45](https://github.com/gronxb/tauri-native/issues/45)
 and [#47](https://github.com/gronxb/tauri-native/issues/47). Forwarded hooks alone

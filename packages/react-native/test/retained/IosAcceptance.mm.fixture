@@ -2,19 +2,36 @@
 #import <WebKit/WebKit.h>
 #import <mach/mach.h>
 #import <pthread.h>
+#import <objc/runtime.h>
 #import <TauriNativeReactRetained/TNReactComposition.h>
 #import "../TauriNativeRuntime/TNRuntimeSession.h"
 
 // Acceptance layout/readiness and telemetry only; the SDK owns launch observation and attachment.
+@interface TNReactComposition (LaunchObservation)
+- (void)launched:(NSNotification *)notification;
+@end
 @interface TNReactAcceptance : TNReactComposition
 @property(nonatomic) UIView *panel;
 @property(nonatomic) NSString *directory;
 @property(nonatomic) NSInteger generation, resumed, paused, stopped, listenersAfterRelease;
 @property(nonatomic) BOOL hostClosed, retireOnPause;
 @property(nonatomic) NSDictionary *permissionRetirement;
+@property(nonatomic) IMP originalOpenURL, originalUserActivity;
+@property(nonatomic, weak) id<UIApplicationDelegate> originalDelegate;
+@property(nonatomic) NSString *launchURL;
+@property(nonatomic) BOOL unrelatedActivityHandled, browsingActivityHandled;
+@property(nonatomic) NSInteger restorationCalls;
 @end
 
 @implementation TNReactAcceptance
+- (void)launched:(NSNotification *)notification {
+  self.launchURL = [notification.userInfo[UIApplicationLaunchOptionsURLKey] absoluteString];
+  self.originalDelegate = UIApplication.sharedApplication.delegate;
+  Class delegate = object_getClass(self.originalDelegate);
+  self.originalOpenURL = class_getMethodImplementation(delegate, @selector(application:openURL:options:));
+  self.originalUserActivity = class_getMethodImplementation(delegate, @selector(application:continueUserActivity:restorationHandler:));
+  [super launched:notification];
+}
 - (instancetype)init {
   if ((self = [super init])) {
     self.listenersAfterRelease = -1;
@@ -46,9 +63,15 @@
 }
 - (void)record {
   if (!self.generation) return;
+  Class delegate = object_getClass(UIApplication.sharedApplication.delegate);
+  BOOL callbacksRestored = class_getMethodImplementation(delegate, @selector(application:openURL:options:)) == self.originalOpenURL &&
+    class_getMethodImplementation(delegate, @selector(application:continueUserActivity:restorationHandler:)) == self.originalUserActivity;
   NSDictionary *report = @{@"generation": @(self.generation), @"resumed": @(self.resumed), @"paused": @(self.paused), @"stopped": @(self.stopped),
     @"reactThreads": [self reactThreads], @"listeners": [TNRuntimeSession status][@"listeners"], @"listenersAfterRelease": @(self.listenersAfterRelease), @"hostClosed": @(self.hostClosed),
     @"retireOnPause": @(self.retireOnPause), @"permissionRetirement": self.permissionRetirement ?: NSNull.null,
+    @"delegateUnchanged": @(self.originalDelegate == UIApplication.sharedApplication.delegate), @"urlCallbacksRestored": @(callbacksRestored),
+    @"launchURL": self.launchURL ?: NSNull.null, @"unrelatedActivityHandled": @(self.unrelatedActivityHandled),
+    @"browsingActivityHandled": @(self.browsingActivityHandled), @"restorationCalls": @(self.restorationCalls),
     @"pid": @(NSProcessInfo.processInfo.processIdentifier), @"appDelegate": NSStringFromClass(UIApplication.sharedApplication.delegate.class)};
   NSData *data = [NSJSONSerialization dataWithJSONObject:report options:0 error:nil];
   if (![data writeToFile:[self.directory stringByAppendingPathComponent:@"react-lifecycle.json"] atomically:YES])
@@ -67,6 +90,7 @@
 }
 - (void)stopped:(NSNotification *)notification { self.stopped++; [self record]; }
 - (BOOL)isTauriDocumentReady:(WKWebView *)webview {
+  if ([NSFileManager.defaultManager fileExistsAtPath:[self.directory stringByAppendingPathComponent:@"hold-react-attachment"]]) return NO;
   NSData *data = [NSData dataWithContentsOfFile:[self.directory stringByAppendingPathComponent:@"runtime-report.json"]];
   NSDictionary *baseline = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : nil;
   return [super isTauriDocumentReady:webview] && [baseline[@"passed"] boolValue];
@@ -93,7 +117,12 @@
   arm.frame = CGRectMake(bounds.size.width * 2 / 3, 0, bounds.size.width / 3, 44);
   [arm addTarget:self action:@selector(armRetirement) forControlEvents:UIControlEventTouchUpInside];
   [self.panel addSubview:arm];
-  UIView *container = [[UIView alloc] initWithFrame:CGRectMake(0, 44, self.panel.bounds.size.width, self.panel.bounds.size.height - 44)];
+  UIButton *webLink = [UIButton buttonWithType:UIButtonTypeSystem];
+  [webLink setTitle:@"Continue web link" forState:UIControlStateNormal];
+  webLink.frame = CGRectMake(0, 44, bounds.size.width, 28);
+  [webLink addTarget:self action:@selector(continueWebLink) forControlEvents:UIControlEventTouchUpInside];
+  [self.panel addSubview:webLink];
+  UIView *container = [[UIView alloc] initWithFrame:CGRectMake(0, 72, self.panel.bounds.size.width, self.panel.bounds.size.height - 72)];
   container.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   [self.panel addSubview:container];
   return container;
@@ -104,6 +133,18 @@
   [self telemetry];
 }
 - (void)armRetirement { self.retireOnPause = YES; [self record]; }
+- (void)continueWebLink {
+  // Inject native delegate callbacks; this does not establish OS associated-domain routing.
+  UIApplication *app = UIApplication.sharedApplication;
+  NSUserActivity *unrelated = [[NSUserActivity alloc] initWithActivityType:@"dev.taurinative.unrelated"];
+  self.unrelatedActivityHandled = [app.delegate application:app continueUserActivity:unrelated
+    restorationHandler:^(NSArray *items) { self.restorationCalls++; }];
+  NSUserActivity *browsing = [[NSUserActivity alloc] initWithActivityType:NSUserActivityTypeBrowsingWeb];
+  browsing.webpageURL = [NSURL URLWithString:@"https://example.invalid/tauri-native-handoff"];
+  self.browsingActivityHandled = [app.delegate application:app continueUserActivity:browsing
+    restorationHandler:^(NSArray *items) { self.restorationCalls++; }];
+  [self record];
+}
 - (void)remount {
   [super reload]; self.generation++;
   self.listenersAfterRelease = [[TNRuntimeSession status][@"listeners"] integerValue];

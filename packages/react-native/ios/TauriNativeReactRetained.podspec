@@ -19,5 +19,6 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = { "HEADER_SEARCH_PATHS" => '$(inherited) "$(PODS_ROOT)/../Sources/TauriNativeRuntime" "$(PODS_TARGET_SRCROOT)/retained/generated/ios/TauriNativeRetainedSpec"' }
   install_modules_dependencies(s)
   s.dependency "React-RCTAppDelegate", "0.86.3"
+  s.dependency "React-RCTLinking", "0.86.3"
   s.dependency "ReactAppDependencyProvider"
 end

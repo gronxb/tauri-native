@@ -93,3 +93,28 @@ initial Android logcat collection failure separately from the corrected full run
 This observes absence of stale saved notes, not a count of retired JS callbacks.
 
 Expo CNG, third-party autolinking, retained TauriView/navigation, RN iOS Linking, Activity recreation/RN-owned permissions, broader source forms/native channels, complete parity/CI/migration, physical devices and independent adopters remain open. No issue or release is closed by this increment.
+
+## RN iOS URL delivery — 2026-09-11
+
+The packed RN composer/host now preserves the original Tauri AppDelegate object
+and forwards its URL/activity callbacks to the current RN engine after calling
+the original implementation, retaining its return value. Removal restores the
+SDK's own wrappers; the original Tauri handler processes subsequent URLs.
+Eighteen source-free arm64 Release UI flows pass: [RN iOS Linking evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-react-ios-linking-2026-09-11.json). They cover exact URL
+delivery, repeated identical URLs, background/resume, engine replacement,
+URL-driven process startup and getInitialURL across reload/later events. A
+controlled attachment delay proves a URL arriving after normal app startup stays
+an event instead of becoming the initial URL. Original state/setup, real plugin
+permissions, pending-permission retirement, notes and listener/thread cleanup
+still pass, including a second app with unmodified generated startup/default
+layout and no acceptance class. The original producer and existing artifact
+remain unchanged; no new Rust export or Android execution is claimed.
+
+The prior generated Release app reproduced the gap: Tauri received one URL and
+one event while RN Linking received none. Native browsing/unrelated activity
+injection now also preserves Tauri's YES/NO results without adding restoration
+callbacks; this is not OS associated-domain or live Universal Link acceptance.
+Those checks, Expo CNG, third-party autolinking, retained TauriView/navigation,
+custom source/lifecycle owners, complete parity/CI/migration, physical devices
+and independent adopters remain open. This increment does not close the issue
+or authorize a package release.

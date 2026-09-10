@@ -13,8 +13,14 @@ export function App() {
   const [events, setEvents] = useState(0);
   const [links, setLinks] = useState(0);
   const [backs, setBacks] = useState(0);
+  const [initialURL, setInitialURL] = useState('loading');
+  const [lastURL, setLastURL] = useState('none');
+  const checkInitialURL = (report = false) => { void Linking.getInitialURL().then(url => {
+    setInitialURL(url ?? 'none'); if (report) setStatus(`Initial API ${url ?? 'none'}`);
+  }, error => setInitialURL(`ERROR ${error}`)); };
   useEffect(() => {
-    const link = Linking.addEventListener('url', () => setLinks(count => count + 1));
+    if (Platform.OS === 'ios') checkInitialURL();
+    const link = Linking.addEventListener('url', event => { setLinks(count => count + 1); setLastURL(event.url); });
     const back = BackHandler.addEventListener('hardwareBackPress', () => { setBacks(count => count + 1); return true; });
     return () => { link.remove(); back.remove(); };
   }, []);
@@ -84,6 +90,11 @@ export function App() {
   return <ScrollView style={{ flex: 1, backgroundColor: '#e4f3ed' }} contentContainerStyle={{ padding: 12 }}>
     <Text>{`RN ${Platform.constants.reactNativeVersion.minor} ${global.HermesInternal ? 'Hermes' : 'No Hermes'}`}</Text>
     {[status, `RN events ${events}`, `RN links ${links} back ${backs}`].map(text => <Text key={text} style={{ fontSize: 15, color: '#12382d' }}>{text}</Text>)}
+    {Platform.OS === 'ios' && <>
+      <Text style={{ fontSize: 12 }}>{`RN initial ${initialURL}`}</Text>
+      <Text style={{ fontSize: 12 }}>{`RN URL ${lastURL}`}</Text>
+      <Pressable accessibilityRole="button" accessibilityLabel="Check initial URL" onPress={() => checkInitialURL(true)} style={{ padding: 5, backgroundColor: '#fff' }}><Text>Check initial URL</Text></Pressable>
+    </>}
     {actions.map(([label, action]) => <Pressable key={label} accessibilityRole="button" accessibilityLabel={label} onPress={() => run(action)} style={{ marginTop: 5, padding: 5, backgroundColor: '#fff' }}><Text>{label}</Text></Pressable>)}
   </ScrollView>;
 }

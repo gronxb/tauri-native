@@ -200,3 +200,14 @@ unmodified generated startup works. A fresh unchanged-producer iOS export also
 passes twelve standalone native flows: [fresh iOS export evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-fresh-ios-2026-09-10.json). The initial Lynx Android report
 collection failure is retained separately from the successful full rerun.
 Expo CNG, third-party autolinking, retained TauriView/navigation, RN iOS Linking, Activity recreation/RN-owned permissions, broader source forms/native channels, complete parity/CI/migration, physical devices and independent adopters remain open. No issue or release is closed and no package is published.
+
+RN iOS URL delivery now passes eighteen packed Release UI flows: [RN iOS Linking evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-react-ios-linking-2026-09-11.json).
+The original Tauri AppDelegate object and return values are preserved, its
+callbacks are restored after RN removal, and actual custom URLs reach the
+current RN engine once per invocation. UIKit launch URLs remain initial URLs
+across reload; a URL received during delayed renderer attachment stays an event.
+Both acceptance and unmodified generated apps pass with the existing immutable
+artifact. Native activity injection is distinct from pending OS Universal Link
+association. Expo, third-party autolinking, retained TauriView, broader source
+forms and lifecycle cases, complete parity/CI/migration and device/adopter gates
+remain open. No issue or release is closed and no package is published.
