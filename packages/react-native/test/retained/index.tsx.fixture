@@ -33,6 +33,18 @@ export function App() {
     return () => { disposed = true; void session.current?.close(); session.current = undefined; };
   }, []);
   const actions: [string, (runtime: RuntimeSession) => Promise<string>][] = [
+    ['Reject session', async () => {
+      try {
+        const unexpected = await openTauriSession('undeclared');
+        await unexpected.close();
+      } catch (error) {
+        const failure = error as Error & { code?: string };
+        if (failure.code !== 'caller_denied' || failure.message !== 'Native caller is not declared by this artifact')
+          throw new Error(`Unexpected session error ${failure.code}: ${failure.message}`);
+        return 'Session caller_denied';
+      }
+      throw new Error('Undeclared caller opened a session');
+    }],
     ['Check permission', async runtime => {
       const permission = value(await runtime.invoke<{ location: string }>('plugin:geolocation|check_permissions', {}));
       return `Permission ${permission.location}`;
@@ -40,6 +52,12 @@ export function App() {
     ['Request permission', async runtime => {
       const permission = value(await runtime.invoke<{ location: string }>('plugin:geolocation|request_permissions', { permissions: ['location'] }));
       return `Permission ${permission.location}`;
+    }],
+    ['Request then save', async runtime => {
+      const permission = value(await runtime.invoke<{ location: string }>('plugin:geolocation|request_permissions', { permissions: ['location'] }));
+      if (permission.location !== 'granted') throw new Error(`Unexpected permission ${permission.location}`);
+      value(await runtime.invoke('save_note', { text: 'Retired renderer must not save', latitude: 0, longitude: 0 }));
+      return 'ERROR retired renderer saved';
     }],
     ['Deny capability', async runtime => {
       const reply = await runtime.invoke('plugin:geolocation|watch_position', { callback: 1 });

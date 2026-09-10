@@ -232,11 +232,18 @@ with unmodified generated startup/default layout and no acceptance subclass.
 Run macOS metadata/ownership scenarios with
 `node --experimental-strip-types --test packages/lynx/test/retained/compose-ios.test.ts`.
 
-The current exported iOS platform client exposes session-open failure details
-as an NSError description; the JS rejection therefore uses `runtime_error` for
-that operation. Command, event and permission responses retain their original
-structured errors and codes. Aligning open-failure diagnostics with Android is
-still required for full parity.
+Current CLI iOS exports preserve a failed session open's complete ABI response
+in `NSError.userInfo[@"TauriNativeRuntimeResponse"]`. Both SDKs forward its
+original code and message, including `caller_denied` for an undeclared caller.
+Older iOS exports fall back to `runtime_error` with the legacy description;
+regenerate those artifacts with the current CLI to receive structured open errors.
+
+The native gates also require an undeclared caller's original error code/message.
+Test-only controls replace the renderer while its OS permission request is pending.
+After the grant, the old continuation must not save a note; the new renderer must
+observe the permission, retain original Tauri state and save through the real plugin.
+All four packed arm64 Release gates pass these scenarios on iOS Simulator and
+Android emulator: [41 native UI flows](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-sdk-permission-retirement-2026-09-11.json).
 
 ## Remaining roadmap
 

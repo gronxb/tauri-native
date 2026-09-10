@@ -30,7 +30,8 @@ static NSDictionary *closedError(void) {
   if ((self = [super init])) {
     NSDictionary *opened = exchange(@{@"op": @"open", @"caller": caller});
     if (![opened[@"ok"] boolValue]) {
-      if (error) *error = [NSError errorWithDomain:@"TauriNativeRuntime" code:1 userInfo:@{NSLocalizedDescriptionKey: [opened description]}];
+      if (error) *error = [NSError errorWithDomain:@"TauriNativeRuntime" code:1
+        userInfo:@{NSLocalizedDescriptionKey: [opened description], @"TauriNativeRuntimeResponse": opened}];
       return nil;
     }
     _session = opened[@"session"];

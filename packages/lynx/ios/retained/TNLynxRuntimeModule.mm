@@ -32,7 +32,9 @@ static NSDictionary *failure(NSString *code, NSString *message) {
     if (![operation[@"caller"] isKindOfClass:NSString.class]) { reply(failure(@"invalid_request", @"open requires a caller")); return; }
     NSError *error;
     TNRuntimeSession *runtime = [[TNRuntimeSession alloc] initWithCaller:operation[@"caller"] error:&error];
-    if (!runtime) { reply(failure(@"runtime_error", error.localizedDescription)); return; }
+    if (!runtime) {
+      reply(error.userInfo[@"TauriNativeRuntimeResponse"] ?: failure(@"runtime_error", error.localizedDescription)); return;
+    }
     TNLynxOwnedSession *session = [TNLynxOwnedSession new];
     session.runtime = runtime; session.pending = [NSMutableDictionary new];
     NSString *key = NSUUID.UUID.UUIDString;

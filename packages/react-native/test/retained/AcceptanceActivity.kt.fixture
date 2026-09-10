@@ -21,6 +21,8 @@ class AcceptanceActivity : TauriNativeActivity() {
   private var stopped = 0
   private var listenersAfterRelease = -1
   private var hostClosed = false
+  private var retireOnPause = false
+  private var permissionRetirement: JSONObject? = null
   private val receivedIntents = org.json.JSONArray()
 
   override fun isTauriDocumentReady(webView: WebView): Boolean {
@@ -38,9 +40,7 @@ class AcceptanceActivity : TauriNativeActivity() {
       val remount = Button(this@AcceptanceActivity).apply {
         text = "Reload RN"
         setOnClickListener {
-          host!!.reload()
-          generation++
-          listenersAfterRelease = RuntimeSession.status().getInt("listeners")
+          reloadRenderer()
           record()
         }
       }
@@ -55,6 +55,11 @@ class AcceptanceActivity : TauriNativeActivity() {
         }
       }
       controls.addView(close, LinearLayout.LayoutParams(0, -2, 1f))
+      val arm = Button(this@AcceptanceActivity).apply {
+        text = "Retire on pause"
+        setOnClickListener { retireOnPause = true; record() }
+      }
+      controls.addView(arm, LinearLayout.LayoutParams(0, -2, 1f))
       layout.addView(controls)
       layout.addView(container, LinearLayout.LayoutParams(-1, 0, 2f))
       setContentView(layout)
@@ -66,9 +71,16 @@ class AcceptanceActivity : TauriNativeActivity() {
       val telemetry = object : Runnable { override fun run() { if (!destroyed) { record(); observedWebView.postDelayed(this, 100) } } }
       observedWebView.post(telemetry)
   }
+  private fun reloadRenderer() {
+    host!!.reload()
+    generation++
+    listenersAfterRelease = RuntimeSession.status().getInt("listeners")
+  }
   private fun record() {
     val report = JSONObject().put("generation", generation).put("resumed", resumed).put("paused", paused)
-      .put("stopped", stopped).put("hostClosed", hostClosed).put("hostDestroyed", host?.destroyed ?: false)
+      .put("stopped", stopped).put("hostClosed", hostClosed)
+      .put("retireOnPause", retireOnPause).put("permissionRetirement", permissionRetirement ?: JSONObject.NULL)
+      .put("hostDestroyed", host?.destroyed ?: false)
       .put("receivedIntents", receivedIntents)
       .put("listeners", RuntimeSession.status().getInt("listeners")).put("listenersAfterRelease", listenersAfterRelease).put("pid", android.os.Process.myPid())
     val notes = File(applicationInfo.dataDir, "notes.json")
@@ -76,7 +88,16 @@ class AcceptanceActivity : TauriNativeActivity() {
     android.util.Log.i("TauriReactAcceptance", JSONObject().put("kind", "lifecycle").put("report", report).toString())
   }
   override fun onResume() { super.onResume(); resumed++ }
-  override fun onPause() { paused++; super.onPause() }
+  override fun onPause() {
+    paused++; super.onPause()
+    if (retireOnPause) {
+      retireOnPause = false
+      reloadRenderer()
+      permissionRetirement = JSONObject().put("generation", generation).put("listeners", listenersAfterRelease)
+        .put("paused", paused).put("runtimeStatus", RuntimeSession.status().getString("status")).put("pid", android.os.Process.myPid())
+      record()
+    }
+  }
   override fun onStop() { super.onStop(); stopped++; record() }
   override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); receivedIntents.put(intent.dataString); record() }
   override fun onDestroy() { destroyed = true; super.onDestroy() }

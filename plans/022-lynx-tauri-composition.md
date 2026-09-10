@@ -175,3 +175,23 @@ This consumes the existing producer-deleted iOS archive, with no new Rust export
 Third-party autolinking, retained TauriView, consistent session-open diagnostics,
 pending OS callback renderer retirement, repeated Android startup reliability and
 full parity/device/adopter acceptance remain open. #46 stays IN PROGRESS.
+
+## Pending permission and session diagnostics — 2026-09-11
+
+[SDK permission-retirement evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-sdk-permission-retirement-2026-09-11.json) records 41 packed Release UI flows across RN/Lynx iOS/Android. The actual
+SDK renderer is retired while the original Tauri geolocation OS dialog is pending.
+Listeners reach zero, Tauri stays ready, and after grant the old continuation
+cannot save its sentinel note. A new renderer saves one real location note;
+shared state/setup, events, later replacement/removal and original frontend
+continuity pass. Each gate also clean-installs an app with unmodified generated
+startup/default layout and no native acceptance class.
+
+All four SDK paths preserve the original undeclared caller's error code/message.
+The additive iOS NSError response field is captured by a fresh unchanged-producer
+export with twelve native UI flows: [fresh iOS export evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-fresh-ios-2026-09-10.json). Older iOS exports retain the legacy
+error fallback. iOS denial-to-grant explicitly resets privacy and relaunches;
+retirement/grant/background/removal then keep one process. Evidence records the
+initial Android logcat collection failure separately from the corrected full run.
+This observes absence of stale saved notes, not a count of retired JS callbacks.
+
+Expo CNG, third-party autolinking, retained TauriView/navigation, RN iOS Linking, Activity recreation/RN-owned permissions, broader source forms/native channels, complete parity/CI/migration, physical devices and independent adopters remain open. No issue or release is closed by this increment.

@@ -101,3 +101,18 @@ Lynx now exposes a source-free Android composer using the same output ownership/
 The latest Android exporter now has full fresh-export and SDK consumption evidence: [fresh Android export and SDK evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-fresh-android-composition-2026-09-09.json). The disposable ordinary producer is unchanged and deleted; incremental cache hits, actual invalid-capability failure preservation, relocated source-free native plugin/events and both packed SDK composers pass. Both SDKs consume the identical manifest `fb5f29d07ace2c715df7b4b4121fc57f2fa8df5b4cf4cf32d298dac7dc4595d5`. Compared with the older export, only the captured RustWebViewClient, rebuilt Rust library and build receipt change. The initial offline Cargo cache miss was recovered with locked dependency fetch, without changing source or rejection checks. This closes the fresh-export validation gap; repeated startup reliability and diagnosis of the earlier unconfirmed Lynx start failure remain open.
 
 Lynx now also consumes the existing producer-deleted iOS artifact through its public automatic composer: [Lynx iOS composition evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-lynx-compose-ios-2026-09-10.json). Two CocoaPods integrations with regeneration between them and nine Release UI flows pass without Rust. The original archive remains byte-identical and the consumer preserves the 14.0 minimum; higher authored targets are retained by metadata scenarios. The same shared Apple metadata/receipt implementation produces unchanged existing RN outputs. This is consumption of the existing iOS export, not another iOS Rust export; broader source forms, Expo, retained TauriView, migration and complete release acceptance remain open.
+
+## Fresh iOS client and SDK permission retirement — 2026-09-11
+
+A fresh arm64 Release export captures the additive NSError session-open response
+field while preserving ordinary producer hashes and format 2 / ABI 3. Twelve
+native UI flows, cache-hit and invalid-capability failure preservation, producer
+deletion and relocated source-free build pass: [fresh iOS export evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-fresh-ios-2026-09-10.json). The changed inventory is
+limited to build metadata, the two native client source files and the rebuilt
+archive. Both packed iOS SDKs consume this identical artifact and preserve the
+original error code/message; both Android SDKs reuse the prior verified current
+Android artifact. All four SDK gates pass actual renderer retirement during a
+pending OS permission and default generated integration: [SDK permission-retirement evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-sdk-permission-retirement-2026-09-11.json). Older iOS
+artifacts retain their documented error fallback and need re-export for exact
+session-open diagnostics. Broader source forms, architectures, migration and
+complete parity/device/adopter acceptance remain open.

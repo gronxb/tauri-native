@@ -110,11 +110,21 @@ try {
   run('launch', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-n', `${appId}/.AcceptanceActivity`]);
   pid = run('pid', 'adb', ['-s', device, 'shell', 'pidof', appId]);
   await until(() => report('baseline').passed === true);
-  flow('initial', '- assertVisible: "RN 86 Hermes"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"\n- tapOn: "Check permission"\n- assertVisible: "Permission prompt"');
+  const baseline = report('baseline');
+  flow('initial', '- assertVisible: "RN 86 Hermes"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- tapOn: "Reject session"\n- assertVisible: "Session caller_denied"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"\n- tapOn: "Check permission"\n- assertVisible: "Permission prompt"');
   flow('back', '- pressKey: Back\n- assertVisible: "RN links 0 back 1"');
   const initial = report(); assert.equal(initial.listeners, 1);
   flow('deny-permission', '- tapOn: "Request permission"\n- tapOn: "(?i)Don.t allow"\n- assertVisible: "Permission prompt-with-rationale"\n- tapOn: "Save location"\n- assertVisible: "Location denied"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 0 notes 0 setup 1 plugins 1"\n- assertVisible: "RN events 0"');
-  flow('grant-permission', '- tapOn: "Request permission"\n- tapOn: "(?i)While using the app"\n- assertVisible: "Permission granted"\n- tapOn: "Save location"\n- assertVisible: "RN note 1"\n- assertVisible: "RN events 1"');
+  const beforePermission = report();
+  flow('retire-permission', '- tapOn: "Retire on pause"\n- tapOn: "Request then save"\n- assertVisible: "(?i)While using the app"');
+  await until(() => report().permissionRetirement?.generation === 2);
+  const permissionRetired = report();
+  assert.equal(permissionRetired.retireOnPause, false);
+  assert.equal(permissionRetired.permissionRetirement.listeners, 0);
+  assert.equal(permissionRetired.permissionRetirement.runtimeStatus, 'ready');
+  assert.equal(permissionRetired.permissionRetirement.pid, beforePermission.pid);
+  assert(permissionRetired.permissionRetirement.paused > beforePermission.paused);
+  flow('grant-permission', '- tapOn: "(?i)While using the app"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- assertVisible: "RN links 0 back 0"\n- pressKey: Back\n- assertVisible: "RN links 0 back 1"\n- tapOn: "Check permission"\n- assertVisible: "Permission granted"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 0 notes 0 setup 1 plugins 1"\n- tapOn: "Save location"\n- assertVisible: "RN note 1"\n- assertVisible: "RN events 1"');
   const beforeBackground = report();
   flow('background', '- pressKey: Home');
   await until(() => report().stopped > beforeBackground.stopped && report().paused > beforeBackground.paused);
@@ -122,7 +132,7 @@ try {
   flow('resume', '- assertVisible: "RN links 1 back 1"\n- assertVisible: "RN events 2"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 1 setup 1 plugins 1"\n- tapOn: "Reload RN"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- assertVisible: "RN links 0 back 0"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 1 setup 1 plugins 1"');
   const remounted = report();
   assert.deepEqual(remounted.receivedIntents, ['tauri-fieldnotes://notes/1']);
-  assert.equal(remounted.pid, initial.pid); assert.equal(remounted.generation, 2);
+  assert.equal(remounted.pid, initial.pid); assert.equal(remounted.generation, 3);
   assert.equal(remounted.listenersAfterRelease, 0); assert.equal(remounted.listeners, 1);
   assert(remounted.resumed >= 2 && remounted.paused >= 1);
   run('remounted-deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', 'tauri-fieldnotes://notes/1?remounted=1', '-p', appId]);
@@ -136,7 +146,6 @@ try {
   const closed = report(); assert.equal(closed.listeners, 0); assert.equal(closed.hostClosed, true);
   assert.equal(closed.pid, initial.pid);
   assert.equal(run('final-pid', 'adb', ['-s', device, 'shell', 'pidof', appId]), pid);
-  const baseline = report('baseline');
   const acceptanceApk = path.join(evidence, 'acceptance-release.apk'); cpSync(apk, acceptanceApk);
   // Execute the unmodified generated Activity too: no acceptance subclass, readiness override or native layout hooks.
   run('uninstall-acceptance', 'adb', ['-s', device, 'uninstall', appId]); installed = false;
@@ -147,7 +156,7 @@ try {
   run('default-install', 'adb', ['-s', device, 'install', apk]); installed = true;
   run('default-launch', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-n', `${appId}/${composition.activity}`]);
   pid = run('default-pid', 'adb', ['-s', device, 'shell', 'pidof', appId]);
-  flow('default-integration', '- assertVisible: "RN 86 Hermes"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- pressKey: Back\n- assertVisible: "RN links 0 back 1"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"');
+  flow('default-integration', '- assertVisible: "RN 86 Hermes"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- pressKey: Back\n- assertVisible: "RN links 0 back 1"\n- tapOn: "Reject session"\n- assertVisible: "Session caller_denied"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"');
   run('default-deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', 'tauri-fieldnotes://notes/default', '-p', appId]);
   flow('default-link', '- assertVisible: "RN links 1 back 1"\n- assertVisible: "RN events 1"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 0 setup 1 plugins 1"');
   assert.equal(run('default-final-pid', 'adb', ['-s', device, 'shell', 'pidof', appId]), pid);
@@ -159,10 +168,10 @@ try {
     nonDebuggable: true, libraries, elfAlignment: 'All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed',
     packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-react-native-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
     apkSha256: sha256(readFileSync(acceptanceApk)), defaultActivity: { activity: composition.activity, pid, apkSha256: sha256(readFileSync(apk)), overriddenHooks: false },
-    bundleSha256: sha256(readFileSync(bundle)), baseline, initial, remounted, closed, notes,
-    uiScenarios: ['shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'save and event', 'background deep link and event', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'RN BackHandler and Linking routing', 'remove RN and keep original Tauri frontend'],
+    bundleSha256: sha256(readFileSync(bundle)), baseline, initial, permissionRetired, remounted, closed, notes,
+    uiScenarios: ['shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'renderer retirement during pending OS permission prevents the old continuation save', 'undeclared session preserves original caller_denied code/message', 'save and event', 'background deep link and event', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'RN BackHandler and Linking routing', 'remove RN and keep original Tauri frontend'],
     composition: receipt,
-    testOnlyIntegration: 'Acceptance subclass supplies layout, baseline readiness and telemetry; packed composeAndroid generates Tauri/RN attachment, startup and lifecycle forwarding. A second Release APK runs the unmodified generated Activity/default layout without that subclass. The original MainActivity and TauriActivity remain in the inheritance chain. Expo, iOS automatic composition and broader source-form coverage remain open.',
+    testOnlyIntegration: 'Acceptance subclass supplies layout, baseline readiness and telemetry; packed composeAndroid generates Tauri/RN attachment, startup and lifecycle forwarding. A second Release APK runs the unmodified generated Activity/default layout without that subclass. The original MainActivity and TauriActivity remain in the inheritance chain. Expo and broader source-form coverage remain open.',
     testOnlySigning: 'Non-debuggable Release with R8 optimization and a debug test signing key; process-scoped logcat telemetry',
   }, null, 2) + '\n');
   console.log(`PASS: packed RN retained Android SDK native acceptance. ${evidence}/report.json`);

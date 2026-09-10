@@ -105,13 +105,22 @@ try {
   run('gps', 'xcrun', ['simctl', 'location', device, 'set', '37.5665,126.9780']);
   await launch();
   const baseline = report('runtime-report.json');
-  flow('initial', '- assertVisible: \"RN 86 Hermes\"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"\n- tapOn: "Check permission"\n- assertVisible: "Permission prompt"');
+  flow('initial', '- assertVisible: \"RN 86 Hermes\"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- tapOn: "Reject session"\n- assertVisible: "Session caller_denied"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"\n- tapOn: "Check permission"\n- assertVisible: "Permission prompt"');
   flow('deny-permission', '- tapOn: "Request permission"\n- tapOn: "(Don.t Allow|허용 안 함)"\n- assertVisible: "Permission denied"\n- tapOn: "Save location"\n- assertVisible: "Location denied"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 0 notes 0 setup 1 plugins 1"\n- assertVisible: "RN events 0"');
   const denied = report();
   run('stop-denied', 'xcrun', ['simctl', 'terminate', device, appId]);
   run('reset-denied', 'xcrun', ['simctl', 'privacy', device, 'reset', 'location', appId]);
   await launch();
-  flow('grant-permission', '- assertVisible: "Tauri 45 setup 1 plugins 1"\n- tapOn: "Request permission"\n- tapOn: "(Allow While Using App|앱을 사용하는 동안 허용)"\n- assertVisible: "Permission granted"\n- tapOn: "Save location"\n- assertVisible: "RN note 1"\n- assertVisible: "RN events 1"');
+  const beforePermission = report();
+  flow('retire-permission', '- assertVisible: "Tauri 45 setup 1 plugins 1"\n- tapOn: "Retire on pause"\n- tapOn: "Request then save"\n- assertVisible: "(Allow While Using App|앱을 사용하는 동안 허용)"');
+  await until(() => report().permissionRetirement?.generation === 2);
+  const permissionRetired = report();
+  assert.equal(permissionRetired.retireOnPause, false);
+  assert.equal(permissionRetired.permissionRetirement.listeners, 0);
+  assert.equal(permissionRetired.permissionRetirement.runtimeStatus, 'ready');
+  assert.equal(permissionRetired.permissionRetirement.pid, beforePermission.pid);
+  assert(permissionRetired.permissionRetirement.paused > beforePermission.paused);
+  flow('grant-permission', '- tapOn: "(Allow While Using App|앱을 사용하는 동안 허용)"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- tapOn: "Check permission"\n- assertVisible: "Permission granted"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 0 notes 0 setup 1 plugins 1"\n- tapOn: "Save location"\n- assertVisible: "RN note 1"\n- assertVisible: "RN events 1"');
   const saved = report(); assert.equal(saved.listeners, 1); assert.equal(saved.reactThreads.length, 1);
   flow('background', '- pressKey: Home');
   await until(() => report().stopped > saved.stopped);
@@ -119,7 +128,7 @@ try {
   flow('resume', '- tapOn:\n    text: "(Open|열기)"\n    optional: true\n- assertVisible: "RN events 2"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 1 setup 1 plugins 1"\n- tapOn: "Reload RN"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 1 setup 1 plugins 1"');
   await until(() => report().reactThreads.length === 1);
   const remounted = report();
-  assert.equal(remounted.pid, saved.pid); assert.equal(remounted.generation, 2);
+  assert.equal(remounted.pid, saved.pid); assert.equal(remounted.generation, 3);
   assert.equal(remounted.listenersAfterRelease, 0); assert.equal(remounted.listeners, 1);
   assert.equal(remounted.appDelegate, 'AppDelegate'); assert(remounted.stopped >= 1 && remounted.resumed > saved.resumed);
   run('remounted-link', 'xcrun', ['simctl', 'openurl', device, 'tauri-fieldnotes://notes/1?remounted=1']);
@@ -142,7 +151,7 @@ try {
   const defaultLaunch = run('default-launch', 'xcrun', ['simctl', 'launch', device, appId]);
   pid = Number(defaultLaunch.match(/: (\d+)$/)?.[1]); assert(Number.isSafeInteger(pid) && pid > 0);
   await until(() => report('runtime-report.json').passed === true);
-  flow('default-integration', '- assertVisible: "RN 86 Hermes"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"');
+  flow('default-integration', '- assertVisible: "RN 86 Hermes"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- tapOn: "Reject session"\n- assertVisible: "Session caller_denied"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"');
   run('default-deep-link', 'xcrun', ['simctl', 'openurl', device, 'tauri-fieldnotes://notes/default']);
   flow('default-link', '- tapOn:\n    text: "(Open|열기)"\n    optional: true\n- assertVisible: "RN events 1"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 0 setup 1 plugins 1"');
   const defaultIntegration = { pid, overriddenHooks: false, baseline: report('runtime-report.json'), binarySha256: sha256(readFileSync(path.join(app, info.CFBundleExecutable))) };
@@ -153,8 +162,8 @@ try {
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform: 'ios', profile: 'release', formatVersion: 2, abiVersion: 3,
     renderer: 'React Native/codegen 0.86.3 / Hermes / generated TurboModule and Fabric', sourceFree: true, sourceFreeBuild: 'PATH=/usr/bin:/bin:/usr/sbin:/sbin xcodebuild -configuration release -sdk iphonesimulator',
     packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-react-native-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
-    binarySha256: acceptanceBinarySha256, composition: receipt, podIntegration, defaultIntegration, bundleSha256: sha256(readFileSync(bundle)), baseline, denied, saved, remounted, closed, notes,
-    uiScenarios: ['shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'save and event', 'background deep link and event', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'removing RN terminates its JS thread and preserves the independent original Tauri frontend'],
+    binarySha256: acceptanceBinarySha256, composition: receipt, podIntegration, defaultIntegration, bundleSha256: sha256(readFileSync(bundle)), baseline, denied, permissionRetired, saved, remounted, closed, notes,
+    uiScenarios: ['shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'renderer retirement during pending OS permission prevents the old continuation save', 'undeclared session preserves original caller_denied code/message', 'save and event', 'background deep link and event', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'removing RN terminates its JS thread and preserves the independent original Tauri frontend'],
     testOnlyIntegration: 'Acceptance subclass supplies layout, baseline readiness and telemetry; the packed composer/SDK own startup, notification observation, readiness and attachment. A second Release app executes the unmodified generated startup/default layout with no acceptance subclass. Original Tauri UIApplication delegate preserved. Expo, third-party autolinking and RN Linking URL forwarding remain open.',
   }, null, 2) + '\n');
   console.log(`PASS: packed RN retained iOS SDK native acceptance. ${evidence}/report.json`);

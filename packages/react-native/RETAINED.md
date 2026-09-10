@@ -229,18 +229,30 @@ actual SDK, composes a relocated artifact, installs pods, regenerates, installs
 pods again and builds Release without Rust on PATH. An acceptance subclass adds
 only layout, baseline readiness and telemetry; the SDK owns startup observation,
 attachment and lifetime. A second Release app runs the unmodified generated
-startup/default layout without that subclass. Nine UI flows cover permissions,
+startup/default layout without that subclass. Ten UI flows cover permissions,
 plugins/events, replacement/removal and default integration. Run the separate
 macOS metadata/ownership scenarios with
 `node --experimental-strip-types --test packages/react-native/test/retained/compose-ios.test.ts`.
 
+Current CLI iOS exports preserve a failed session open's complete ABI response
+in `NSError.userInfo[@"TauriNativeRuntimeResponse"]`. Both SDKs forward its
+original code and message, including `caller_denied` for an undeclared caller.
+Older iOS exports fall back to `runtime_error` with the legacy description;
+regenerate those artifacts with the current CLI to receive structured open errors.
+
+The native gates also require an undeclared caller's original error code/message.
+Test-only controls replace the renderer while its OS permission request is pending.
+After the grant, the old continuation must not save a note; the new renderer must
+observe the permission, retain original Tauri state and save through the real plugin.
+All four packed arm64 Release gates pass these scenarios on iOS Simulator and
+Android emulator: [41 native UI flows](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-sdk-permission-retirement-2026-09-11.json).
+
 ## Remaining roadmap
 
 Third-party autolinking, Expo CNG, iOS Linking URL forwarding, retained
-`TauriView`, consistent session-open diagnostics, broader lifecycle/device/adopter acceptance and full framework
+`TauriView`, broader lifecycle/device/adopter acceptance and full framework
 parity remain tracked in [#45](https://github.com/gronxb/tauri-native/issues/45)
 and [#47](https://github.com/gronxb/tauri-native/issues/47). Forwarded hooks alone
-do not establish every native scenario: activity recreation, RN-owned permission
-requests and renderer destruction during a pending Tauri OS permission callback
-still need their own execution evidence. The default format 1 view/reader cannot
+do not establish every native scenario: activity recreation and RN-owned permission
+requests still need their own execution evidence. The default format 1 view/reader cannot
 consume a retained artifact. This checkout's changes are not a new npm release.

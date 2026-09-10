@@ -6,6 +6,7 @@ typedef void (^TNRuntimeCompletion)(NSDictionary *result);
 // A renderer-owned session in the existing Tauri application. Use on the main thread.
 @interface TNRuntimeSession : NSObject
 + (NSDictionary *)status;
+// Failed opens preserve the ABI response in NSError.userInfo[@"TauriNativeRuntimeResponse"].
 - (nullable instancetype)initWithCaller:(NSString *)caller error:(NSError * _Nullable * _Nullable)error;
 - (NSNumber *)invoke:(NSString *)command payload:(NSDictionary *)payload completion:(TNRuntimeCompletion)completion;
 // Completion contains the subscription ID; cancel the request to abandon registration.

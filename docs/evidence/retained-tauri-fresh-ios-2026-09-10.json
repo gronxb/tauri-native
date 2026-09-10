@@ -1,0 +1,413 @@
+{
+  "passed": true,
+  "platform": "ios",
+  "formatVersion": 2,
+  "abiVersion": 3,
+  "profile": "release",
+  "target": "arm64 simulator",
+  "producerDeleted": true,
+  "producerUnchanged": true,
+  "sourceHashes": {
+    "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+    "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+  },
+  "sourceFreeBuild": "xcodebuild -configuration release -sdk iphonesimulator; PATH=/usr/bin:/bin:/usr/sbin:/sbin; relocated path has spaces",
+  "consumer": "Native platform acceptance UI; RN/Lynx package acceptance remains separate",
+  "artifactSha256": "38e1592e2dddd3fca1fe197b9cf7220aea389fb9e7367a0af3592ed813d1c4a9",
+  "binarySha256": "546376f798c8393b0bc0e88e89259a039c3ab82809f4ab386e7564df523ab15d",
+  "incrementalAcceptance": {
+    "unchangedHit": true,
+    "invalidCapabilityRejected": true,
+    "previousArtifactPreserved": true
+  },
+  "baseline": {
+    "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/22358ADD-5164-49BD-A534-9AE42E70132A/Library/Application Support/dev.taurinative.mobilefieldnotes",
+    "passed": true,
+    "reloaded": true,
+    "scenarios": [
+      "setup",
+      "state",
+      "app-handle",
+      "async",
+      "rust-event",
+      "plugin-setup",
+      "plugin-allowed",
+      "plugin-denied",
+      "domain-error",
+      "reload"
+    ],
+    "state": {
+      "appIdentifier": "dev.taurinative.mobilefieldnotes",
+      "pluginSetupCount": 1,
+      "setupCount": 1,
+      "value": 45
+    }
+  },
+  "acl": {
+    "retiredCallbacks": 0,
+    "cancelledListeners": 1,
+    "generation": 1,
+    "action": "acl",
+    "retiredClosures": 0,
+    "appDelegate": "AppDelegate",
+    "eventBatch": [],
+    "subscription": 6,
+    "result": {
+      "error": "Command plugin:geolocation|watch_position not allowed by ACL",
+      "ok": false
+    },
+    "pid": 54266,
+    "eventHistory": [],
+    "nativeListeners": 1
+  },
+  "denied": {
+    "retiredCallbacks": 0,
+    "cancelledListeners": 1,
+    "generation": 1,
+    "action": "request",
+    "retiredClosures": 0,
+    "appDelegate": "AppDelegate",
+    "eventBatch": [],
+    "subscription": 6,
+    "result": {
+      "location": "denied",
+      "coarseLocation": "denied"
+    },
+    "pid": 54266,
+    "eventHistory": [],
+    "nativeListeners": 1
+  },
+  "deniedPosition": {
+    "retiredCallbacks": 0,
+    "cancelledListeners": 1,
+    "generation": 1,
+    "action": "position-denied",
+    "retiredClosures": 0,
+    "appDelegate": "AppDelegate",
+    "eventBatch": [],
+    "subscription": 6,
+    "result": {
+      "error": "The operation couldn\u2019t be completed. (kCLErrorDomain error 1.)",
+      "ok": false
+    },
+    "pid": 54266,
+    "eventHistory": [],
+    "nativeListeners": 1
+  },
+  "granted": {
+    "retiredCallbacks": 0,
+    "cancelledListeners": 2,
+    "generation": 2,
+    "action": "check",
+    "retiredClosures": 1,
+    "appDelegate": "AppDelegate",
+    "eventBatch": [],
+    "subscription": 15,
+    "result": {
+      "location": "granted",
+      "coarseLocation": "granted"
+    },
+    "pid": 54694,
+    "eventHistory": [],
+    "nativeListeners": 1
+  },
+  "saved": {
+    "retiredCallbacks": 0,
+    "cancelledListeners": 2,
+    "generation": 2,
+    "action": "save",
+    "retiredClosures": 1,
+    "appDelegate": "AppDelegate",
+    "eventBatch": [],
+    "subscription": 15,
+    "result": {
+      "id": 1,
+      "latitude": 37.5665,
+      "longitude": 126.978,
+      "text": "A native place to remember"
+    },
+    "pid": 54694,
+    "eventHistory": [],
+    "nativeListeners": 1
+  },
+  "nativeEvents": {
+    "retiredCallbacks": 0,
+    "cancelledListeners": 2,
+    "generation": 2,
+    "action": "refresh",
+    "retiredClosures": 1,
+    "appDelegate": "AppDelegate",
+    "eventBatch": [
+      {
+        "event": "fieldnotes-updated",
+        "payload": null,
+        "subscription": 15
+      },
+      {
+        "event": "fieldnotes-updated",
+        "payload": null,
+        "subscription": 15
+      }
+    ],
+    "subscription": 15,
+    "result": {
+      "links": [
+        "tauri-fieldnotes://notes/1"
+      ],
+      "pluginSetupCount": 1,
+      "notes": [
+        {
+          "id": 1,
+          "latitude": 37.5665,
+          "longitude": 126.978,
+          "text": "A native place to remember"
+        }
+      ],
+      "setupCount": 1,
+      "platform": "ios"
+    },
+    "pid": 54694,
+    "eventHistory": [
+      {
+        "generation": 2,
+        "event": {
+          "event": "fieldnotes-updated",
+          "payload": null,
+          "subscription": 15
+        }
+      },
+      {
+        "generation": 2,
+        "event": {
+          "event": "fieldnotes-updated",
+          "payload": null,
+          "subscription": 15
+        }
+      }
+    ],
+    "nativeListeners": 1
+  },
+  "linked": {
+    "retiredCallbacks": 0,
+    "cancelledListeners": 3,
+    "generation": 3,
+    "action": "refresh",
+    "retiredClosures": 1,
+    "appDelegate": "AppDelegate",
+    "eventBatch": [],
+    "subscription": 26,
+    "result": {
+      "links": [
+        "tauri-fieldnotes://notes/1"
+      ],
+      "pluginSetupCount": 1,
+      "notes": [
+        {
+          "id": 1,
+          "latitude": 37.5665,
+          "longitude": 126.978,
+          "text": "A native place to remember"
+        }
+      ],
+      "setupCount": 1,
+      "platform": "ios"
+    },
+    "pid": 54694,
+    "eventHistory": [
+      {
+        "generation": 2,
+        "event": {
+          "event": "fieldnotes-updated",
+          "payload": null,
+          "subscription": 15
+        }
+      },
+      {
+        "generation": 2,
+        "event": {
+          "event": "fieldnotes-updated",
+          "payload": null,
+          "subscription": 15
+        }
+      }
+    ],
+    "nativeListeners": 1
+  },
+  "remountedEvents": {
+    "retiredCallbacks": 0,
+    "cancelledListeners": 3,
+    "generation": 3,
+    "action": "refresh",
+    "retiredClosures": 1,
+    "appDelegate": "AppDelegate",
+    "eventBatch": [
+      {
+        "event": "fieldnotes-updated",
+        "payload": null,
+        "subscription": 26
+      }
+    ],
+    "subscription": 26,
+    "result": {
+      "links": [
+        "tauri-fieldnotes://notes/1",
+        "tauri-fieldnotes://notes/1?remounted=1"
+      ],
+      "pluginSetupCount": 1,
+      "notes": [
+        {
+          "id": 1,
+          "latitude": 37.5665,
+          "longitude": 126.978,
+          "text": "A native place to remember"
+        }
+      ],
+      "setupCount": 1,
+      "platform": "ios"
+    },
+    "pid": 54694,
+    "eventHistory": [
+      {
+        "generation": 2,
+        "event": {
+          "event": "fieldnotes-updated",
+          "payload": null,
+          "subscription": 15
+        }
+      },
+      {
+        "generation": 2,
+        "event": {
+          "event": "fieldnotes-updated",
+          "payload": null,
+          "subscription": 15
+        }
+      },
+      {
+        "generation": 3,
+        "event": {
+          "event": "fieldnotes-updated",
+          "payload": null,
+          "subscription": 26
+        }
+      }
+    ],
+    "nativeListeners": 1
+  },
+  "relaunched": {
+    "retiredCallbacks": 0,
+    "cancelledListeners": 1,
+    "generation": 1,
+    "action": "refresh",
+    "retiredClosures": 0,
+    "appDelegate": "AppDelegate",
+    "eventBatch": [],
+    "subscription": 6,
+    "result": {
+      "links": [],
+      "pluginSetupCount": 1,
+      "notes": [
+        {
+          "id": 1,
+          "latitude": 37.5665,
+          "longitude": 126.978,
+          "text": "A native place to remember"
+        }
+      ],
+      "setupCount": 1,
+      "platform": "ios"
+    },
+    "pid": 55487,
+    "eventHistory": [],
+    "nativeListeners": 1
+  },
+  "recordedAt": "2026-09-10T14:36:30.120668+00:00",
+  "command": "pnpm --filter @tauri-native/cli build; PATH=\"$HOME/.cargo/bin:$HOME/.local/share/mise/installs/ruby/3.3.10/bin:$HOME/.maestro/bin:$PATH\" IOS_SIMULATOR_UDID=0368C5D9-63CF-447E-B6BB-0E3184B1CD0A node --experimental-strip-types packages/cli/test/runtime/portable.ts ios --release",
+  "toolchain": {
+    "node": "v24.15.0",
+    "npm": "11.12.1",
+    "xcode": "Xcode 26.4.1\nBuild version 17E202",
+    "ruby": "ruby 3.3.10 (2025-10-23 revision 343ea05002) [arm64-darwin23]",
+    "maestro": "2.4.0",
+    "simulator": {
+      "name": "iPhone 16",
+      "udid": "0368C5D9-63CF-447E-B6BB-0E3184B1CD0A"
+    },
+    "runtime": {
+      "BuildID": "847B2196-33E0-11F1-8760-4B155098FBAC",
+      "ProductBuildVersion": "23E254a",
+      "ProductCopyright": "1983-2026 Apple Inc.",
+      "ProductName": "iPhone OS",
+      "ProductVersion": "26.4.1",
+      "SystemImageID": "51BF0F28-5041-4C74-A7B0-61172EA732C6"
+    },
+    "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+    "cargo": "cargo 1.97.1 (c980f4866 2026-06-30)"
+  },
+  "compatibility": {
+    "mode": "retained",
+    "tauri": "2.11.5",
+    "tauriCli": "2.11.4",
+    "wry": "0.55.1",
+    "tauriRuntimeWry": "2.11.4"
+  },
+  "plugins": {
+    "tauri-plugin-deep-link": "2.4.10",
+    "tauri-plugin-geolocation": "2.3.3"
+  },
+  "baseCommit": "67ae27dd2cde879b30982307731240ab0187a081",
+  "nativeReportSha256": "f3e4fae6ff692bbd48e14ff942b1d12ab0ea8a72dd08c817f6185ab74e8d7151",
+  "changedFileSha256": {
+    "build.json": "54cbfc22c350ced864ed01492030ac389815c562c507ceb9b23789d6f875c8fb",
+    "ios/Sources/TauriNativeRuntime/TNRuntimeSession.h": "8de4f7ca8023efa1082062ca5d6c77187626d8a27305f9d3f452af307eca15fb",
+    "ios/Sources/TauriNativeRuntime/TNRuntimeSession.mm": "f1435438b0918972ea792206960151a61f2a71ae2555e68cabbe89802ee599ba",
+    "ios/TauriNativeRuntime.xcframework/ios-arm64-simulator/libapp.a": "79efbf339a5ec51c7ebe7eeab6ed3a1fa253286e5a82f63b18d56766b3a4e3dd"
+  },
+  "sourceSha256": {
+    "packages/cli/runtime/ios/TNRuntimeSession.h": "8de4f7ca8023efa1082062ca5d6c77187626d8a27305f9d3f452af307eca15fb",
+    "packages/cli/runtime/ios/TNRuntimeSession.mm": "f1435438b0918972ea792206960151a61f2a71ae2555e68cabbe89802ee599ba",
+    "packages/cli/test/runtime/portable.ts": "e242baf89c107429467669c07b0c0c49450961429527b4c5d9145c30f9f64064"
+  },
+  "junitSha256": {
+    "deny-native-permission": "04722090f76723411f867a3cc73a0b689f85b0ae4c4f0c2344dab0220384a90a",
+    "grant-retired-permission": "2800f600ded1db297d9ab5484a98bf06834108287dc2d15513b11bc36bc1bf35",
+    "initial-native": "8acaab8845ad658def28283327786d294042a2b495cb929a507361fee14e33db",
+    "native-background": "afef4f4da5add5381ef70aa5a30c1c88d0f97aef3b2d1246ccb21b0d91a44435",
+    "native-denied-position": "ee9c353fbc3bba29834b98b57c075928009736e578ebd32db6f15b1ebd18e31f",
+    "native-link": "793599774a6b976dba252774e3a4cf81cb2f4c1d34ecd9a1eac8cd1bb8b334f2",
+    "native-no-denied-save": "053fdf24d0c138777372e033a49944f6db2c6fbd984bd11446f616ad25940bd0",
+    "native-persistence": "cf6008a54e00f78a5c6cd3449f57dc064516ee9943d1c09a8c6f98dac896fff0",
+    "native-remount": "cf9f5280b583cea9c103eb658a2c8f9033e350d4babdd4a7cb23fd7197d02bd0",
+    "native-remounted-event": "2caa4c0a5cafd43ecdfc69ee59b9b975025dfc982f1f8a3aa8c786aeb96e74b7",
+    "native-save": "551e47671478d60ca11e26a95bbc537552545ca2449a2b19e7724c2b70d18403",
+    "retire-native-permission": "a73cd484dba271d8187a6ab98088aa937259ac537849ce065f450aa16fc0cc59"
+  },
+  "logs": {
+    "export": "15d7cf132297ee81d71d1e5af334a6d1c0f32d0476751c0a786f42b0795e2810",
+    "incremental-hit": "3e318ce3f8ba9befb691283290294a82eb594c83bea0ad534e50cb4a7c758cd4",
+    "capability-cache-invalidation": "15dd785980433544ed3a520392c023c9fefa5c8e0d799cfbead68494c3d14f79",
+    "source-free-doctor": "8699a2b70a24dd339eca9e17d93f0f3ab759885513c1b5ba2f4ea4427fdf4b27",
+    "source-free-build": "dc8102c73b6a243ec46e9defb28af08510a6af551708e1a869f45c2448e5ce41",
+    "app-info": "44e6c7761ff4e56a61e56b6be220b4b58fb6df40cfa14d55e845c9c3d155dfd5"
+  },
+  "verification": {
+    "nativeJUnitFlows": 12,
+    "skippedFlows": 0,
+    "originalFrontendScenarios": 10,
+    "originalFixtureHashesMatch": true,
+    "currentPlatformClientCaptured": true
+  },
+  "scope": "Fresh arm64 Release export from the ordinary unchanged producer, followed by cache-hit/failure-preservation checks, producer deletion, relocation and full source-free native plugin/event/session-retirement execution. Captures the current iOS platform client, including its additive NSError response field. This gate does not open an undeclared caller through an SDK, and therefore does not by itself prove the structured session-open error branch or renderer destruction during a pending callback. Those are separate RN/Lynx native gates."
+}

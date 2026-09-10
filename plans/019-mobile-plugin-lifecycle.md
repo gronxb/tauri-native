@@ -73,3 +73,23 @@ Lynx Android now receives attachment and lifecycle forwarding from the packed co
 A fresh current-CLI Android arm64 Release export now passes the complete native plugin/event/session-retirement gate, followed by both packed SDK automatic-composition gates using the identical artifact: [fresh Android export and SDK evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-fresh-android-composition-2026-09-09.json). RN passes ten UI flows and Lynx nine, including actual OS denial/grant, original Tauri deep links, renderer replacement/removal and unmodified generated startup. Both SDK APK pairs are non-debuggable with eleven identical native libraries per pair; the standalone telemetry APK remains test-only debuggable. Actual renderer destruction during a pending OS permission callback is still a separate required scenario.
 
 The packed Lynx iOS composer now owns startup observation/readiness/attachment under the unchanged Tauri AppDelegate. Nine Release UI flows pass with original Swift geolocation permissions, state/setup, events, background links, renderer replacement/removal and a second unmodified generated app: [Lynx iOS composition evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-lynx-compose-ios-2026-09-10.json). Native listeners reach zero at replacement/removal, and original frontend commands continue after Lynx is removed. Denial-to-grant explicitly resets privacy and relaunches; the subsequent grant/background/remount/removal sequence retains one process. Renderer retirement during the actual pending OS callback still requires its own native scenario.
+
+## Pending permission and session diagnostics — 2026-09-11
+
+[SDK permission-retirement evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-sdk-permission-retirement-2026-09-11.json) records 41 packed Release UI flows across RN/Lynx iOS/Android. The actual
+SDK renderer is retired while the original Tauri geolocation OS dialog is pending.
+Listeners reach zero, Tauri stays ready, and after grant the old continuation
+cannot save its sentinel note. A new renderer saves one real location note;
+shared state/setup, events, later replacement/removal and original frontend
+continuity pass. Each gate also clean-installs an app with unmodified generated
+startup/default layout and no native acceptance class.
+
+All four SDK paths preserve the original undeclared caller's error code/message.
+The additive iOS NSError response field is captured by a fresh unchanged-producer
+export with twelve native UI flows: [fresh iOS export evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-fresh-ios-2026-09-10.json). Older iOS exports retain the legacy
+error fallback. iOS denial-to-grant explicitly resets privacy and relaunches;
+retirement/grant/background/removal then keep one process. Evidence records the
+initial Android logcat collection failure separately from the corrected full run.
+This observes absence of stale saved notes, not a count of retired JS callbacks.
+
+Expo CNG, third-party autolinking, retained TauriView/navigation, RN iOS Linking, Activity recreation/RN-owned permissions, broader source forms/native channels, complete parity/CI/migration, physical devices and independent adopters remain open. No issue or release is closed by this increment.
