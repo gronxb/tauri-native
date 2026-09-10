@@ -179,3 +179,15 @@ artifact. Native activity injection is distinct from pending OS Universal Link
 association. Expo, third-party autolinking, retained TauriView, broader source
 forms and lifecycle cases, complete parity/CI/migration and device/adopter gates
 remain open. No issue or release is closed and no package is published.
+
+## Retained Lynx view progress — 2026-09-11
+
+The public retained Lynx `TauriView` reuses the original Tauri WebView on iOS and
+Android. [34 Release UI flows](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-lynx-view-2026-09-11.json) pass in packed, source-free consumers,
+including unmodified generated startup/default layouts. Embedded frontend and
+native calls share actual plugin state and notes; competing mounts are rejected;
+view/renderer replacement and close preserve the original document, delegate/client,
+state and single setup. The original producer and runtime artifacts are unchanged.
+See [#46](https://github.com/gronxb/tauri-native/issues/46) for the precise single-view
+scope. RN TauriView, broader navigation/lifecycle and Expo/autolinking/parity/CI/
+migration/device/adopter acceptance remain open. No release or roadmap gate is closed.

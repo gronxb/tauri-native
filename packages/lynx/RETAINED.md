@@ -47,6 +47,47 @@ arriving after its first event, and reports overflow without silently accepting
 an incomplete batch. An authorization or transport failure closes the stream.
 Registering another listener after a fatal stream error requires a new session.
 
+## Showing the original Tauri document
+
+```tsx
+import { TauriView } from '@tauri-native/lynx/retained';
+
+<TauriView
+  style={{ width: '100%', height: '400px' }}
+  onAttach={() => console.log('Original Tauri view attached')}
+  onAttachError={error => console.error(error.code, error.message)}
+/>
+```
+
+For flexible height with the pinned Lynx version, use `flex: '1'`; numeric
+`flex: 1` produced zero height in native acceptance.
+
+The retained component moves the existing Tauri WebView into the Lynx layout.
+It keeps the current document, history, Tauri IPC, native delegates/clients and
+application state. Embedded frontend commands use their ordinary Tauri identity
+and capabilities; direct Lynx sessions keep their separate declared caller policy.
+Both paths reach the same real Tauri application. No producer changes are needed.
+
+The generated composers provide the original view automatically. For manual
+native integration, pass that view to the host's additional `webView` initializer
+argument. The original host initializer remains available for renderers that only
+use direct calls; its view component reports `view_unavailable`.
+
+The supported layout has one original Tauri WebView and one retained Lynx host.
+Only one mounted component may borrow it at a time; a competing mount reports
+`view_in_use` and leaves the first view in place. Unmount the competing component
+and mount it again after releasing the owner to retry. `onAttach` acknowledges
+view attachment, not completion of a later page load. The composer waits for the
+initial Tauri document before starting Lynx. There is no `path`/`source` prop:
+the ordinary frontend continues to own navigation, history and document requests.
+
+Unmounting restores the view to its original parent and layout without reloading
+or destroying its document. Document listeners and requests remain owned by
+Tauri. Renderer reload/close restores the view before destroying Lynx and retires
+the old renderer's native sessions. A new renderer sees the same application
+state. Arbitrary native layout owners, history/back controls, rotation and full
+document-navigation acceptance remain separate roadmap work.
+
 ## Android integration under development
 
 The package exposes a source-free composer for a validated format 2 artifact and
@@ -82,7 +123,8 @@ The default surface fills a container above the original WebView, with system-ba
 and cutout insets. A native consumer subclass can override
 `createLynxContainer(webView)`, `isTauriDocumentReady(webView)` and
 `onLynxHostAttached()` and use `tauriLynxHost` for reload/removal. Preserve original
-superclass callbacks. These hooks do not implement the planned Lynx `TauriView`.
+superclass callbacks. Use the retained `TauriView` component to show the original
+document inside the Lynx layout.
 
 The RN and Lynx packages share generated-file ownership and replacement logic
 while remaining independently installable. A repeated invocation is a no-op;
@@ -170,7 +212,7 @@ It keeps the original application delegate, window and root controller. Main-thr
 subclasses may override `isTauriDocumentReady:`, `createLynxContainer:` and
 `lynxHostDidAttach`; install the subclass in a consumer-owned entry point and
 resolve that main-file edit before regenerating owned output. These hooks do not
-implement the planned Lynx `TauriView`.
+replace the retained `TauriView` component's document attachment.
 
 The lower-level host and Podfile helper remain available for explicit attachment.
 In the exported original iOS project's Podfile, add the packed SDK as a local
@@ -245,9 +287,19 @@ observe the permission, retain original Tauri state and save through the real pl
 All four packed arm64 Release gates pass these scenarios on iOS Simulator and
 Android emulator: [41 native UI flows](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-sdk-permission-retirement-2026-09-11.json).
 
+The retained view passes [34 Release UI flows](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-lynx-view-2026-09-11.json)
+across iOS Simulator and Android emulator, including unmodified generated startup
+and default layouts. Embedded frontend saves and direct calls share real Tauri
+notes, events and plugin permissions. Competing mounts, component remount,
+renderer replacement and close preserve the same document and native delegates/
+clients, and restore the original view. Test-only native instrumentation installs
+a nonpersistent document token once at startup and verifies it after transitions;
+the production SDK adds no document script. The ordinary producer and immutable
+runtime artifacts remain unchanged.
+
 ## Remaining roadmap
 
-Third-party Lynx autolinking, retained `TauriView`,
+Third-party Lynx autolinking, broader retained-view navigation/lifecycle forms,
 cross-renderer artifact parity, and complete M8
 acceptance remain tracked in [#46](https://github.com/gronxb/tauri-native/issues/46)
 and [#47](https://github.com/gronxb/tauri-native/issues/47). The format 1 view cannot

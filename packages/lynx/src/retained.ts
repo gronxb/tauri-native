@@ -1,6 +1,7 @@
 import { openSession, type RuntimeTransport } from './retained-client';
 export type { RuntimeSession, RuntimeEvent, RuntimeFailure, InvokeResponse, InvokeRequest } from './retained-client';
 export type { InvokeOptions } from './async-client';
+export { TauriView, type TauriViewProps } from './RetainedTauriView';
 
 declare const NativeModules: {
   TauriNativeRuntime?: { exchange(operation: string, callback: (response: string) => void): void };

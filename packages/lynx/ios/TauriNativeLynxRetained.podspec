@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.source_files = "retained/*.{h,mm}"
   s.public_header_files = ["retained/TNLynxHost.h", "retained/TNLynxComposition.h"]
   s.frameworks = "WebKit"
-  s.private_header_files = "retained/TNLynxRuntimeModule.h"
+  s.private_header_files = ["retained/TNLynxRuntimeModule.h", "retained/TNLynxTauriView.h"]
   # Format 2 already compiles this platform client in the original app target.
   s.pod_target_xcconfig = { "HEADER_SEARCH_PATHS" => '$(inherited) "$(PODS_ROOT)/../Sources/TauriNativeRuntime"' }
   s.dependency "Lynx/Framework", "4.0.1"

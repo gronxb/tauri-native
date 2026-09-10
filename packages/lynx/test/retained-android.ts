@@ -8,6 +8,7 @@ import { setTimeout } from 'node:timers/promises';
 import { readRetainedArtifacts } from '../../../scripts/retained-artifacts.ts';
 import { sha256 } from '../../cli/src/artifacts/files.ts';
 import { acquireMobileTest } from '../../cli/test/runtime/mobile-lock.ts';
+import { assertOriginalDocument, verifyRetainedView } from './retained/view-scenarios.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const artifact = path.resolve(process.argv[2] ?? path.join(root, 'target/retained-portability/exported-runtime'));
@@ -137,11 +138,15 @@ try {
   run('remounted-deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', 'tauri-fieldnotes://notes/1?remounted=1', '-p', appId]);
   flow('fresh-events', '- assertVisible: "Lynx events 1"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 2 notes 1 setup 1 plugins 1"');
   assert.deepEqual(report().receivedIntents, ['tauri-fieldnotes://notes/1', 'tauri-fieldnotes://notes/1?remounted=1']);
-  const notes = report().notes; assert.equal(notes.length, 1);
+  const view = verifyRetainedView(flow, report, evidence);
+  const notes = report().notes; assert.equal(notes.length, 2);
   assert.equal(notes[0].text, 'A Lynx place to remember');
+  assert.equal(notes[1].text, 'A place to remember');
   assert(Math.abs(notes[0].latitude - 37.5665) < 0.01 && Math.abs(notes[0].longitude - 126.978) < 0.01);
   flow('remove-renderer', '- tapOn: "Close Lynx"\n- tapOn: "Refresh notes and links"\n- assertVisible: "Links received 2"');
   const closed = report(); assert.equal(closed.listeners, 0); assert.equal(closed.hostClosed, true);
+  writeFileSync(path.join(evidence, 'view-closed.json'), JSON.stringify(closed, null, 2) + '\n');
+  assertOriginalDocument(closed, false);
   assert.equal(closed.pid, initial.pid);
   assert.equal(run('final-pid', 'adb', ['-s', device, 'shell', 'pidof', appId]), pid);
   const acceptanceApk = path.join(evidence, 'acceptance-release.apk'); cpSync(apk, acceptanceApk);
@@ -164,6 +169,7 @@ try {
   flow('default-integration', '- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "Lynx events 0"\n- tapOn: "Reject session"\n- assertVisible: "Session caller_denied"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"');
   run('default-deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', 'tauri-fieldnotes://notes/default', '-p', appId]);
   flow('default-link', '- assertVisible: "Lynx events 1"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 0 setup 1 plugins 1"');
+  flow('default-view', '- tapOn: "Show Tauri view"\n- assertVisible: "View attached"\n- tapOn: "Check denied capability"\n- assertVisible: "Tauri capability denied location watch"\n- tapOn: "Hide Tauri view"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 0 setup 1 plugins 1"');
   assert.equal(run('default-final-pid', 'adb', ['-s', device, 'shell', 'pidof', appId]), pid);
   assert.deepEqual(packedReader(copied), manifest);
   assert.deepEqual(readRetainedArtifacts(artifact), manifest);
@@ -172,10 +178,10 @@ try {
     renderer: 'Lynx 4.0.1 / PrimJS 4.0.0', sourceFree: true, sourceFreeBuild: 'PATH=/usr/bin:/bin:/usr/sbin:/sbin ./gradlew --no-daemon assembleRelease',
     nonDebuggable: true, libraries, elfAlignment: 'All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed',
     packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-lynx-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
-    apkSha256: sha256(readFileSync(acceptanceApk)), bundleSha256: sha256(readFileSync(bundle)), baseline, initial, permissionRetired, remounted, closed, notes,
+    apkSha256: sha256(readFileSync(acceptanceApk)), bundleSha256: sha256(readFileSync(bundle)), baseline, initial, permissionRetired, remounted, closed, notes, view,
     composition: receipt, defaultActivity: { activity: composition.activity, pid, apkSha256: sha256(readFileSync(apk)), overriddenHooks: false, identicalNativeLibraries: libraries.length },
     uiScenarios: ['shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'renderer retirement during pending OS permission prevents the old continuation save', 'undeclared session preserves original caller_denied code/message', 'save and event', 'background deep link and event', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'remove Lynx and keep original Tauri frontend', 'unmodified generated Activity/default layout', 'default SDK composition retains original Tauri ACL/state/deep-link events'],
-    testOnlyIntegration: 'Acceptance subclass provides layout, baseline readiness and telemetry only. The packed composer/SDK own startup, document readiness, attachment and lifecycle forwarding. A second Release APK executes the unmodified generated Activity/default layout without acceptance hooks. Original MainActivity/TauriActivity and plugin/bootstrap ownership remain. Third-party autolinking and retained TauriView remain open.',
+    testOnlyIntegration: 'Acceptance subclass provides layout, baseline readiness and telemetry only. The packed composer/SDK own startup, document readiness, attachment and lifecycle forwarding. A second Release APK executes the unmodified generated Activity/default layout and retained TauriView without acceptance hooks. Original MainActivity/TauriActivity and plugin/bootstrap ownership remain. Third-party autolinking and broader navigation/lifecycle forms remain open.',
     testOnlySigning: 'Non-debuggable Release with R8 optimization and a debug test signing key; process-scoped logcat telemetry',
   }, null, 2) + '\n');
   console.log(`PASS: packed Lynx retained Android SDK native acceptance. ${evidence}/report.json`);

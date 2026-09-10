@@ -43,7 +43,7 @@ static TNLynxComposition *installedComposition;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{ [self attachWhenReady]; }); return;
   }
   _container = [self createLynxContainer:webview];
-  _host = [[TNLynxHost alloc] initWithContainer:_container bundle:_bundle url:_url];
+  _host = [[TNLynxHost alloc] initWithContainer:_container webView:webview bundle:_bundle url:_url];
   [self lynxHostDidAttach];
 }
 - (BOOL)isTauriDocumentReady:(WKWebView *)webview {

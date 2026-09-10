@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — packed automatic composition passes on iOS and Android, including a fresh Android export; remaining M8 lifecycle/view/parity gates stay open.
+- Status: IN PROGRESS — packed automatic composition passes on iOS and Android, including a fresh Android export; single-original-view attachment now has native evidence; broader M8 lifecycle/navigation/parity gates stay open.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#41](https://github.com/gronxb/tauri-native/issues/41) (plan 017), [#44](https://github.com/gronxb/tauri-native/issues/44) (plan 020)
@@ -195,3 +195,31 @@ initial Android logcat collection failure separately from the corrected full run
 This observes absence of stale saved notes, not a count of retired JS callbacks.
 
 Expo CNG, third-party autolinking, retained TauriView/navigation, RN iOS Linking, Activity recreation/RN-owned permissions, broader source forms/native channels, complete parity/CI/migration, physical devices and independent adopters remain open. No issue or release is closed by this increment.
+
+## Retained Lynx document attachment — 2026-09-11
+
+The packed Lynx SDK now exposes `TauriView` from `@tauri-native/lynx/retained`
+on iOS and Android. Generated consumer integration supplies the original Tauri
+WebView; its current document, native delegates/clients, IPC and application state
+remain owned by Tauri. The original producer and immutable runtime artifacts are
+unchanged. Only one component may borrow the original view at a time. A competing
+mount receives `view_in_use`; unmount restores the original parent/layout, and
+renderer retirement restores the view before destroying Lynx.
+
+[Native Release evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-lynx-view-2026-09-11.json) records 34 passing UI flows across iOS
+Simulator and Android emulator, with both acceptance subclasses and unmodified
+generated startup/default layouts. The original frontend saves through the actual
+geolocation plugin and Tauri command, and the Lynx session observes the same two
+notes and event. Tauri capability denial still applies. Component remount,
+competing attachment, renderer replacement and close preserve the document's
+nonpersistent test token, native delegate/client identity, state 45 and one app/
+plugin setup. Old renderer listeners reach zero; the replacement owns one listener.
+The final original frontend remains interactive after Lynx removal.
+
+The view's state scope is the retained application. Attachment does not navigate
+or reload: frontend navigation/history and document requests remain Tauri-owned,
+while direct Lynx sessions keep the declared native caller policy. The supported
+layout has one original WebView and one retained Lynx host. RN retained TauriView,
+full history/back/rotation and document-navigation acceptance, custom layout owners,
+Expo CNG, third-party autolinking, complete parity/CI/migration, physical devices and
+independent adopters remain open. This increment closes no roadmap or release issue.

@@ -1,0 +1,1357 @@
+{
+  "passed": true,
+  "recordedAt": "2026-09-10T16:49:19.499432+00:00",
+  "baseCommit": "0e952002fdd1d4504168ad4525c19d964361c13c",
+  "scope": "Packed retained Lynx SDK arm64 Release executions on iOS Simulator and Android emulator. Both the native acceptance subclass and unmodified generated default startup/layout execute the public retained TauriView component. The exact original WebView moves between parents; its nonpersistent document token and native navigation/UI delegates or clients remain unchanged. Actual frontend geolocation/save and capability denial share Tauri state with direct native calls. Simultaneous second attachment is rejected without stealing the first view. Component unmount/remount, renderer replacement and close restore the original view and retain the document. Native renderer sessions are retired independently of the original Tauri document.",
+  "nativeJUnitFlows": 34,
+  "skippedFlows": 0,
+  "producerSourceSha256": {
+    "packages/cli/test/fixtures/mobile-plugin-tauri/README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372"
+  },
+  "toolchain": {
+    "node": "v24.15.0",
+    "npm": "11.12.1",
+    "xcode": "Xcode 26.4.1\nBuild version 17E202",
+    "ruby": "ruby 3.3.10 (2025-10-23 revision 343ea05002) [arm64-darwin23]",
+    "cocoaPods": "1.16.2 (from successful pod install logs)",
+    "maestro": "2.4.0",
+    "simulator": {
+      "name": "iPhone 16",
+      "udid": "0368C5D9-63CF-447E-B6BB-0E3184B1CD0A"
+    },
+    "runtime": {
+      "BuildID": "847B2196-33E0-11F1-8760-4B155098FBAC",
+      "ProductBuildVersion": "23E254a",
+      "ProductCopyright": "1983-2026 Apple Inc.",
+      "ProductName": "iPhone OS",
+      "ProductVersion": "26.4.1",
+      "SystemImageID": "51BF0F28-5041-4C74-A7B0-61172EA732C6"
+    },
+    "lynx": "4.0.1",
+    "primjs": "4.0.0",
+    "@lynx-js/react": "0.125.0",
+    "@lynx-js/rspeedy": "0.16.5",
+    "@lynx-js/react-rsbuild-plugin": "0.19.1",
+    "android": {
+      "device": "emulator-5554",
+      "avd": "Pixel_10_Pro_XL\nOK",
+      "fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:17/CP21.260330.005/15181570:user/dev-keys",
+      "api": "37",
+      "pageSize": "16384",
+      "java": "openjdk version \"21.0.10\" 2026-01-20\nOpenJDK Runtime Environment (build 21.0.10+-117844308-b1163.108)\nOpenJDK 64-Bit Server VM (build 21.0.10+-117844308-b1163.108, mixed mode)",
+      "bootCommand": "$HOME/Library/Android/sdk/emulator/emulator -avd Pixel_10_Pro_XL -port 5554 -no-window -no-snapshot-load -no-snapshot-save",
+      "dataWiped": false,
+      "emulatorStoppedAfterGates": true
+    }
+  },
+  "sourceSha256": {
+    "packages/lynx/android/retained/src/main/java/dev/taurinative/lynx/retained/TauriLynxHost.java": "6e02c2a1a6bc9b75404f3bc609f6840200e872097eefeb14a6a8826cb005cdc8",
+    "packages/lynx/android/retained/src/main/java/dev/taurinative/lynx/retained/TauriViewElement.java": "4359cd76eec513e27dcb4834ec775815d43f84acd7ffb934a5f4d190866b696a",
+    "packages/lynx/ios/TauriNativeLynxRetained.podspec": "0f72fb8ecdcd3598dbb4eb4f239966ae9d904758016a8bb404b6c443abf90cf2",
+    "packages/lynx/ios/retained/TNLynxComposition.mm": "1b7692167618c3a589c6b13edcd88919da0f9573330f8a441b7d0a9cd6623732",
+    "packages/lynx/ios/retained/TNLynxHost.h": "4e457d29e4aee290764e4dfa78389fd0ec25fffdf1854684ba4279d1f88728ce",
+    "packages/lynx/ios/retained/TNLynxHost.mm": "b840bc931e08d7c12afdca19756aa3bf922b07bda630df9132b26e55be83c9f5",
+    "packages/lynx/ios/retained/TNLynxTauriView.h": "57bcdbf82c27f855dc864be1687dce619649b5e18c7328cf42f639c93ef61647",
+    "packages/lynx/ios/retained/TNLynxTauriView.mm": "84ab5ae60d3351628d6388f27416f3e3e96f7a4c0bb0b5e61975eee009aa3c88",
+    "packages/lynx/retained/android/TauriNativeActivity.kt.template": "261d9d9f01ec976d50470d5eecf3f551eda078ce0b0890aeb786a2a8f8db02f9",
+    "packages/lynx/src/RetainedTauriView.ts": "ff57ad931796ced2c0908f94044e31be35fd832d2060ac1126b977059bec3fba",
+    "packages/lynx/src/retained.ts": "d8f8bde997ccd6169a11bfd11d01a1fe38ebee33041fd409b91b6d204272b86e",
+    "packages/lynx/test/retained-android.ts": "ca70b604f300b14a3155c1b8181c6f62abf4f6c0b1a3b61724898bd20661eb35",
+    "packages/lynx/test/retained-ios.ts": "31e8cde157b7599dd8c8463e210514d759609c41d949ded619c7b63831563947",
+    "packages/lynx/test/retained/AcceptanceActivity.kt.fixture": "6896949e45c1f738a2aa862e4b7256219d2ab6b53efef4e932d1336f5531dbc9",
+    "packages/lynx/test/retained/App.tsx.fixture": "e94d81b7271fa9e9d7c9abb129a2ce7f3118534fe42cc097a0a0df1d3c5075ad",
+    "packages/lynx/test/retained/IosAcceptance.mm.fixture": "271ed164a77cdab870695acb0347aca9d05714ab59355d15fe83c20ad6425e30",
+    "packages/lynx/test/retained/view-scenarios.ts": "f936b6bb0239de4ff2417a43271687a5e429febfdcaebda07f6ef66451d3c0d7"
+  },
+  "commands": {
+    "ios": "PATH=\"$HOME/.local/share/mise/installs/ruby/3.3.10/bin:$HOME/.maestro/bin:$PATH\" IOS_SIMULATOR_UDID=0368C5D9-63CF-447E-B6BB-0E3184B1CD0A node --experimental-strip-types packages/lynx/test/retained-ios.ts",
+    "android": "PATH=\"$HOME/.cargo/bin:$HOME/Library/Android/sdk/platform-tools:$HOME/.maestro/bin:$PATH\" JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" ANDROID_HOME=\"$HOME/Library/Android/sdk\" NDK_HOME=\"$HOME/Library/Android/sdk/ndk/27.1.12297006\" ANDROID_SERIAL=emulator-5554 node --experimental-strip-types packages/lynx/test/retained-android.ts"
+  },
+  "results": [
+    {
+      "passed": true,
+      "platform": "ios",
+      "profile": "release",
+      "formatVersion": 2,
+      "abiVersion": 3,
+      "renderer": "Lynx 4.0.1 / PrimJS 4.0.0",
+      "sourceFree": true,
+      "sourceFreeBuild": "PATH=/usr/bin:/bin:/usr/sbin:/sbin xcodebuild -configuration release -sdk iphonesimulator",
+      "packageSha256": "392bffa810257c929ee71112b0d3d02a04db447225bdc413a7bc77b55dde9c4e",
+      "artifactSha256": "38e1592e2dddd3fca1fe197b9cf7220aea389fb9e7367a0af3592ed813d1c4a9",
+      "binarySha256": "ea7af7ae964205dc2548fb74655438a69b23076408ec9d401b6ad08be4f9b281",
+      "defaultIntegration": {
+        "pid": 18678,
+        "overriddenHooks": false,
+        "baseline": {
+          "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/5998C5D1-689B-4BBF-901B-30942DE10E94/Library/Application Support/dev.taurinative.mobilefieldnotes",
+          "passed": true,
+          "reloaded": true,
+          "scenarios": [
+            "setup",
+            "state",
+            "app-handle",
+            "async",
+            "rust-event",
+            "plugin-setup",
+            "plugin-allowed",
+            "plugin-denied",
+            "domain-error",
+            "reload"
+          ],
+          "state": {
+            "appIdentifier": "dev.taurinative.mobilefieldnotes",
+            "pluginSetupCount": 1,
+            "setupCount": 1,
+            "value": 45
+          }
+        },
+        "binarySha256": "42f534c08bec1584ce22e9f90afe780a07d013d2a11204de0a087537755daa2a"
+      },
+      "bundleSha256": "16a4f8a242dc039abd7a8b5a284003cff95755bf2499d298b61a37c09999953e",
+      "baseline": {
+        "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/B8BEE06D-F363-4C6F-9955-929A912D5CDE/Library/Application Support/dev.taurinative.mobilefieldnotes",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      },
+      "denied": {
+        "paused": 1,
+        "generation": 1,
+        "hostClosed": false,
+        "stopped": 0,
+        "retireOnPause": false,
+        "resumed": 2,
+        "view": {
+          "originalParent": true,
+          "parent": "TaoUIView0",
+          "documentOrigin": 1789058237090.0002,
+          "frame": "{{0, 0}, {393, 852}}",
+          "documentToken": "7DA831D3-DE1D-473B-A26B-B8DF2CB94D07",
+          "parentBounds": "{{0, 0}, {393, 852}}",
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "documentOrigin": 1789058237090.0002,
+              "documentToken": "7DA831D3-DE1D-473B-A26B-B8DF2CB94D07",
+              "error": "",
+              "parent": "TaoUIView0"
+            }
+          ],
+          "navigationDelegateUnchanged": true,
+          "parentFrame": "{{0, 0}, {393, 852}}"
+        },
+        "appDelegate": "AppDelegate",
+        "listeners": 1,
+        "permissionRetirement": null,
+        "pid": 16861,
+        "listenersAfterRelease": -1
+      },
+      "permissionRetired": {
+        "paused": 1,
+        "generation": 2,
+        "hostClosed": false,
+        "stopped": 0,
+        "retireOnPause": false,
+        "resumed": 1,
+        "view": {
+          "originalParent": true,
+          "parent": "TaoUIView0",
+          "documentOrigin": 1789058263049,
+          "frame": "{{0, 0}, {393, 852}}",
+          "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+          "parentBounds": "{{0, 0}, {393, 852}}",
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "documentOrigin": 1789058263049,
+              "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+              "error": "",
+              "parent": "TaoUIView0"
+            }
+          ],
+          "navigationDelegateUnchanged": true,
+          "parentFrame": "{{0, 0}, {393, 852}}"
+        },
+        "appDelegate": "AppDelegate",
+        "listeners": 1,
+        "permissionRetirement": {
+          "listeners": 0,
+          "generation": 2,
+          "runtimeStatus": "ready",
+          "paused": 1,
+          "pid": 17170
+        },
+        "pid": 17170,
+        "listenersAfterRelease": 0
+      },
+      "saved": {
+        "paused": 1,
+        "generation": 2,
+        "hostClosed": false,
+        "stopped": 0,
+        "retireOnPause": false,
+        "resumed": 2,
+        "view": {
+          "originalParent": true,
+          "parent": "TaoUIView0",
+          "documentOrigin": 1789058263049,
+          "frame": "{{0, 0}, {393, 852}}",
+          "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+          "parentBounds": "{{0, 0}, {393, 852}}",
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "documentOrigin": 1789058263049,
+              "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+              "error": "",
+              "parent": "TaoUIView0"
+            }
+          ],
+          "navigationDelegateUnchanged": true,
+          "parentFrame": "{{0, 0}, {393, 852}}"
+        },
+        "appDelegate": "AppDelegate",
+        "listeners": 1,
+        "permissionRetirement": {
+          "listeners": 0,
+          "generation": 2,
+          "runtimeStatus": "ready",
+          "paused": 1,
+          "pid": 17170
+        },
+        "pid": 17170,
+        "listenersAfterRelease": 0
+      },
+      "remounted": {
+        "paused": 2,
+        "generation": 3,
+        "hostClosed": false,
+        "stopped": 1,
+        "retireOnPause": false,
+        "resumed": 3,
+        "view": {
+          "originalParent": true,
+          "parent": "TaoUIView0",
+          "documentOrigin": 1789058263049,
+          "frame": "{{0, 0}, {393, 852}}",
+          "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+          "parentBounds": "{{0, 0}, {393, 852}}",
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "documentOrigin": 1789058263049,
+              "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+              "error": "",
+              "parent": "TaoUIView0"
+            }
+          ],
+          "navigationDelegateUnchanged": true,
+          "parentFrame": "{{0, 0}, {393, 852}}"
+        },
+        "appDelegate": "AppDelegate",
+        "listeners": 1,
+        "permissionRetirement": {
+          "listeners": 0,
+          "generation": 2,
+          "runtimeStatus": "ready",
+          "paused": 1,
+          "pid": 17170
+        },
+        "pid": 17170,
+        "listenersAfterRelease": 0
+      },
+      "closed": {
+        "paused": 2,
+        "generation": 4,
+        "hostClosed": true,
+        "stopped": 1,
+        "retireOnPause": false,
+        "resumed": 3,
+        "view": {
+          "originalParent": true,
+          "parent": "TaoUIView0",
+          "documentOrigin": 1789058263049,
+          "frame": "{{0, 0}, {393, 852}}",
+          "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+          "parentBounds": "{{0, 0}, {393, 852}}",
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "documentOrigin": 1789058263049,
+              "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+              "error": "",
+              "parent": "TaoUIView0"
+            },
+            {
+              "documentOrigin": 1789058263050,
+              "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+              "error": "",
+              "parent": "TNLynxDocumentContainer"
+            },
+            {
+              "documentOrigin": 1789058263050,
+              "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+              "error": "",
+              "parent": "TaoUIView0"
+            },
+            {
+              "documentOrigin": 1789058263050,
+              "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+              "error": "",
+              "parent": "TNLynxDocumentContainer"
+            },
+            {
+              "documentOrigin": 1789058263050,
+              "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+              "error": "",
+              "parent": "TaoUIView0"
+            },
+            {
+              "documentOrigin": 1789058263050,
+              "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+              "error": "",
+              "parent": "TNLynxDocumentContainer"
+            },
+            {
+              "documentOrigin": 1789058263050,
+              "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+              "error": "",
+              "parent": "TaoUIView0"
+            }
+          ],
+          "navigationDelegateUnchanged": true,
+          "parentFrame": "{{0, 0}, {393, 852}}"
+        },
+        "appDelegate": "AppDelegate",
+        "listeners": 0,
+        "permissionRetirement": {
+          "listeners": 0,
+          "generation": 2,
+          "runtimeStatus": "ready",
+          "paused": 1,
+          "pid": 17170
+        },
+        "pid": 17170,
+        "listenersAfterRelease": 0
+      },
+      "notes": [
+        {
+          "id": 1,
+          "text": "A Lynx place to remember",
+          "latitude": 37.5665,
+          "longitude": 126.978
+        },
+        {
+          "id": 2,
+          "text": "A place to remember",
+          "latitude": 37.5665,
+          "longitude": 126.978
+        }
+      ],
+      "view": {
+        "attached": {
+          "paused": 2,
+          "generation": 3,
+          "hostClosed": false,
+          "stopped": 1,
+          "retireOnPause": false,
+          "resumed": 3,
+          "view": {
+            "originalParent": false,
+            "parent": "TNLynxDocumentContainer",
+            "documentOrigin": 1789058263049,
+            "frame": "{{0, 0}, {369, 350}}",
+            "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+            "parentBounds": "{{0, 0}, {369, 350}}",
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "documentOrigin": 1789058263049,
+                "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+                "error": "",
+                "parent": "TaoUIView0"
+              },
+              {
+                "documentOrigin": 1789058263050,
+                "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+                "error": "",
+                "parent": "TNLynxDocumentContainer"
+              }
+            ],
+            "navigationDelegateUnchanged": true,
+            "parentFrame": "{{12, 162}, {369, 350}}"
+          },
+          "appDelegate": "AppDelegate",
+          "listeners": 1,
+          "permissionRetirement": {
+            "listeners": 0,
+            "generation": 2,
+            "runtimeStatus": "ready",
+            "paused": 1,
+            "pid": 17170
+          },
+          "pid": 17170,
+          "listenersAfterRelease": 0
+        },
+        "contended": {
+          "paused": 2,
+          "generation": 3,
+          "hostClosed": false,
+          "stopped": 1,
+          "retireOnPause": false,
+          "resumed": 3,
+          "view": {
+            "originalParent": false,
+            "parent": "TNLynxDocumentContainer",
+            "documentOrigin": 1789058263049,
+            "frame": "{{0, 0}, {369, 350}}",
+            "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+            "parentBounds": "{{0, 0}, {369, 350}}",
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "documentOrigin": 1789058263049,
+                "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+                "error": "",
+                "parent": "TaoUIView0"
+              },
+              {
+                "documentOrigin": 1789058263050,
+                "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+                "error": "",
+                "parent": "TNLynxDocumentContainer"
+              }
+            ],
+            "navigationDelegateUnchanged": true,
+            "parentFrame": "{{12, 162}, {369, 350}}"
+          },
+          "appDelegate": "AppDelegate",
+          "listeners": 1,
+          "permissionRetirement": {
+            "listeners": 0,
+            "generation": 2,
+            "runtimeStatus": "ready",
+            "paused": 1,
+            "pid": 17170
+          },
+          "pid": 17170,
+          "listenersAfterRelease": 0
+        },
+        "detached": {
+          "paused": 2,
+          "generation": 3,
+          "hostClosed": false,
+          "stopped": 1,
+          "retireOnPause": false,
+          "resumed": 3,
+          "view": {
+            "originalParent": true,
+            "parent": "TaoUIView0",
+            "documentOrigin": 1789058263049,
+            "frame": "{{0, 0}, {393, 852}}",
+            "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+            "parentBounds": "{{0, 0}, {393, 852}}",
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "documentOrigin": 1789058263049,
+                "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+                "error": "",
+                "parent": "TaoUIView0"
+              },
+              {
+                "documentOrigin": 1789058263050,
+                "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+                "error": "",
+                "parent": "TNLynxDocumentContainer"
+              },
+              {
+                "documentOrigin": 1789058263050,
+                "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+                "error": "",
+                "parent": "TaoUIView0"
+              }
+            ],
+            "navigationDelegateUnchanged": true,
+            "parentFrame": "{{0, 0}, {393, 852}}"
+          },
+          "appDelegate": "AppDelegate",
+          "listeners": 1,
+          "permissionRetirement": {
+            "listeners": 0,
+            "generation": 2,
+            "runtimeStatus": "ready",
+            "paused": 1,
+            "pid": 17170
+          },
+          "pid": 17170,
+          "listenersAfterRelease": 0
+        },
+        "remounted": {
+          "paused": 2,
+          "generation": 3,
+          "hostClosed": false,
+          "stopped": 1,
+          "retireOnPause": false,
+          "resumed": 3,
+          "view": {
+            "originalParent": false,
+            "parent": "TNLynxDocumentContainer",
+            "documentOrigin": 1789058263049,
+            "frame": "{{0, 0}, {369, 350}}",
+            "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+            "parentBounds": "{{0, 0}, {369, 350}}",
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "documentOrigin": 1789058263049,
+                "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+                "error": "",
+                "parent": "TaoUIView0"
+              },
+              {
+                "documentOrigin": 1789058263050,
+                "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+                "error": "",
+                "parent": "TNLynxDocumentContainer"
+              },
+              {
+                "documentOrigin": 1789058263050,
+                "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+                "error": "",
+                "parent": "TaoUIView0"
+              },
+              {
+                "documentOrigin": 1789058263050,
+                "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+                "error": "",
+                "parent": "TNLynxDocumentContainer"
+              }
+            ],
+            "navigationDelegateUnchanged": true,
+            "parentFrame": "{{12, 162}, {369, 350}}"
+          },
+          "appDelegate": "AppDelegate",
+          "listeners": 1,
+          "permissionRetirement": {
+            "listeners": 0,
+            "generation": 2,
+            "runtimeStatus": "ready",
+            "paused": 1,
+            "pid": 17170
+          },
+          "pid": 17170,
+          "listenersAfterRelease": 0
+        },
+        "replaced": {
+          "paused": 2,
+          "generation": 4,
+          "hostClosed": false,
+          "stopped": 1,
+          "retireOnPause": false,
+          "resumed": 3,
+          "view": {
+            "originalParent": true,
+            "parent": "TaoUIView0",
+            "documentOrigin": 1789058263049,
+            "frame": "{{0, 0}, {393, 852}}",
+            "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+            "parentBounds": "{{0, 0}, {393, 852}}",
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "documentOrigin": 1789058263049,
+                "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+                "error": "",
+                "parent": "TaoUIView0"
+              },
+              {
+                "documentOrigin": 1789058263050,
+                "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+                "error": "",
+                "parent": "TNLynxDocumentContainer"
+              },
+              {
+                "documentOrigin": 1789058263050,
+                "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+                "error": "",
+                "parent": "TaoUIView0"
+              },
+              {
+                "documentOrigin": 1789058263050,
+                "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+                "error": "",
+                "parent": "TNLynxDocumentContainer"
+              },
+              {
+                "documentOrigin": 1789058263050,
+                "documentToken": "E58509A2-3E5B-47BC-A423-2ABF427D7797",
+                "error": "",
+                "parent": "TaoUIView0"
+              }
+            ],
+            "navigationDelegateUnchanged": true,
+            "parentFrame": "{{0, 0}, {393, 852}}"
+          },
+          "appDelegate": "AppDelegate",
+          "listeners": 1,
+          "permissionRetirement": {
+            "listeners": 0,
+            "generation": 2,
+            "runtimeStatus": "ready",
+            "paused": 1,
+            "pid": 17170
+          },
+          "pid": 17170,
+          "listenersAfterRelease": 0
+        }
+      },
+      "uiScenarios": [
+        "shared original state/setup",
+        "Tauri ACL and native caller denial",
+        "OS permission denial/grant",
+        "renderer retirement during pending OS permission prevents the old continuation save",
+        "undeclared session preserves original caller_denied code/message",
+        "save and event",
+        "background deep link and event",
+        "renderer replacement retires native subscriptions",
+        "fresh renderer receives only fresh events",
+        "removing Lynx preserves the independent original Tauri frontend",
+        "unmodified generated iOS startup/default layout",
+        "default SDK composition receives original Tauri deep-link events"
+      ],
+      "testOnlyIntegration": "Acceptance subclass supplies layout, baseline readiness and telemetry; the packed composer/SDK own startup, notification observation, readiness and attachment. A second Release app executes the unmodified generated startup/default layout and retained TauriView with no acceptance subclass. Original Tauri UIApplication delegate preserved. Third-party autolinking and broader navigation/lifecycle forms remain open.",
+      "compositionSummary": {
+        "generatedFiles": 36,
+        "receiptSha256": "c48ddc23c313f44099ec5c7b3d3935983749c0311c085643725a0e460446551d"
+      },
+      "nativeJUnitFlows": 17,
+      "reportSha256": "724a9d3129b770bf5a74241760287d471b7ae3c525e8657d8bf1c0a984805760",
+      "junitSha256": {
+        "attach-before-close": "3710c989a79030fae3dc23ecf042c1bf7f561f1c685f2f15d64919a6620dc1a8",
+        "background": "5c99c1b60019af16739b8a9a080957ad91ac1a4ab6f1ef9e07a24fa611513145",
+        "competing-view": "15ab82d69453ccf401702ed4435cbc4a256e246321762a130c08bdcad4d556f9",
+        "default-integration": "a84dfb344ee9fc95f4a72e5b04885f9b30620ea71bd5596bb813a584bcd43bdd",
+        "default-link": "68e986ea0d47f0ca6e6c0cf14cf9f065ed425c3dbeb7001a0f751913231c04f5",
+        "default-view": "2958c0f63a5d407025d0fb354fa24b21ddc6746353e84ad7ab9878fed9b99c25",
+        "deny-permission": "c2a954510f66ca8f3b3d7c773d10ebb22c3128291e04e7fcbf9003b19ae3e86f",
+        "detach-view": "46f5afa9b85065bd02fe80cdcae0ea606ee031bd1a4969c8e1d79e7557af47d6",
+        "embedded-frontend": "5091d0557def10756e384081c260e1b46b383a4a7d6cb763fdac0147bd02ac8d",
+        "fresh-events": "315b13e50de1c448fb35815c72484c8b5ccc6681e446f7d43f318d033214a38f",
+        "grant-permission": "64a86ebf379730e9f5ce312690af21b0631aa13104a7da997ebed2c41c30309a",
+        "initial": "7bd268cd5b47c184f973e04183f0e11e6c42ed1a211620cf178995b9713ac480",
+        "remount-view": "8bfa3b11c6708982ab7d2a0861ac6b13f9e874672d1ad5a63bf5e4085effb881",
+        "remove-renderer": "5577015b402fa9adf7de501b4f802dbb63115c5a008f59cbffbb4e4e497945a3",
+        "replace-renderer-with-view": "578f2db346fad802365e6df25b21d00857447c30f0fc6bc7923abfed949fd7df",
+        "resume": "e57f91cc8ecb287703cf1fb1fbbad95ca3a2d1c7317e3cc6c8edfc1e4b712400",
+        "retire-permission": "711043bd4dcc92f31b8362c4ed0ef1c88dccf3b95e95a53841562e17410c0aba"
+      },
+      "packageVerification": {
+        "files": 60,
+        "allPackedExecutableFilesMatchCurrentSdk": true,
+        "documentationChangedAfterPacking": [
+          "RETAINED.md"
+        ]
+      },
+      "buildLogSha256": {
+        "source-free-build": "bf053ff05e91cf0b28cbb41028715643fbf51d28cd8a21a9afccda1b85788234",
+        "default-source-free-build": "3cc3522d6fc24e6fb789e82aa7e0c83a45931e17fbee54049ca3e77bb36b1a01"
+      }
+    },
+    {
+      "passed": true,
+      "platform": "android",
+      "profile": "release",
+      "formatVersion": 2,
+      "abiVersion": 3,
+      "renderer": "Lynx 4.0.1 / PrimJS 4.0.0",
+      "sourceFree": true,
+      "sourceFreeBuild": "PATH=/usr/bin:/bin:/usr/sbin:/sbin ./gradlew --no-daemon assembleRelease",
+      "nonDebuggable": true,
+      "libraries": [
+        "lib/arm64-v8a/liblynx.so",
+        "lib/arm64-v8a/liblynx_service_api.so",
+        "lib/arm64-v8a/liblynx_v8_bridge.so",
+        "lib/arm64-v8a/liblynxbase.so",
+        "lib/arm64-v8a/liblynxtrace.so",
+        "lib/arm64-v8a/libnapi.so",
+        "lib/arm64-v8a/libnapi_adapter.so",
+        "lib/arm64-v8a/libnapi_v8.so",
+        "lib/arm64-v8a/libordinary_tauri_mobile_fieldnotes_lib.so",
+        "lib/arm64-v8a/libquick.so",
+        "lib/arm64-v8a/libwasm.so"
+      ],
+      "elfAlignment": "All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed",
+      "packageSha256": "392bffa810257c929ee71112b0d3d02a04db447225bdc413a7bc77b55dde9c4e",
+      "artifactSha256": "fb5f29d07ace2c715df7b4b4121fc57f2fa8df5b4cf4cf32d298dac7dc4595d5",
+      "apkSha256": "3db9225eefa7b9522a2d129999c1cbd73e3bb9c999a09f6b6c5fd1d962fb8337",
+      "bundleSha256": "8df2077c5668382b994ad453c9bfa57979dd127d610f2cd55cbe9e020eec166c",
+      "baseline": {
+        "directory": "/data/user/0/dev.taurinative.mobilefieldnotes",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      },
+      "initial": {
+        "generation": 1,
+        "resumed": 1,
+        "paused": 0,
+        "stopped": 0,
+        "hostClosed": false,
+        "retireOnPause": false,
+        "permissionRetirement": null,
+        "receivedIntents": [],
+        "listeners": 1,
+        "listenersAfterRelease": -1,
+        "pid": 3660,
+        "view": {
+          "originalParent": true,
+          "parent": "android.widget.LinearLayout",
+          "documentOrigin": "1.789058515192e+12",
+          "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5",
+          "navigationDelegateUnchanged": true,
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.789058515192E12",
+              "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+            }
+          ]
+        },
+        "notes": []
+      },
+      "permissionRetired": {
+        "generation": 2,
+        "resumed": 2,
+        "paused": 2,
+        "stopped": 0,
+        "hostClosed": false,
+        "retireOnPause": false,
+        "permissionRetirement": {
+          "generation": 2,
+          "listeners": 0,
+          "paused": 2,
+          "runtimeStatus": "ready",
+          "pid": 3660
+        },
+        "receivedIntents": [],
+        "listeners": 1,
+        "listenersAfterRelease": 0,
+        "pid": 3660,
+        "view": {
+          "originalParent": true,
+          "parent": "android.widget.LinearLayout",
+          "documentOrigin": "1.789058515192e+12",
+          "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5",
+          "navigationDelegateUnchanged": true,
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.789058515192E12",
+              "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+            }
+          ]
+        },
+        "notes": []
+      },
+      "remounted": {
+        "generation": 3,
+        "resumed": 4,
+        "paused": 3,
+        "stopped": 1,
+        "hostClosed": false,
+        "retireOnPause": false,
+        "permissionRetirement": {
+          "generation": 2,
+          "listeners": 0,
+          "paused": 2,
+          "runtimeStatus": "ready",
+          "pid": 3660
+        },
+        "receivedIntents": [
+          "tauri-fieldnotes://notes/1"
+        ],
+        "listeners": 1,
+        "listenersAfterRelease": 0,
+        "pid": 3660,
+        "view": {
+          "originalParent": true,
+          "parent": "android.widget.LinearLayout",
+          "documentOrigin": "1.789058515192e+12",
+          "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5",
+          "navigationDelegateUnchanged": true,
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.789058515192E12",
+              "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+            }
+          ]
+        },
+        "notes": [
+          {
+            "id": 1,
+            "text": "A Lynx place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          }
+        ]
+      },
+      "closed": {
+        "generation": 4,
+        "resumed": 5,
+        "paused": 4,
+        "stopped": 1,
+        "hostClosed": true,
+        "retireOnPause": false,
+        "permissionRetirement": {
+          "generation": 2,
+          "listeners": 0,
+          "paused": 2,
+          "runtimeStatus": "ready",
+          "pid": 3660
+        },
+        "receivedIntents": [
+          "tauri-fieldnotes://notes/1",
+          "tauri-fieldnotes://notes/1?remounted=1"
+        ],
+        "listeners": 0,
+        "listenersAfterRelease": 0,
+        "pid": 3660,
+        "view": {
+          "originalParent": true,
+          "parent": "android.widget.LinearLayout",
+          "documentOrigin": "1.789058515192e+12",
+          "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5",
+          "navigationDelegateUnchanged": true,
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.789058515192E12",
+              "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+            },
+            {
+              "parent": "dev.taurinative.lynx.retained.g",
+              "documentOrigin": "1.789058515192E12",
+              "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+            },
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.789058515192E12",
+              "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+            },
+            {
+              "parent": "dev.taurinative.lynx.retained.g",
+              "documentOrigin": "1.789058515192E12",
+              "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+            },
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.789058515192E12",
+              "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+            },
+            {
+              "parent": "dev.taurinative.lynx.retained.g",
+              "documentOrigin": "1.789058515192E12",
+              "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+            },
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.789058515192E12",
+              "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+            }
+          ]
+        },
+        "notes": [
+          {
+            "id": 1,
+            "text": "A Lynx place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          },
+          {
+            "id": 2,
+            "text": "A place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          }
+        ]
+      },
+      "notes": [
+        {
+          "id": 1,
+          "text": "A Lynx place to remember",
+          "latitude": 37.5664983,
+          "longitude": 126.9779983
+        },
+        {
+          "id": 2,
+          "text": "A place to remember",
+          "latitude": 37.5664983,
+          "longitude": 126.9779983
+        }
+      ],
+      "view": {
+        "attached": {
+          "generation": 3,
+          "resumed": 5,
+          "paused": 4,
+          "stopped": 1,
+          "hostClosed": false,
+          "retireOnPause": false,
+          "permissionRetirement": {
+            "generation": 2,
+            "listeners": 0,
+            "paused": 2,
+            "runtimeStatus": "ready",
+            "pid": 3660
+          },
+          "receivedIntents": [
+            "tauri-fieldnotes://notes/1",
+            "tauri-fieldnotes://notes/1?remounted=1"
+          ],
+          "listeners": 1,
+          "listenersAfterRelease": 0,
+          "pid": 3660,
+          "view": {
+            "originalParent": false,
+            "parent": "dev.taurinative.lynx.retained.g",
+            "documentOrigin": "1.789058515192e+12",
+            "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5",
+            "navigationDelegateUnchanged": true,
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.789058515192E12",
+                "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+              },
+              {
+                "parent": "dev.taurinative.lynx.retained.g",
+                "documentOrigin": "1.789058515192E12",
+                "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+              }
+            ]
+          },
+          "notes": [
+            {
+              "id": 1,
+              "text": "A Lynx place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            },
+            {
+              "id": 2,
+              "text": "A place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            }
+          ]
+        },
+        "contended": {
+          "generation": 3,
+          "resumed": 5,
+          "paused": 4,
+          "stopped": 1,
+          "hostClosed": false,
+          "retireOnPause": false,
+          "permissionRetirement": {
+            "generation": 2,
+            "listeners": 0,
+            "paused": 2,
+            "runtimeStatus": "ready",
+            "pid": 3660
+          },
+          "receivedIntents": [
+            "tauri-fieldnotes://notes/1",
+            "tauri-fieldnotes://notes/1?remounted=1"
+          ],
+          "listeners": 1,
+          "listenersAfterRelease": 0,
+          "pid": 3660,
+          "view": {
+            "originalParent": false,
+            "parent": "dev.taurinative.lynx.retained.g",
+            "documentOrigin": "1.789058515192e+12",
+            "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5",
+            "navigationDelegateUnchanged": true,
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.789058515192E12",
+                "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+              },
+              {
+                "parent": "dev.taurinative.lynx.retained.g",
+                "documentOrigin": "1.789058515192E12",
+                "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+              }
+            ]
+          },
+          "notes": [
+            {
+              "id": 1,
+              "text": "A Lynx place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            },
+            {
+              "id": 2,
+              "text": "A place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            }
+          ]
+        },
+        "detached": {
+          "generation": 3,
+          "resumed": 5,
+          "paused": 4,
+          "stopped": 1,
+          "hostClosed": false,
+          "retireOnPause": false,
+          "permissionRetirement": {
+            "generation": 2,
+            "listeners": 0,
+            "paused": 2,
+            "runtimeStatus": "ready",
+            "pid": 3660
+          },
+          "receivedIntents": [
+            "tauri-fieldnotes://notes/1",
+            "tauri-fieldnotes://notes/1?remounted=1"
+          ],
+          "listeners": 1,
+          "listenersAfterRelease": 0,
+          "pid": 3660,
+          "view": {
+            "originalParent": true,
+            "parent": "android.widget.LinearLayout",
+            "documentOrigin": "1.789058515192e+12",
+            "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5",
+            "navigationDelegateUnchanged": true,
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.789058515192E12",
+                "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+              },
+              {
+                "parent": "dev.taurinative.lynx.retained.g",
+                "documentOrigin": "1.789058515192E12",
+                "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+              },
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.789058515192E12",
+                "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+              }
+            ]
+          },
+          "notes": [
+            {
+              "id": 1,
+              "text": "A Lynx place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            },
+            {
+              "id": 2,
+              "text": "A place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            }
+          ]
+        },
+        "remounted": {
+          "generation": 3,
+          "resumed": 5,
+          "paused": 4,
+          "stopped": 1,
+          "hostClosed": false,
+          "retireOnPause": false,
+          "permissionRetirement": {
+            "generation": 2,
+            "listeners": 0,
+            "paused": 2,
+            "runtimeStatus": "ready",
+            "pid": 3660
+          },
+          "receivedIntents": [
+            "tauri-fieldnotes://notes/1",
+            "tauri-fieldnotes://notes/1?remounted=1"
+          ],
+          "listeners": 1,
+          "listenersAfterRelease": 0,
+          "pid": 3660,
+          "view": {
+            "originalParent": false,
+            "parent": "dev.taurinative.lynx.retained.g",
+            "documentOrigin": "1.789058515192e+12",
+            "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5",
+            "navigationDelegateUnchanged": true,
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.789058515192E12",
+                "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+              },
+              {
+                "parent": "dev.taurinative.lynx.retained.g",
+                "documentOrigin": "1.789058515192E12",
+                "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+              },
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.789058515192E12",
+                "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+              },
+              {
+                "parent": "dev.taurinative.lynx.retained.g",
+                "documentOrigin": "1.789058515192E12",
+                "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+              }
+            ]
+          },
+          "notes": [
+            {
+              "id": 1,
+              "text": "A Lynx place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            },
+            {
+              "id": 2,
+              "text": "A place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            }
+          ]
+        },
+        "replaced": {
+          "generation": 4,
+          "resumed": 5,
+          "paused": 4,
+          "stopped": 1,
+          "hostClosed": false,
+          "retireOnPause": false,
+          "permissionRetirement": {
+            "generation": 2,
+            "listeners": 0,
+            "paused": 2,
+            "runtimeStatus": "ready",
+            "pid": 3660
+          },
+          "receivedIntents": [
+            "tauri-fieldnotes://notes/1",
+            "tauri-fieldnotes://notes/1?remounted=1"
+          ],
+          "listeners": 1,
+          "listenersAfterRelease": 0,
+          "pid": 3660,
+          "view": {
+            "originalParent": true,
+            "parent": "android.widget.LinearLayout",
+            "documentOrigin": "1.789058515192e+12",
+            "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5",
+            "navigationDelegateUnchanged": true,
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.789058515192E12",
+                "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+              },
+              {
+                "parent": "dev.taurinative.lynx.retained.g",
+                "documentOrigin": "1.789058515192E12",
+                "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+              },
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.789058515192E12",
+                "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+              },
+              {
+                "parent": "dev.taurinative.lynx.retained.g",
+                "documentOrigin": "1.789058515192E12",
+                "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+              },
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.789058515192E12",
+                "documentToken": "010107e4-84a3-4a98-8114-f6aa9a4380a5"
+              }
+            ]
+          },
+          "notes": [
+            {
+              "id": 1,
+              "text": "A Lynx place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            },
+            {
+              "id": 2,
+              "text": "A place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            }
+          ]
+        }
+      },
+      "defaultActivity": {
+        "activity": "dev.taurinative.mobilefieldnotes.TauriNativeActivity",
+        "pid": "6366",
+        "apkSha256": "a22e28ff6c4276255899244d95dbeae4e32f62735d05686c3f1b7831e5888569",
+        "overriddenHooks": false,
+        "identicalNativeLibraries": 11
+      },
+      "uiScenarios": [
+        "shared original state/setup",
+        "Tauri ACL and native caller denial",
+        "OS permission denial/grant",
+        "renderer retirement during pending OS permission prevents the old continuation save",
+        "undeclared session preserves original caller_denied code/message",
+        "save and event",
+        "background deep link and event",
+        "renderer replacement retires native subscriptions",
+        "fresh renderer receives only fresh events",
+        "remove Lynx and keep original Tauri frontend",
+        "unmodified generated Activity/default layout",
+        "default SDK composition retains original Tauri ACL/state/deep-link events"
+      ],
+      "testOnlyIntegration": "Acceptance subclass provides layout, baseline readiness and telemetry only. The packed composer/SDK own startup, document readiness, attachment and lifecycle forwarding. A second Release APK executes the unmodified generated Activity/default layout and retained TauriView without acceptance hooks. Original MainActivity/TauriActivity and plugin/bootstrap ownership remain. Third-party autolinking and broader navigation/lifecycle forms remain open.",
+      "testOnlySigning": "Non-debuggable Release with R8 optimization and a debug test signing key; process-scoped logcat telemetry",
+      "compositionSummary": {
+        "generatedFiles": 98,
+        "receiptSha256": "abcfd36024f5bcc3154a4f2cbbda167fd3763b5d6d9078138548b3defa296a9f"
+      },
+      "nativeJUnitFlows": 17,
+      "reportSha256": "afbe80f723afbdaf0cff2d3ebbc27a2f7da8c408da1efcd229d1e90c246c3bbf",
+      "junitSha256": {
+        "attach-before-close": "e0bb69a204341bb4a98dfc017940a02d2484431173beb0f37d7920a66a21cc1c",
+        "background": "ba73286a7bfbfa1940d7f887add532e8aeca457d14841a97545199d98f6e616f",
+        "competing-view": "bc45f9a43f8f16df8033bc9b07929e144b37ba077b14c5d5f82749500ec8c2e9",
+        "default-integration": "16fde3042f8c2073992a3d252fafbb5d5769172d75080125d1dea071cca316a0",
+        "default-link": "deaf88341588c4bd07f67c75e0c21940be52afdb9c9f5bd81d37fd834d486995",
+        "default-view": "e5649f64cb1f5f23a7c7d7f545f4eb7087eb7910e9c3fab45356cc69d42cf28f",
+        "deny-permission": "53918c609efe945be49ff34ba6260273507c547bf5b4d4d5d42654dd8a5baaa5",
+        "detach-view": "f038d89b9b272d9ee3aa4f44228d85296476103dd2d6375f726f3a5a129442b0",
+        "embedded-frontend": "39d17a76f98bf591e1d56612925fd7c6551e5826a7a83f026e94d3f835d071a9",
+        "fresh-events": "99ba78435c4495fc19500e55c6fe298da633c9edf3963ced62f60881765cbf0a",
+        "grant-permission": "cdfa6685b9a09c1cc7b513bdaa1a5fcecd3bce2ece3db13f6bca0b68cfd602f7",
+        "initial": "4489dfbf7417a7951d6dbd91f9be2dc2e62c5965c3a56881c9b4166f444d3afc",
+        "remount-view": "4e7666adffed9b04cb7d0b0317ec22c2803236a475ad8ac404c33580365ba115",
+        "remove-renderer": "cab49dce7c65b3bcb5c026f98a7521bc015ccf1f3a09f71f639f024298ced6d6",
+        "replace-renderer-with-view": "d892962ca5396f6ef8b0a066345aab623ef68e242c25113786fa68328bca64d8",
+        "resume": "40a72cae457c43fe6056710140711b2804e56799bd0cef4f88fe324308644d61",
+        "retire-permission": "aeb030e1db4227842e0c6b52a0d2143c4afe022c82fc30e0c111b298370fcf6f"
+      },
+      "packageVerification": {
+        "files": 60,
+        "allPackedExecutableFilesMatchCurrentSdk": true,
+        "documentationChangedAfterPacking": [
+          "RETAINED.md"
+        ]
+      },
+      "buildLogSha256": {
+        "source-free-build": "ed18b6c0dec25bcff01214c7514d69b05916fba8773188fdc483d504dcc89785",
+        "default-source-free-build": "c243eeaf0ba5ffb0985a684c0747f3351517a86084757642123830f869a5b791"
+      }
+    }
+  ],
+  "references": [
+    {
+      "url": "https://lynxjs.org/guide/custom-native-component.html",
+      "purpose": "Host-scoped custom native UI registration; pinned 4.0.1 installed sources were inspected for context and view lifecycle ordering."
+    }
+  ],
+  "previousAttempts": {
+    "iosContextFailure": {
+      "gate": "target/lynx-retained-ios-view-context-failure",
+      "logSha256": "b690879e733eeb9981aecdc10a80c9bc1674d82c8dfd568fb2f31693cd9a54ed",
+      "scope": "First implementation read Lynx UI context during createView, before Lynx assigns it; real UI reported view_unavailable. Final code resolves the generation scope at attachment."
+    },
+    "numericFlexDiagnostic": {
+      "gate": "target/lynx-retained-ios-view-numeric-flex-failure",
+      "failedFlowLogSha256": "f8c02d0e9b0a23920c1715978e1dc36ef5a1a55a2fcba1fa3d6a1522811fa33e",
+      "zeroHeightReportSha256": "8ab04519e014cf690b48ec733d439fde7a8c935995a967097faa73eafb5a50ae",
+      "stringFlexReportSha256": "dd21c7563bccbb5b91446794f57111c39b1cab9edde38209df1fa3e576922025",
+      "scope": "Native attachment preserved the document, but fixture numeric flex produced zero height in pinned Lynx. Instrumented same-SDK Release diagnosis measured 369x0 before and 369x350 after CSS string flex; the latter delivered real embedded Tauri capability denial. These diagnostic consumers were manually instrumented, not final generated acceptance."
+    },
+    "timestampAssertion": {
+      "gate": "target/lynx-retained-ios-view-time-origin-failure",
+      "logSha256": "ef620200a49dbc130933eda68f08f854a8ebae737188626cb0f53064efd91c50",
+      "scope": "Actual embedded frontend save/native session parity passed. Exact performance.timeOrigin equality then failed with values differing by about 2 ms. Final acceptance tracks an immutable nonpersistent per-document token installed only by native test instrumentation at composition startup; a reload or replacement loses it. Time origin remains diagnostic data, not the document identity assertion."
+    },
+    "iosViewportBuildCancelled": {
+      "gate": "target/lynx-retained-ios-view-viewport-interrupted",
+      "logSha256": "c016793640d1f6da28a23ac62922cedc28b2761ec6b8847b37c269b6b2c2474a",
+      "scope": "Build deliberately interrupted to include observed viewport initialization correction. This is not native acceptance evidence."
+    }
+  },
+  "remaining": [
+    "RN retained TauriView",
+    "broader navigation/history/back and rotation acceptance",
+    "multiple WebViews/custom layout owners",
+    "Expo CNG and third-party autolinking",
+    "full parity/CI/migration and source forms",
+    "physical devices and independent adopters"
+  ]
+}

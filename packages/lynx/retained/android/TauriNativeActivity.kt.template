@@ -27,7 +27,7 @@ open class TauriNativeActivity : MainActivity() {
         webView.postDelayed(this, 100); return
       }
       awaitingDocument = null
-      tauriLynxHost = TauriLynxHost(createLynxContainer(webView), object : AbsTemplateProvider() {
+      tauriLynxHost = TauriLynxHost(createLynxContainer(webView), webView, object : AbsTemplateProvider() {
         override fun loadTemplate(uri: String, callback: Callback) {
           callback.onSuccess(assets.open(uri).use { it.readBytes() })
         }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from '@lynx-js/react';
-import { openTauriSession, type RuntimeSession, type InvokeResponse } from '@tauri-native/lynx/retained';
+import { openTauriSession, TauriView, type RuntimeSession, type InvokeResponse } from '@tauri-native/lynx/retained';
 
 function value<T>(response: InvokeResponse<T>): T {
   if (!response.ok) throw new Error(JSON.stringify(response.error));
@@ -10,6 +10,9 @@ export function App() {
   const session = useRef<RuntimeSession>();
   const [status, setStatus] = useState('Opening Tauri');
   const [events, setEvents] = useState(0);
+  const [embedded, setEmbedded] = useState(false);
+  const [competing, setCompeting] = useState(false);
+  const [attachment, setAttachment] = useState('View detached');
   const run = (action: (runtime: RuntimeSession) => Promise<string>) => {
     'background only';
     if (session.current) void action(session.current).then(setStatus, error => setStatus(`ERROR ${error}`));
@@ -74,8 +77,15 @@ export function App() {
       return `Links ${state.links.length} notes ${state.notes.length} setup 1 plugins 1`;
     }],
   ];
-  return <view style={{ width: '100%', height: '100%', backgroundColor: '#e4f3ed', padding: '12px' }}>
-    {[status, `Lynx events ${events}`].map(text => <text key={text} flatten={false} accessibility-element={true} accessibility-label={text} style={{ fontSize: '15px', color: '#12382d' }}>{text}</text>)}
-    {actions.map(([label, action]) => <view key={label} flatten={false} accessibility-element={true} accessibility-label={label} bindtap={() => run(action)} style={{ marginTop: '5px', padding: '5px', backgroundColor: '#fff' }}><text>{label}</text></view>)}
+  const button = (label: string, action: () => void) => <view key={label} flatten={false} accessibility-element={true} accessibility-label={label} bindtap={action} style={{ marginTop: '5px', padding: '5px', backgroundColor: '#fff' }}><text>{label}</text></view>;
+  return <view style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: '#e4f3ed', padding: '12px' }}>
+    {[status, `Lynx events ${events}`, attachment].map(text => <text key={text} flatten={false} accessibility-element={true} accessibility-label={text} style={{ fontSize: '15px', color: '#12382d' }}>{text}</text>)}
+    {button(embedded ? 'Hide Tauri view' : 'Show Tauri view', () => { setEmbedded(!embedded); setCompeting(false); setAttachment('View detached'); })}
+    {actions.filter(([label]) => !embedded || label === 'Refresh Tauri').map(([label, action]) => button(label, () => run(action)))}
+    {embedded && <>
+      {button(competing ? 'Remove competing view' : 'Add competing view', () => setCompeting(!competing))}
+      <TauriView style={{ width: '100%', flex: '1' }} onAttach={() => setAttachment('View attached')} onAttachError={error => setAttachment(`View ${error.code}`)} />
+      {competing && <TauriView style={{ width: '100%', height: '20px' }} onAttach={() => setAttachment('ERROR competing view attached')} onAttachError={error => setAttachment(`Competing ${error.code}`)} />}
+    </>}
   </view>;
 }

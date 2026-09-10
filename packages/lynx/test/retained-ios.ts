@@ -8,6 +8,7 @@ import { setTimeout } from 'node:timers/promises';
 import { readRetainedArtifacts } from '../../../scripts/retained-artifacts.ts';
 import { sha256 } from '../../cli/src/artifacts/files.ts';
 import { acquireMobileTest } from '../../cli/test/runtime/mobile-lock.ts';
+import { assertOriginalDocument, verifyRetainedView } from './retained/view-scenarios.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const artifact = path.resolve(process.argv[2] ?? path.join(root, 'target/retained-ios-portability/exported-runtime'));
@@ -133,11 +134,15 @@ try {
   assert.equal(remounted.appDelegate, 'AppDelegate'); assert(remounted.stopped >= 1 && remounted.resumed > saved.resumed);
   run('remounted-link', 'xcrun', ['simctl', 'openurl', device, 'tauri-fieldnotes://notes/1?remounted=1']);
   flow('fresh-events', '- tapOn:\n    text: "(Open|열기)"\n    optional: true\n- assertVisible: "Lynx events 1"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 2 notes 1 setup 1 plugins 1"');
-  const notes = report('notes.json'); assert.equal(notes.length, 1);
+  const view = verifyRetainedView(flow, report, evidence);
+  const notes = report('notes.json'); assert.equal(notes.length, 2);
   assert.equal(notes[0].text, 'A Lynx place to remember');
+  assert.equal(notes[1].text, 'A place to remember');
   assert(Math.abs(notes[0].latitude - 37.5665) < 0.01 && Math.abs(notes[0].longitude - 126.978) < 0.01);
   flow('remove-renderer', '- tapOn: "Close Lynx"\n- tapOn: "Refresh notes and links"\n- assertVisible: "Links received 2"');
   const closed = report(); assert.equal(closed.hostClosed, true); assert.equal(closed.listeners, 0);
+  writeFileSync(path.join(evidence, 'view-closed.json'), JSON.stringify(closed, null, 2) + '\n');
+  assertOriginalDocument(closed, false);
   assert.equal(closed.pid, saved.pid); assert.equal(closed.appDelegate, saved.appDelegate);
   const acceptanceBinarySha256 = sha256(readFileSync(path.join(app, info.CFBundleExecutable)));
   run('uninstall-acceptance', 'xcrun', ['simctl', 'uninstall', device, appId]); installed = false;
@@ -153,6 +158,7 @@ try {
   flow('default-integration', '- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "Lynx events 0"\n- tapOn: "Reject session"\n- assertVisible: "Session caller_denied"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"');
   run('default-deep-link', 'xcrun', ['simctl', 'openurl', device, 'tauri-fieldnotes://notes/default']);
   flow('default-link', '- tapOn:\n    text: "(Open|열기)"\n    optional: true\n- assertVisible: "Lynx events 1"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 0 setup 1 plugins 1"');
+  flow('default-view', '- tapOn: "Show Tauri view"\n- assertVisible: "View attached"\n- tapOn: "Check denied capability"\n- assertVisible: "Tauri capability denied location watch"\n- tapOn: "Hide Tauri view"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 0 setup 1 plugins 1"');
   const defaultIntegration = { pid, overriddenHooks: false, baseline: report('runtime-report.json'), binarySha256: sha256(readFileSync(path.join(app, info.CFBundleExecutable))) };
   assert(!existsSync(path.join(dataDirectory, 'lynx-lifecycle.json')), 'Pure generated application must not execute acceptance telemetry');
   assert.deepEqual(packedReader(copied), manifest);
@@ -161,9 +167,9 @@ try {
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform: 'ios', profile: 'release', formatVersion: 2, abiVersion: 3,
     renderer: 'Lynx 4.0.1 / PrimJS 4.0.0', sourceFree: true, sourceFreeBuild: 'PATH=/usr/bin:/bin:/usr/sbin:/sbin xcodebuild -configuration release -sdk iphonesimulator',
     packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-lynx-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
-    binarySha256: acceptanceBinarySha256, composition: receipt, podIntegration, defaultIntegration, bundleSha256: sha256(readFileSync(bundle)), baseline, denied, permissionRetired, saved, remounted, closed, notes,
+    binarySha256: acceptanceBinarySha256, composition: receipt, podIntegration, defaultIntegration, bundleSha256: sha256(readFileSync(bundle)), baseline, denied, permissionRetired, saved, remounted, closed, notes, view,
     uiScenarios: ['shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'renderer retirement during pending OS permission prevents the old continuation save', 'undeclared session preserves original caller_denied code/message', 'save and event', 'background deep link and event', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'removing Lynx preserves the independent original Tauri frontend', 'unmodified generated iOS startup/default layout', 'default SDK composition receives original Tauri deep-link events'],
-    testOnlyIntegration: 'Acceptance subclass supplies layout, baseline readiness and telemetry; the packed composer/SDK own startup, notification observation, readiness and attachment. A second Release app executes the unmodified generated startup/default layout with no acceptance subclass. Original Tauri UIApplication delegate preserved. Third-party autolinking and retained TauriView remain open.',
+    testOnlyIntegration: 'Acceptance subclass supplies layout, baseline readiness and telemetry; the packed composer/SDK own startup, notification observation, readiness and attachment. A second Release app executes the unmodified generated startup/default layout and retained TauriView with no acceptance subclass. Original Tauri UIApplication delegate preserved. Third-party autolinking and broader navigation/lifecycle forms remain open.',
   }, null, 2) + '\n');
   console.log(`PASS: packed Lynx retained iOS SDK native acceptance. ${evidence}/report.json`);
 } finally {

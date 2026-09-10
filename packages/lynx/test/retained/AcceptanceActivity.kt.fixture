@@ -24,6 +24,13 @@ class AcceptanceActivity : TauriNativeActivity() {
   private var retireOnPause = false
   private var permissionRetirement: JSONObject? = null
   private val receivedIntents = org.json.JSONArray()
+  private var originalParent: android.view.ViewParent? = null
+  private var lastParent: android.view.ViewParent? = null
+  private var originalClient: android.webkit.WebViewClient? = null
+  private var originalChromeClient: android.webkit.WebChromeClient? = null
+  private var documentOrigin: String? = null
+  private val documentToken = java.util.UUID.randomUUID().toString()
+  private val viewTransitions = org.json.JSONArray()
 
   override fun onWebViewCreate(webView: WebView) {
     super.onWebViewCreate(webView)
@@ -69,6 +76,9 @@ class AcceptanceActivity : TauriNativeActivity() {
       layout.addView(controls)
       layout.addView(container, LinearLayout.LayoutParams(-1, 0, 2f))
       setContentView(layout)
+      originalParent = webView.parent
+      originalClient = webView.webViewClient; originalChromeClient = webView.webChromeClient
+      webView.evaluateJavascript("Object.defineProperty(globalThis, '__tauriNativeViewAcceptanceDocument', { value: '$documentToken' }); performance.timeOrigin") { documentOrigin = it }
       return container
   }
   override fun onLynxHostAttached() {
@@ -81,6 +91,15 @@ class AcceptanceActivity : TauriNativeActivity() {
     listenersAfterRelease = RuntimeSession.status().getInt("listeners")
   }
   private fun record() {
+    if (originalParent != null && lastParent != observedWebView.parent) {
+      lastParent = observedWebView.parent
+      val parent = lastParent!!.javaClass.name
+      observedWebView.evaluateJavascript("({ timeOrigin: performance.timeOrigin, token: globalThis.__tauriNativeViewAcceptanceDocument ?? null })") {
+        val document = JSONObject(it)
+        viewTransitions.put(JSONObject().put("parent", parent).put("documentOrigin", document.get("timeOrigin").toString())
+          .put("documentToken", document.get("token")))
+      }
+    }
     if (host == null && ::observedWebView.isInitialized) {
       val baseline = File(applicationInfo.dataDir, "runtime-report.json")
       val readiness = JSONObject().put("runtime", RuntimeSession.status()).put("progress", observedWebView.progress)
@@ -92,6 +111,11 @@ class AcceptanceActivity : TauriNativeActivity() {
       .put("retireOnPause", retireOnPause).put("permissionRetirement", permissionRetirement ?: JSONObject.NULL)
       .put("receivedIntents", receivedIntents)
       .put("listeners", RuntimeSession.status().getInt("listeners")).put("listenersAfterRelease", listenersAfterRelease).put("pid", android.os.Process.myPid())
+    if (originalParent != null) report.put("view", JSONObject().put("originalParent", observedWebView.parent == originalParent)
+      .put("parent", observedWebView.parent.javaClass.name).put("documentOrigin", documentOrigin ?: JSONObject.NULL)
+      .put("documentToken", documentToken)
+      .put("navigationDelegateUnchanged", observedWebView.webViewClient == originalClient)
+      .put("uiDelegateUnchanged", observedWebView.webChromeClient == originalChromeClient).put("transitions", viewTransitions))
     val notes = File(applicationInfo.dataDir, "notes.json")
     report.put("notes", if (notes.exists()) org.json.JSONArray(notes.readText()) else org.json.JSONArray())
     android.util.Log.i("TauriLynxAcceptance", JSONObject().put("kind", "lifecycle").put("report", report).toString())
