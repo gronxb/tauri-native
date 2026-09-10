@@ -5,8 +5,8 @@ import { createHash } from 'node:crypto';
 
 const ruby = (s: string) => `'${s.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
 
-export function prepareExpoIos(context: { rendererDirectory: string; output: string; manifest: { bootstrap: { applicationId: string } } }) {
-  const { rendererDirectory: renderer, output, manifest } = context;
+export function prepareExpoIos(context: { rendererDirectory: string; output: string; project: string; manifest: { bootstrap: { applicationId: string } } }) {
+  const { rendererDirectory: renderer, output, project, manifest } = context;
   if (!output.startsWith(renderer + path.sep)) throw new Error('Retained Expo composition: outputDir must be inside rendererDir so Expo scripts resolve the consuming app');
   const requireRenderer = createRequire(path.join(renderer, 'package.json'));
   const expo = realpathSync(requireRenderer.resolve('expo/package.json'));
@@ -22,7 +22,7 @@ export function prepareExpoIos(context: { rendererDirectory: string; output: str
   const { getConfig } = requireExpo('@expo/config') as { getConfig(root: string, options: { skipPlugins: boolean }): { exp: { ios?: { bundleIdentifier?: string } } } };
   const id = getConfig(renderer, { skipPlugins: true }).exp.ios?.bundleIdentifier;
   if (id && id !== manifest.bootstrap.applicationId) throw new Error(`Retained Expo composition: ios.bundleIdentifier ${id} conflicts with the original Tauri application ${manifest.bootstrap.applicationId}`);
-  const relative = (dir: string) => ruby(path.relative(path.join(output, 'ios'), dir).split(path.sep).join('/'));
+  const relative = (dir: string) => ruby(path.relative(project, dir).split(path.sep).join('/'));
   const expoRoot = path.dirname(expo);
   const constants = path.dirname(requireExpo.resolve('expo-constants/package.json'));
   return {
@@ -32,7 +32,7 @@ export function prepareExpoIos(context: { rendererDirectory: string; output: str
     autolinking: `const { execFileSync } = require('node:child_process');
 const { createRequire } = require('node:module');
 const path = require('node:path');
-const root = path.resolve(__dirname, ${JSON.stringify(path.relative(path.join(output, 'ios'), renderer))});
+const root = path.resolve(__dirname, ${JSON.stringify(path.relative(project, renderer))});
 const local = createRequire(path.join(root, 'package.json'));
 const config = JSON.parse(execFileSync(process.execPath, [local.resolve('expo/bin/autolinking'), 'react-native-config', '--json', '--platform', 'ios', '--project-root', root, '--exclude', '@tauri-native/react-native'], { cwd: root, encoding: 'utf8' }));
 // RN codegen also reads this output: explicitly disable the format 1 package.

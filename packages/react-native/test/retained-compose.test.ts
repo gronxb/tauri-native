@@ -66,6 +66,30 @@ test('source-free generation is repeatable; an upgrade preserves consumer files 
   assert.equal(readFileSync(path.join(f.options.outputDir, 'android/tauri-native-runtime-client/src/main/java/dev/taurinative/runtime/RuntimeSession.java'), 'utf8'), 'test client');
 });
 
+test('a native project can live beside renderer sources and regenerate without claiming the renderer directory', () => {
+  const f = fixture(), source = snapshot(f.artifact);
+  const options = { ...f.options, outputDir: path.join(f.renderer, 'android'), layout: 'native-project' as const };
+  const packageJson = readFileSync(path.join(f.renderer, 'package.json'), 'utf8');
+  assert.equal(composeAndroid(options).changed, true);
+  assert.equal(composeAndroid(options).changed, false);
+  assert.equal(existsSync(path.join(options.outputDir, 'android')), false);
+  const settings = readFileSync(path.join(options.outputDir, 'settings.gradle'), 'utf8');
+  const sdkPath = settings.match(/new File\(settingsDir, '([^']+)'\)/)![1]!;
+  assert.equal(path.resolve(options.outputDir, sdkPath), path.resolve(import.meta.dirname, '../android/retained'));
+  write(options.outputDir, 'consumer.txt', 'preserve'); write(f.renderer, 'index.bundle.js', 'updated bundle');
+  assert.equal(composeAndroid(options).changed, true);
+  assert.equal(readFileSync(path.join(options.outputDir, 'app/src/main/assets/tauri-native-react/index.bundle.js'), 'utf8'), 'updated bundle');
+  assert.equal(readFileSync(path.join(options.outputDir, 'consumer.txt'), 'utf8'), 'preserve');
+  const before = snapshot(options.outputDir);
+  assert.throws(() => composeAndroid({ ...f.options, outputDir: options.outputDir }), /invalid prior composition receipt/);
+  assert.deepEqual(snapshot(options.outputDir), before);
+  write(options.outputDir, 'settings.gradle', 'consumer edit');
+  assert.throws(() => composeAndroid(options), /generated file changed/);
+  assert.equal(readFileSync(path.join(options.outputDir, 'settings.gradle'), 'utf8'), 'consumer edit');
+  assert.equal(readFileSync(path.join(f.renderer, 'package.json'), 'utf8'), packageJson);
+  assert.deepEqual(snapshot(f.artifact), source);
+});
+
 test('damaged input, incompatible dependencies and lifecycle owners leave an existing consumer unchanged', () => {
   const f = fixture(); f.run(); const before = snapshot(f.options.outputDir);
   const original = path.join(f.root, 'original'); cpSync(f.artifact, original, { recursive: true });

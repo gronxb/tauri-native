@@ -133,11 +133,16 @@ function prepareComposition(options, platform, renderer, sdkDirectory) {
 	if ([artifact, sdk].some((input) => overlaps(output, input)) || bundle === output || bundle.startsWith(output + node_path$1.default.sep)) fail("output must be separate from the artifact and SDK, and must not contain the renderer or bundle");
 	const manifest = readRetainedArtifacts(artifact);
 	if (manifest.platform !== platform) fail(`requires an ${platform} format 2 artifact`);
+	if (options.layout !== void 0 && options.layout !== "native-project") fail("unsupported output layout");
+	const layout = options.layout;
+	if (layout && renderer !== "react-native") fail("native-project output requires RN composition");
 	return {
 		artifact,
 		bundle,
 		sdk,
 		output,
+		project: layout ? output : node_path$1.default.join(output, platform),
+		layout,
 		manifest,
 		bundled: (0, node_fs.readFileSync)(bundle),
 		renderer,
@@ -155,13 +160,13 @@ function inventory(root, fail, prefix = "") {
 	return result;
 }
 function publishComposition(context, metadata, generate) {
-	const { artifact, bundle, bundled, output, manifest, renderer, fail } = context;
+	const { artifact, bundle, bundled, output, layout, manifest, renderer, fail } = context;
 	const receiptPath = "tauri-native-composition.json";
 	let previous;
 	if ((0, node_fs.existsSync)(output)) {
 		if (!(0, node_fs.lstatSync)(output).isDirectory() || !(0, node_fs.existsSync)(node_path$1.default.join(output, receiptPath)) || !(0, node_fs.lstatSync)(node_path$1.default.join(output, receiptPath)).isFile()) fail("existing output is not an owned composition directory");
 		const value = JSON.parse(read$1(output, receiptPath));
-		if (value.formatVersion !== 1 || value.renderer !== renderer || (value.platform ?? "android") !== manifest.platform || !value.files || typeof value.files !== "object" || Array.isArray(value.files)) fail("invalid prior composition receipt");
+		if (value.formatVersion !== 1 || value.renderer !== renderer || (value.platform ?? "android") !== manifest.platform || value.layout !== layout || !value.files || typeof value.files !== "object" || Array.isArray(value.files)) fail("invalid prior composition receipt");
 		previous = value;
 		for (const [file, digest] of Object.entries(previous.files)) {
 			if (!file || file.split("/").some((part) => !part || part === "." || part === "..") || /[\\:\0]/.test(file) || !/^[a-f0-9]{64}$/.test(digest)) fail("invalid prior composition file receipt");
@@ -175,19 +180,21 @@ function publishComposition(context, metadata, generate) {
 		}
 	}
 	const work = (0, node_fs.mkdtempSync)(node_path$1.default.join(node_path$1.default.dirname(output), renderer === "react-native" ? ".tauri-react-compose-" : ".tauri-lynx-compose-"));
-	const stage = node_path$1.default.join(work, "next");
+	let stage = node_path$1.default.join(work, "next");
 	const backup = node_path$1.default.join(work, "previous");
 	let published = false;
 	try {
 		(0, node_fs.mkdirSync)(stage);
 		(0, node_fs.cpSync)(node_path$1.default.join(artifact, manifest.platform), node_path$1.default.join(stage, manifest.platform), { recursive: true });
 		generate(stage);
+		if (layout) stage = node_path$1.default.join(stage, manifest.platform);
 		const files = inventory(stage, fail);
 		const receipt = JSON.stringify({
 			formatVersion: 1,
 			renderer,
 			artifact: hash((0, node_fs.readFileSync)(node_path$1.default.join(artifact, "manifest.json"))),
 			...metadata,
+			...layout ? { layout } : {},
 			files
 		}, null, 2) + "\n";
 		write$1(stage, receiptPath, receipt);

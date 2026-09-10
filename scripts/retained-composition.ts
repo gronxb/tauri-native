@@ -10,7 +10,7 @@ function write(root: string, file: string, bytes: string | Buffer) {
 }
 
 /** Shared output ownership for independent RN and Lynx packages; no producer mutation. */
-export function prepareComposition(options: { artifactsDir: string; outputDir: string; bundleFile: string }, platform: 'android' | 'ios', renderer: 'react-native' | 'lynx', sdkDirectory: string) {
+export function prepareComposition(options: { artifactsDir: string; outputDir: string; bundleFile: string; layout?: 'native-project' }, platform: 'android' | 'ios', renderer: 'react-native' | 'lynx', sdkDirectory: string) {
   const fail = (message: string): never => { throw new Error(`Retained ${renderer === 'react-native' ? 'RN' : 'Lynx'} composition: ${message}`); };
   const artifact = realpathSync(options.artifactsDir), bundle = realpathSync(options.bundleFile), sdk = realpathSync(sdkDirectory);
   const requestedOutput = path.resolve(options.outputDir);
@@ -20,7 +20,10 @@ export function prepareComposition(options: { artifactsDir: string; outputDir: s
     fail('output must be separate from the artifact and SDK, and must not contain the renderer or bundle');
   const manifest = readRetainedArtifacts(artifact);
   if (manifest.platform !== platform) fail(`requires an ${platform} format 2 artifact`);
-  return { artifact, bundle, sdk, output, manifest, bundled: readFileSync(bundle), renderer, fail };
+  if (options.layout !== undefined && options.layout !== 'native-project') fail('unsupported output layout');
+  const layout = options.layout;
+  if (layout && renderer !== 'react-native') fail('native-project output requires RN composition');
+  return { artifact, bundle, sdk, output, project: layout ? output : path.join(output, platform), layout, manifest, bundled: readFileSync(bundle), renderer, fail };
 }
 
 function inventory(root: string, fail: (message: string) => never, prefix = ''): Record<string, string> {
@@ -35,13 +38,13 @@ function inventory(root: string, fail: (message: string) => never, prefix = ''):
 }
 
 export function publishComposition(context: ReturnType<typeof prepareComposition>, metadata: Record<string, string>, generate: (stage: string) => void) {
-  const { artifact, bundle, bundled, output, manifest, renderer, fail } = context;
+  const { artifact, bundle, bundled, output, layout, manifest, renderer, fail } = context;
   const receiptPath = 'tauri-native-composition.json';
   let previous: { files: Record<string, string> } | undefined;
   if (existsSync(output)) {
     if (!lstatSync(output).isDirectory() || !existsSync(path.join(output, receiptPath)) || !lstatSync(path.join(output, receiptPath)).isFile()) fail('existing output is not an owned composition directory');
     const value = JSON.parse(read(output, receiptPath));
-    if (value.formatVersion !== 1 || value.renderer !== renderer || (value.platform ?? 'android') !== manifest.platform || !value.files || typeof value.files !== 'object' || Array.isArray(value.files)) fail('invalid prior composition receipt');
+    if (value.formatVersion !== 1 || value.renderer !== renderer || (value.platform ?? 'android') !== manifest.platform || value.layout !== layout || !value.files || typeof value.files !== 'object' || Array.isArray(value.files)) fail('invalid prior composition receipt');
     previous = value;
     for (const [file, digest] of Object.entries(previous!.files)) {
       if (!file || file.split('/').some(part => !part || part === '.' || part === '..') || /[\\:\0]/.test(file) || !/^[a-f0-9]{64}$/.test(digest)) fail('invalid prior composition file receipt');
@@ -53,14 +56,15 @@ export function publishComposition(context: ReturnType<typeof prepareComposition
     }
   }
   const work = mkdtempSync(path.join(path.dirname(output), renderer === 'react-native' ? '.tauri-react-compose-' : '.tauri-lynx-compose-'));
-  const stage = path.join(work, 'next');
+  let stage = path.join(work, 'next');
   const backup = path.join(work, 'previous');
   let published = false;
   try {
     mkdirSync(stage); cpSync(path.join(artifact, manifest.platform), path.join(stage, manifest.platform), { recursive: true });
     generate(stage);
+    if (layout) stage = path.join(stage, manifest.platform);
     const files = inventory(stage, fail);
-    const receipt = JSON.stringify({ formatVersion: 1, renderer, artifact: hash(readFileSync(path.join(artifact, 'manifest.json'))), ...metadata, files }, null, 2) + '\n';
+    const receipt = JSON.stringify({ formatVersion: 1, renderer, artifact: hash(readFileSync(path.join(artifact, 'manifest.json'))), ...metadata, ...(layout ? { layout } : {}), files }, null, 2) + '\n';
     write(stage, receiptPath, receipt);
     // Revalidate inputs before publication. A changed export can never produce a partial consumer.
     if (JSON.stringify(readRetainedArtifacts(artifact)) !== JSON.stringify(manifest) || !readFileSync(bundle).equals(bundled)) fail('inputs changed during composition');

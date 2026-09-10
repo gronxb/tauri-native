@@ -11,18 +11,21 @@ import { assertOriginalDocument, verifyRetainedView } from './retained/view-scen
 import { acquireMobileTest } from '../../cli/test/runtime/mobile-lock.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
-const expo = process.argv[3] === '--expo';
+const flags = new Set(process.argv.slice(3));
+assert([...flags].every(flag => ['--expo', '--native-project'].includes(flag)), 'Unknown native gate option');
+const expo = flags.has('--expo');
+const nativeProject = flags.has('--native-project');
 const artifact = path.resolve(process.argv[2] ?? path.join(root, 'target/retained-portability/exported-runtime'));
 const manifest = readRetainedArtifacts(artifact);
 assert(manifest.platform === 'android' && manifest.profile === 'release');
 assert.equal(manifest.bootstrap.applicationId, 'dev.taurinative.mobilefieldnotes');
 const device = process.env.ANDROID_SERIAL;
 assert(device, 'Choose an arm64 ANDROID_SERIAL emulator');
-const evidence = path.join(root, expo ? 'target/react-retained-expo-android' : 'target/react-retained-android');
+const evidence = path.join(root, (expo ? 'target/react-retained-expo-android' : 'target/react-retained-android') + (nativeProject ? '-native-project' : ''));
 const consumer = path.join(evidence, 'source free consumer');
 const renderer = path.join(consumer, 'renderer');
-const generated = path.join(expo ? renderer : consumer, 'composed application');
-const android = path.join(generated, 'android');
+const generated = nativeProject ? path.join(renderer, 'android') : path.join(expo ? renderer : consumer, 'composed application');
+const android = nativeProject ? generated : path.join(generated, 'android');
 const appId = manifest.bootstrap.applicationId;
 const env: NodeJS.ProcessEnv = { ...process.env, NODE_OPTIONS: '', ...(expo ? { NODE_ENV: 'production' } : {}) };
 const buildEnv = { ...env, PATH: `${expo ? path.dirname(process.execPath) + ':' : ''}/usr/bin:/bin:/usr/sbin:/sbin` };
@@ -100,7 +103,7 @@ try {
   const { composeAndroid } = createRequire(path.join(consumer, 'consumer.cjs'))(path.join(sdk, 'compose.js'));
   const { readRetainedArtifacts: packedReader } = createRequire(path.join(consumer, 'consumer.cjs'))(path.join(sdk, 'retained-artifacts.js'));
   assert.deepEqual(packedReader(copied), manifest);
-  const options = { artifactsDir: copied, outputDir: generated, rendererDir: renderer, moduleName: expo ? 'main' : 'RetainedFieldnotes', bundleFile: bundle, expo };
+  const options = { artifactsDir: copied, outputDir: generated, rendererDir: renderer, moduleName: expo ? 'main' : 'RetainedFieldnotes', bundleFile: bundle, expo, ...(nativeProject ? { layout: 'native-project' } : {}) };
   const composition = composeAndroid(options); assert.equal(composition.changed, true);
   assert.equal(composeAndroid(options).changed, false, 'Identical composition must preserve generated files');
   const receipt = JSON.parse(readFileSync(path.join(generated, 'tauri-native-composition.json'), 'utf8'));
@@ -252,7 +255,7 @@ try {
   assert.deepEqual(packedReader(copied), manifest);
   assert(!existsSync(path.join(consumer, 'src-tauri')), 'Consumer has no Rust producer');
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform: 'android', profile: 'release', formatVersion: 2, abiVersion: 3,
-    renderer: 'React Native 0.86.3 / Hermes 250829098.0.17 / generated TurboModule and Fabric', expo, sourceFree: true, sourceFreeBuild: `PATH=${buildEnv.PATH} ./gradlew --no-daemon assembleRelease`,
+    renderer: 'React Native 0.86.3 / Hermes 250829098.0.17 / generated TurboModule and Fabric', expo, layout: nativeProject ? 'native-project' : 'container', sourceFree: true, sourceFreeBuild: `PATH=${buildEnv.PATH} ./gradlew --no-daemon assembleRelease`,
     nonDebuggable: true, libraries, elfAlignment: 'All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed',
     packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-react-native-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
     apkSha256: sha256(readFileSync(acceptanceApk)), defaultActivity: { activity: composition.activity, pid, apkSha256: sha256(readFileSync(apk)), overriddenHooks: false },

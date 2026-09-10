@@ -131,10 +131,15 @@ test('corruption, existing pods, custom startup, scene ownership and edited gene
   assert.equal(readFileSync(path.join(f.options.outputDir, 'ios/App.xcodeproj/project.pbxproj'), 'utf8'), 'consumer edit');
 });
 
-test('CocoaPods receipt tracking accepts its project rewrite but rejects existing or concurrent source edits', () => {
-  const f = fixture(); f.run();
-  const ios = path.join(f.options.outputDir, 'ios');
-  const receipt = path.join(f.options.outputDir, 'tauri-native-composition.json');
+for (const layout of [undefined, 'native-project'] as const) test(`CocoaPods receipt tracking protects source edits in ${layout ?? 'container'} output`, () => {
+  const f = fixture();
+  const options = { ...f.options, ...(layout ? { outputDir: path.join(f.renderer, 'ios'), layout } : {}) };
+  const compose = () => composeIos(options);
+  compose();
+  assert.equal(compose().changed, false);
+  const ios = layout ? options.outputDir : path.join(options.outputDir, 'ios');
+  const prefix = layout ? '' : 'ios/';
+  const receipt = path.join(options.outputDir, 'tauri-native-composition.json');
   const main = path.join(ios, 'Sources/App/main.mm');
   const originalMain = readFileSync(main, 'utf8');
   const before = readFileSync(receipt, 'utf8');
@@ -161,7 +166,7 @@ test('CocoaPods receipt tracking accepts its project rewrite but rejects existin
   `);
   assert.equal(result.status, 0, result.stderr);
   const after = JSON.parse(readFileSync(receipt, 'utf8'));
-  assert.equal(after.files['ios/App.xcodeproj/project.pbxproj'], sha(readFileSync(path.join(ios, 'App.xcodeproj/project.pbxproj'))));
-  assert.equal(after.files['ios/Sources/App/main.mm'], JSON.parse(before).files['ios/Sources/App/main.mm']);
-  assert.equal(f.run().changed, true);
+  assert.equal(after.files[`${prefix}App.xcodeproj/project.pbxproj`], sha(readFileSync(path.join(ios, 'App.xcodeproj/project.pbxproj'))));
+  assert.equal(after.files[`${prefix}Sources/App/main.mm`], JSON.parse(before).files[`${prefix}Sources/App/main.mm`]);
+  assert.equal(compose().changed, true);
 });

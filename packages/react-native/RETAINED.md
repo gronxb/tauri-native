@@ -106,6 +106,15 @@ artifact, installed SDK and bundle must stay outside the generated output; the
 output may be a child of the renderer project. Build the returned Android
 project with Gradle. Release signing stays under the consumer's control.
 
+Both composers also accept `layout: 'native-project'`. For example, use
+`outputDir: './android'` with `rendererDir: '.'` to create the native project
+directly beside the renderer sources. Use `./ios` for the iOS composer. The
+composition receipt lives inside that native directory, and regeneration protects
+consumer edits there without taking ownership of the renderer directory. An
+existing container layout cannot be switched in place. This directory layout
+prepares Expo's expected paths; Expo clean prebuild/config-plugin integration
+still needs its separate Tauri template and configuration-preservation stage.
+
 The composer validates every input file and the pinned RN/codegen versions
 before generating a copy. It preserves the original Tauri/native plugin projects,
 permissions, schemes, assets and libraries. The original `MainActivity` keeps

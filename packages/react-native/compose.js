@@ -134,11 +134,16 @@ function prepareComposition(options, platform, renderer, sdkDirectory) {
 	if ([artifact, sdk].some((input) => overlaps(output, input)) || bundle === output || bundle.startsWith(output + node_path$1.default.sep)) fail("output must be separate from the artifact and SDK, and must not contain the renderer or bundle");
 	const manifest = readRetainedArtifacts(artifact);
 	if (manifest.platform !== platform) fail(`requires an ${platform} format 2 artifact`);
+	if (options.layout !== void 0 && options.layout !== "native-project") fail("unsupported output layout");
+	const layout = options.layout;
+	if (layout && renderer !== "react-native") fail("native-project output requires RN composition");
 	return {
 		artifact,
 		bundle,
 		sdk,
 		output,
+		project: layout ? output : node_path$1.default.join(output, platform),
+		layout,
 		manifest,
 		bundled: (0, node_fs.readFileSync)(bundle),
 		renderer,
@@ -156,13 +161,13 @@ function inventory(root, fail, prefix = "") {
 	return result;
 }
 function publishComposition(context, metadata, generate) {
-	const { artifact, bundle, bundled, output, manifest, renderer, fail } = context;
+	const { artifact, bundle, bundled, output, layout, manifest, renderer, fail } = context;
 	const receiptPath = "tauri-native-composition.json";
 	let previous;
 	if ((0, node_fs.existsSync)(output)) {
 		if (!(0, node_fs.lstatSync)(output).isDirectory() || !(0, node_fs.existsSync)(node_path$1.default.join(output, receiptPath)) || !(0, node_fs.lstatSync)(node_path$1.default.join(output, receiptPath)).isFile()) fail("existing output is not an owned composition directory");
 		const value = JSON.parse(read$2(output, receiptPath));
-		if (value.formatVersion !== 1 || value.renderer !== renderer || (value.platform ?? "android") !== manifest.platform || !value.files || typeof value.files !== "object" || Array.isArray(value.files)) fail("invalid prior composition receipt");
+		if (value.formatVersion !== 1 || value.renderer !== renderer || (value.platform ?? "android") !== manifest.platform || value.layout !== layout || !value.files || typeof value.files !== "object" || Array.isArray(value.files)) fail("invalid prior composition receipt");
 		previous = value;
 		for (const [file, digest] of Object.entries(previous.files)) {
 			if (!file || file.split("/").some((part) => !part || part === "." || part === "..") || /[\\:\0]/.test(file) || !/^[a-f0-9]{64}$/.test(digest)) fail("invalid prior composition file receipt");
@@ -176,19 +181,21 @@ function publishComposition(context, metadata, generate) {
 		}
 	}
 	const work = (0, node_fs.mkdtempSync)(node_path$1.default.join(node_path$1.default.dirname(output), renderer === "react-native" ? ".tauri-react-compose-" : ".tauri-lynx-compose-"));
-	const stage = node_path$1.default.join(work, "next");
+	let stage = node_path$1.default.join(work, "next");
 	const backup = node_path$1.default.join(work, "previous");
 	let published = false;
 	try {
 		(0, node_fs.mkdirSync)(stage);
 		(0, node_fs.cpSync)(node_path$1.default.join(artifact, manifest.platform), node_path$1.default.join(stage, manifest.platform), { recursive: true });
 		generate(stage);
+		if (layout) stage = node_path$1.default.join(stage, manifest.platform);
 		const files = inventory(stage, fail);
 		const receipt = JSON.stringify({
 			formatVersion: 1,
 			renderer,
 			artifact: hash((0, node_fs.readFileSync)(node_path$1.default.join(artifact, "manifest.json"))),
 			...metadata,
+			...layout ? { layout } : {},
 			files
 		}, null, 2) + "\n";
 		write$2(stage, receiptPath, receipt);
@@ -361,7 +368,7 @@ function replace(value, from, to) {
 }
 /** Configure Expo in the generated Tauri consumer, without replacing its platform startup. */
 function prepareExpoAndroid(context) {
-	const { sdk, output, rendererDirectory: renderer, rn, codegen } = context;
+	const { sdk, output, project, rendererDirectory: renderer, rn, codegen } = context;
 	const appId = context.manifest.bootstrap.applicationId;
 	if (!output.startsWith(renderer + node_path.default.sep)) throw new Error("Retained Expo composition: outputDir must be inside rendererDir so Expo Gradle scripts resolve the consuming app");
 	const requireRenderer = (0, node_module.createRequire)(node_path.default.join(renderer, "package.json"));
@@ -378,7 +385,7 @@ function prepareExpoAndroid(context) {
 	if (configuredId && configuredId !== appId) throw new Error(`Retained Expo composition: android.package ${configuredId} conflicts with the original Tauri application ${appId}`);
 	const rngp = node_path.default.dirname((0, node_module.createRequire)(node_path.default.join(rn, "package.json")).resolve("@react-native/gradle-plugin/package.json"));
 	const expoGradle = node_path.default.join(node_path.default.dirname(requireExpo.resolve("expo-modules-autolinking/package.json")), "android/expo-gradle-plugin");
-	const relative = (dir) => node_path.default.relative(node_path.default.join(output, "android"), dir).split(node_path.default.sep).join("/");
+	const relative = (dir) => node_path.default.relative(project, dir).split(node_path.default.sep).join("/");
 	return (stage) => {
 		const android = node_path.default.join(stage, "android");
 		const source = `app/src/main/java/${appId.replaceAll(".", "/")}/TauriNativeActivity.kt`;
@@ -467,7 +474,7 @@ tasks.matching { it.name.startsWith("configureCMake") }.configureEach { dependsO
 //#region packages/react-native/plugin/retained-expo-ios.cts
 const ruby$1 = (s) => `'${s.replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`;
 function prepareExpoIos(context) {
-	const { rendererDirectory: renderer, output, manifest } = context;
+	const { rendererDirectory: renderer, output, project, manifest } = context;
 	if (!output.startsWith(renderer + node_path.default.sep)) throw new Error("Retained Expo composition: outputDir must be inside rendererDir so Expo scripts resolve the consuming app");
 	const requireRenderer = (0, node_module.createRequire)(node_path.default.join(renderer, "package.json"));
 	const expo = (0, node_fs.realpathSync)(requireRenderer.resolve("expo/package.json"));
@@ -486,7 +493,7 @@ function prepareExpoIos(context) {
 	const { getConfig } = requireExpo("@expo/config");
 	const id = getConfig(renderer, { skipPlugins: true }).exp.ios?.bundleIdentifier;
 	if (id && id !== manifest.bootstrap.applicationId) throw new Error(`Retained Expo composition: ios.bundleIdentifier ${id} conflicts with the original Tauri application ${manifest.bootstrap.applicationId}`);
-	const relative = (dir) => ruby$1(node_path.default.relative(node_path.default.join(output, "ios"), dir).split(node_path.default.sep).join("/"));
+	const relative = (dir) => ruby$1(node_path.default.relative(project, dir).split(node_path.default.sep).join("/"));
 	const expoRoot = node_path.default.dirname(expo);
 	const constants = node_path.default.dirname(requireExpo.resolve("expo-constants/package.json"));
 	return {
@@ -496,7 +503,7 @@ function prepareExpoIos(context) {
 		autolinking: `const { execFileSync } = require('node:child_process');
 const { createRequire } = require('node:module');
 const path = require('node:path');
-const root = path.resolve(__dirname, ${JSON.stringify(node_path.default.relative(node_path.default.join(output, "ios"), renderer))});
+const root = path.resolve(__dirname, ${JSON.stringify(node_path.default.relative(project, renderer))});
 const local = createRequire(path.join(root, 'package.json'));
 const config = JSON.parse(execFileSync(process.execPath, [local.resolve('expo/bin/autolinking'), 'react-native-config', '--json', '--platform', 'ios', '--project-root', root, '--exclude', '@tauri-native/react-native'], { cwd: root, encoding: 'utf8' }));
 // RN codegen also reads this output: explicitly disable the format 1 package.
@@ -543,7 +550,7 @@ function compositionInputs(options, platform) {
 /** The output owns generated integration; the original artifact is never modified. */
 function composeAndroid(options) {
 	const context = compositionInputs(options, "android");
-	const { artifact, sdk, output, manifest, rn, codegen, bundled } = context;
+	const { artifact, sdk, manifest, rn, codegen, bundled, project } = context;
 	if (manifest.platform !== "android") fail("requires an Android format 2 artifact");
 	const android = node_path.default.join(artifact, "android");
 	const appId = manifest.bootstrap.applicationId, activity = `${appId}.TauriNativeActivity`;
@@ -568,38 +575,37 @@ function composeAndroid(options) {
 	if ((0, node_fs.existsSync)(node_path.default.join(android, "tauri-native-runtime-client"))) fail("artifact already owns the generated runtime client project");
 	if (!/compileSdk\s*=\s*36\b/.test(appGradle)) fail("requires the verified Android compile SDK 36 build");
 	const nativeActivity = replaceOnce(xml, "android:name=\".MainActivity\"", `android:name="${activity}"`, "launcher Activity");
-	const relative = (directory) => node_path.default.relative(node_path.default.join(output, "android"), directory).split(node_path.default.sep).join("/");
+	const relative = (directory) => node_path.default.relative(project, directory).split(node_path.default.sep).join("/");
 	const template = read(sdk, "retained/android/TauriNativeActivity.kt.template");
 	const expo = options.expo ? prepareExpoAndroid({
 		...context,
 		manifest
 	}) : void 0;
-	const changed = publishComposition(context, {
-		moduleName: options.moduleName,
-		activity,
-		...expo ? { expo: "57.0.19" } : {}
-	}, (stage) => {
-		write(stage, `android/${source}`, replaceOnce(main, "class MainActivity", "open class MainActivity", "original Activity"));
-		const generated = `android/app/src/main/java/${appId.replaceAll(".", "/")}/TauriNativeActivity.kt`;
-		if ((0, node_fs.existsSync)(node_path.default.join(stage, generated))) fail("artifact already owns TauriNativeActivity");
-		write(stage, generated, template.replaceAll("__APPLICATION_ID__", appId).replaceAll("__MODULE__", kotlin(options.moduleName)));
-		write(stage, "android/app/src/main/AndroidManifest.xml", nativeActivity);
-		write(stage, "android/build.gradle.kts", updatedRoot + `\nextra["tauriNativeReactNativeDir"] = file(${kotlin(relative(rn))}).canonicalPath\nextra["tauriNativeReactCodegenDir"] = file(${kotlin(relative(codegen))}).canonicalPath\nextra["tauriNativeNode"] = ${kotlin(process.execPath)}\nextra["tauriNativeAbis"] = listOf(${manifest.native.map((slice) => kotlin(slice.abi)).join(", ")})\n`);
-		write(stage, "android/settings.gradle", settings + `\ninclude ':tauri-native-runtime-client', ':tauri-native-react'\nproject(':tauri-native-react').projectDir = new File(settingsDir, ${groovy(relative(node_path.default.join(sdk, "android/retained")))})\n`);
-		write(stage, "android/gradle.properties", properties + "\nandroid.lint.useK2Uast=false\n");
-		write(stage, "android/app/build.gradle.kts", appGradle + `\nandroid { packaging { jniLibs.pickFirsts += "**/libc++_shared.so" }; defaultConfig { ndk { abiFilters += listOf(${manifest.native.map((slice) => kotlin(slice.abi)).join(", ")}) } } }\ndependencies { implementation(project(":tauri-native-react")); implementation(project(":tauri-native-runtime-client")) }\n`);
-		const client = "app/src/main/java/dev/taurinative/runtime/RuntimeSession.java";
-		write(stage, "android/tauri-native-runtime-client/src/main/java/dev/taurinative/runtime/RuntimeSession.java", read(android, client));
-		(0, node_fs.rmSync)(node_path.default.join(stage, "android", client));
-		write(stage, "android/tauri-native-runtime-client/build.gradle", "plugins { id 'com.android.library' }\nandroid {\n namespace 'dev.taurinative.runtime'\n compileSdk 36\n defaultConfig { minSdk 24 }\n compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }\n}\n");
-		if ((0, node_fs.existsSync)(node_path.default.join(stage, "android/app/src/main/assets/tauri-native-react"))) fail("artifact already owns renderer assets");
-		write(stage, "android/app/src/main/assets/tauri-native-react/index.bundle.js", bundled);
-		expo?.(stage);
-	});
 	return {
-		project: node_path.default.join(output, "android"),
+		project,
 		activity,
-		changed
+		changed: publishComposition(context, {
+			moduleName: options.moduleName,
+			activity,
+			...expo ? { expo: "57.0.19" } : {}
+		}, (stage) => {
+			write(stage, `android/${source}`, replaceOnce(main, "class MainActivity", "open class MainActivity", "original Activity"));
+			const generated = `android/app/src/main/java/${appId.replaceAll(".", "/")}/TauriNativeActivity.kt`;
+			if ((0, node_fs.existsSync)(node_path.default.join(stage, generated))) fail("artifact already owns TauriNativeActivity");
+			write(stage, generated, template.replaceAll("__APPLICATION_ID__", appId).replaceAll("__MODULE__", kotlin(options.moduleName)));
+			write(stage, "android/app/src/main/AndroidManifest.xml", nativeActivity);
+			write(stage, "android/build.gradle.kts", updatedRoot + `\nextra["tauriNativeReactNativeDir"] = file(${kotlin(relative(rn))}).canonicalPath\nextra["tauriNativeReactCodegenDir"] = file(${kotlin(relative(codegen))}).canonicalPath\nextra["tauriNativeNode"] = ${kotlin(process.execPath)}\nextra["tauriNativeAbis"] = listOf(${manifest.native.map((slice) => kotlin(slice.abi)).join(", ")})\n`);
+			write(stage, "android/settings.gradle", settings + `\ninclude ':tauri-native-runtime-client', ':tauri-native-react'\nproject(':tauri-native-react').projectDir = new File(settingsDir, ${groovy(relative(node_path.default.join(sdk, "android/retained")))})\n`);
+			write(stage, "android/gradle.properties", properties + "\nandroid.lint.useK2Uast=false\n");
+			write(stage, "android/app/build.gradle.kts", appGradle + `\nandroid { packaging { jniLibs.pickFirsts += "**/libc++_shared.so" }; defaultConfig { ndk { abiFilters += listOf(${manifest.native.map((slice) => kotlin(slice.abi)).join(", ")}) } } }\ndependencies { implementation(project(":tauri-native-react")); implementation(project(":tauri-native-runtime-client")) }\n`);
+			const client = "app/src/main/java/dev/taurinative/runtime/RuntimeSession.java";
+			write(stage, "android/tauri-native-runtime-client/src/main/java/dev/taurinative/runtime/RuntimeSession.java", read(android, client));
+			(0, node_fs.rmSync)(node_path.default.join(stage, "android", client));
+			write(stage, "android/tauri-native-runtime-client/build.gradle", "plugins { id 'com.android.library' }\nandroid {\n namespace 'dev.taurinative.runtime'\n compileSdk 36\n defaultConfig { minSdk 24 }\n compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }\n}\n");
+			if ((0, node_fs.existsSync)(node_path.default.join(stage, "android/app/src/main/assets/tauri-native-react"))) fail("artifact already owns renderer assets");
+			write(stage, "android/app/src/main/assets/tauri-native-react/index.bundle.js", bundled);
+			expo?.(stage);
+		})
 	};
 }
 const ruby = (value) => `'${value.replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`;
@@ -608,14 +614,14 @@ const shell = (value) => `'${value.replaceAll("'", "'\\''")}'`;
 function composeIos(options) {
 	if (process.platform !== "darwin") fail("iOS composition requires macOS Apple project tools");
 	const context = compositionInputs(options, "ios");
-	const { sdk, output, manifest, rn, rendererDirectory: renderer, bundled } = context;
+	const { sdk, manifest, rn, rendererDirectory: renderer, bundled, project } = context;
 	if (manifest.platform !== "ios") fail("requires an iOS format 2 artifact");
 	const expo = options.expo ? prepareExpoIos({
 		...context,
 		manifest
 	}) : void 0;
 	const { projectFile, encodedProject, main, originalMain, minimumOsVersion, bootstrap, workspace } = prepareIosProject(context, "16.4");
-	const relative = (dir) => node_path.default.relative(node_path.default.join(output, "ios"), dir).split(node_path.default.sep).join("/");
+	const relative = (dir) => node_path.default.relative(project, dir).split(node_path.default.sep).join("/");
 	const changed = publishComposition(context, {
 		moduleName: options.moduleName,
 		platform: "ios",
@@ -658,7 +664,7 @@ end
 `);
 	});
 	return {
-		project: node_path.default.join(output, "ios"),
+		project,
 		target: bootstrap.target,
 		workspace,
 		minimumOsVersion,

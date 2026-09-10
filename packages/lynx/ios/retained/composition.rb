@@ -2,14 +2,20 @@ require 'json'
 require 'digest'
 
 module TauriNativeLynxRetained
+  def self.composition_root(ios)
+    project = File.realpath(ios)
+    File.exist?(File.join(project, 'tauri-native-composition.json')) ? project : File.dirname(project)
+  end
+
   # CocoaPods edits the user project. Check its known state before installation,
   # then record only that tool-owned change after successful integration.
   def self.composition_receipt(ios, project_changes: [])
-    root = File.dirname(File.realpath(ios))
+    root = composition_root(ios)
     receipt_path = File.join(root, 'tauri-native-composition.json')
     raise 'Expected a regular retained composition receipt' unless File.file?(receipt_path) && !File.symlink?(receipt_path)
     receipt = JSON.parse(File.read(receipt_path))
-    unless receipt['formatVersion'] == 1 && receipt['platform'] == 'ios' && receipt['renderer'] == 'lynx' && receipt['files'].is_a?(Hash)
+    layout = root == File.realpath(ios) ? 'native-project' : nil
+    unless receipt['formatVersion'] == 1 && receipt['platform'] == 'ios' && receipt['renderer'] == 'lynx' && receipt['layout'] == layout && receipt['files'].is_a?(Hash)
       raise 'Expected an owned retained iOS composition'
     end
     receipt['files'].each do |file, digest|
@@ -28,10 +34,11 @@ module TauriNativeLynxRetained
   end
 
   def self.finish_composition(ios, before)
-    projects = before.fetch('files').keys.grep(%r{\Aios/[\w.-]+\.xcodeproj/project\.pbxproj\z})
+    prefix = before['layout'] == 'native-project' ? '' : 'ios/'
+    projects = before.fetch('files').keys.grep(/\A#{prefix}[\w.-]+\.xcodeproj\/project\.pbxproj\z/)
     raise 'Expected one original retained Xcode project' unless projects.length == 1
     raise 'Retained composition receipt changed during pod install' unless composition_receipt(ios, project_changes: projects) == before
-    root = File.dirname(File.realpath(ios))
+    root = composition_root(ios)
     before['files'][projects.first] = Digest::SHA256.file(File.join(root, projects.first)).hexdigest
     receipt = File.join(root, 'tauri-native-composition.json')
     temporary = receipt + '.pods-next'

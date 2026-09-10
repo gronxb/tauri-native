@@ -12,8 +12,8 @@ function replace(value: string, from: string, to: string) {
 }
 
 /** Configure Expo in the generated Tauri consumer, without replacing its platform startup. */
-export function prepareExpoAndroid(context: { sdk: string; output: string; rendererDirectory: string; rn: string; codegen: string; manifest: { bootstrap: { applicationId: string }; native: { abi: string }[] } }) {
-  const { sdk, output, rendererDirectory: renderer, rn, codegen } = context;
+export function prepareExpoAndroid(context: { sdk: string; output: string; project: string; rendererDirectory: string; rn: string; codegen: string; manifest: { bootstrap: { applicationId: string }; native: { abi: string }[] } }) {
+  const { sdk, output, project, rendererDirectory: renderer, rn, codegen } = context;
   const appId = context.manifest.bootstrap.applicationId;
   if (!output.startsWith(renderer + path.sep)) throw new Error('Retained Expo composition: outputDir must be inside rendererDir so Expo Gradle scripts resolve the consuming app');
   const requireRenderer = createRequire(path.join(renderer, 'package.json'));
@@ -28,7 +28,7 @@ export function prepareExpoAndroid(context: { sdk: string; output: string; rende
   if (configuredId && configuredId !== appId) throw new Error(`Retained Expo composition: android.package ${configuredId} conflicts with the original Tauri application ${appId}`);
   const rngp = path.dirname(createRequire(path.join(rn, 'package.json')).resolve('@react-native/gradle-plugin/package.json'));
   const expoGradle = path.join(path.dirname(requireExpo.resolve('expo-modules-autolinking/package.json')), 'android/expo-gradle-plugin');
-  const relative = (dir: string) => path.relative(path.join(output, 'android'), dir).split(path.sep).join('/');
+  const relative = (dir: string) => path.relative(project, dir).split(path.sep).join('/');
   return (stage: string) => {
     const android = path.join(stage, 'android');
     const source = `app/src/main/java/${appId.replaceAll('.', '/')}/TauriNativeActivity.kt`;

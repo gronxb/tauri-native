@@ -34,7 +34,7 @@ function compositionInputs(options: AndroidCompositionOptions, platform: 'androi
 /** The output owns generated integration; the original artifact is never modified. */
 export function composeAndroid(options: AndroidCompositionOptions) {
   const context = compositionInputs(options, 'android');
-  const { artifact, sdk, output, manifest, rn, codegen, bundled } = context;
+  const { artifact, sdk, manifest, rn, codegen, bundled, project } = context;
   if (manifest.platform !== 'android') fail('requires an Android format 2 artifact');
   const android = path.join(artifact, 'android');
   const appId = manifest.bootstrap.applicationId, activity = `${appId}.TauriNativeActivity`;
@@ -56,7 +56,7 @@ export function composeAndroid(options: AndroidCompositionOptions) {
   if (existsSync(path.join(android, 'tauri-native-runtime-client'))) fail('artifact already owns the generated runtime client project');
   if (!/compileSdk\s*=\s*36\b/.test(appGradle)) fail('requires the verified Android compile SDK 36 build');
   const nativeActivity = replaceOnce(xml, 'android:name=".MainActivity"', `android:name="${activity}"`, 'launcher Activity');
-  const relative = (directory: string) => path.relative(path.join(output, 'android'), directory).split(path.sep).join('/');
+  const relative = (directory: string) => path.relative(project, directory).split(path.sep).join('/');
   const template = read(sdk, 'retained/android/TauriNativeActivity.kt.template');
   const expo = options.expo ? prepareExpoAndroid({ ...context, manifest }) : undefined;
   const changed = publishComposition(context, { moduleName: options.moduleName, activity, ...(expo ? { expo: '57.0.19' } : {}) }, stage => {
@@ -77,7 +77,7 @@ export function composeAndroid(options: AndroidCompositionOptions) {
     write(stage, 'android/app/src/main/assets/tauri-native-react/index.bundle.js', bundled);
     expo?.(stage);
   });
-  return { project: path.join(output, 'android'), activity, changed };
+  return { project, activity, changed };
 }
 
 const ruby = (value: string) => `'${value.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
@@ -87,11 +87,11 @@ const shell = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
 export function composeIos(options: IosCompositionOptions) {
   if (process.platform !== 'darwin') fail('iOS composition requires macOS Apple project tools');
   const context = compositionInputs(options, 'ios');
-  const { sdk, output, manifest, rn, rendererDirectory: renderer, bundled } = context;
+  const { sdk, manifest, rn, rendererDirectory: renderer, bundled, project } = context;
   if (manifest.platform !== 'ios') fail('requires an iOS format 2 artifact');
   const expo = options.expo ? prepareExpoIos({ ...context, manifest }) : undefined;
   const { projectFile, encodedProject, main, originalMain, minimumOsVersion, bootstrap, workspace } = prepareIosProject(context, '16.4');
-  const relative = (dir: string) => path.relative(path.join(output, 'ios'), dir).split(path.sep).join('/');
+  const relative = (dir: string) => path.relative(project, dir).split(path.sep).join('/');
   const changed = publishComposition(context, { moduleName: options.moduleName, platform: 'ios', minimumOsVersion, target: bootstrap.target, ...(expo ? { expo: '57.0.19' } : {}) }, stage => {
     write(stage, `ios/${projectFile}`, encodedProject);
     write(stage, `ios/${main}`, '#import <TauriNativeReactRetained/TNReactComposition.h>\n' + (expo ? '#import <TauriNativeReactRetained/TNExpoApplication.h>\n' : '') + originalMain.replace('ffi::start_app();',
@@ -128,5 +128,5 @@ post_integrate do |installer|
 end
 `);
   });
-  return { project: path.join(output, 'ios'), target: bootstrap.target, workspace, minimumOsVersion, changed };
+  return { project, target: bootstrap.target, workspace, minimumOsVersion, changed };
 }

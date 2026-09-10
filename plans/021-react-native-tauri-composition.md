@@ -405,3 +405,42 @@ This completes the scoped iOS installed-module/callback stage of #45. Expo clean
 prebuild/CNG/config plugins, broader native packages and lifecycle/source owners,
 full parity/CI/migration, physical devices and independent adopters remain open.
 No issue or release gate is closed and no package is published.
+
+## Native project output and Expo template integration boundary (2026-09-11)
+
+The RN composers now support `layout: 'native-project'`, placing the generated
+project directly at the consumer's `ios` or `android` directory. Relative native
+dependency paths use that final directory. A receipt inside the native project
+tracks owned files; regeneration preserves unrelated consumer files, rejects
+edited sources or an incompatible prior layout, and never owns the renderer
+source directory. CocoaPods tracks its Xcode project changes in either layout.
+
+The packed Expo gates pass 34 iOS and 32 Android Release UI flows from identical
+125-file SDK payloads. These exercise the direct output layout, original Tauri
+bootstrap/state/plugins/ACL/WebView, installed Expo native modules, pending OS
+permission retirement, renderer replacement/removal and default generated apps.
+The original 14-file producer and both input artifact inventories remain
+unchanged. Android retains Release/R8 and 16 KB checks. Fifteen RN composition/
+receipt scenarios, 17 package tests, seven Lynx composition regressions and
+script/package typechecks pass. Evidence is recorded in
+`docs/evidence/retained-native-project-layout-2026-09-11.json` on local `main`;
+it has not been pushed or published.
+
+Separate development prototypes execute the actual Expo CLI with a retained
+custom template twice per platform. Clean generations have identical file
+inventories and apply the real Expo Location plugin plus custom Info.plist and
+Android manifest modifications. The iOS probe also preserves the original default
+icon pixels and verifies the existing entitlements and generated Expo resources
+are linked. This is generation evidence only. No native
+execution or package-owned CNG support is claimed for those prototypes.
+
+The probes identified the next CNG requirements: adapt generated startup file
+names and Xcode configuration names to Expo's file-discovery conventions while
+retaining Tauri ownership; seed original OS declarations so Expo defaults do
+not erase a Tauri URL scheme; preserve default icons and linked entitlements;
+reject incompatible native owner changes; and keep template packaging and
+prebuild receipts complete. Package-owned template/config-plugin orchestration,
+normal/clean regeneration and native execution of the CNG output remain open.
+Broader lifecycle/native-package support, full parity/CI/migration, physical
+devices and independent adopters also remain required. No issue or release gate
+is closed by the directory-layout increment.

@@ -271,3 +271,22 @@ This completes the scoped iOS installed-module/callback stage of #45. Expo clean
 prebuild/CNG/config plugins, broader native packages and lifecycle/source owners,
 full parity/CI/migration, physical devices and independent adopters remain open.
 No issue or release gate is closed and no package is published.
+
+## Native project layout and CNG preparation (2026-09-11)
+
+The retained RN/Expo composers can now generate directly into the consumer's
+`ios` or `android` directory, with relative dependency paths and file receipts
+scoped to that directory. Packed Release gates pass 34 iOS and 32 Android UI
+flows from identical 125-file SDK payloads. The original 14-file Tauri producer
+and both input artifact inventories remain unchanged. Fifteen RN ownership
+scenarios, 17 package tests, seven Lynx composition regressions and typechecks
+pass. Evidence: `docs/evidence/retained-native-project-layout-2026-09-11.json`
+on local `main`, not pushed or published.
+
+Separate prototypes pass two identical Expo clean generations per platform,
+including real config plugins and preservation of original OS registrations;
+iOS also checks default icon pixels, entitlements and resource linkage. Those
+are generation-only probes. Package-owned CNG orchestration, native execution of
+its output, broader lifecycle/source forms and complete parity/CI/migration,
+physical-device and independent-adopter evidence remain open. #45 and all release
+gates retain their current status.

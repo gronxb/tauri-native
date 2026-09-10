@@ -11,7 +11,10 @@ import { assertOriginalDocument, verifyRetainedView } from './retained/view-scen
 import { acquireMobileTest } from '../../cli/test/runtime/mobile-lock.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
-const expo = process.argv[3] === '--expo';
+const flags = new Set(process.argv.slice(3));
+assert([...flags].every(flag => ['--expo', '--native-project'].includes(flag)), 'Unknown native gate option');
+const expo = flags.has('--expo');
+const nativeProject = flags.has('--native-project');
 const artifact = path.resolve(process.argv[2] ?? path.join(root, 'target/retained-ios-portability/exported-runtime'));
 const manifest = readRetainedArtifacts(artifact);
 assert(manifest.platform === 'ios' && manifest.profile === 'release');
@@ -19,11 +22,11 @@ assert.equal(manifest.bootstrap.applicationId, 'dev.taurinative.mobilefieldnotes
 assert(manifest.native.some(slice => slice.variant === 'simulator' && slice.architectures.includes('arm64')), 'This gate requires an arm64 Simulator slice');
 const device = process.env.IOS_SIMULATOR_UDID;
 assert(device, 'Choose an arm64 IOS_SIMULATOR_UDID');
-const evidence = path.join(root, expo ? 'target/react-retained-expo-ios' : 'target/react-retained-ios');
+const evidence = path.join(root, (expo ? 'target/react-retained-expo-ios' : 'target/react-retained-ios') + (nativeProject ? '-native-project' : ''));
 const consumer = path.join(evidence, 'source free consumer');
 const renderer = path.join(consumer, 'renderer');
-const generated = path.join(expo ? renderer : consumer, 'composed application');
-const ios = path.join(generated, 'ios');
+const generated = nativeProject ? path.join(renderer, 'ios') : path.join(expo ? renderer : consumer, 'composed application');
+const ios = nativeProject ? generated : path.join(generated, 'ios');
 const appId = manifest.bootstrap.applicationId;
 const env: NodeJS.ProcessEnv = { ...process.env, NODE_OPTIONS: '', ...(expo ? { NODE_ENV: 'production' } : {}) };
 const buildEnv = { ...env, PATH: `${expo ? path.dirname(process.execPath) + ':' : ''}/usr/bin:/bin:/usr/sbin:/sbin` };
@@ -120,7 +123,7 @@ try {
   const { composeIos } = createRequire(path.join(consumer, 'consumer.cjs'))(path.join(sdk, 'compose.js'));
   const { readRetainedArtifacts: packedReader } = createRequire(path.join(consumer, 'consumer.cjs'))(path.join(sdk, 'retained-artifacts.js'));
   assert.deepEqual(packedReader(copied), manifest);
-  const options = { artifactsDir: copied, outputDir: generated, rendererDir: renderer, moduleName: expo ? 'main' : 'RetainedFieldnotes', bundleFile: bundle, expo };
+  const options = { artifactsDir: copied, outputDir: generated, rendererDir: renderer, moduleName: expo ? 'main' : 'RetainedFieldnotes', bundleFile: bundle, expo, ...(nativeProject ? { layout: 'native-project' } : {}) };
   const composition = composeIos(options); assert.equal(composition.changed, true);
   assert.equal(composeIos(options).changed, false);
   const receipt = JSON.parse(readFileSync(path.join(generated, 'tauri-native-composition.json'), 'utf8'));
@@ -280,7 +283,7 @@ try {
   assert.deepEqual(readRetainedArtifacts(artifact), manifest);
   assert(!existsSync(path.join(consumer, 'src-tauri')));
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform: 'ios', profile: 'release', formatVersion: 2, abiVersion: 3,
-    renderer: 'React Native/codegen 0.86.3 / Hermes / generated TurboModule and Fabric', architectures: ['arm64'], expo, sourceFree: true, sourceFreeBuild: `PATH=${buildEnv.PATH} xcodebuild -configuration release -sdk iphonesimulator`,
+    renderer: 'React Native/codegen 0.86.3 / Hermes / generated TurboModule and Fabric', architectures: ['arm64'], expo, layout: nativeProject ? 'native-project' : 'container', sourceFree: true, sourceFreeBuild: `PATH=${buildEnv.PATH} xcodebuild -configuration release -sdk iphonesimulator`,
     packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-react-native-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
     binarySha256: acceptanceBinarySha256, composition: receipt, podIntegration, defaultIntegration, coldIntegration, coldRemount, coldRemounted, delayedStartup, activityRouting, bundleSha256: sha256(readFileSync(bundle)), baseline, denied, permissionRetired, saved, remounted, viewIntegration, closed, notes, expoPermissions, expoDefaultPermissions,
     uiScenarios: ['original Tauri document embedded without replacement or reload', 'original frontend and RN share real notes/events/ACL', 'competing view rejected without detaching the first', 'component remount and engine replacement restore the original WebView and native clients', 'shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'renderer retirement during pending OS permission prevents the old continuation save', 'undeclared session preserves original caller_denied code/message', 'save and event', 'background deep link and event', 'RN Linking exact URL once per invocation including repeated identical URLs', 'URL during delayed renderer startup stays an event and does not become the initial URL', 'injected native browsing/unrelated activity preserves Tauri return values and does not duplicate restoration callbacks', 'cold URL reaches getInitialURL across renderer replacement and a later foreground URL event', 'original AppDelegate URL callbacks restored after RN removal', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'removing RN terminates its JS thread and preserves the independent original Tauri frontend'],

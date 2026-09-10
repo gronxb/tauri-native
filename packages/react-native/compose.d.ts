@@ -3,6 +3,8 @@ export interface AndroidCompositionOptions {
   artifactsDir: string;
   /** Generated consumer directory, separate from the input and renderer sources. */
   outputDir: string;
+  /** Write the native project directly into outputDir, such as rendererDir/ios or /android. */
+  layout?: 'native-project';
   /** Consumer JS project with installed React Native/codegen 0.86.3. */
   rendererDir: string;
   moduleName: string;
