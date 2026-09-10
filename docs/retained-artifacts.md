@@ -2,6 +2,10 @@
 
 The experimental retained export preserves the ordinary Tauri application and its platform bootstrap. The producer keeps its original commands, Builder/setup, state, frontend and native plugins. The generated integration lives in a disposable copy. iOS and Android exports currently support Tauri 2.11.5, CLI 2.11.4, tauri-runtime-wry 2.11.4 and Wry 0.55.1, with geolocation 2.3.3 and deep-link 2.4.10 as the verified external native plugins.
 
+See the [verified support matrix](retained-support.md) for original and composed
+execution, native dependencies and remaining lifecycle limits. Moving from the
+limited adapter requires [re-export and retained composition](migration.md#moving-to-retained-tauri-mobile).
+
 ## Export and consume
 
 Install the ordinary producer's dependencies and mobile toolchain first. Define a separate caller policy; for example:
@@ -28,7 +32,7 @@ tauri-native export android --runtime retained \
 tauri-native doctor --artifacts ../artifacts/retained-android --platform android
 ```
 
-Omitting `--debug` selects a Release Rust build; omitting `--targets` selects all four Android targets. Completed native execution evidence currently covers **arm64 Debug on an iOS Simulator and a 16 KB Android emulator**. Export-time ELF checks apply to every selected slice, but do not certify Release behavior or unexecuted architectures.
+Omitting `--debug` selects a Release Rust build; omitting `--targets` selects all four Android targets. Completed native execution covers arm64 Debug and Release on an iOS Simulator and a 16 KB Android emulator. All selected slices undergo export-time checks; execution and physical-device evidence remain separate, as recorded below.
 
 The result contains `android/`, a complete native Tauri project with its original Activity/Wry bootstrap, precompiled JNI library and copied relative Tauri/plugin Gradle dependencies. It also contains `manifest.json`, `callers.json`, the command model/bindings, the runtime header and package-owned `RuntimeSession.java`. The frontend and capabilities stay embedded by the ordinary Tauri build. Gradle no longer contains a Rust build task. Native libraries retain the original application library name; the original Tauri bootstrap loads it once.
 
@@ -52,13 +56,13 @@ tauri-native export ios --runtime retained \
 tauri-native doctor --artifacts ../artifacts/retained-ios --platform ios
 ```
 
-Omitting `--targets` selects device arm64 plus simulator arm64/x86_64; omitting `--debug` selects Release. The completed execution currently covers simulator arm64 Debug. The output contains the original Tauri Xcode project, Info.plist/entitlements/resources, `TauriNativeRuntime.xcframework` and `TNRuntimeSession.h/.mm`. The XCFramework carries actual Tauri startup and the native Swift geolocation implementation. Deep-link uses the original Tauri iOS lifecycle. The exported Xcode target has no Rust build phase or producer source dependency.
+Omitting `--targets` selects device arm64 plus simulator arm64/x86_64; omitting `--debug` selects Release. Completed execution covers simulator arm64 Debug and Release; the other slices have separate link evidence below. The output contains the original Tauri Xcode project, Info.plist/entitlements/resources, `TauriNativeRuntime.xcframework` and `TNRuntimeSession.h/.mm`. The XCFramework carries actual Tauri startup and the native Swift geolocation implementation. Deep-link uses the original Tauri iOS lifecycle. The exported Xcode target has no Rust build phase or producer source dependency.
 
 Copy `ios/` into the consumer workspace and build its original project/scheme with Xcode. Project and target names are recorded in `manifest.json`; retain their original startup and native declarations. Simulator acceptance builds with `CODE_SIGNING_ALLOWED=NO`; device distribution requires ordinary app signing. This native build needs Xcode, without producer sources, Cargo or Node. Package-owned RN/Expo/Lynx integration remains tracked separately.
 
 ## Format and current limits
 
-Format **2 / ABI 3** explicitly records retained bootstrap ownership, application identity, runtime/plugin versions, native slices, source/policy fingerprints and every artifact file checksum. Existing format **1 / ABI 0–2** artifacts retain their limited-adapter contract. Existing host package readers reject format 2; changing a receipt's version cannot migrate the native integration.
+Format **2 / ABI 3** explicitly records retained bootstrap ownership, application identity, runtime/plugin versions, native slices, source/policy fingerprints and every artifact file checksum. Existing format **1 / ABI 0–2** artifacts retain their limited-adapter contract. Adapter readers reject format 2; use the SDK's explicit `retained-artifacts` and retained composer entries. Changing a receipt's version cannot migrate the native integration.
 
 The Node-only reader and `doctor --artifacts` verify receipt integrity without Rust, and diagnose incompatible versions, missing/changed files, links, bootstrap mismatch and caller-policy receipt changes before integration. Export additionally validates ELF architecture, API 24, required C/JNI symbols, system dependencies and 16 KB load alignment. iOS additionally checks XCFramework platforms/architectures, exported C ABI and original startup symbols, plus the Swift geolocation entry point when selected. Publication preserves the previous output on failure. Mobile exports serialize by application identity because the upstream CLI shares its options file across platforms.
 

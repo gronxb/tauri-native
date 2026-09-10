@@ -21,7 +21,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 1. Package/register a representative Swift plugin and Kotlin plugin using the upstream plugin contract.
 2. Preserve plugin setup and configuration, permission requests/results, Activity/UIApplication callbacks, deep links, background/resume and native resource cleanup.
 3. Carry Tauri capabilities and scopes for frontend and direct native callers; do not grant a wildcard to make integration work.
-4. Document a verified plugin support matrix and reject unsupported platform dependencies or manifest conflicts before publishing an export.
+4. Document a verified plugin support matrix and reject unsupported platform dependencies or manifest conflicts before publishing an export. Resolve the selected mobile dependency graph before diagnosing a desktop-only plugin; the current whole-lockfile check is conservative and must not require removing a producer's valid desktop dependency.
 
 ## Meaningful verification
 
@@ -34,9 +34,17 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 
 ## Acceptance
 
-- [ ] Real Swift/Kotlin implementations pass on standalone and composed iOS/Android.
-- [ ] Tauri ACL and OS permissions are independently verified.
+- [x] Real Swift/Kotlin implementations pass on standalone and composed iOS/Android.
+- [x] Tauri ACL and OS permissions are independently verified.
 - [ ] Lifecycle and native dependency requirements are explicit and reproducible.
+
+The first two items are satisfied for geolocation 2.3.3 and deep-link 2.4.10,
+using the original standalone gates and packed RN/Lynx Release gates linked in
+the [verified support matrix](../docs/retained-support.md). The
+[evidence audit](../docs/evidence/retained-support-audit-2026-09-11.json) checks
+their common producer hashes and assertion-bearing results. Activity recreation,
+broader native lifecycle/source forms and target-specific plugin dependency
+selection remain open; this does not close the issue or establish release parity.
 
 ## Scope and constraints
 

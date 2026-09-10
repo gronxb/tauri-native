@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: TODO
+- Status: IN PROGRESS — recorded six-mobile/desktop feature evidence and package-only consumers are audited; retained CI and full lifecycle/device/adoption gates remain open.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#43](https://github.com/gronxb/tauri-native/issues/43) (plan 019), [#45](https://github.com/gronxb/tauri-native/issues/45) (plan 021), [#46](https://github.com/gronxb/tauri-native/issues/46) (plan 022)
@@ -33,9 +33,23 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 
 ## Acceptance
 
-- [ ] Six mobile executions and standalone desktop regression have assertion-bearing evidence.
-- [ ] Package-only consumers need no producer source or Rust.
+- [x] Six mobile executions and standalone desktop regression have assertion-bearing evidence.
+- [x] Package-only consumers need no producer source or Rust.
 - [ ] No full mobile-composition release claim precedes the new gates.
+
+The [support matrix](../docs/retained-support.md) maps the original iOS/Android
+and four packed RN/Lynx executions to exact native evidence. The
+[read-only audit](../docs/evidence/retained-support-audit-2026-09-11.json) verifies
+their ten common runtime scenarios, State/setup results, real location-note
+outcomes, separate ACL/OS denial and unchanged fourteen-file producer. Packed
+composed consumers built without producer source/Rust and executed default
+package-owned startup as well as the instrumented acceptance layout.
+
+These are recorded per-stage executions, not a new CI run or a completed final
+parity gate. Activity recreation, broader navigation/lifecycle coverage,
+transferred-package CI at one validated revision, physical devices and two
+independent adopters remain required. The [migration guide](../docs/migration.md#moving-to-retained-tauri-mobile)
+documents format 2 composition and removing the addon without producer edits.
 
 ## Scope and constraints
 

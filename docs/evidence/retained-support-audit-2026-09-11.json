@@ -1,0 +1,141 @@
+{
+  "passed": true,
+  "recordedAt": "2026-09-10T23:11:14.323374+00:00",
+  "baseCommit": "b2b7f01139aadd1c5babdd2bb70bc25e069e2570",
+  "scope": "Read-only audit of previously recorded native executions and current authored producer bytes. No new native run, transferred-package CI, physical-device or independent-adopter claim.",
+  "sourceHashes": {
+    "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+    "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+  },
+  "authoredProducerFilesUnchanged": 14,
+  "baseline": {
+    "passed": true,
+    "reloaded": true,
+    "scenarios": [
+      "setup",
+      "state",
+      "app-handle",
+      "async",
+      "rust-event",
+      "plugin-setup",
+      "plugin-allowed",
+      "plugin-denied",
+      "domain-error",
+      "reload"
+    ],
+    "state": {
+      "appIdentifier": "dev.taurinative.mobilefieldnotes",
+      "pluginSetupCount": 1,
+      "setupCount": 1,
+      "value": 45
+    }
+  },
+  "mobileRows": [
+    {
+      "application": "standalone Tauri",
+      "platform": "ios",
+      "evidence": "tauri-mobile-fieldnotes-ios-2026-09-09.json",
+      "baselineMatches": true,
+      "separateAclAndOsDenial": true,
+      "deniedNotes": 0,
+      "grantedNotes": 1,
+      "relaunchNotesMatch": true
+    },
+    {
+      "application": "standalone Tauri",
+      "platform": "android",
+      "evidence": "tauri-mobile-fieldnotes-android-2026-09-09.json",
+      "baselineMatches": true,
+      "separateAclAndOsDenial": true,
+      "deniedNotes": 0,
+      "grantedNotes": 1,
+      "relaunchNotesMatch": true
+    },
+    {
+      "application": "RN",
+      "platform": "ios",
+      "evidence": "retained-rn-view-2026-09-11.json",
+      "nativeJUnitFlows": 25,
+      "baselineMatches": true,
+      "separateAclAndOsDenial": true,
+      "retirementRuntimeReady": true,
+      "listenersAfterRetirement": 0,
+      "listenersAfterRemoval": 0,
+      "sameProcessAfterRetirement": true,
+      "defaultStartupHasNoAcceptanceOverrides": true
+    },
+    {
+      "application": "RN",
+      "platform": "android",
+      "evidence": "retained-rn-view-2026-09-11.json",
+      "nativeJUnitFlows": 18,
+      "baselineMatches": true,
+      "separateAclAndOsDenial": true,
+      "retirementRuntimeReady": true,
+      "listenersAfterRetirement": 0,
+      "listenersAfterRemoval": 0,
+      "sameProcessAfterRetirement": true,
+      "defaultStartupHasNoAcceptanceOverrides": true
+    },
+    {
+      "application": "Lynx",
+      "platform": "ios",
+      "evidence": "retained-lynx-view-2026-09-11.json",
+      "nativeJUnitFlows": 17,
+      "baselineMatches": true,
+      "separateAclAndOsDenial": true,
+      "retirementRuntimeReady": true,
+      "listenersAfterRetirement": 0,
+      "listenersAfterRemoval": 0,
+      "sameProcessAfterRetirement": true,
+      "defaultStartupHasNoAcceptanceOverrides": true
+    },
+    {
+      "application": "Lynx",
+      "platform": "android",
+      "evidence": "retained-lynx-view-2026-09-11.json",
+      "nativeJUnitFlows": 17,
+      "baselineMatches": true,
+      "separateAclAndOsDenial": true,
+      "retirementRuntimeReady": true,
+      "listenersAfterRetirement": 0,
+      "listenersAfterRemoval": 0,
+      "sameProcessAfterRetirement": true,
+      "defaultStartupHasNoAcceptanceOverrides": true
+    }
+  ],
+  "evidenceSha256": {
+    "tauri-mobile-fieldnotes-desktop-2026-09-09.json": "cbf3f4e3d1523da4aef47a99a107c29eb4008972b469d0a9734cea41d16fca73",
+    "tauri-mobile-fieldnotes-ios-2026-09-09.json": "37dd9c61d1dc486e440cecdfa5611386a3e85b1e152692ce9d494a2201d0da6e",
+    "tauri-mobile-fieldnotes-android-2026-09-09.json": "980fdff4c9650d3a3f4ac047723dbf2040df40b3f1e4a82e658c557e66c7307d",
+    "retained-rn-view-2026-09-11.json": "054979487619c01e929b3943f6aa569d6ea45de6c58f2735bc1101afe774ac6b",
+    "retained-lynx-view-2026-09-11.json": "8299fd840d4a6cf2e504decaf8b49006115e449a12f5fa2f6a0c60d73bcf96e9"
+  },
+  "auditScriptSha256": "b72411497e30128b5f40553da916a57808e0ed2ff1708d193e073d0b2adc712d",
+  "receiptRegression": {
+    "command": "node --experimental-strip-types --test packages/cli/test/runtime/retained-artifacts.test.ts",
+    "tests": 7,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "logSha256": "fc25b8bf24deaf261470813cf1826e9035857f876544a7e87708cdaeaf679f9b"
+  },
+  "remaining": [
+    "Activity recreation and broader navigation/lifecycle/source forms",
+    "Target-specific plugin dependency selection instead of the conservative Cargo.lock allowlist",
+    "Full transferred-package parity and required retained CI",
+    "Physical-device execution and two independent adopters"
+  ]
+}

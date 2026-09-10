@@ -1,0 +1,97 @@
+# Retained Tauri support and evidence
+
+The retained path is an addon to an ordinary Tauri application. The producer
+keeps its Rust, frontend, configuration, capabilities and plugin sources. Export
+and renderer composition modify disposable copies. The consuming app adds the
+renderer, its dependencies and generated native integration; it still starts
+the original Tauri application once. Removing that consuming layer leaves the
+ordinary producer runnable. CLI installation can change the producer's JS
+package metadata and lockfile, as allowed by the roadmap.
+
+This matrix describes the checked-in development implementation and its recorded
+executions. It does not extend the published limited adapter's compatibility
+contract. Use the [format 2 migration](migration.md#moving-to-retained-tauri-mobile)
+and [artifact guide](retained-artifacts.md) with matching packed development
+packages.
+
+## Verified plugin behavior
+
+| Plugin | iOS implementation | Android implementation | Verified actions and limits |
+| --- | --- | --- | --- |
+| `tauri-plugin-geolocation` 2.3.3 | Original Swift plugin in the Tauri runtime archive | Original Kotlin plugin and its copied Gradle project | Check/request location permission, actual OS denial and later grant, current position and location-note persistence. Tauri ACL denies location watch; allowed watch/channel streaming is not established. |
+| `tauri-plugin-deep-link` 2.4.10 | Original Tauri application URL lifecycle | Original Tauri Activity and Kotlin plugin | Configured custom scheme, current URL, background/resume delivery and an original Rust event. Associated-domain Universal Links and Android verified App Links remain separate acceptance. |
+| Fixture's Rust `runtime-probe` plugin | Original Tauri Builder registration | Original Tauri Builder registration | Setup once, an allowed command and capability denial before its side effect. This is application-owned Rust plugin evidence, not arbitrary external native plugin support. |
+
+The original local WebView's Tauri authority remains in force. A direct native
+session additionally needs an exact grant in `callers.json`; delegation does not
+grant the corresponding Tauri permission or the OS location permission. Denial
+at each layer is exercised separately. No wildcard is added for composition.
+
+## Recorded mobile executions
+
+Every row uses the same ordinary location-note producer and original frontend.
+Each baseline reports State value 45 and application/plugin setup counts of one.
+The standalone rows use the ordinary Tauri CLI. Composed rows use packed SDKs,
+source-free artifacts and package-owned startup, including a second app with
+unmodified generated startup and no native acceptance subclass.
+
+| Application | Native execution | Plugin/permission evidence |
+| --- | --- | --- |
+| Standalone Tauri iOS | arm64 Simulator, Debug | [Original Swift permission UI, position, deep link and relaunch persistence](evidence/tauri-mobile-fieldnotes-ios-2026-09-09.json) |
+| Standalone Tauri Android | arm64 16 KB emulator, Debug | [Original Kotlin permission UI, position, deep link and relaunch persistence](evidence/tauri-mobile-fieldnotes-android-2026-09-09.json) |
+| RN iOS | arm64 Simulator, Release; 25 UI flows | [Original plugins, view identity, pending permission retirement, Linking and teardown](evidence/retained-rn-view-2026-09-11.json) |
+| RN Android | arm64 16 KB emulator, Release/R8; 18 UI flows | [Original plugins, view identity, pending permission retirement, BackHandler and teardown](evidence/retained-rn-view-2026-09-11.json) |
+| Lynx iOS | arm64 Simulator, Release; 17 UI flows | [Original plugins, view identity, pending permission retirement and teardown](evidence/retained-lynx-view-2026-09-11.json) |
+| Lynx Android | arm64 16 KB emulator, Release/R8; 17 UI flows | [Original plugins, view identity, pending permission retirement and teardown](evidence/retained-lynx-view-2026-09-11.json) |
+| Expo iOS / Android | arm64 Release; 34 / 32 UI flows | [Actual Expo prebuild/config plugins and native modules under retained Tauri ownership](evidence/retained-expo-cng-2026-09-11.json) |
+
+The [standalone macOS baseline](evidence/tauri-mobile-fieldnotes-desktop-2026-09-09.json)
+records ten original runtime scenarios; it makes no mobile permission claim.
+The [audit](evidence/retained-support-audit-2026-09-11.json) compares recorded
+baseline, permission, teardown and authored-source results. It is a review of
+these executions, not another native run or a completed release parity gate.
+
+For all four RN/Lynx rows, retiring the renderer during an actual OS permission
+dialog leaves Tauri ready, removes its native listeners and prevents the old
+continuation from saving a sentinel note. The new renderer observes the grant
+and saves a location note. iOS denial-to-grant resets privacy and relaunches;
+the subsequent retirement/grant/background/removal sequence preserves one
+process. The evidence does not count callbacks into an already destroyed JS
+runtime. See the [permission-retirement record](evidence/retained-sdk-permission-retirement-2026-09-11.json).
+
+## Native ownership and dependencies
+
+| Layer | Required contract |
+| --- | --- |
+| Exported Tauri runtime | Tauri 2.11.5, CLI 2.11.4, tauri-runtime-wry 2.11.4, Wry 0.55.1; format 2 / ABI 3; immutable complete receipt. |
+| iOS | Original Tauri bootstrap/AppDelegate, Xcode project, usage descriptions, schemes, resources and runtime archive. Build a generated copy with Xcode/CocoaPods. Device distribution still needs ordinary signing. |
+| Android | Original Tauri/Wry Activity chain, native plugin projects, Manifest declarations and JNI libraries. Build a generated copy with Android SDK/JDK/Gradle; packaged ELF and APK alignment checks remain required. |
+| RN | RN/codegen 0.86.3 and Hermes 250829098.0.17. Consumer iOS minimum is at least 16.4; the producer's minimum stays unchanged. See the [RN integration guide](../packages/react-native/RETAINED.md). |
+| Lynx | Lynx 4.0.1 / PrimJS 4.0.0 and the original Tauri native client. Consumer iOS minimum is at least 14.0 and preserves higher authored targets. See the [Lynx integration guide](../packages/lynx/RETAINED.md). |
+| Expo | Expo 57.0.19, CLI 57.0.21, config/config-plugins 57.0.9 and prebuild-config 57.0.15, plus the RN requirements. Use `tauri-native-prebuild` with the retained plugin first. |
+
+The native gates are serial: their application identity and Maestro driver are
+shared. Reproduction commands and tool versions are in each evidence file and
+the [runtime test guide](../packages/cli/test/runtime/README.md). Compilation of
+other slices does not establish execution on those architectures or devices.
+
+## Diagnosed boundaries and remaining acceptance
+
+Export currently checks every `tauri-plugin-*` package in `Cargo.lock` against
+the two verified external versions above. An unverified package fails with its
+exact name/version and a reminder that desktop-only plugins retain upstream
+restrictions. This check is conservative: a desktop-only dependency elsewhere
+in the lockfile can also block export. Target-specific dependency selection
+needs its own compatibility proof; do not delete a producer's desktop plugin
+or move its logic into a renderer to work around that limit.
+
+Unsupported native dependency declarations, changed original registrations,
+conflicting startup owners and edited generated files are rejected. Adding a
+new native plugin requires exporter/dependency support and actual mobile
+execution; editing the allowlist alone is insufficient.
+
+Activity recreation, full navigation/history/rotation behavior, native channel
+streaming and broader source/owner forms remain open. Expo config plugins are
+supported within the [documented native configuration/resource boundary](../packages/react-native/RETAINED.md#expo-config-plugins-and-native-regeneration).
+Required retained CI, transferred-package parity, physical devices and two
+independent adopters remain release work in [plan 023](../plans/023-tauri-mobile-composition-acceptance.md).

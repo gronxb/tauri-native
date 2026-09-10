@@ -34,8 +34,14 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 ## Acceptance
 
 - [ ] Both platform exports contain everything needed by independent consumers.
-- [ ] Old and new artifact modes are explicitly distinguished and migration is documented.
+- [x] Old and new artifact modes are explicitly distinguished and migration is documented.
 - [ ] No producer absolute paths or implicit source rebuilds remain.
+
+The [retained migration guide](../docs/migration.md#moving-to-retained-tauri-mobile)
+now distinguishes format 1 / ABI 0–2 from format 2 / ABI 3 and covers complete
+re-export, caller policy, SDK entry points, native ownership, Expo regeneration
+and rollback/removal. This documents the implemented route; independent
+onboarding and the other export acceptance items remain open.
 
 ## Scope and constraints
 
