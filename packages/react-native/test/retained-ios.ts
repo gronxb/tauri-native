@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -9,12 +9,14 @@ import { readRetainedArtifacts } from '../../../scripts/retained-artifacts.ts';
 import { sha256 } from '../../cli/src/artifacts/files.ts';
 import { assertOriginalDocument, verifyRetainedView } from './retained/view-scenarios.ts';
 import { acquireMobileTest } from '../../cli/test/runtime/mobile-lock.ts';
+import { cngPurpose, configureCng, verifyCng } from './retained/cng-scenarios.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const flags = new Set(process.argv.slice(3));
-assert([...flags].every(flag => ['--expo', '--native-project'].includes(flag)), 'Unknown native gate option');
-const expo = flags.has('--expo');
-const nativeProject = flags.has('--native-project');
+assert([...flags].every(flag => ['--expo', '--native-project', '--cng'].includes(flag)), 'Unknown native gate option');
+const cng = flags.has('--cng');
+const expo = flags.has('--expo') || cng;
+const nativeProject = flags.has('--native-project') || cng;
 const artifact = path.resolve(process.argv[2] ?? path.join(root, 'target/retained-ios-portability/exported-runtime'));
 const manifest = readRetainedArtifacts(artifact);
 assert(manifest.platform === 'ios' && manifest.profile === 'release');
@@ -22,7 +24,7 @@ assert.equal(manifest.bootstrap.applicationId, 'dev.taurinative.mobilefieldnotes
 assert(manifest.native.some(slice => slice.variant === 'simulator' && slice.architectures.includes('arm64')), 'This gate requires an arm64 Simulator slice');
 const device = process.env.IOS_SIMULATOR_UDID;
 assert(device, 'Choose an arm64 IOS_SIMULATOR_UDID');
-const evidence = path.join(root, (expo ? 'target/react-retained-expo-ios' : 'target/react-retained-ios') + (nativeProject ? '-native-project' : ''));
+const evidence = path.join(root, (expo ? 'target/react-retained-expo-ios' : 'target/react-retained-ios') + (cng ? '-cng' : nativeProject ? '-native-project' : ''));
 const consumer = path.join(evidence, 'source free consumer');
 const renderer = path.join(consumer, 'renderer');
 const generated = nativeProject ? path.join(renderer, 'ios') : path.join(expo ? renderer : consumer, 'composed application');
@@ -102,6 +104,11 @@ try {
     const location = path.join(renderer, 'installed-expo-location'); mkdirSync(location);
     run('location-package', 'npm', ['pack', 'expo-location@57.0.15', '--ignore-scripts', '--pack-destination', location]);
     run('location-unpack', 'tar', ['-xzf', 'expo-location-57.0.15.tgz', '--strip-components=1'], location);
+    if (cng) {
+      const requirePrebuild = createRequire(expoRequire.resolve('@expo/prebuild-config/package.json'));
+      mkdirSync(path.join(location, 'node_modules/@expo'), { recursive: true });
+      symlinkSync(path.dirname(requirePrebuild.resolve('@expo/image-utils/package.json')), path.join(location, 'node_modules/@expo/image-utils'), 'dir');
+    }
     for (const name of [...Object.keys(dependencies), 'babel-preset-expo']) {
       const destination = path.join(renderer, 'node_modules', name); mkdirSync(path.dirname(destination), { recursive: true });
       const directory = name === '@tauri-native/react-native' ? sdk : name === 'expo-location' ? location : path.dirname(realpathSync((name.startsWith('expo-') ? expoRequire : exampleRequire).resolve(`${name}/package.json`)));
@@ -124,29 +131,36 @@ try {
   const { readRetainedArtifacts: packedReader } = createRequire(path.join(consumer, 'consumer.cjs'))(path.join(sdk, 'retained-artifacts.js'));
   assert.deepEqual(packedReader(copied), manifest);
   const options = { artifactsDir: copied, outputDir: generated, rendererDir: renderer, moduleName: expo ? 'main' : 'RetainedFieldnotes', bundleFile: bundle, expo, ...(nativeProject ? { layout: 'native-project' } : {}) };
-  const composition = composeIos(options); assert.equal(composition.changed, true);
-  assert.equal(composeIos(options).changed, false);
+  if (cng) configureCng(renderer, copied, 'ios', bundle);
+  const cngResult = cng ? await verifyCng(renderer, 'ios', (label, text) => writeFileSync(path.join(evidence, `${label}.log`), text)) : undefined;
+  const composition = cngResult ?? composeIos(options); assert.equal(composition.changed, true);
+  if (!cng) assert.equal(composeIos(options).changed, false);
   const receipt = JSON.parse(readFileSync(path.join(generated, 'tauri-native-composition.json'), 'utf8'));
-  const main = path.join(ios, 'Sources/ordinary-tauri-mobile-fieldnotes/main.mm');
+  const main = path.join(ios, cngResult?.main ?? 'Sources/ordinary-tauri-mobile-fieldnotes/main.mm');
   const generatedMain = readFileSync(main, 'utf8');
   run('pods', 'pod', ['install'], ios);
-  assert.equal(composeIos(options).changed, true, 'Regeneration must accept the recorded CocoaPods project and restore generated inputs');
+  const regenerated = cng ? await createRequire(path.join(renderer, 'package.json'))('@tauri-native/react-native/prebuild').prebuildRetainedExpo({ projectRoot: renderer, platform: 'ios' }) : composeIos(options);
+  assert.equal(regenerated.changed, true, 'Regeneration must accept the recorded CocoaPods project and restore generated inputs');
   run('pods-regenerated', 'pod', ['install'], ios);
   const podIntegration = JSON.parse(readFileSync(path.join(generated, 'tauri-native-composition.json'), 'utf8'));
   cpSync(new URL('./retained/IosAcceptance.mm.fixture', import.meta.url), path.join(path.dirname(main), 'IosAcceptance.mm'));
   if (expo) {
     const file = path.join(path.dirname(main), 'IosAcceptance.mm');
     writeFileSync(file, '#import <Foundation/Foundation.h>\n@protocol TNExpoProbeReading <NSObject>\n+ (id<TNExpoProbeReading>)shared;\n- (NSDictionary *)snapshot;\n@end\n' + readFileSync(file, 'utf8').replace('@"pid": @(NSProcessInfo', '@"expo": [[(Class<TNExpoProbeReading>)NSClassFromString(@"TNExpoProbeState") shared] snapshot],\n    @"pid": @(NSProcessInfo'));
+    if (cng) writeFileSync(file, readFileSync(file, 'utf8').replace('../TauriNativeRuntime/TNRuntimeSession.h', '../Sources/TauriNativeRuntime/TNRuntimeSession.h').replace('@"pid": @(NSProcessInfo', '@"cngProbe": [NSBundle.mainBundle objectForInfoDictionaryKey:@"TauriNativeCNGProbe"],\n    @"pid": @(NSProcessInfo'));
   }
   writeFileSync(main, '#import "IosAcceptance.mm"\n' + generatedMain.replace('[TNReactComposition installWithModule:', '[TNReactAcceptance installWithModule:'));
   const workspace = composition.workspace;
   const derived = path.join(evidence, 'derived-data');
-  run('source-free-build', 'xcodebuild', ['-workspace', workspace, '-scheme', manifest.bootstrap.target, '-configuration', 'release', '-sdk', 'iphonesimulator',
+  const configuration = cng ? 'Release' : 'release';
+  run('source-free-build', 'xcodebuild', ['-workspace', workspace, '-scheme', manifest.bootstrap.target, '-configuration', configuration, '-sdk', 'iphonesimulator',
     '-destination', 'generic/platform=iOS Simulator', '-derivedDataPath', derived, 'ARCHS=arm64', 'CODE_SIGNING_ALLOWED=NO', 'build'], ios, buildEnv);
-  const app = path.join(derived, 'Build/Products/release-iphonesimulator/Tauri Mobile Fieldnotes.app');
+  const products = path.join(derived, `Build/Products/${configuration}-iphonesimulator`);
+  const apps = readdirSync(products).filter(file => file.endsWith('.app')); assert.equal(apps.length, 1);
+  const app = path.join(products, apps[0]!);
   const info = JSON.parse(run('app-info', 'plutil', ['-convert', 'json', '-o', '-', path.join(app, 'Info.plist')]));
   assert.equal(info.MinimumOSVersion, composition.minimumOsVersion);
-  assert.equal(info.NSLocationWhenInUseUsageDescription, 'Attach your current location to a note when you request it.');
+  assert.equal(info.NSLocationWhenInUseUsageDescription, cng ? cngPurpose : 'Attach your current location to a note when you request it.');
   assert(info.CFBundleURLTypes?.some((item: { CFBundleURLSchemes: string[] }) => item.CFBundleURLSchemes.includes('tauri-fieldnotes')));
   run('install', 'xcrun', ['simctl', 'install', device, app]); installed = true;
   const container = run('container', 'xcrun', ['simctl', 'get_app_container', device, appId, 'data']);
@@ -155,6 +169,8 @@ try {
   run('gps', 'xcrun', ['simctl', 'location', device, 'set', '37.5665,126.9780']);
   await launch();
   const baseline = report('runtime-report.json');
+  const cngNativeProbe = cng ? report().cngProbe : undefined;
+  if (cng) assert.equal(cngNativeProbe, 'actual config plugin', 'The installed app must consume the config-plugin Info.plist value');
   flow('initial', '- assertVisible: \"RN 86 Hermes\"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- assertVisible: "RN initial none"\n- assertVisible: "RN URL none"\n- tapOn: "Reject session"\n- assertVisible: "Session caller_denied"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"\n- tapOn: "Check permission"\n- assertVisible: "Permission prompt"');
   if (expo) flow('expo-initial-modules', expoAction('Expo native modules', 'Expo created 1 destroyed 0 URLs 0 activities 0') + '\n' + expoAction('Expo write file', 'Expo file saved') + '\n' + expoAction('Expo app callbacks', 'Expo callbacks once'));
   flow('deny-permission', '- tapOn: "Request permission"\n- tapOn: "(Don.t Allow|허용 안 함)"\n- assertVisible: "Permission denied"\n- tapOn: "Save location"\n- assertVisible: "Location denied"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 0 notes 0 setup 1 plugins 1"\n- assertVisible: "RN events 0"');
@@ -256,7 +272,7 @@ try {
   const acceptanceBinarySha256 = sha256(readFileSync(path.join(app, info.CFBundleExecutable)));
   run('uninstall-acceptance', 'xcrun', ['simctl', 'uninstall', device, appId]); installed = false;
   writeFileSync(main, generatedMain); rmSync(path.join(path.dirname(main), 'IosAcceptance.mm'));
-  run('default-source-free-build', 'xcodebuild', ['-workspace', workspace, '-scheme', manifest.bootstrap.target, '-configuration', 'release', '-sdk', 'iphonesimulator',
+  run('default-source-free-build', 'xcodebuild', ['-workspace', workspace, '-scheme', manifest.bootstrap.target, '-configuration', configuration, '-sdk', 'iphonesimulator',
     '-destination', 'generic/platform=iOS Simulator', '-derivedDataPath', derived, 'ARCHS=arm64', 'CODE_SIGNING_ALLOWED=NO', 'build'], ios, buildEnv);
   run('default-install', 'xcrun', ['simctl', 'install', device, app]); installed = true;
   const defaultContainer = run('default-container', 'xcrun', ['simctl', 'get_app_container', device, appId, 'data']);
@@ -283,7 +299,7 @@ try {
   assert.deepEqual(readRetainedArtifacts(artifact), manifest);
   assert(!existsSync(path.join(consumer, 'src-tauri')));
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform: 'ios', profile: 'release', formatVersion: 2, abiVersion: 3,
-    renderer: 'React Native/codegen 0.86.3 / Hermes / generated TurboModule and Fabric', architectures: ['arm64'], expo, layout: nativeProject ? 'native-project' : 'container', sourceFree: true, sourceFreeBuild: `PATH=${buildEnv.PATH} xcodebuild -configuration release -sdk iphonesimulator`,
+    renderer: 'React Native/codegen 0.86.3 / Hermes / generated TurboModule and Fabric', architectures: ['arm64'], expo, cng: cngResult ? { scenarios: cngResult.generationScenarios, files: cngResult.files, nativeProbe: cngNativeProbe } : false, layout: nativeProject ? 'native-project' : 'container', sourceFree: true, sourceFreeBuild: `PATH=${buildEnv.PATH} xcodebuild -configuration ${configuration} -sdk iphonesimulator`,
     packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-react-native-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
     binarySha256: acceptanceBinarySha256, composition: receipt, podIntegration, defaultIntegration, coldIntegration, coldRemount, coldRemounted, delayedStartup, activityRouting, bundleSha256: sha256(readFileSync(bundle)), baseline, denied, permissionRetired, saved, remounted, viewIntegration, closed, notes, expoPermissions, expoDefaultPermissions,
     uiScenarios: ['original Tauri document embedded without replacement or reload', 'original frontend and RN share real notes/events/ACL', 'competing view rejected without detaching the first', 'component remount and engine replacement restore the original WebView and native clients', 'shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'renderer retirement during pending OS permission prevents the old continuation save', 'undeclared session preserves original caller_denied code/message', 'save and event', 'background deep link and event', 'RN Linking exact URL once per invocation including repeated identical URLs', 'URL during delayed renderer startup stays an event and does not become the initial URL', 'injected native browsing/unrelated activity preserves Tauri return values and does not duplicate restoration callbacks', 'cold URL reaches getInitialURL across renderer replacement and a later foreground URL event', 'original AppDelegate URL callbacks restored after RN removal', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'removing RN terminates its JS thread and preserves the independent original Tauri frontend'],

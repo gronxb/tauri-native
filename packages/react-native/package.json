@@ -30,6 +30,10 @@
     "./compose": {
       "types": "./compose.d.ts",
       "default": "./compose.js"
+    },
+    "./prebuild": {
+      "types": "./prebuild.d.ts",
+      "default": "./prebuild.js"
     }
   },
   "files": [
@@ -62,7 +66,9 @@
     "retained-artifacts.js",
     "retained-artifacts.d.ts",
     "compose.js",
-    "compose.d.ts"
+    "compose.d.ts",
+    "prebuild.js",
+    "prebuild.d.ts"
   ],
   "scripts": {
     "build": "node --experimental-strip-types ../../scripts/sync-host-files.ts react-native && bob build && node retained/copy-component.cjs",
@@ -139,5 +145,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.25.0"
+  },
+  "bin": {
+    "tauri-native-prebuild": "./retained/prebuild.cjs"
   }
 }

@@ -166,6 +166,7 @@ function publishComposition(context, metadata, generate) {
 	if ((0, node_fs.existsSync)(output)) {
 		if (!(0, node_fs.lstatSync)(output).isDirectory() || !(0, node_fs.existsSync)(node_path$1.default.join(output, receiptPath)) || !(0, node_fs.lstatSync)(node_path$1.default.join(output, receiptPath)).isFile()) fail("existing output is not an owned composition directory");
 		const value = JSON.parse(read$1(output, receiptPath));
+		if (value.cng !== void 0) fail("Expo CNG output must be regenerated with tauri-native-prebuild");
 		if (value.formatVersion !== 1 || value.renderer !== renderer || (value.platform ?? "android") !== manifest.platform || value.layout !== layout || !value.files || typeof value.files !== "object" || Array.isArray(value.files)) fail("invalid prior composition receipt");
 		previous = value;
 		for (const [file, digest] of Object.entries(previous.files)) {

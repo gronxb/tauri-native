@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — pinned RN and Expo iOS/Android installed native modules have Release evidence. Expo CNG and broader integration remain open.
+- Status: IN PROGRESS — pinned RN/Expo iOS/Android composition and Expo CNG have Release evidence. Broader lifecycle, source forms and migration remain open.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#41](https://github.com/gronxb/tauri-native/issues/41) (plan 017), [#44](https://github.com/gronxb/tauri-native/issues/44) (plan 020)
@@ -33,7 +33,7 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 
 ## Acceptance
 
-- [x] iOS and Android RN Release executions pass with copied runtime artifacts (packed SDK automatic composition, including unmodified generated startup/default layouts; Expo CNG and broader source forms remain open).
+- [x] iOS and Android RN Release executions pass with copied runtime artifacts (packed SDK automatic composition and Expo CNG, including unmodified generated startup/default layouts; broader lifecycle/source forms remain open).
 - [ ] Ordinary standalone Tauri Mobile remains independently runnable.
 - [ ] Existing limited-adapter users have an explicit migration path.
 
@@ -368,8 +368,8 @@ Remaining Expo sequence:
 
 - [x] Android installed native modules/autolinking, native lifecycle and permission delivery under the retained Tauri owner.
 - [x] iOS Expo native modules and application callbacks under the original Tauri bootstrap/delegate, with Release native execution.
-- [ ] Package-owned Expo CNG/config-plugin integration: clean prebuild recreates both native consumers without producer source edits or Rust.
-- [ ] Clean-prebuild regeneration, configuration conflicts and the same feature in standalone Tauri, RN, Expo and Lynx, with required parity/CI/migration evidence.
+- [x] Package-owned Expo CNG/config-plugin integration: clean prebuild recreates both native consumers without producer source edits or Rust (scoped Release/native proof recorded below).
+- [ ] Cross-renderer feature parity in standalone Tauri, RN, Expo and Lynx, with required parity/CI/migration evidence. CNG regeneration and configuration-conflict scenarios now pass.
 
 App-local codegen, broader native packages/source owners, Activity recreation,
 full navigation/history/back/rotation, OS Universal Link association, physical
@@ -444,3 +444,40 @@ normal/clean regeneration and native execution of the CNG output remain open.
 Broader lifecycle/native-package support, full parity/CI/migration, physical
 devices and independent adopters also remain required. No issue or release gate
 is closed by the directory-layout increment.
+
+## Retained Expo CNG and config plugins (2026-09-11)
+
+`tauri-native-prebuild` and `@tauri-native/react-native/prebuild` now drive the
+installed Expo CLI with a package-owned Tauri custom template. The retained
+config-plugin branch reads portable exports and preserves the original bootstrap,
+OS registrations and native inputs. Generated startup paths follow Expo discovery
+conventions; the authored Tauri producer remains unchanged and independently
+usable. Existing format 1 config-plugin behavior remains available.
+
+The actual packed SDK passes 11 generation scenarios on each platform: normal
+and clean regeneration, real Location/custom config plugins, original plus added
+URL schemes, bundle upgrades, CocoaPods relative/dangling links, source-edit
+rejection, plugin/owner/collision failure rollback, original-registration removal
+rejection and plugin removal/restoration. CocoaPods installation, regeneration
+and a second installation also pass. The first native attempt found a relative
+header-link restoration failure after moving the old project into its backup;
+the SDK now restores link strings directly. That failure remains separate from
+successful evidence.
+
+Release native execution passes 34 iOS and 32 Android UI flows from packed
+128-file SDK payloads. The Android preparation also corrects its renamed Kotlin
+receiver label; it is the sole packed-file difference from the iOS run. Both
+SDK versions generate the same 43 iOS files at one consumer path. The installed apps read actual config-plugin metadata;
+iOS uses the configured OS location purpose and retains original icon pixels.
+Existing state/setup/plugins/ACL, native modules, permission retirement, deep
+links, TauriView remount and renderer removal still pass. Both platforms execute
+a second app with unmodified generated startup and default layouts. Original
+Tauri sources, both artifact copies and native libraries/dependencies remain
+unchanged; Android retains non-debuggable Release/R8 and 16 KB checks.
+Evidence: `docs/evidence/retained-expo-cng-2026-09-11.json` on local `main`,
+not pushed or published.
+
+This completes the scoped package-owned CNG/config-plugin generation and native
+execution stage. Broader native packages and source/lifecycle owners, app-local
+codegen, full navigation/rotation, complete parity/CI/migration, physical devices
+and independent adopters remain required. #45 and release gates remain open.

@@ -22,13 +22,16 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 	enumerable: true
 }) : target, mod));
 //#endregion
+let node_child_process = require("node:child_process");
 let node_fs = require("node:fs");
-let node_module = require("node:module");
 let node_path = require("node:path");
 let node_path$1 = __toESM(node_path, 1);
 node_path = __toESM(node_path);
+let node_stream = require("node:stream");
+let node_stream_promises = require("node:stream/promises");
+let node_zlib = require("node:zlib");
+let node_module = require("node:module");
 let node_crypto = require("node:crypto");
-let node_child_process = require("node:child_process");
 //#region scripts/artifacts.ts
 var ArtifactError = class extends Error {
 	code;
@@ -115,10 +118,10 @@ function readRetainedArtifacts(directory) {
 //#endregion
 //#region scripts/retained-composition.ts
 const hash = (bytes) => (0, node_crypto.createHash)("sha256").update(bytes).digest("hex");
-function read$2(root, file) {
+function read$3(root, file) {
 	return (0, node_fs.readFileSync)(node_path$1.default.join(root, file), "utf8");
 }
-function write$2(root, file, bytes) {
+function write$3(root, file, bytes) {
 	(0, node_fs.mkdirSync)(node_path$1.default.dirname(node_path$1.default.join(root, file)), { recursive: true });
 	(0, node_fs.writeFileSync)(node_path$1.default.join(root, file), bytes);
 }
@@ -150,11 +153,11 @@ function prepareComposition(options, platform, renderer, sdkDirectory) {
 		fail
 	};
 }
-function inventory(root, fail, prefix = "") {
+function inventory$1(root, fail, prefix = "") {
 	const result = {};
 	for (const entry of (0, node_fs.readdirSync)(node_path$1.default.join(root, prefix), { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
 		const file = node_path$1.default.posix.join(prefix, entry.name);
-		if (entry.isDirectory()) Object.assign(result, inventory(root, fail, file));
+		if (entry.isDirectory()) Object.assign(result, inventory$1(root, fail, file));
 		else if (entry.isFile()) result[file] = hash((0, node_fs.readFileSync)(node_path$1.default.join(root, file)));
 		else fail(`generated path must be regular: ${file}`);
 	}
@@ -166,7 +169,7 @@ function publishComposition(context, metadata, generate) {
 	let previous;
 	if ((0, node_fs.existsSync)(output)) {
 		if (!(0, node_fs.lstatSync)(output).isDirectory() || !(0, node_fs.existsSync)(node_path$1.default.join(output, receiptPath)) || !(0, node_fs.lstatSync)(node_path$1.default.join(output, receiptPath)).isFile()) fail("existing output is not an owned composition directory");
-		const value = JSON.parse(read$2(output, receiptPath));
+		const value = JSON.parse(read$3(output, receiptPath));
 		if (value.cng !== void 0) fail("Expo CNG output must be regenerated with tauri-native-prebuild");
 		if (value.formatVersion !== 1 || value.renderer !== renderer || (value.platform ?? "android") !== manifest.platform || value.layout !== layout || !value.files || typeof value.files !== "object" || Array.isArray(value.files)) fail("invalid prior composition receipt");
 		previous = value;
@@ -190,7 +193,7 @@ function publishComposition(context, metadata, generate) {
 		(0, node_fs.cpSync)(node_path$1.default.join(artifact, manifest.platform), node_path$1.default.join(stage, manifest.platform), { recursive: true });
 		generate(stage);
 		if (layout) stage = node_path$1.default.join(stage, manifest.platform);
-		const files = inventory(stage, fail);
+		const files = inventory$1(stage, fail);
 		const receipt = JSON.stringify({
 			formatVersion: 1,
 			renderer,
@@ -199,9 +202,9 @@ function publishComposition(context, metadata, generate) {
 			...layout ? { layout } : {},
 			files
 		}, null, 2) + "\n";
-		write$2(stage, receiptPath, receipt);
+		write$3(stage, receiptPath, receipt);
 		if (JSON.stringify(readRetainedArtifacts(artifact)) !== JSON.stringify(manifest) || !(0, node_fs.readFileSync)(bundle).equals(bundled)) fail("inputs changed during composition");
-		if (previous && read$2(output, receiptPath) === receipt) return false;
+		if (previous && read$3(output, receiptPath) === receipt) return false;
 		if (previous) {
 			const merged = node_path$1.default.join(work, "merged");
 			(0, node_fs.cpSync)(output, merged, { recursive: true });
@@ -358,12 +361,12 @@ function prepareIosProject(context, rendererMinimum) {
 //#region packages/react-native/plugin/retained-expo-android.cts
 const quote = (s) => JSON.stringify(s).replaceAll("$", "\\$");
 const groovy$1 = (s) => `'${s.replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`;
-const read$1 = (root, file) => (0, node_fs.readFileSync)(node_path.default.join(root, file), "utf8");
-function write$1(root, file, value) {
+const read$2 = (root, file) => (0, node_fs.readFileSync)(node_path.default.join(root, file), "utf8");
+function write$2(root, file, value) {
 	(0, node_fs.mkdirSync)(node_path.default.dirname(node_path.default.join(root, file)), { recursive: true });
 	(0, node_fs.writeFileSync)(node_path.default.join(root, file), value);
 }
-function replace(value, from, to) {
+function replace$1(value, from, to) {
 	if (value.split(from).length !== 2) throw new Error(`Retained Expo composition: expected one ${JSON.stringify(from)}`);
 	return value.replace(from, to);
 }
@@ -395,27 +398,27 @@ function prepareExpoAndroid(context) {
 			"app/src/main/jni/CMakeLists.txt",
 			"app/src/main/jni/OnLoad.cpp"
 		]) if ((0, node_fs.existsSync)(node_path.default.join(android, file))) throw new Error(`Retained Expo composition: artifact already owns ${file}`);
-		let activity = read$1(android, source);
-		activity = replace(activity, "open class TauriNativeActivity", "@OptIn(com.facebook.react.common.annotations.UnstableReactNativeAPI::class)\nopen class TauriNativeActivity");
-		activity = replace(activity, "private var retired = false", "private var retired = false\n  private var expo: TauriExpoIntegration? = null");
-		activity = replace(activity, "createReactContainer(webView),", "expo!!.createContainer(createReactContainer(webView)),");
-		activity = replace(activity, "webView, reactPermissions)", "webView, reactPermissions, expo!!.delegate(\"tauri-native-react/index.bundle.js\"), expo!!::prepareHost, expo!!::onBackPressed)");
-		activity = replace(activity, "reactPermissions = TauriReactPermissions(this)", "expo = TauriExpoIntegration(this)\n    reactPermissions = TauriReactPermissions(this)");
-		activity = replace(activity, "super.onCreate(savedInstanceState)", "super.onCreate(savedInstanceState)\n    expo!!.onCreate(savedInstanceState)");
-		activity = replace(activity, "tauriReactHost?.onResume() }", "tauriReactHost?.onResume(); expo?.onResume() }");
-		activity = replace(activity, "override fun onPause() {", "override fun onPause() { expo?.onPause();");
-		activity = replace(activity, "super.onNewIntent(intent);", "super.onNewIntent(intent); expo?.onNewIntent(intent);");
-		activity = replace(activity, "retired = true;", "expo?.onDestroy()\n    retired = true;");
-		activity = replace(activity, "  override fun onDestroy() {", `  override fun onContentChanged() { super.onContentChanged(); expo?.onContentChanged() }
+		let activity = read$2(android, source);
+		activity = replace$1(activity, "open class TauriNativeActivity", "@OptIn(com.facebook.react.common.annotations.UnstableReactNativeAPI::class)\nopen class TauriNativeActivity");
+		activity = replace$1(activity, "private var retired = false", "private var retired = false\n  private var expo: TauriExpoIntegration? = null");
+		activity = replace$1(activity, "createReactContainer(webView),", "expo!!.createContainer(createReactContainer(webView)),");
+		activity = replace$1(activity, "webView, reactPermissions)", "webView, reactPermissions, expo!!.delegate(\"tauri-native-react/index.bundle.js\"), expo!!::prepareHost, expo!!::onBackPressed)");
+		activity = replace$1(activity, "reactPermissions = TauriReactPermissions(this)", "expo = TauriExpoIntegration(this)\n    reactPermissions = TauriReactPermissions(this)");
+		activity = replace$1(activity, "super.onCreate(savedInstanceState)", "super.onCreate(savedInstanceState)\n    expo!!.onCreate(savedInstanceState)");
+		activity = replace$1(activity, "tauriReactHost?.onResume() }", "tauriReactHost?.onResume(); expo?.onResume() }");
+		activity = replace$1(activity, "override fun onPause() {", "override fun onPause() { expo?.onPause();");
+		activity = replace$1(activity, "super.onNewIntent(intent);", "super.onNewIntent(intent); expo?.onNewIntent(intent);");
+		activity = replace$1(activity, "retired = true;", "expo?.onDestroy()\n    retired = true;");
+		activity = replace$1(activity, "  override fun onDestroy() {", `  override fun onContentChanged() { super.onContentChanged(); expo?.onContentChanged() }
   override fun onUserLeaveHint() { super.onUserLeaveHint(); expo?.onUserLeaveHint() }
   override fun onKeyDown(code: Int, event: android.view.KeyEvent?): Boolean = expo?.onKeyDown(code, event) == true || super.onKeyDown(code, event)
   override fun onKeyUp(code: Int, event: android.view.KeyEvent): Boolean = expo?.onKeyUp(code, event) == true || super.onKeyUp(code, event)
   override fun onKeyLongPress(code: Int, event: android.view.KeyEvent?): Boolean = expo?.onKeyLongPress(code, event) == true || super.onKeyLongPress(code, event)
   override fun onDestroy() {`);
-		write$1(android, source, activity);
-		write$1(android, source.replace("TauriNativeActivity.kt", "TauriExpoIntegration.kt"), read$1(sdk, "retained/android/TauriExpoIntegration.kt.template").replaceAll("__APPLICATION_ID__", appId));
-		write$1(android, "app/src/main/AndroidManifest.xml", replace(read$1(android, "app/src/main/AndroidManifest.xml"), "<application", `<application android:name="${appId}.TauriNativeApplication"`));
-		write$1(android, "settings.gradle", `pluginManagement {
+		write$2(android, source, activity);
+		write$2(android, source.replace("TauriNativeActivity.kt", "TauriExpoIntegration.kt"), read$2(sdk, "retained/android/TauriExpoIntegration.kt.template").replaceAll("__APPLICATION_ID__", appId));
+		write$2(android, "app/src/main/AndroidManifest.xml", replace$1(read$2(android, "app/src/main/AndroidManifest.xml"), "<application", `<application android:name="${appId}.TauriNativeApplication"`));
+		write$2(android, "settings.gradle", `pluginManagement {
   includeBuild(new File(settingsDir, ${groovy$1(relative(rngp))}).canonicalPath)
   includeBuild(new File(settingsDir, ${groovy$1(relative(expoGradle))}).canonicalPath)
 }
@@ -428,13 +431,13 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
 }
 expoAutolinking.useExpoModules()
 expoAutolinking.useExpoVersionCatalog()
-${read$1(android, "settings.gradle")}
+${read$2(android, "settings.gradle")}
 includeBuild(new File(settingsDir, ${groovy$1(relative(rngp))}))
 `);
-		let root = read$1(android, "build.gradle.kts");
-		root = replace(root, "com.android.tools.build:gradle:8.11.0", "com.android.tools.build:gradle:8.12.0");
-		root = replace(root, "classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20\")", "classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")");
-		write$1(android, "build.gradle.kts", root + `
+		let root = read$2(android, "build.gradle.kts");
+		root = replace$1(root, "com.android.tools.build:gradle:8.11.0", "com.android.tools.build:gradle:8.12.0");
+		root = replace$1(root, "classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20\")", "classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")");
+		write$2(android, "build.gradle.kts", root + `
 extra["tauriNativeAutolinking"] = true
 // Keep original Tauri projects' paired Java/Kotlin targets. RN 0.86 otherwise changes only their Java target to 17.
 subprojects {
@@ -445,9 +448,9 @@ subprojects {
 apply(plugin = "expo-root-project")
 apply(plugin = "com.facebook.react.rootproject")
 `);
-		let app = read$1(android, "app/build.gradle.kts");
-		app = replace(app, "id(\"org.jetbrains.kotlin.android\")", "id(\"org.jetbrains.kotlin.android\")\n    id(\"com.facebook.react\")");
-		app = replace(app, "jvmTarget = \"1.8\"", "jvmTarget = \"17\"");
+		let app = read$2(android, "app/build.gradle.kts");
+		app = replace$1(app, "id(\"org.jetbrains.kotlin.android\")", "id(\"org.jetbrains.kotlin.android\")\n    id(\"com.facebook.react\")");
+		app = replace$1(app, "jvmTarget = \"1.8\"", "jvmTarget = \"17\"");
 		app += `
 react {
   root.set(rootProject.file(${quote(relative(renderer))}))
@@ -466,9 +469,9 @@ android {
 }
 tasks.matching { it.name.startsWith("configureCMake") }.configureEach { dependsOn(":tauri-native-react:generateRetainedCode") }
 `;
-		write$1(android, "app/build.gradle.kts", app);
-		write$1(android, "gradle.properties", read$1(android, "gradle.properties") + `\nnewArchEnabled=true\nhermesEnabled=true\nreactNativeArchitectures=${context.manifest.native.map((slice) => slice.abi).join(",")}\n`);
-		for (const file of ["CMakeLists.txt", "OnLoad.cpp"]) write$1(android, `app/src/main/jni/${file}`, read$1(sdk, `retained/android/autolinking/${file}`));
+		write$2(android, "app/build.gradle.kts", app);
+		write$2(android, "gradle.properties", read$2(android, "gradle.properties") + `\nnewArchEnabled=true\nhermesEnabled=true\nreactNativeArchitectures=${context.manifest.native.map((slice) => slice.abi).join(",")}\n`);
+		for (const file of ["CMakeLists.txt", "OnLoad.cpp"]) write$2(android, `app/src/main/jni/${file}`, read$2(sdk, `retained/android/autolinking/${file}`));
 	};
 }
 //#endregion
@@ -518,29 +521,29 @@ process.stdout.write(JSON.stringify(config));
 //#region packages/react-native/plugin/retained-compose.cts
 const kotlin = (value) => JSON.stringify(value).replaceAll("$", "\\$");
 const groovy = (value) => `'${value.replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`;
-function fail(message) {
+function fail$1(message) {
 	throw new Error(`Retained RN composition: ${message}`);
 }
-function read(root, file) {
+function read$1(root, file) {
 	return (0, node_fs.readFileSync)(node_path.default.join(root, file), "utf8");
 }
-function write(root, file, bytes) {
+function write$1(root, file, bytes) {
 	(0, node_fs.mkdirSync)(node_path.default.dirname(node_path.default.join(root, file)), { recursive: true });
 	(0, node_fs.writeFileSync)(node_path.default.join(root, file), bytes);
 }
 function replaceOnce(value, from, to, description) {
-	if (value.split(from).length !== 2) fail(`unsupported ${description}; expected one ${JSON.stringify(from)}`);
+	if (value.split(from).length !== 2) fail$1(`unsupported ${description}; expected one ${JSON.stringify(from)}`);
 	return value.replace(from, to);
 }
 function compositionInputs(options, platform) {
 	const context = prepareComposition(options, platform, "react-native", __dirname);
 	const renderer = (0, node_fs.realpathSync)(options.rendererDir);
-	if (renderer === context.output || renderer.startsWith(context.output + node_path.default.sep)) fail("output must be separate from the artifact and SDK, and must not contain the renderer or bundle");
-	if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(options.moduleName)) fail("moduleName must be an AppRegistry identifier");
+	if (renderer === context.output || renderer.startsWith(context.output + node_path.default.sep)) fail$1("output must be separate from the artifact and SDK, and must not contain the renderer or bundle");
+	if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(options.moduleName)) fail$1("moduleName must be an AppRegistry identifier");
 	const requireRenderer = (0, node_module.createRequire)(node_path.default.join(renderer, "package.json"));
 	const rn = (0, node_fs.realpathSync)(node_path.default.dirname(requireRenderer.resolve("react-native/package.json")));
 	const codegen = (0, node_fs.realpathSync)(node_path.default.dirname((0, node_module.createRequire)(node_path.default.join(rn, "package.json")).resolve("@react-native/codegen/package.json")));
-	if ([rn, codegen].some((dir) => JSON.parse(read(dir, "package.json")).version !== "0.86.3")) fail("React Native and codegen must both be 0.86.3");
+	if ([rn, codegen].some((dir) => JSON.parse(read$1(dir, "package.json")).version !== "0.86.3")) fail$1("React Native and codegen must both be 0.86.3");
 	return {
 		...context,
 		rendererDirectory: renderer,
@@ -552,32 +555,32 @@ function compositionInputs(options, platform) {
 function composeAndroid(options) {
 	const context = compositionInputs(options, "android");
 	const { artifact, sdk, manifest, rn, codegen, bundled, project } = context;
-	if (manifest.platform !== "android") fail("requires an Android format 2 artifact");
+	if (manifest.platform !== "android") fail$1("requires an Android format 2 artifact");
 	const android = node_path.default.join(artifact, "android");
 	const appId = manifest.bootstrap.applicationId, activity = `${appId}.TauriNativeActivity`;
 	const source = `app/src/main/java/${appId.replaceAll(".", "/")}/MainActivity.kt`;
-	const main = read(android, source);
-	if (main.replace(/\s+/g, " ").trim() !== `package ${appId} import android.os.Bundle import androidx.activity.enableEdgeToEdge class MainActivity : TauriActivity() { override fun onCreate(savedInstanceState: Bundle?) { enableEdgeToEdge() super.onCreate(savedInstanceState) } }`) fail("custom MainActivity requires verified lifecycle integration; original source was left unchanged");
-	const rootGradle = read(android, "build.gradle.kts");
-	if (!rootGradle.includes("com.android.tools.build:gradle:8.11.0")) fail("requires the verified AGP 8.11.0 build");
+	const main = read$1(android, source);
+	if (main.replace(/\s+/g, " ").trim() !== `package ${appId} import android.os.Bundle import androidx.activity.enableEdgeToEdge class MainActivity : TauriActivity() { override fun onCreate(savedInstanceState: Bundle?) { enableEdgeToEdge() super.onCreate(savedInstanceState) } }`) fail$1("custom MainActivity requires verified lifecycle integration; original source was left unchanged");
+	const rootGradle = read$1(android, "build.gradle.kts");
+	if (!rootGradle.includes("com.android.tools.build:gradle:8.11.0")) fail$1("requires the verified AGP 8.11.0 build");
 	const updatedRoot = replaceOnce(rootGradle, "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.25", "org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20", "root Kotlin dependency");
-	const appGradle = read(android, "app/build.gradle.kts");
-	const settings = read(android, "settings.gradle");
-	const properties = read(android, "gradle.properties");
-	const xml = read(android, "app/src/main/AndroidManifest.xml");
-	if (/<application\b[^>]*android:name\s*=/.test(xml) || (xml.match(/<activity\b/g) ?? []).length !== 1 || /<activity-alias\b/.test(xml)) fail("custom Application or multiple Activity owners require verified integration");
+	const appGradle = read$1(android, "app/build.gradle.kts");
+	const settings = read$1(android, "settings.gradle");
+	const properties = read$1(android, "gradle.properties");
+	const xml = read$1(android, "app/src/main/AndroidManifest.xml");
+	if (/<application\b[^>]*android:name\s*=/.test(xml) || (xml.match(/<activity\b/g) ?? []).length !== 1 || /<activity-alias\b/.test(xml)) fail$1("custom Application or multiple Activity owners require verified integration");
 	if ([
 		rootGradle,
 		appGradle,
 		settings,
 		properties,
 		xml
-	].some((value) => /tauri-native-react|tauri-native-runtime-client|tauriNativeReact|com\.facebook\.react|expo\.modules|android\.lint\.useK2Uast/.test(value))) fail("existing renderer or lint configuration conflicts with retained composition");
-	if ((0, node_fs.existsSync)(node_path.default.join(android, "tauri-native-runtime-client"))) fail("artifact already owns the generated runtime client project");
-	if (!/compileSdk\s*=\s*36\b/.test(appGradle)) fail("requires the verified Android compile SDK 36 build");
+	].some((value) => /tauri-native-react|tauri-native-runtime-client|tauriNativeReact|com\.facebook\.react|expo\.modules|android\.lint\.useK2Uast/.test(value))) fail$1("existing renderer or lint configuration conflicts with retained composition");
+	if ((0, node_fs.existsSync)(node_path.default.join(android, "tauri-native-runtime-client"))) fail$1("artifact already owns the generated runtime client project");
+	if (!/compileSdk\s*=\s*36\b/.test(appGradle)) fail$1("requires the verified Android compile SDK 36 build");
 	const nativeActivity = replaceOnce(xml, "android:name=\".MainActivity\"", `android:name="${activity}"`, "launcher Activity");
 	const relative = (directory) => node_path.default.relative(project, directory).split(node_path.default.sep).join("/");
-	const template = read(sdk, "retained/android/TauriNativeActivity.kt.template");
+	const template = read$1(sdk, "retained/android/TauriNativeActivity.kt.template");
 	const expo = options.expo ? prepareExpoAndroid({
 		...context,
 		manifest
@@ -590,21 +593,21 @@ function composeAndroid(options) {
 			activity,
 			...expo ? { expo: "57.0.19" } : {}
 		}, (stage) => {
-			write(stage, `android/${source}`, replaceOnce(main, "class MainActivity", "open class MainActivity", "original Activity"));
+			write$1(stage, `android/${source}`, replaceOnce(main, "class MainActivity", "open class MainActivity", "original Activity"));
 			const generated = `android/app/src/main/java/${appId.replaceAll(".", "/")}/TauriNativeActivity.kt`;
-			if ((0, node_fs.existsSync)(node_path.default.join(stage, generated))) fail("artifact already owns TauriNativeActivity");
-			write(stage, generated, template.replaceAll("__APPLICATION_ID__", appId).replaceAll("__MODULE__", kotlin(options.moduleName)));
-			write(stage, "android/app/src/main/AndroidManifest.xml", nativeActivity);
-			write(stage, "android/build.gradle.kts", updatedRoot + `\nextra["tauriNativeReactNativeDir"] = file(${kotlin(relative(rn))}).canonicalPath\nextra["tauriNativeReactCodegenDir"] = file(${kotlin(relative(codegen))}).canonicalPath\nextra["tauriNativeNode"] = ${kotlin(process.execPath)}\nextra["tauriNativeAbis"] = listOf(${manifest.native.map((slice) => kotlin(slice.abi)).join(", ")})\n`);
-			write(stage, "android/settings.gradle", settings + `\ninclude ':tauri-native-runtime-client', ':tauri-native-react'\nproject(':tauri-native-react').projectDir = new File(settingsDir, ${groovy(relative(node_path.default.join(sdk, "android/retained")))})\n`);
-			write(stage, "android/gradle.properties", properties + "\nandroid.lint.useK2Uast=false\n");
-			write(stage, "android/app/build.gradle.kts", appGradle + `\nandroid { packaging { jniLibs.pickFirsts += "**/libc++_shared.so" }; defaultConfig { ndk { abiFilters += listOf(${manifest.native.map((slice) => kotlin(slice.abi)).join(", ")}) } } }\ndependencies { implementation(project(":tauri-native-react")); implementation(project(":tauri-native-runtime-client")) }\n`);
+			if ((0, node_fs.existsSync)(node_path.default.join(stage, generated))) fail$1("artifact already owns TauriNativeActivity");
+			write$1(stage, generated, template.replaceAll("__APPLICATION_ID__", appId).replaceAll("__MODULE__", kotlin(options.moduleName)));
+			write$1(stage, "android/app/src/main/AndroidManifest.xml", nativeActivity);
+			write$1(stage, "android/build.gradle.kts", updatedRoot + `\nextra["tauriNativeReactNativeDir"] = file(${kotlin(relative(rn))}).canonicalPath\nextra["tauriNativeReactCodegenDir"] = file(${kotlin(relative(codegen))}).canonicalPath\nextra["tauriNativeNode"] = ${kotlin(process.execPath)}\nextra["tauriNativeAbis"] = listOf(${manifest.native.map((slice) => kotlin(slice.abi)).join(", ")})\n`);
+			write$1(stage, "android/settings.gradle", settings + `\ninclude ':tauri-native-runtime-client', ':tauri-native-react'\nproject(':tauri-native-react').projectDir = new File(settingsDir, ${groovy(relative(node_path.default.join(sdk, "android/retained")))})\n`);
+			write$1(stage, "android/gradle.properties", properties + "\nandroid.lint.useK2Uast=false\n");
+			write$1(stage, "android/app/build.gradle.kts", appGradle + `\nandroid { packaging { jniLibs.pickFirsts += "**/libc++_shared.so" }; defaultConfig { ndk { abiFilters += listOf(${manifest.native.map((slice) => kotlin(slice.abi)).join(", ")}) } } }\ndependencies { implementation(project(":tauri-native-react")); implementation(project(":tauri-native-runtime-client")) }\n`);
 			const client = "app/src/main/java/dev/taurinative/runtime/RuntimeSession.java";
-			write(stage, "android/tauri-native-runtime-client/src/main/java/dev/taurinative/runtime/RuntimeSession.java", read(android, client));
+			write$1(stage, "android/tauri-native-runtime-client/src/main/java/dev/taurinative/runtime/RuntimeSession.java", read$1(android, client));
 			(0, node_fs.rmSync)(node_path.default.join(stage, "android", client));
-			write(stage, "android/tauri-native-runtime-client/build.gradle", "plugins { id 'com.android.library' }\nandroid {\n namespace 'dev.taurinative.runtime'\n compileSdk 36\n defaultConfig { minSdk 24 }\n compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }\n}\n");
-			if ((0, node_fs.existsSync)(node_path.default.join(stage, "android/app/src/main/assets/tauri-native-react"))) fail("artifact already owns renderer assets");
-			write(stage, "android/app/src/main/assets/tauri-native-react/index.bundle.js", bundled);
+			write$1(stage, "android/tauri-native-runtime-client/build.gradle", "plugins { id 'com.android.library' }\nandroid {\n namespace 'dev.taurinative.runtime'\n compileSdk 36\n defaultConfig { minSdk 24 }\n compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }\n}\n");
+			if ((0, node_fs.existsSync)(node_path.default.join(stage, "android/app/src/main/assets/tauri-native-react"))) fail$1("artifact already owns renderer assets");
+			write$1(stage, "android/app/src/main/assets/tauri-native-react/index.bundle.js", bundled);
 			expo?.(stage);
 		})
 	};
@@ -613,10 +616,10 @@ const ruby = (value) => `'${value.replaceAll("\\", "\\\\").replaceAll("'", "\\'"
 const shell = (value) => `'${value.replaceAll("'", "'\\''")}'`;
 /** Use the original Tauri Xcode app and Apple plist tools; neither export nor build Rust. */
 function composeIos(options) {
-	if (process.platform !== "darwin") fail("iOS composition requires macOS Apple project tools");
+	if (process.platform !== "darwin") fail$1("iOS composition requires macOS Apple project tools");
 	const context = compositionInputs(options, "ios");
 	const { sdk, manifest, rn, rendererDirectory: renderer, bundled, project } = context;
-	if (manifest.platform !== "ios") fail("requires an iOS format 2 artifact");
+	if (manifest.platform !== "ios") fail$1("requires an iOS format 2 artifact");
 	const expo = options.expo ? prepareExpoIos({
 		...context,
 		manifest
@@ -630,16 +633,16 @@ function composeIos(options) {
 		target: bootstrap.target,
 		...expo ? { expo: "57.0.19" } : {}
 	}, (stage) => {
-		write(stage, `ios/${projectFile}`, encodedProject);
-		write(stage, `ios/${main}`, "#import <TauriNativeReactRetained/TNReactComposition.h>\n" + (expo ? "#import <TauriNativeReactRetained/TNExpoApplication.h>\n" : "") + originalMain.replace("ffi::start_app();", `@autoreleasepool {\n${expo ? "		TNInstallExpoApplication();\n" : ""}\t\tNSURL *bundle = [NSBundle.mainBundle URLForResource:@"index.bundle" withExtension:@"js" subdirectory:@"assets/tauri-native-react"];\n\t\t[TNReactComposition installWithModule:@${JSON.stringify(options.moduleName)} bundle:bundle];\n\t}\n\tffi::start_app();`));
+		write$1(stage, `ios/${projectFile}`, encodedProject);
+		write$1(stage, `ios/${main}`, "#import <TauriNativeReactRetained/TNReactComposition.h>\n" + (expo ? "#import <TauriNativeReactRetained/TNExpoApplication.h>\n" : "") + originalMain.replace("ffi::start_app();", `@autoreleasepool {\n${expo ? "		TNInstallExpoApplication();\n" : ""}\t\tNSURL *bundle = [NSBundle.mainBundle URLForResource:@"index.bundle" withExtension:@"js" subdirectory:@"assets/tauri-native-react"];\n\t\t[TNReactComposition installWithModule:@${JSON.stringify(options.moduleName)} bundle:bundle];\n\t}\n\tffi::start_app();`));
 		if (expo) {
-			if ((0, node_fs.existsSync)(node_path.default.join(stage, "ios/tauri-native-autolinking.cjs"))) fail("artifact already owns Expo autolinking script");
-			write(stage, "ios/tauri-native-autolinking.cjs", expo.autolinking);
+			if ((0, node_fs.existsSync)(node_path.default.join(stage, "ios/tauri-native-autolinking.cjs"))) fail$1("artifact already owns Expo autolinking script");
+			write$1(stage, "ios/tauri-native-autolinking.cjs", expo.autolinking);
 		}
-		write(stage, "ios/assets/tauri-native-react/index.bundle.js", bundled);
-		write(stage, "ios/.xcode.env", `export NODE_BINARY=${shell(process.execPath)}\n`);
-		write(stage, "ios/.xcode.env.local", `export NODE_BINARY=${shell(process.execPath)}\n`);
-		write(stage, "ios/Podfile", `ENV['RCT_USE_RN_DEP'] = '1'
+		write$1(stage, "ios/assets/tauri-native-react/index.bundle.js", bundled);
+		write$1(stage, "ios/.xcode.env", `export NODE_BINARY=${shell(process.execPath)}\n`);
+		write$1(stage, "ios/.xcode.env.local", `export NODE_BINARY=${shell(process.execPath)}\n`);
+		write$1(stage, "ios/Podfile", `ENV['RCT_USE_RN_DEP'] = '1'
 ENV['RCT_USE_PREBUILT_RNCORE'] = '1'
 rn = File.expand_path(${ruby(relative(rn))}, __dir__)
 require_relative ${ruby(relative(node_path.default.join(sdk, "ios/retained/pods")))}
@@ -673,5 +676,465 @@ end
 	};
 }
 //#endregion
-exports.composeAndroid = composeAndroid;
-exports.composeIos = composeIos;
+//#region packages/react-native/plugin/retained-expo-template.cts
+const digest = (bytes) => (0, node_crypto.createHash)("sha256").update(bytes).digest("hex");
+function fail(message) {
+	throw new Error(`Retained Expo prebuild: ${message}`);
+}
+const read = (root, file) => (0, node_fs.readFileSync)(node_path.default.join(root, file), "utf8");
+function write(root, file, bytes) {
+	(0, node_fs.mkdirSync)(node_path.default.dirname(node_path.default.join(root, file)), { recursive: true });
+	(0, node_fs.writeFileSync)(node_path.default.join(root, file), bytes);
+}
+function replace(source, from, to) {
+	if (source.split(from).length !== 2) fail(`unsupported template; expected one ${JSON.stringify(from)}`);
+	return source.replace(from, to);
+}
+function inventory(root, prefix = "") {
+	return Object.fromEntries((0, node_fs.readdirSync)(node_path.default.join(root, prefix), { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name)).flatMap((entry) => {
+		const file = node_path.default.posix.join(prefix, entry.name);
+		if (entry.isDirectory()) return Object.entries(inventory(root, file));
+		if (!entry.isFile()) fail(`generated path must be regular: ${file}`);
+		return [[file, digest((0, node_fs.readFileSync)(node_path.default.join(root, file)))]];
+	}));
+}
+function plist(file) {
+	return JSON.parse((0, node_child_process.execFileSync)("/usr/bin/plutil", [
+		"-convert",
+		"json",
+		"-o",
+		"-",
+		file
+	], { encoding: "utf8" }));
+}
+function writePlist(root, file, value) {
+	write(root, file, (0, node_child_process.execFileSync)("/usr/bin/plutil", [
+		"-convert",
+		"xml1",
+		"-o",
+		"-",
+		"-"
+	], { input: JSON.stringify(value) }));
+}
+/** Adapt generated copies for Expo's public custom-template entry. Tauri still starts the app. */
+function prepareAndroidTemplate(project, appId) {
+	const source = `app/src/main/java/${appId.replaceAll(".", "/")}`;
+	for (const name of ["TauriMainActivity.kt", "MainApplication.kt"]) if ((0, node_fs.existsSync)(node_path.default.join(project, source, name))) fail(`artifact already owns ${name}`);
+	const original = read(project, `${source}/MainActivity.kt`);
+	write(project, `${source}/TauriMainActivity.kt`, replace(original, "class MainActivity", "class TauriMainActivity"));
+	write(project, `${source}/MainActivity.kt`, replace(replace(read(project, `${source}/TauriNativeActivity.kt`), "class TauriNativeActivity", "class MainActivity"), ": MainActivity()", ": TauriMainActivity()").replaceAll("this@TauriNativeActivity", "this@MainActivity"));
+	(0, node_fs.rmSync)(node_path.default.join(project, source, "TauriNativeActivity.kt"));
+	const integration = read(project, `${source}/TauriExpoIntegration.kt`);
+	write(project, `${source}/MainApplication.kt`, integration.replaceAll("TauriNativeApplication", "MainApplication").replaceAll("TauriNativeActivity", "MainActivity"));
+	(0, node_fs.rmSync)(node_path.default.join(project, source, "TauriExpoIntegration.kt"));
+	const manifest = "app/src/main/AndroidManifest.xml";
+	write(project, manifest, replace(replace(read(project, manifest), `android:name="${appId}.TauriNativeApplication"`, "android:name=\".MainApplication\""), `android:name="${appId}.TauriNativeActivity"`, "android:name=\".MainActivity\""));
+	return { activity: `${appId}.MainActivity` };
+}
+function prepareIosTemplate(project, xcodeProject) {
+	const file = `${xcodeProject}/project.pbxproj`, value = plist(node_path.default.join(project, file));
+	const objects = value.objects;
+	const infos = new Set(Object.values(objects).map((o) => o.buildSettings?.INFOPLIST_FILE).filter(Boolean));
+	if (infos.size !== 1) fail("CNG requires one original Info.plist");
+	const infoFile = [...infos][0], folder = node_path.default.posix.dirname(infoFile);
+	const main = Object.values(objects).filter((o) => o.isa === "PBXFileReference" && (o.path === "main.mm" || /^Sources\/[^/]+\/main\.mm$/.test(o.path ?? "")));
+	const sources = (0, node_fs.readdirSync)(node_path.default.join(project, "Sources")).filter((name) => (0, node_fs.existsSync)(node_path.default.join(project, "Sources", name, "main.mm")));
+	if (main.length !== 1 || sources.length !== 1) fail("CNG requires one generated Tauri executable entry");
+	const oldMain = `Sources/${sources[0]}/main.mm`, newMain = `${folder}/AppDelegate.mm`;
+	if ((0, node_fs.existsSync)(node_path.default.join(project, newMain))) fail("artifact already owns the Expo startup discovery path");
+	write(project, newMain, replace(read(project, oldMain), "#include \"bindings/bindings.h\"", `#include "../Sources/${sources[0]}/bindings/bindings.h"`));
+	(0, node_fs.rmSync)(node_path.default.join(project, oldMain));
+	Object.assign(main[0], {
+		path: newMain,
+		sourceTree: "SOURCE_ROOT"
+	});
+	const catalogs = Object.values(objects).filter((o) => o.isa === "PBXFileReference" && o.path === "Assets.xcassets");
+	if (catalogs.length !== 1 || (0, node_fs.existsSync)(node_path.default.join(project, folder, "Images.xcassets"))) fail("CNG requires the original Assets.xcassets catalog");
+	(0, node_fs.renameSync)(node_path.default.join(project, "Assets.xcassets"), node_path.default.join(project, folder, "Images.xcassets"));
+	Object.assign(catalogs[0], {
+		path: `${folder}/Images.xcassets`,
+		sourceTree: "SOURCE_ROOT"
+	});
+	const expoPlist = `${folder}/Supporting/Expo.plist`;
+	if ((0, node_fs.existsSync)(node_path.default.join(project, expoPlist))) fail("artifact already owns Expo.plist");
+	writePlist(project, expoPlist, {});
+	const ref = digest("tauri-native/expo-template/Expo.plist/reference").slice(0, 24).toUpperCase();
+	const build = digest("tauri-native/expo-template/Expo.plist/build").slice(0, 24).toUpperCase();
+	if (objects[ref] || objects[build]) fail("Expo resource identifier conflicts with the original Xcode project");
+	objects[ref] = {
+		isa: "PBXFileReference",
+		path: expoPlist,
+		sourceTree: "SOURCE_ROOT",
+		lastKnownFileType: "text.plist.xml"
+	};
+	objects[build] = {
+		isa: "PBXBuildFile",
+		fileRef: ref
+	};
+	objects[objects[value.rootObject].mainGroup].children.push(ref);
+	const resources = Object.values(objects).find((o) => o.isa === "PBXNativeTarget")?.buildPhases.map((id) => objects[id]).filter((o) => o.isa === "PBXResourcesBuildPhase");
+	if (resources?.length !== 1) fail("CNG requires one original resources phase");
+	resources[0].files.push(build);
+	for (const o of Object.values(objects)) {
+		if (o.isa === "XCBuildConfiguration") o.name = {
+			debug: "Debug",
+			release: "Release"
+		}[o.name] ?? o.name;
+		if (o.isa === "XCConfigurationList" && o.defaultConfigurationName) o.defaultConfigurationName = {
+			debug: "Debug",
+			release: "Release"
+		}[o.defaultConfigurationName] ?? o.defaultConfigurationName;
+	}
+	writePlist(project, file, value);
+	(0, node_child_process.execFileSync)("ruby", [
+		"-rxcodeproj",
+		"-e",
+		"Xcodeproj::Project.open(ARGV[0]).save",
+		node_path.default.join(project, xcodeProject)
+	], { stdio: "pipe" });
+	const schemes = `${xcodeProject}/xcshareddata/xcschemes`;
+	for (const scheme of (0, node_fs.readdirSync)(node_path.default.join(project, schemes))) if (scheme.endsWith(".xcscheme")) {
+		const f = `${schemes}/${scheme}`;
+		write(project, f, read(project, f).replaceAll("\"debug\"", "\"Debug\"").replaceAll("\"release\"", "\"Release\""));
+	}
+	write(project, "Podfile", replace(read(project, "Podfile"), "'debug' => :debug, 'release' => :release", "'Debug' => :debug, 'Release' => :release"));
+	write(project, ".gitignore", "Pods/\nbuild/\n");
+	return {
+		infoFile,
+		main: newMain,
+		expoPlist,
+		iconCatalog: `${folder}/Images.xcassets`
+	};
+}
+//#endregion
+//#region packages/react-native/plugin/retained-expo-config.cts
+function expoTools(root) {
+	const local = (0, node_module.createRequire)(node_path.default.join(root, "package.json"));
+	const expo = (0, node_module.createRequire)((0, node_fs.realpathSync)(local.resolve("expo/package.json")));
+	for (const [name, version] of Object.entries({
+		expo: "57.0.19",
+		"@expo/cli": "57.0.21",
+		"@expo/config": "57.0.9",
+		"@expo/config-plugins": "57.0.9",
+		"@expo/prebuild-config": "57.0.15"
+	})) if (JSON.parse((0, node_fs.readFileSync)(expo.resolve(`${name}/package.json`), "utf8")).version !== version) fail(`requires ${name} ${version}`);
+	return {
+		local,
+		expo,
+		cli: (0, node_module.createRequire)(expo.resolve("@expo/cli/package.json")),
+		plugins: expo("expo/config-plugins")
+	};
+}
+function retainedInput(root, options, platform) {
+	if (options.runtime !== "retained" || typeof options.artifactsDir !== "string" || !options.artifactsDir.trim() || !options.bundleFiles || Object.keys(options).some((k) => ![
+		"runtime",
+		"artifactsDir",
+		"bundleFiles"
+	].includes(k)) || Object.keys(options.bundleFiles).some((k) => k !== "ios" && k !== "android")) fail("set runtime: retained, artifactsDir and per-platform bundleFiles in the config plugin");
+	const bundle = options.bundleFiles[platform];
+	if (typeof bundle !== "string" || !bundle.trim()) fail(`set bundleFiles.${platform} to an offline main AppRegistry bundle`);
+	const artifact = (0, node_fs.realpathSync)(node_path.default.resolve(root, options.artifactsDir, platform));
+	const manifest = readRetainedArtifacts(artifact);
+	if (manifest.platform !== platform) fail(`requires the ${platform} retained artifact`);
+	return {
+		artifact,
+		manifest,
+		bundle: (0, node_fs.realpathSync)(node_path.default.resolve(root, bundle))
+	};
+}
+//#endregion
+//#region packages/react-native/plugin/retained-prebuild.cts
+const receiptFile = "tauri-native-composition.json";
+function previousReceipt(project, platform) {
+	if (!(0, node_fs.existsSync)(project)) return;
+	if ((0, node_fs.lstatSync)(project).isSymbolicLink() || !(0, node_fs.lstatSync)(project).isDirectory()) fail("native output must be an owned regular directory");
+	const file = node_path.default.join(project, receiptFile);
+	if (!(0, node_fs.existsSync)(file) || !(0, node_fs.lstatSync)(file).isFile() || (0, node_fs.lstatSync)(file).isSymbolicLink()) fail("native directory has no owned retained composition receipt");
+	const r = JSON.parse((0, node_fs.readFileSync)(file, "utf8"));
+	if (r.formatVersion !== 1 || r.renderer !== "react-native" || (r.platform ?? "android") !== platform || r.layout !== "native-project" || !r.files || typeof r.files !== "object" || Array.isArray(r.files)) fail("invalid prior composition receipt");
+	for (const [name, hash] of Object.entries(r.files)) {
+		if (!name || name.split("/").some((part) => !part || part === "." || part === "..") || /[\\:\0]/.test(name) || !/^[a-f0-9]{64}$/.test(hash)) fail("invalid prior file receipt");
+		let cursor = project;
+		for (const part of name.split("/")) {
+			cursor = node_path.default.join(cursor, part);
+			if (!(0, node_fs.existsSync)(cursor) || (0, node_fs.lstatSync)(cursor).isSymbolicLink()) fail(`generated file removed or linked: ${name}`);
+		}
+		if (!(0, node_fs.lstatSync)(cursor).isFile() || digest((0, node_fs.readFileSync)(cursor)) !== hash) fail(`generated file changed: ${name}; preserve the edit before regenerating`);
+	}
+	return r;
+}
+function contains(original, actual) {
+	if (Array.isArray(original)) return Array.isArray(actual) && original.every((v) => actual.some((candidate) => contains(v, candidate)));
+	if (original && typeof original === "object") return actual && typeof actual === "object" && Object.entries(original).every(([k, v]) => contains(v, actual[k]));
+	return original === actual;
+}
+function preserve(original, actual, description) {
+	if (!contains(original, actual)) fail(`config plugin removed or changed ${description}`);
+}
+async function validateNative(template, project, platform, tools) {
+	for (const [file, hash] of Object.entries(inventory(template))) {
+		if (file === receiptFile) continue;
+		if (!(platform === "android" ? file === "app/src/main/AndroidManifest.xml" || file === "gradle.properties" || file.startsWith("app/src/main/res/") : !file.includes(".xcframework/") && (/^[^/]+\/(?:Info\.plist|[^/]+\.entitlements|Supporting\/Expo\.plist)$/.test(file) || /^[^/]+\.xcodeproj\/project\.pbxproj$/.test(file) || file.includes("/Images.xcassets/"))) && (!(0, node_fs.existsSync)(node_path.default.join(project, file)) || digest((0, node_fs.readFileSync)(node_path.default.join(project, file))) !== hash)) fail(`config plugin changed retained native owner/input: ${file}`);
+	}
+	if (platform === "android") {
+		const properties = (root) => Object.fromEntries(read(root, "gradle.properties").split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith("#")).map((line) => {
+			const at = line.indexOf("=");
+			if (at < 1) fail("unsupported Gradle property syntax");
+			return [line.slice(0, at), line.slice(at + 1)];
+		}));
+		const originalProperties = properties(template), generatedProperties = properties(project);
+		preserve(originalProperties, generatedProperties, "original Gradle properties");
+		for (const [key, value] of Object.entries(generatedProperties)) if (!(key in originalProperties) && !(key === "expo.inlineModules.watchedDirectories" && value === "[]")) fail(`Gradle property ${key} requires verified retained integration`);
+		const manifest = "app/src/main/AndroidManifest.xml";
+		const before = (await tools.plugins.AndroidConfig.Manifest.readAndroidManifestAsync(node_path.default.join(template, manifest))).manifest;
+		const after = (await tools.plugins.AndroidConfig.Manifest.readAndroidManifestAsync(node_path.default.join(project, manifest))).manifest;
+		preserve(before["uses-permission"] ?? [], after["uses-permission"] ?? [], "original Android permissions");
+		preserve(before.$, after.$, "original Android manifest identity");
+		const oldApp = before.application[0], app = after.application[0];
+		preserve({ "android:name": oldApp.$["android:name"] }, app.$, "Tauri Application");
+		preserve(oldApp.provider ?? [], app.provider ?? [], "original Android providers");
+		preserve(oldApp["meta-data"] ?? [], app["meta-data"] ?? [], "original Android metadata");
+		const oldActivity = oldApp.activity[0], activity = app.activity?.find((a) => a.$["android:name"] === ".MainActivity");
+		if (!activity) fail("config plugin replaced the retained launcher Activity");
+		for (const key of [
+			"android:name",
+			"android:launchMode",
+			"android:exported",
+			"android:configChanges"
+		]) preserve(oldActivity.$[key], activity.$[key], `original Activity ${key}`);
+		preserve(oldActivity["intent-filter"] ?? [], activity["intent-filter"] ?? [], "original Android intent registrations");
+	} else {
+		const file = (0, node_fs.readdirSync)(template).filter((f) => f.endsWith(".xcodeproj"));
+		if (file.length !== 1) fail("expected one Tauri Xcode project");
+		const before = plist(node_path.default.join(template, file[0], "project.pbxproj"));
+		const after = plist(node_path.default.join(project, file[0], "project.pbxproj"));
+		preserve(before.rootObject, after.rootObject, "original Xcode project");
+		for (const [id, source] of Object.entries(before.objects)) {
+			const expected = structuredClone(source);
+			if (expected.isa === "XCBuildConfiguration") {
+				for (const field of [
+					"PRODUCT_NAME",
+					"TARGETED_DEVICE_FAMILY",
+					"DEVELOPMENT_TEAM",
+					"CURRENT_PROJECT_VERSION",
+					"MARKETING_VERSION"
+				]) delete expected.buildSettings?.[field];
+				if (source.buildSettings?.CODE_SIGN_ENTITLEMENTS) {
+					const name = source.buildSettings.CODE_SIGN_ENTITLEMENTS;
+					preserve(plist(node_path.default.join(template, name)), plist(node_path.default.join(project, name)), "original entitlements");
+				}
+				if (source.buildSettings?.INFOPLIST_FILE) {
+					const name = source.buildSettings.INFOPLIST_FILE, original = plist(node_path.default.join(template, name)), info = plist(node_path.default.join(project, name));
+					if (info.UIApplicationSceneManifest || info.UIApplicationDelegateClassName) fail("config plugin replaced Tauri delegate/scene ownership");
+					for (const key of [
+						"CFBundleIdentifier",
+						"CFBundleExecutable",
+						"CFBundleURLTypes",
+						"UIRequiredDeviceCapabilities",
+						"UIBackgroundModes"
+					]) if (original[key] !== void 0) preserve(original[key], info[key], `original ${key}`);
+					for (const [key, value] of Object.entries(original)) if (/^NS.*UsageDescription$/.test(key) && value && !info[key]) fail(`config plugin removed original permission purpose ${key}`);
+				}
+			}
+			preserve(expected, after.objects[id], `original Xcode object ${id}`);
+		}
+		const properties = node_path.default.join(project, "Podfile.properties.json");
+		if ((0, node_fs.existsSync)(properties)) {
+			const values = JSON.parse((0, node_fs.readFileSync)(properties, "utf8"));
+			for (const [key, value] of Object.entries(values)) {
+				if (key === "expo.jsEngine" && value === "hermes" || key === "EX_DEV_CLIENT_NETWORK_INSPECTOR" || key === "expo.inlineModules.watchedDirectories" && value === "[]") continue;
+				if (key === "expo.inlineModules.xcodeProjectTargets" && typeof value === "string") {
+					const inline = JSON.parse(value);
+					if (Array.isArray(inline.targets) && inline.targets.length === 0) continue;
+				}
+				fail(`Podfile property ${key} requires verified retained CocoaPods integration`);
+			}
+		}
+	}
+}
+async function packTemplate(directory, archive, tools) {
+	const tar = tools.cli("multitars");
+	if (tools.cli("multitars/package.json").version !== "1.0.2") fail("requires the verified Expo multitars 1.0.2 template codec");
+	const files = inventory(directory);
+	async function* entries() {
+		for (const file of Object.keys(files)) {
+			const full = node_path.default.join(directory, file), stat = (0, node_fs.lstatSync)(full);
+			const entry = tar.TarFile.from(node_stream.Readable.toWeb((0, node_fs.createReadStream)(full)), `package/${file}`, {
+				size: stat.size,
+				lastModified: 0
+			});
+			entry.mode = stat.mode & 511;
+			yield entry;
+		}
+	}
+	await (0, node_stream_promises.pipeline)(node_stream.Readable.from(tar.tar(entries())), (0, node_zlib.createGzip)(), (0, node_fs.createWriteStream)(archive));
+	const actual = {};
+	for await (const entry of tar.untar((0, node_fs.createReadStream)(archive).pipe((0, node_zlib.createGunzip)()))) {
+		if (entry.typeflag !== tar.TarTypeFlag.FILE || !entry.name.startsWith("package/")) fail("template archive contains an unexpected entry");
+		const file = entry.name.slice(8);
+		if (actual[file]) fail(`duplicate template entry: ${file}`);
+		actual[file] = digest(Buffer.from(await entry.arrayBuffer()));
+	}
+	if (JSON.stringify(files) !== JSON.stringify(actual)) fail("template archive did not preserve every generated file");
+}
+/** Run Expo's actual custom-template prebuild with immutable retained artifacts and rollback. */
+async function prebuildRetainedExpo(options) {
+	const root = (0, node_fs.realpathSync)(options.projectRoot ?? process.cwd()), platform = options.platform;
+	if (platform !== "ios" && platform !== "android") fail("choose platform ios or android");
+	const tools = expoTools(root);
+	const selected = process.env.TAURI_NATIVE_EXPO_PLATFORM;
+	let config;
+	try {
+		process.env.TAURI_NATIVE_EXPO_PLATFORM = platform;
+		config = tools.expo("@expo/config").getConfig(root).exp;
+	} finally {
+		if (selected === void 0) delete process.env.TAURI_NATIVE_EXPO_PLATFORM;
+		else process.env.TAURI_NATIVE_EXPO_PLATFORM = selected;
+	}
+	const names = [
+		"@tauri-native/react-native",
+		"@tauri-native/react-native/app.plugin",
+		"@tauri-native/react-native/app.plugin.js"
+	];
+	const entries = (config.plugins ?? []).filter((entry) => names.includes(Array.isArray(entry) ? entry[0] : entry));
+	if (entries.length !== 1 || entries[0] !== config.plugins[0] || !Array.isArray(entries[0])) fail("declare the retained @tauri-native/react-native config plugin first, exactly once");
+	const input = retainedInput(root, entries[0][1], platform);
+	const project = node_path.default.join(root, platform), previous = previousReceipt(project, platform);
+	for (const file of [input.artifact, input.bundle]) if (file === project || file.startsWith(project + node_path.default.sep)) fail("artifact and bundle must remain outside the native output");
+	const lock = node_path.default.join(root, ".tauri-native-prebuild.lock");
+	try {
+		(0, node_fs.mkdirSync)(lock);
+	} catch (error) {
+		if (error.code === "EEXIST") fail("another retained prebuild owns .tauri-native-prebuild.lock");
+		throw error;
+	}
+	let work;
+	try {
+		work = (0, node_fs.mkdtempSync)(node_path.default.join(root, ".tauri-native-prebuild-"));
+	} catch (error) {
+		(0, node_fs.rmSync)(lock, { recursive: true });
+		throw error;
+	}
+	const backup = node_path.default.join(work, "previous"), template = node_path.default.join(work, "template");
+	const rootFiles = new Map((0, node_fs.readdirSync)(root, { withFileTypes: true }).filter((e) => e.isFile()).map((e) => [e.name, (0, node_fs.readFileSync)(node_path.default.join(root, e.name))]));
+	let committed = false, moved = false, generated = false, ranExpo = false;
+	try {
+		write(lock, "owner.json", JSON.stringify({
+			pid: process.pid,
+			platform
+		}));
+		if (previous) {
+			previousReceipt(project, platform);
+			(0, node_fs.renameSync)(project, backup);
+			moved = true;
+		}
+		const composition = {
+			artifactsDir: input.artifact,
+			outputDir: project,
+			layout: "native-project",
+			rendererDir: root,
+			moduleName: "main",
+			bundleFile: input.bundle,
+			expo: true
+		};
+		const result = platform === "android" ? composeAndroid(composition) : composeIos(composition);
+		generated = true;
+		const metadata = platform === "android" ? prepareAndroidTemplate(project, input.manifest.bootstrap.applicationId) : prepareIosTemplate(project, input.manifest.bootstrap.xcodeProject);
+		const receipt = JSON.parse(read(project, receiptFile));
+		Object.assign(receipt, metadata, { cng: 1 });
+		receipt.files = inventory(project);
+		delete receipt.files[receiptFile];
+		write(project, receiptFile, JSON.stringify(receipt, null, 2) + "\n");
+		(0, node_fs.cpSync)(project, node_path.default.join(template, platform), { recursive: true });
+		write(template, "package.json", JSON.stringify({
+			name: "tauri-native-expo-template",
+			version: "1.0.0",
+			private: true,
+			dependencies: JSON.parse(read(root, "package.json")).dependencies ?? {}
+		}));
+		const archive = node_path.default.join(work, "template.tgz");
+		await packTemplate(template, archive, tools);
+		ranExpo = true;
+		const log = (0, node_child_process.execFileSync)(process.execPath, [
+			tools.local.resolve("expo/bin/cli"),
+			"prebuild",
+			"--clean",
+			"--no-install",
+			"--platform",
+			platform,
+			"--template",
+			archive,
+			"--skip-dependency-update",
+			"react-native,react"
+		], {
+			cwd: root,
+			encoding: "utf8",
+			maxBuffer: 33554432,
+			env: {
+				...process.env,
+				CI: "1",
+				EXPO_NO_GIT_STATUS: "1",
+				TAURI_NATIVE_EXPO_PLATFORM: platform
+			}
+		});
+		await validateNative(node_path.default.join(template, platform), project, platform, tools);
+		const current = retainedInput(root, entries[0][1], platform);
+		if (JSON.stringify(current.manifest) !== JSON.stringify(input.manifest) || digest((0, node_fs.readFileSync)(input.bundle)) !== receipt.files[platform === "ios" ? "assets/tauri-native-react/index.bundle.js" : "app/src/main/assets/tauri-native-react/index.bundle.js"]) fail("artifact or bundle changed during prebuild");
+		const files = inventory(project);
+		delete files[receiptFile];
+		receipt.files = files;
+		write(project, receiptFile, JSON.stringify(receipt, null, 2) + "\n");
+		if (moved) {
+			const restore = (prefix = "") => {
+				for (const entry of (0, node_fs.readdirSync)(node_path.default.join(backup, prefix), { withFileTypes: true })) {
+					const file = node_path.default.posix.join(prefix, entry.name);
+					if (file === receiptFile || Object.hasOwn(previous.files, file)) continue;
+					if (options.clean && /^(?:Pods|build|\.gradle|\.cxx|app\/(?:build|\.cxx))(?:\/|$)/.test(file)) continue;
+					const destination = node_path.default.join(project, file);
+					if (entry.isDirectory()) {
+						if ((0, node_fs.existsSync)(destination) && !(0, node_fs.lstatSync)(destination).isDirectory()) fail(`new generated file conflicts with consumer directory: ${file}`);
+						(0, node_fs.mkdirSync)(destination, { recursive: true });
+						restore(file);
+					} else {
+						if ((0, node_fs.existsSync)(destination)) fail(`new generated file conflicts with consumer file: ${file}`);
+						if (entry.isSymbolicLink()) (0, node_fs.symlinkSync)((0, node_fs.readlinkSync)(node_path.default.join(backup, file)), destination);
+						else if (entry.isFile()) (0, node_fs.cpSync)(node_path.default.join(backup, file), destination);
+						else fail(`unsupported consumer file: ${file}`);
+					}
+				}
+			};
+			restore();
+		}
+		committed = true;
+		return {
+			...result,
+			...metadata,
+			project,
+			receipt,
+			log
+		};
+	} catch (error) {
+		try {
+			if (generated || moved) (0, node_fs.rmSync)(project, {
+				recursive: true,
+				force: true
+			});
+			if (moved) (0, node_fs.renameSync)(backup, project);
+			if (ranExpo) {
+				for (const entry of (0, node_fs.readdirSync)(root, { withFileTypes: true })) if (entry.isFile() && !rootFiles.has(entry.name)) (0, node_fs.rmSync)(node_path.default.join(root, entry.name));
+				for (const [file, bytes] of rootFiles) write(root, file, bytes);
+			}
+		} catch (rollbackError) {
+			throw new AggregateError([error, rollbackError], `Prebuild and rollback failed; inspect the previous consumer at ${(0, node_fs.existsSync)(backup) ? backup : project}`);
+		}
+		throw error;
+	} finally {
+		if (committed || !(0, node_fs.existsSync)(backup)) (0, node_fs.rmSync)(work, {
+			recursive: true,
+			force: true
+		});
+		(0, node_fs.rmSync)(lock, { recursive: true });
+	}
+}
+//#endregion
+exports.prebuildRetainedExpo = prebuildRetainedExpo;

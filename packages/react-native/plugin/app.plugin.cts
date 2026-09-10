@@ -1,7 +1,8 @@
 import type { ConfigPlugin } from 'expo/config-plugins';
 import type { ArtifactError } from '../../../scripts/artifacts.ts';
+import { withRetainedExpo, type RetainedExpoOptions } from './retained-expo-config.cts';
 
-type Options = { artifactsDir?: string; tauriDir?: string };
+type Options = { artifactsDir?: string; tauriDir?: string; runtime?: undefined };
 type Platform = 'ios' | 'android';
 
 const {
@@ -115,7 +116,9 @@ function copyAndroidArtifacts(projectRoot: string, platformProjectRoot: string, 
   });
 }
 
-const withTauriNative: ConfigPlugin<Options> = function withTauriNative(config, options = {}) {
+const withTauriNative: ConfigPlugin<Options | RetainedExpoOptions> = function withTauriNative(config, options = {}) {
+  if (options.runtime === 'retained') return withRetainedExpo(config, options);
+  if (options.runtime !== undefined) throw fail('Unknown runtime; choose retained for ordinary Tauri Mobile exports.');
   const configProjectRoot = config?._internal?.projectRoot ?? process.cwd();
   let withDangerousMod: typeof import('expo/config-plugins').withDangerousMod;
 

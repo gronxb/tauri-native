@@ -112,8 +112,72 @@ directly beside the renderer sources. Use `./ios` for the iOS composer. The
 composition receipt lives inside that native directory, and regeneration protects
 consumer edits there without taking ownership of the renderer directory. An
 existing container layout cannot be switched in place. This directory layout
-prepares Expo's expected paths; Expo clean prebuild/config-plugin integration
-still needs its separate Tauri template and configuration-preservation stage.
+also supports the retained Expo prebuild entry described below.
+
+### Expo config plugins and native regeneration
+
+The `tauri-native-prebuild` command supplies the original Tauri native project as
+Expo's custom template. It uses the installed Expo CLI and applies config plugins
+to generated copies. The consuming app needs Expo 57.0.19, CLI 57.0.21,
+config/config-plugins 57.0.9, prebuild-config 57.0.15 and the native dependencies
+listed above. iOS generation also needs the Ruby/Xcodeproj installation used by
+CocoaPods. No producer checkout or Rust toolchain is required.
+
+Put the retained plugin first in the consuming app's configuration. Each platform
+directory under `artifactsDir` contains its complete format 2 export, including
+`manifest.json`. Offline bundles must register the `main` AppRegistry entry.
+
+```json
+{
+  "expo": {
+    "name": "Fieldnotes",
+    "slug": "fieldnotes",
+    "plugins": [
+      ["@tauri-native/react-native", {
+        "runtime": "retained",
+        "artifactsDir": "./retained-exports",
+        "bundleFiles": {
+          "ios": "./bundles/ios.js",
+          "android": "./bundles/android.js"
+        }
+      }],
+      ["expo-location", {
+        "locationWhenInUsePermission": "Attach a location to a note."
+      }]
+    ]
+  }
+}
+```
+
+```sh
+npx tauri-native-prebuild --platform ios --clean
+(cd ios && pod install)
+# Or generate Android from the same consumer:
+npx tauri-native-prebuild --platform android --clean
+```
+
+The JS equivalent is `prebuildRetainedExpo({ projectRoot, platform, clean })`
+from `@tauri-native/react-native/prebuild`. Generation does not install
+dependencies. Both normal and clean generation use a fresh native template;
+normal regeneration preserves native build caches, while `--clean` discards
+known native build caches. Unrelated consumer files are preserved in either mode.
+Use this entry for subsequent regeneration; direct `expo prebuild` would start
+from a different native owner. File receipts reject hand-edited generated sources.
+Move those changes into supported config plugins before regenerating.
+
+Tauri keeps startup, native libraries, plugin sources, permissions and original
+URL registrations. Additional schemes and permission-purpose text can come from
+Expo config plugins. iOS defaults use the original icon and preserve linked
+entitlements/resources. Native owner replacement, removed original registrations
+and collisions with consumer files fail validation. Failed prebuilds restore the
+previous native directory and root configuration/package files.
+
+This path supports the pinned installed-module host and config plugins operating
+on its native configuration/resources. Android Google Services/versionCode and
+plugins requiring changes to retained Kotlin Gradle files or unsupported Gradle/
+Podfile properties need explicit integration. Custom delegates/Activities,
+development hosts, app-local native codegen and broader lifecycle support remain
+separate roadmap work. The producer continues to run as ordinary Tauri Mobile.
 
 The composer validates every input file and the pinned RN/codegen versions
 before generating a copy. It preserves the original Tauri/native plugin projects,

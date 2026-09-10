@@ -290,3 +290,22 @@ are generation-only probes. Package-owned CNG orchestration, native execution of
 its output, broader lifecycle/source forms and complete parity/CI/migration,
 physical-device and independent-adopter evidence remain open. #45 and all release
 gates retain their current status.
+
+## Retained Expo CNG execution (2026-09-11)
+
+The package-owned `tauri-native-prebuild` entry now supplies a retained Tauri
+custom template to the actual Expo CLI. Eleven generation scenarios per platform
+cover normal/clean regeneration, config plugins, added schemes, bundle upgrades,
+CocoaPods links and failure/edit/conflict preservation. Packed Release apps pass
+34 iOS and 32 Android UI flows, including original Tauri state/plugins/permissions,
+renderer retirement/removal and unmodified generated startup. The installed apps
+consume actual config-plugin metadata; original producer/export/native inputs
+remain unchanged. Evidence: `docs/evidence/retained-expo-cng-2026-09-11.json` on
+local `main`, not pushed or published.
+
+A CocoaPods relative-link restoration failure was corrected and recorded
+separately. An Android-only Kotlin receiver correction is the sole packed-file
+difference between the two native SDK runs; both versions produce the same
+43 generated iOS files. This completes the scoped CNG stage of #45. Broader
+lifecycle/source forms, full parity/CI/migration, physical devices and independent
+adopters remain required. #45 and release gates remain open.

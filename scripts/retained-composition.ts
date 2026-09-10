@@ -44,6 +44,7 @@ export function publishComposition(context: ReturnType<typeof prepareComposition
   if (existsSync(output)) {
     if (!lstatSync(output).isDirectory() || !existsSync(path.join(output, receiptPath)) || !lstatSync(path.join(output, receiptPath)).isFile()) fail('existing output is not an owned composition directory');
     const value = JSON.parse(read(output, receiptPath));
+    if (value.cng !== undefined) fail('Expo CNG output must be regenerated with tauri-native-prebuild');
     if (value.formatVersion !== 1 || value.renderer !== renderer || (value.platform ?? 'android') !== manifest.platform || value.layout !== layout || !value.files || typeof value.files !== 'object' || Array.isArray(value.files)) fail('invalid prior composition receipt');
     previous = value;
     for (const [file, digest] of Object.entries(previous!.files)) {

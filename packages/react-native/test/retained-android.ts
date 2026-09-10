@@ -9,19 +9,21 @@ import { readRetainedArtifacts } from '../../../scripts/retained-artifacts.ts';
 import { sha256 } from '../../cli/src/artifacts/files.ts';
 import { assertOriginalDocument, verifyRetainedView } from './retained/view-scenarios.ts';
 import { acquireMobileTest } from '../../cli/test/runtime/mobile-lock.ts';
+import { configureCng, verifyCng } from './retained/cng-scenarios.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const flags = new Set(process.argv.slice(3));
-assert([...flags].every(flag => ['--expo', '--native-project'].includes(flag)), 'Unknown native gate option');
-const expo = flags.has('--expo');
-const nativeProject = flags.has('--native-project');
+assert([...flags].every(flag => ['--expo', '--native-project', '--cng'].includes(flag)), 'Unknown native gate option');
+const cng = flags.has('--cng');
+const expo = flags.has('--expo') || cng;
+const nativeProject = flags.has('--native-project') || cng;
 const artifact = path.resolve(process.argv[2] ?? path.join(root, 'target/retained-portability/exported-runtime'));
 const manifest = readRetainedArtifacts(artifact);
 assert(manifest.platform === 'android' && manifest.profile === 'release');
 assert.equal(manifest.bootstrap.applicationId, 'dev.taurinative.mobilefieldnotes');
 const device = process.env.ANDROID_SERIAL;
 assert(device, 'Choose an arm64 ANDROID_SERIAL emulator');
-const evidence = path.join(root, (expo ? 'target/react-retained-expo-android' : 'target/react-retained-android') + (nativeProject ? '-native-project' : ''));
+const evidence = path.join(root, (expo ? 'target/react-retained-expo-android' : 'target/react-retained-android') + (cng ? '-cng' : nativeProject ? '-native-project' : ''));
 const consumer = path.join(evidence, 'source free consumer');
 const renderer = path.join(consumer, 'renderer');
 const generated = nativeProject ? path.join(renderer, 'android') : path.join(expo ? renderer : consumer, 'composed application');
@@ -77,14 +79,23 @@ try {
   run('unpack', 'tar', ['-xzf', 'tauri-native-react-native-1.0.0-rc.0.tgz']);
   const sdk = path.join(consumer, 'package');
   mkdirSync(renderer, { recursive: true });
-  const expoDependencies = { '@tauri-native/react-native': '1.0.0-rc.0', expo: '57.0.19', react: '19.2.3', 'react-native': '0.86.3', 'react-native-safe-area-context': '5.7.0', 'expo-file-system': '57.0.6', 'expo-constants': '57.0.17', 'expo-modules-core': '57.0.15' };
+  const expoDependencies = { '@tauri-native/react-native': '1.0.0-rc.0', expo: '57.0.19', react: '19.2.3', 'react-native': '0.86.3', 'react-native-safe-area-context': '5.7.0', 'expo-file-system': '57.0.6', 'expo-constants': '57.0.17', 'expo-modules-core': '57.0.15', ...(cng ? { 'expo-location': '57.0.15' } : {}) };
   if (expo) {
     const exampleRequire = createRequire(path.join(root, 'examples/react-native/package.json'));
     const expoRequire = createRequire(realpathSync(exampleRequire.resolve('expo/package.json')));
+    const location = path.join(renderer, 'installed-expo-location');
+    if (cng) {
+      mkdirSync(location);
+      run('location-package', 'npm', ['pack', 'expo-location@57.0.15', '--ignore-scripts', '--pack-destination', location]);
+      run('location-unpack', 'tar', ['-xzf', 'expo-location-57.0.15.tgz', '--strip-components=1'], location);
+      const requirePrebuild = createRequire(expoRequire.resolve('@expo/prebuild-config/package.json'));
+      mkdirSync(path.join(location, 'node_modules/@expo'), { recursive: true });
+      symlinkSync(path.dirname(requirePrebuild.resolve('@expo/image-utils/package.json')), path.join(location, 'node_modules/@expo/image-utils'), 'dir');
+    }
     for (const name of [...Object.keys(expoDependencies), 'babel-preset-expo']) {
       const file = path.join(renderer, 'node_modules', name);
       mkdirSync(path.dirname(file), { recursive: true });
-      const directory = name === '@tauri-native/react-native' ? sdk : path.dirname(realpathSync((name.startsWith('expo-') ? expoRequire : exampleRequire).resolve(`${name}/package.json`)));
+      const directory = name === '@tauri-native/react-native' ? sdk : name === 'expo-location' ? location : path.dirname(realpathSync((name.startsWith('expo-') ? expoRequire : exampleRequire).resolve(`${name}/package.json`)));
       symlinkSync(directory, file, 'dir');
     }
   } else symlinkSync(path.join(root, 'examples/react-native/node_modules'), path.join(renderer, 'node_modules'), 'dir');
@@ -104,18 +115,21 @@ try {
   const { readRetainedArtifacts: packedReader } = createRequire(path.join(consumer, 'consumer.cjs'))(path.join(sdk, 'retained-artifacts.js'));
   assert.deepEqual(packedReader(copied), manifest);
   const options = { artifactsDir: copied, outputDir: generated, rendererDir: renderer, moduleName: expo ? 'main' : 'RetainedFieldnotes', bundleFile: bundle, expo, ...(nativeProject ? { layout: 'native-project' } : {}) };
-  const composition = composeAndroid(options); assert.equal(composition.changed, true);
-  assert.equal(composeAndroid(options).changed, false, 'Identical composition must preserve generated files');
+  if (cng) configureCng(renderer, copied, 'android', bundle);
+  const cngResult = cng ? await verifyCng(renderer, 'android', (label, text) => writeFileSync(path.join(evidence, `${label}.log`), text)) : undefined;
+  const composition = cngResult ?? composeAndroid(options); assert.equal(composition.changed, true);
+  if (!cng) assert.equal(composeAndroid(options).changed, false, 'Identical composition must preserve generated files');
   const receipt = JSON.parse(readFileSync(path.join(generated, 'tauri-native-composition.json'), 'utf8'));
   // A subclass adds only acceptance layout/telemetry. All attachment and lifecycle forwarding remain generated.
   cpSync(new URL('./retained/AcceptanceActivity.kt.fixture', import.meta.url), path.join(android, 'app/src/main/java/dev/taurinative/mobilefieldnotes/AcceptanceActivity.kt'));
   if (expo) {
     const file = path.join(android, 'app/src/main/java/dev/taurinative/mobilefieldnotes/AcceptanceActivity.kt');
     writeFileSync(file, readFileSync(file, 'utf8').replace('val notes = File(', 'report.put("expo", JSONObject(dev.taurinative.expoprobe.ProbeState.snapshot()))\n    report.put("expoApplicationHasHost", (application as TauriNativeApplication).reactHost != null)\n    val notes = File('));
+    if (cng) writeFileSync(file, readFileSync(file, 'utf8').replace('TauriNativeActivity()', 'MainActivity()').replace('as TauriNativeApplication', 'as MainApplication').replace('val notes = File(', 'report.put("cngProbe", packageManager.getApplicationInfo(packageName, android.content.pm.PackageManager.GET_META_DATA).metaData.getString("dev.taurinative.CNG_PROBE"))\n    val notes = File('));
   }
   const manifestFile = path.join(android, 'app/src/main/AndroidManifest.xml');
   const compositionManifest = readFileSync(manifestFile, 'utf8');
-  writeFileSync(manifestFile, compositionManifest.replace(`android:name="${composition.activity}"`, `android:name="${appId}.AcceptanceActivity"`));
+  writeFileSync(manifestFile, compositionManifest.replace(`android:name="${cng ? '.MainActivity' : composition.activity}"`, `android:name="${appId}.AcceptanceActivity"`));
   const gradle = path.join(android, 'app/build.gradle.kts');
   writeFileSync(gradle, readFileSync(gradle, 'utf8').replace('getByName("release") {', 'getByName("release") {\n            signingConfig = signingConfigs.getByName("debug")'));
   run('source-free-build', './gradlew', ['--no-daemon', 'assembleRelease'], android, buildEnv);
@@ -144,6 +158,7 @@ try {
   flow('back', '- pressKey: Back\n- assertVisible: "RN links 0 back 1"');
   if (expo) flow('expo-initial-modules', expoAction('Expo native modules', 'Expo native active 1 created 1 destroyed 0 callbacks 0 links 0 back 1') + '\n' + expoAction('Expo write file', 'Expo file saved'));
   const initial = report(); assert.equal(initial.listeners, 1);
+  if (cng) assert.equal(initial.cngProbe, 'actual config plugin', 'The installed app must consume the config-plugin manifest value');
   flow('deny-permission', '- tapOn: "Request permission"\n- tapOn: "(?i)Don.t allow"\n- assertVisible: "Permission prompt-with-rationale"\n- tapOn: "Save location"\n- assertVisible: "Location denied"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 0 notes 0 setup 1 plugins 1"\n- assertVisible: "RN events 0"');
   const beforePermission = report();
   flow('retire-permission', '- tapOn: "Retire on pause"\n- tapOn: "Request then save"\n- assertVisible: "(?i)While using the app"');
@@ -255,7 +270,7 @@ try {
   assert.deepEqual(packedReader(copied), manifest);
   assert(!existsSync(path.join(consumer, 'src-tauri')), 'Consumer has no Rust producer');
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform: 'android', profile: 'release', formatVersion: 2, abiVersion: 3,
-    renderer: 'React Native 0.86.3 / Hermes 250829098.0.17 / generated TurboModule and Fabric', expo, layout: nativeProject ? 'native-project' : 'container', sourceFree: true, sourceFreeBuild: `PATH=${buildEnv.PATH} ./gradlew --no-daemon assembleRelease`,
+    renderer: 'React Native 0.86.3 / Hermes 250829098.0.17 / generated TurboModule and Fabric', expo, cng: cngResult ? { scenarios: cngResult.generationScenarios, files: cngResult.files, nativeProbe: initial.cngProbe } : false, layout: nativeProject ? 'native-project' : 'container', sourceFree: true, sourceFreeBuild: `PATH=${buildEnv.PATH} ./gradlew --no-daemon assembleRelease`,
     nonDebuggable: true, libraries, elfAlignment: 'All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed',
     packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-react-native-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
     apkSha256: sha256(readFileSync(acceptanceApk)), defaultActivity: { activity: composition.activity, pid, apkSha256: sha256(readFileSync(apk)), overriddenHooks: false },

@@ -99,3 +99,12 @@ test('missing or ambiguous configuration is diagnosed before host edits', async 
   assert.throws(() => f.run('ios', { artifactsDir: './artifacts', tauriDir: './legacy' }), /not both/);
   assert.deepEqual(f.snapshot('ios'), before);
 });
+
+test('a retained config with no supported platform cannot silently become an ordinary Expo app', async () => {
+  const f = await fixture(), before = f.snapshot('ios');
+  const plugin = createRequire(import.meta.url)('../app.plugin.js');
+  for (const bundleFiles of [undefined, {}, { web: './web.js' }]) {
+    assert.throws(() => plugin({ _internal: { projectRoot: f.projectRoot } }, { runtime: 'retained', artifactsDir: './artifacts', bundleFiles }), /declare at least one ios or android bundleFiles entry/);
+    assert.deepEqual(f.snapshot('ios'), before);
+  }
+});
