@@ -1,8 +1,8 @@
-import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { prepareComposition, publishComposition } from '../../../scripts/retained-composition.ts';
+import { prepareIosProject } from '../../../scripts/retained-ios-composition.ts';
 import type { AndroidCompositionOptions, IosCompositionOptions } from './retained-compose-types.d.cts';
 
 const kotlin = (value: string) => JSON.stringify(value).replaceAll('$', '\\$');
@@ -76,96 +76,19 @@ export function composeAndroid(options: AndroidCompositionOptions) {
   return { project: path.join(output, 'android'), activity, changed };
 }
 
-type XcodeObject = {
-  isa: string; name?: string; path?: string; sourceTree?: string; productType?: string;
-  children?: string[]; files?: string[]; fileRef?: string; buildPhases?: string[];
-  buildConfigurationList?: string; buildConfigurations?: string[]; mainGroup?: string;
-  buildSettings?: Record<string, unknown>;
-};
-function plist(file: string) {
-  const result = spawnSync('/usr/bin/plutil', ['-convert', 'json', '-o', '-', file], { encoding: 'utf8' });
-  if (result.status !== 0) fail(`cannot read Apple project metadata: ${file}: ${result.error ?? result.stderr}`);
-  return JSON.parse(result.stdout);
-}
 const ruby = (value: string) => `'${value.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
 const shell = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
-function iosVersion(value: unknown): string {
-  if (typeof value !== 'string' || !/^\d+\.\d+(?:\.\d+)?$/.test(value)) fail('iOS deployment targets must be explicit numeric versions');
-  return value;
-}
-function greaterVersion(a: string, b: string) {
-  const left = a.split('.').map(Number), right = b.split('.').map(Number);
-  for (let i = 0; i < 3; i++) if ((left[i] ?? 0) !== (right[i] ?? 0)) return (left[i] ?? 0) > (right[i] ?? 0) ? a : b;
-  return a;
-}
 
 /** Use the original Tauri Xcode app and Apple plist tools; neither export nor build Rust. */
 export function composeIos(options: IosCompositionOptions) {
   if (process.platform !== 'darwin') fail('iOS composition requires macOS Apple project tools');
   const context = compositionInputs(options, 'ios');
-  const { artifact, sdk, output, manifest, rn, rendererDirectory: renderer, bundled } = context;
+  const { sdk, output, manifest, rn, rendererDirectory: renderer, bundled } = context;
   if (manifest.platform !== 'ios') fail('requires an iOS format 2 artifact');
-  const ios = path.join(artifact, 'ios'), bootstrap = manifest.bootstrap;
-  if (['Podfile', 'Podfile.lock', 'Pods', '.xcode.env', '.xcode.env.local', 'assets/tauri-native-react'].some(file => existsSync(path.join(ios, file))))
-    fail('existing CocoaPods, Node environment or renderer assets require explicit integration');
-  const projectFile = `${bootstrap.xcodeProject}/project.pbxproj`;
-  const project = plist(path.join(ios, projectFile)) as { objects: Record<string, XcodeObject>; rootObject: string };
-  const objects = project.objects;
-  const targets = Object.values(objects).filter(item => item.isa === 'PBXNativeTarget');
-  const target = targets[0];
-  if (targets.length !== 1 || target?.name !== bootstrap.target || target.productType !== 'com.apple.product-type.application') fail('requires one original Tauri application target');
-  if (Object.values(objects).some(item => item.isa === 'PBXShellScriptBuildPhase')) fail('existing native build scripts require explicit integration');
-  const rootGroup = objects[project.rootObject]?.mainGroup;
-  function sourcePath(id: string, visited = new Set<string>()): string {
-    const item = objects[id];
-    if (!item || visited.has(id)) fail('invalid Xcode source group graph');
-    visited.add(id);
-    if (id === rootGroup) return '';
-    if (item.sourceTree === 'SOURCE_ROOT') return item.path ?? '';
-    if (item.sourceTree !== '<group>') fail('unsupported Xcode source path');
-    const parents = Object.entries(objects).filter(([, parent]) => parent.children?.includes(id));
-    if (parents.length !== 1) fail('ambiguous Xcode source group');
-    return path.posix.join(sourcePath(parents[0]![0], visited), item.path ?? '');
-  }
-  const sources: string[] = [], resources: string[] = [];
-  for (const phase of target.buildPhases ?? []) {
-    const item = objects[phase];
-    if (!item || !['PBXSourcesBuildPhase', 'PBXResourcesBuildPhase'].includes(item.isa)) continue;
-    for (const file of item.files ?? []) {
-      const ref = objects[file]?.fileRef;
-      if (!ref) fail('invalid original Xcode build input');
-      (item.isa === 'PBXSourcesBuildPhase' ? sources : resources).push(sourcePath(ref));
-    }
-  }
-  const mains = sources.filter(file => /^Sources\/[^/]+\/main\.mm$/.test(file));
-  if (mains.length !== 1 || sources.filter(file => file === 'Sources/TauriNativeRuntime/TNRuntimeSession.mm').length !== 1 || !resources.includes('assets'))
-    fail('requires the original main, one retained session client and bundled assets folder');
-  const main = mains[0]!;
-  const originalMain = read(ios, main);
-  if (originalMain.replace(/\s+/g, ' ').trim() !== '#include "bindings/bindings.h" int main(int argc, char * argv[]) { ffi::start_app(); return 0; }')
-    fail('custom iOS application entry point requires verified lifecycle integration');
-  const configurations = objects[target.buildConfigurationList ?? '']?.buildConfigurations;
-  if (!configurations?.length) fail('missing original Xcode build configurations');
-  for (const id of configurations) {
-    const settings = objects[id]?.buildSettings;
-    const infoFile = settings?.INFOPLIST_FILE;
-    if (typeof infoFile !== 'string' || !/^[\w.-]+\/Info\.plist$/.test(infoFile)) fail('unsupported original Info.plist path');
-    const info = plist(path.join(ios, infoFile));
-    if (info.UIApplicationSceneManifest || info.UIApplicationDelegateClassName) fail('custom iOS scene/delegate ownership requires verified integration');
-  }
-  let minimumOsVersion = greaterVersion('16.4', iosVersion(bootstrap.minimumOsVersion));
-  for (const item of Object.values(objects)) {
-    const value = item.buildSettings?.IPHONEOS_DEPLOYMENT_TARGET;
-    if (value !== undefined) minimumOsVersion = greaterVersion(minimumOsVersion, iosVersion(value));
-  }
-  for (const item of Object.values(objects)) if (item.isa === 'XCBuildConfiguration' && item.buildSettings)
-    item.buildSettings.IPHONEOS_DEPLOYMENT_TARGET = minimumOsVersion;
-  const encodedProject = spawnSync('/usr/bin/plutil', ['-convert', 'xml1', '-o', '-', '-'], { input: JSON.stringify(project), encoding: 'utf8' });
-  if (encodedProject.status !== 0) fail(`cannot encode the composed Xcode project: ${encodedProject.stderr}`);
+  const { projectFile, encodedProject, main, originalMain, minimumOsVersion, bootstrap, workspace } = prepareIosProject(context, '16.4');
   const relative = (dir: string) => path.relative(path.join(output, 'ios'), dir).split(path.sep).join('/');
-  const workspace = bootstrap.xcodeProject.replace(/\.xcodeproj$/, '.xcworkspace');
   const changed = publishComposition(context, { moduleName: options.moduleName, platform: 'ios', minimumOsVersion, target: bootstrap.target }, stage => {
-    write(stage, `ios/${projectFile}`, encodedProject.stdout);
+    write(stage, `ios/${projectFile}`, encodedProject);
     write(stage, `ios/${main}`, '#import <TauriNativeReactRetained/TNReactComposition.h>\n' + originalMain.replace('ffi::start_app();',
       `@autoreleasepool {\n\t\tNSURL *bundle = [NSBundle.mainBundle URLForResource:@"index.bundle" withExtension:@"js" subdirectory:@"assets/tauri-native-react"];\n\t\t[TNReactComposition installWithModule:@${JSON.stringify(options.moduleName)} bundle:bundle];\n\t}\n\tffi::start_app();`));
     write(stage, 'ios/assets/tauri-native-react/index.bundle.js', bundled);

@@ -1,0 +1,296 @@
+{
+  "passed": true,
+  "platform": "ios",
+  "profile": "release",
+  "formatVersion": 2,
+  "abiVersion": 3,
+  "renderer": "Lynx 4.0.1 / PrimJS 4.0.0",
+  "sourceFree": true,
+  "sourceFreeBuild": "PATH=/usr/bin:/bin:/usr/sbin:/sbin xcodebuild -configuration release -sdk iphonesimulator",
+  "packageSha256": "98883ac9817cf36c406fa8d6e354110b0a371fc9e0731a541226083493365a50",
+  "artifactSha256": "f153668064f66bd1c5f8dcfc1d1f340844e5437241ad0261d15faabfe65de53f",
+  "binarySha256": "4934b9769be4eb6133d8224d2e1474d4c5e1f76f8630b8e520162855c27746ea",
+  "defaultIntegration": {
+    "pid": 38673,
+    "overriddenHooks": false,
+    "baseline": {
+      "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/237AB9C5-F2FA-42D5-AAF1-39E50F7E63C8/Library/Application Support/dev.taurinative.mobilefieldnotes",
+      "passed": true,
+      "reloaded": true,
+      "scenarios": [
+        "setup",
+        "state",
+        "app-handle",
+        "async",
+        "rust-event",
+        "plugin-setup",
+        "plugin-allowed",
+        "plugin-denied",
+        "domain-error",
+        "reload"
+      ],
+      "state": {
+        "appIdentifier": "dev.taurinative.mobilefieldnotes",
+        "pluginSetupCount": 1,
+        "setupCount": 1,
+        "value": 45
+      }
+    },
+    "binarySha256": "c0cad190ad691cc9a9173d7835a7e87c0b88485f30f1ec4f657f0a9c3e96866c"
+  },
+  "bundleSha256": "f66aed1812f9c40b8c13f42978d869f3bb098a6aba2e2078c934a4adb40f7e33",
+  "baseline": {
+    "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/6C158083-2B65-4112-90E1-CD2E210D0322/Library/Application Support/dev.taurinative.mobilefieldnotes",
+    "passed": true,
+    "reloaded": true,
+    "scenarios": [
+      "setup",
+      "state",
+      "app-handle",
+      "async",
+      "rust-event",
+      "plugin-setup",
+      "plugin-allowed",
+      "plugin-denied",
+      "domain-error",
+      "reload"
+    ],
+    "state": {
+      "appIdentifier": "dev.taurinative.mobilefieldnotes",
+      "pluginSetupCount": 1,
+      "setupCount": 1,
+      "value": 45
+    }
+  },
+  "denied": {
+    "paused": 2,
+    "listeners": 1,
+    "listenersAfterRelease": -1,
+    "generation": 1,
+    "stopped": 1,
+    "appDelegate": "AppDelegate",
+    "resumed": 3,
+    "hostClosed": false,
+    "pid": 34354
+  },
+  "saved": {
+    "paused": 1,
+    "listeners": 1,
+    "listenersAfterRelease": -1,
+    "generation": 1,
+    "stopped": 0,
+    "appDelegate": "AppDelegate",
+    "resumed": 2,
+    "hostClosed": false,
+    "pid": 35812
+  },
+  "remounted": {
+    "paused": 2,
+    "listeners": 1,
+    "listenersAfterRelease": 0,
+    "generation": 2,
+    "stopped": 1,
+    "appDelegate": "AppDelegate",
+    "resumed": 3,
+    "hostClosed": false,
+    "pid": 35812
+  },
+  "closed": {
+    "paused": 2,
+    "listeners": 0,
+    "listenersAfterRelease": 0,
+    "generation": 2,
+    "stopped": 1,
+    "appDelegate": "AppDelegate",
+    "resumed": 3,
+    "hostClosed": true,
+    "pid": 35812
+  },
+  "notes": [
+    {
+      "id": 1,
+      "text": "A Lynx place to remember",
+      "latitude": 37.5665,
+      "longitude": 126.978
+    }
+  ],
+  "uiScenarios": [
+    "shared original state/setup",
+    "Tauri ACL and native caller denial",
+    "OS permission denial/grant",
+    "save and event",
+    "background deep link and event",
+    "renderer replacement retires native subscriptions",
+    "fresh renderer receives only fresh events",
+    "removing Lynx preserves the independent original Tauri frontend",
+    "unmodified generated iOS startup/default layout",
+    "default SDK composition receives original Tauri deep-link events"
+  ],
+  "testOnlyIntegration": "Acceptance subclass supplies layout, baseline readiness and telemetry; the packed composer/SDK own startup, notification observation, readiness and attachment. A second Release app executes the unmodified generated startup/default layout with no acceptance subclass. Original Tauri UIApplication delegate preserved. Third-party autolinking and retained TauriView remain open.",
+  "recordedAt": "2026-09-10T14:14:31.920138+00:00",
+  "command": "PATH=\"$HOME/.local/share/mise/installs/ruby/3.3.10/bin:$HOME/.maestro/bin:$PATH\" IOS_SIMULATOR_UDID=0368C5D9-63CF-447E-B6BB-0E3184B1CD0A node --experimental-strip-types packages/lynx/test/retained-ios.ts",
+  "toolchain": {
+    "node": "v24.15.0",
+    "npm": "11.12.1",
+    "xcode": "Xcode 26.4.1\nBuild version 17E202",
+    "ruby": "ruby 3.3.10 (2025-10-23 revision 343ea05002) [arm64-darwin23]",
+    "cocoaPods": "1.16.2 (from successful pod install logs)",
+    "maestro": "2.4.0",
+    "simulator": {
+      "name": "iPhone 16",
+      "udid": "0368C5D9-63CF-447E-B6BB-0E3184B1CD0A"
+    },
+    "runtime": {
+      "BuildID": "847B2196-33E0-11F1-8760-4B155098FBAC",
+      "ProductBuildVersion": "23E254a",
+      "ProductCopyright": "1983-2026 Apple Inc.",
+      "ProductName": "iPhone OS",
+      "ProductVersion": "26.4.1",
+      "SystemImageID": "51BF0F28-5041-4C74-A7B0-61172EA732C6"
+    },
+    "lynx": "4.0.1",
+    "primjs": "4.0.0",
+    "@lynx-js/react": "0.125.0",
+    "@lynx-js/rspeedy": "0.16.5",
+    "@lynx-js/react-rsbuild-plugin": "0.19.1"
+  },
+  "reportSha256": "53df0d2b82251ab288b9d81954323d14d82c3024b248545db93ea3f1ea931f57",
+  "composition": {
+    "generatedFiles": 36,
+    "target": "ordinary-tauri-mobile-fieldnotes_iOS",
+    "minimumOsVersion": "14.0",
+    "successfulPodInstallations": 2,
+    "regeneratedBetweenInstallations": true,
+    "receiptAfterPodsSha256": "af261e3508a99d12b3280a502ac44f346973e45bdd0d16e1088f3061b789ea7c",
+    "projectBeforePodsSha256": "c4b9852b8eb89584d65abeb084c7f9da4cb8a1575fb2397156f3940fbd18563a",
+    "projectAfterPodsSha256": "c78d18fccb2b5dd1972a1399e22920a3f94d4a41b00c3f0c00d96913809427d2",
+    "integrationSha256": {
+      "ios/ordinary-tauri-mobile-fieldnotes.xcodeproj/project.pbxproj": "c78d18fccb2b5dd1972a1399e22920a3f94d4a41b00c3f0c00d96913809427d2",
+      "ios/Podfile": "0f25ae51a417335845131fd3e301669c55a3f573479b607f3879046787394a02",
+      "ios/Sources/ordinary-tauri-mobile-fieldnotes/main.mm": "31f84a12c95c298188f8762329caa5cd112e601fd0f48c93a4bedae28ac84be4"
+    }
+  },
+  "sourceSha256": {
+    "scripts/retained-ios-composition.ts": "28612a7b91f795f8b333e2ab669a6b94cd669565dfca4258b604312ca12a2f1c",
+    "scripts/retained-pods.rb": "48b68be10e2de242e6015d7cb873ccc194df9e13f7c7fa12b481393b8300ea93",
+    "scripts/sync-host-files.ts": "980c4db4b375565391e635dc5d41c4c0e4a6bace5f25525f37fc8ac2c0ff4b1c",
+    "packages/lynx/plugin/retained-compose.cts": "b276d9b24b12c854fde344e78db8b4e519049d7aa6fe380eb24add2634d315a9",
+    "packages/lynx/plugin/retained-compose-types.d.cts": "3a3af12f1398edd79827c2980571f7b237d67842f968fa70b0ebf859c1e359fa",
+    "packages/lynx/compose.cjs": "491c3086e3ab8a3c8a1c81e93c8108c8f718965ab7f2565932a6a2b7a9bdedc8",
+    "packages/lynx/compose.d.ts": "3a3af12f1398edd79827c2980571f7b237d67842f968fa70b0ebf859c1e359fa",
+    "packages/lynx/ios/TauriNativeLynxRetained.podspec": "d6267287c7e36a82d13f2ff60a8645d2d56245ecf23768c6b55c6879022907b3",
+    "packages/lynx/ios/retained/TNLynxComposition.h": "9130aac8fc3ae6973a8e2e233d12e8761c9ab01655ee186e9ae262e77c13e933",
+    "packages/lynx/ios/retained/TNLynxComposition.mm": "9acaa11b821ff4c952517ce5956eab5c0a6b1782f607c83512d3c397c040180e",
+    "packages/lynx/ios/retained/TNLynxHost.mm": "aaf66ac43951f76e2aad779b9854f15c2e28f8a2dd9eef4633cb43ee57e3cf99",
+    "packages/lynx/ios/retained/TNLynxRuntimeModule.mm": "0271bcab1c1b50275c55ceaca7ddea0b80367c992519f7bba57fc5f0606b0d5a",
+    "packages/lynx/ios/retained/pods.rb": "110dbb628dd7cfceaa3fc0df34cac20dfc09cac572ac7a50f0842361dccb3294",
+    "packages/lynx/ios/retained/composition.rb": "de0fd5ab33c1f723eae0e3f0be9ac4de0c89d8ae6ea2905d14a3e2642d0831e0",
+    "packages/lynx/src/retained.ts": "f06cbea7664a98074494a8db58f106c1dc5a0360c3e873ee37a5fc713bf3223e",
+    "packages/lynx/src/retained-client.ts": "d54bec5bd9f7dab9a1192da661612089b821494417ac259990d4a1e4da45f53a",
+    "packages/lynx/test/retained-ios.ts": "2573f406a1f0b12dad8e30f7e657d073596d2c18a4dfe4d12b7b68d93cf0067a",
+    "packages/lynx/test/retained/IosAcceptance.mm.fixture": "606179c135527193451d7ef02765c6cce3cc101cd583f89eafa6bc9f55884051",
+    "packages/lynx/test/retained/App.tsx.fixture": "917bfa205995c860a2a1a352546ad0e2cbd958dcbddd16a472d67b8e428906eb",
+    "packages/lynx/test/retained/compose-ios.test.ts": "e7e66de5b4127ede4dd63efa9a43f6957c91cabd52fd860628d14bbda6fec0b0"
+  },
+  "junitSha256": {
+    "background": "2d44e4dd508e6fb0a63315a5161cb00a8c6019c39dceed23bbcb2a80b6a0af2b",
+    "default-integration": "a84dfb344ee9fc95f4a72e5b04885f9b30620ea71bd5596bb813a584bcd43bdd",
+    "default-link": "68e986ea0d47f0ca6e6c0cf14cf9f065ed425c3dbeb7001a0f751913231c04f5",
+    "deny-permission": "4c37c8f9b8808d1ee4dacea030c902dd8c8ab18f79f4a93d509cf1d9331d0344",
+    "fresh-events": "315b13e50de1c448fb35815c72484c8b5ccc6681e446f7d43f318d033214a38f",
+    "grant-permission": "64a86ebf379730e9f5ce312690af21b0631aa13104a7da997ebed2c41c30309a",
+    "initial": "78c64b5ceeaf6110479c7dad7652bacb481ad191d8445f930056ed54357531ee",
+    "remove-renderer": "d6ab6237659757847cf9d3ff076642a00e19da7033c011c585936f0b2d37559d",
+    "resume": "e57f91cc8ecb287703cf1fb1fbbad95ca3a2d1c7317e3cc6c8edfc1e4b712400"
+  },
+  "buildLogs": {
+    "pods": "560369a19e3a53c7195eb45131e4fef49b8201d03fe626c584cc68c8c6b540c5",
+    "pods-regenerated": "68ab0799bf15162091a24242321acce38fd31fb5c2f96214a7cdade51dbec6de",
+    "source-free-build": "c5ecc5c11a54be2f7bc5f5fd85fce46eb83188a26ea8fc107d36bc25a1acc505",
+    "default-source-free-build": "d8557d894dbc5960b0225fc35f10622ef42c5bd9c117cd8f79ea318979820c0f"
+  },
+  "unchangedTauriArchiveSha256": "7718abe7d0e3448ee101c98f4cec26c6abcf837ef4795fac1cf95ce6cf1ceec9",
+  "podfileLockSha256": "c9dd80c3f9c4f4d078aea5afe94434cc8e4a506200e88be79edf75a2dd94ce6e",
+  "executableArchitectures": "arm64",
+  "generationRegression": {
+    "passed": true,
+    "baselineCommit": "c53ec2d",
+    "results": [
+      {
+        "renderer": "react-native",
+        "platform": "android",
+        "generatedFiles": 98,
+        "receiptSha256": "a3354d03f36e62fee64661b0b4f432dac90170ed687824533ac2021636e87ca0",
+        "identicalReceipt": true,
+        "composerSha256": "f69f03ffd31f553d3aee3c6df43b18e67002f3c3399eb766c166e996099d647b"
+      },
+      {
+        "renderer": "react-native",
+        "platform": "ios",
+        "generatedFiles": 38,
+        "receiptSha256": "97ee69a222f005b7cd298cdfd64f1166e8a11d1ae1402cfb673271123de1cd39",
+        "identicalReceipt": true,
+        "composerSha256": "f69f03ffd31f553d3aee3c6df43b18e67002f3c3399eb766c166e996099d647b"
+      },
+      {
+        "renderer": "lynx",
+        "platform": "android",
+        "generatedFiles": 98,
+        "receiptSha256": "479d0b5071a319f5f2142ff83203cbcf7cad5ffa8376ffb490ab94d4a3e5251e",
+        "identicalReceipt": true,
+        "composerSha256": "491c3086e3ab8a3c8a1c81e93c8108c8f718965ab7f2565932a6a2b7a9bdedc8"
+      }
+    ]
+  },
+  "verification": {
+    "nativeJUnitFlows": 9,
+    "skippedFlows": 0,
+    "baselineScenarios": 10,
+    "lynxIosMetadataScenarios": 4,
+    "existingComposerScenarios": 13,
+    "metadataCommand": "node --experimental-strip-types --test packages/lynx/test/retained/compose-ios.test.ts",
+    "metadataLogSha256": "0eb172a0b88f6da3c351372af8239dbe18990e7d00c87d64356000c6074be727",
+    "metadataScope": "Source/settings preservation and no-op/upgrade behavior, higher authored minimums, corrupt/conflicting inputs, edited outputs, and CocoaPods receipt ownership. Metadata fixtures are explicitly not native apps.",
+    "packageFiles": 56,
+    "allPackedFilesMatchCurrentSdk": true,
+    "packageVerificationLogSha256": "5c799d0be83c77afbc0e0a5d7daf299ec97c73e55eaa0e21cfc76ddea9155f56",
+    "reactPackageFiles": 103,
+    "reactPackageVerificationLogSha256": "1cdea6f7ae86571647509d8d023f7df1d568d1078f6f32ae50f4a3bf9d8a6f8f",
+    "typechecks": [
+      "scripts/tsconfig.json",
+      "packages/react-native/plugin/tsconfig.json",
+      "Both actual packed SDKs composeAndroid/composeIos and retained-artifacts public exports"
+    ],
+    "publicApiTypecheckCommand": "pnpm exec tsc --ignoreConfig --noEmit --skipLibCheck --strict --module node16 --moduleResolution node16 --target es2022 target/lynx-compose-ios/packed-api/api.mts",
+    "publicApiTypecheckSourceSha256": "aabac318282f89d61e6d0850db51a2496808d96279c189e7930e825e43452181"
+  },
+  "scope": "The actual packed public composer generates a relocated consumer from the existing producer-deleted iOS arm64 Release artifact. No new iOS Rust export is claimed. Shared Apple metadata/receipt helpers preserve the immutable Tauri archive and original deployment target. SDK launch observation, readiness and safe-area attachment execute under the unchanged Tauri AppDelegate. The first Release app adds only acceptance layout/readiness/telemetry hooks; the second clean-installed Release app uses unmodified generated main/default layout and has no acceptance telemetry. Original plugin permissions, state, events and frontend continuity pass. Denial-to-grant explicitly resets privacy and relaunches; grant/background/remount/removal retain one process.",
+  "earlierAttempts": [
+    {
+      "outcome": "incomplete",
+      "stage": "source-free-build",
+      "reason": "The earlier tool session and owner process were absent on resumption; no terminal build output or completion report existed. The exact cause is not established. Partial inputs/logs were preserved and the entire gate restarted.",
+      "runLogSha256": "2dd59ddc6516ff527c935d7d8afc42bd9c008c997d2a92558f3dd5eb74e1d7bd",
+      "processObservation": {
+        "observedAt": "2026-09-10T13:58:58.963831+00:00",
+        "session": 65759,
+        "sessionMissing": true,
+        "pid": 51657,
+        "ownerProcessAbsent": true,
+        "completionReportAbsent": true,
+        "phase": "source-free-build",
+        "cause": "Not established; no terminal build output was captured. Preserve partial files and rerun the complete gate."
+      }
+    }
+  ],
+  "remaining": [
+    "Expo CNG and third-party native-module autolinking",
+    "retained TauriView/navigation contract",
+    "custom producer startup/delegate/source forms",
+    "consistent structured iOS session-open diagnostics",
+    "RN iOS Linking forwarding",
+    "actual renderer retirement during pending OS permission callbacks",
+    "repeated Android startup reliability",
+    "full parity, physical devices and independent adopters"
+  ]
+}

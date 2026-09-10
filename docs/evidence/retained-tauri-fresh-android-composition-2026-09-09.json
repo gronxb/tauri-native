@@ -1,0 +1,567 @@
+{
+  "passed": true,
+  "recordedAt": "2026-09-09T12:27:11.829564+00:00",
+  "scope": "Fresh current-CLI Android arm64 Release export, followed serially by native platform acceptance and both packed SDK automatic-composition gates from the identical immutable artifact. Each SDK gate builds an acceptance-subclass APK and a second clean-installed APK with unmodified generated startup/default layout. The initial prior Lynx baseline failure is still unconfirmed; these complete passes do not establish repeated cold-start reliability or its root cause.",
+  "baseCommit": "c53ec2d8962b5c28b4e290d9389e14bbb44085b2",
+  "toolchain": {
+    "node": "v24.15.0",
+    "npm": "11.12.1",
+    "java": "openjdk version \"21.0.10\" 2026-01-20",
+    "maestro": "2.4.0",
+    "emulatorFingerprint": "google/sdk_gphone16k_arm64/emu64a16k:17/CP21.260330.005/15181570:user/dev-keys",
+    "emulator": "Pixel 10 Pro XL / API 37 / arm64 / 16 KB",
+    "gradle": "8.14.3",
+    "androidGradlePlugin": "8.11.0",
+    "kotlin": "1.9.25",
+    "ndk": "27.1.12297006",
+    "lynx": "4.0.1",
+    "primjs": "4.0.0",
+    "@lynx-js/react": "0.125.0",
+    "@lynx-js/rspeedy": "0.16.5",
+    "@lynx-js/react-rsbuild-plugin": "0.19.1"
+  },
+  "environment": "PATH=$HOME/.cargo/bin:$HOME/Library/Android/sdk/platform-tools:$HOME/.maestro/bin:$PATH; JAVA_HOME=/Applications/Android Studio.app/Contents/jbr/Contents/Home; ANDROID_HOME=$HOME/Library/Android/sdk; NDK_HOME=$ANDROID_HOME/ndk/27.1.12297006; ANDROID_SERIAL=emulator-5554",
+  "artifactSha256": "fb5f29d07ace2c715df7b4b4121fc57f2fa8df5b4cf4cf32d298dac7dc4595d5",
+  "compatibility": {
+    "mode": "retained",
+    "tauri": "2.11.5",
+    "tauriCli": "2.11.4",
+    "wry": "0.55.1",
+    "tauriRuntimeWry": "2.11.4"
+  },
+  "plugins": {
+    "tauri-plugin-deep-link": "2.4.10",
+    "tauri-plugin-geolocation": "2.3.3"
+  },
+  "changedFilesSinceOlderArtifact": [
+    "android/app/src/main/java/dev/taurinative/mobilefieldnotes/generated/RustWebViewClient.kt",
+    "android/app/src/main/jniLibs/arm64-v8a/libordinary_tauri_mobile_fieldnotes_lib.so",
+    "build.json"
+  ],
+  "changedFileSha256": {
+    "android/app/src/main/java/dev/taurinative/mobilefieldnotes/generated/RustWebViewClient.kt": "9466866662c0192465cdb95e076eabc104a989585c2a12c09f42eb8f87ff1b57",
+    "android/app/src/main/jniLibs/arm64-v8a/libordinary_tauri_mobile_fieldnotes_lib.so": "d1b1e689181c8a21fc0c1da8ae916f2c006de5cd3654eff7cc39bc5bb3a35467",
+    "build.json": "2313c7f11b87912a3c073f5b2a71db03a2d238af71a47f4cb7f621fdeaa34937"
+  },
+  "sourceHashes": {
+    "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+    "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+  },
+  "sourceHashesMatchOriginalFixture": true,
+  "standalone": {
+    "command": "pnpm --filter @tauri-native/cli build && node --experimental-strip-types packages/cli/test/runtime/portable.ts android --release",
+    "reportSha256": "166e45ed2e081fa76585033addf3e8962db9704416bedc51de4285e8bcfee201",
+    "producerDeleted": true,
+    "producerUnchanged": true,
+    "profile": "release",
+    "sourceFreeBuild": "./gradlew --no-daemon assembleRelease; PATH=/usr/bin:/bin:/usr/sbin:/sbin; relocated path has spaces",
+    "testOnlySigning": "Release/R8 with debug test key and android:debuggable for run-as telemetry; exported project unchanged",
+    "binarySha256": "ec0f49c0b90210b665a29cae60b2c0850c99320e87eaa1997de5a58ac966d2b3",
+    "incrementalAcceptance": {
+      "unchangedHit": true,
+      "invalidCapabilityRejected": true,
+      "previousArtifactPreserved": true
+    },
+    "baseline": {
+      "directory": "/data/user/0/dev.taurinative.mobilefieldnotes",
+      "passed": true,
+      "reloaded": true,
+      "scenarios": [
+        "setup",
+        "state",
+        "app-handle",
+        "async",
+        "rust-event",
+        "plugin-setup",
+        "plugin-allowed",
+        "plugin-denied",
+        "domain-error",
+        "reload"
+      ],
+      "state": {
+        "appIdentifier": "dev.taurinative.mobilefieldnotes",
+        "pluginSetupCount": 1,
+        "setupCount": 1,
+        "value": 45
+      }
+    },
+    "granted": {
+      "action": "check",
+      "result": {
+        "coarseLocation": "granted",
+        "location": "granted"
+      },
+      "generation": 2,
+      "retiredCallbacks": 0,
+      "retiredClosures": 1,
+      "pid": 30063,
+      "eventBatch": [],
+      "eventHistory": [],
+      "subscription": 15,
+      "cancelledListeners": 2,
+      "nativeListeners": 1
+    },
+    "remountedEvents": {
+      "action": "refresh",
+      "result": {
+        "links": [
+          "tauri-fieldnotes://notes/1",
+          "tauri-fieldnotes://notes/1?remounted=1"
+        ],
+        "notes": [
+          {
+            "id": 1,
+            "latitude": 37.5664983,
+            "longitude": 126.9779983,
+            "text": "A native place to remember"
+          }
+        ],
+        "platform": "android",
+        "pluginSetupCount": 1,
+        "setupCount": 1
+      },
+      "generation": 3,
+      "retiredCallbacks": 0,
+      "retiredClosures": 1,
+      "pid": 30063,
+      "eventBatch": [
+        {
+          "event": "fieldnotes-updated",
+          "payload": null,
+          "subscription": 26
+        }
+      ],
+      "eventHistory": [
+        {
+          "generation": 2,
+          "event": {
+            "event": "fieldnotes-updated",
+            "payload": null,
+            "subscription": 15
+          }
+        },
+        {
+          "generation": 2,
+          "event": {
+            "event": "fieldnotes-updated",
+            "payload": null,
+            "subscription": 15
+          }
+        },
+        {
+          "generation": 3,
+          "event": {
+            "event": "fieldnotes-updated",
+            "payload": null,
+            "subscription": 26
+          }
+        }
+      ],
+      "subscription": 26,
+      "cancelledListeners": 3,
+      "nativeListeners": 1
+    },
+    "relaunched": {
+      "action": "refresh",
+      "result": {
+        "links": [],
+        "notes": [
+          {
+            "id": 1,
+            "latitude": 37.5664983,
+            "longitude": 126.9779983,
+            "text": "A native place to remember"
+          }
+        ],
+        "platform": "android",
+        "pluginSetupCount": 1,
+        "setupCount": 1
+      },
+      "generation": 1,
+      "retiredCallbacks": 0,
+      "retiredClosures": 0,
+      "pid": 31363,
+      "eventBatch": [],
+      "eventHistory": [],
+      "subscription": 6,
+      "cancelledListeners": 1,
+      "nativeListeners": 1
+    },
+    "logs": {
+      "export": "0e47256951dc01484b599e5a7bdafa6481704f2e09a3bd53b51daadfbee70e9c",
+      "incremental-hit": "ec011ed23eefe41735a1298281bf98bc2f96423110d57408bbe96ab13f210676",
+      "capability-cache-invalidation": "6f75abf7d87e575539a5e1cf56d50c0470d0dde942b8302d77c0961d56266c2c",
+      "source-free-build": "56302de6c8c282acad3726e0132d25a059f70e1ae16a78b954efa8a631060f2e",
+      "source-free-doctor": "bcb2a9eb3d7cb930cd8c9a5e727393060d386ece5b4dc01b1e74ca38c047de26",
+      "apk-alignment": "198838f311594bc60233bd2ec1476ff0ca0f206a726f6cd3f939b37b2e848b47",
+      "retire-native-permission": "4e2e874ce5c153b6ea12fcf198418c73695422ec832e3378c144ed9247d27cb7",
+      "grant-retired-permission": "ba02e02fa8e48712a670be9a355a637e9ccc9c6e0b3637ee57a69556e450e1d4"
+    },
+    "gateSourceSha256": "e242baf89c107429467669c07b0c0c49450961429527b4c5d9145c30f9f64064"
+  },
+  "renderers": {
+    "react-native": {
+      "passed": true,
+      "platform": "android",
+      "profile": "release",
+      "formatVersion": 2,
+      "abiVersion": 3,
+      "renderer": "React Native 0.86.3 / Hermes 250829098.0.17 / generated TurboModule and Fabric",
+      "sourceFree": true,
+      "sourceFreeBuild": "PATH=/usr/bin:/bin:/usr/sbin:/sbin ./gradlew --no-daemon assembleRelease",
+      "nonDebuggable": true,
+      "libraries": [
+        "lib/arm64-v8a/libappmodules.so",
+        "lib/arm64-v8a/libc++_shared.so",
+        "lib/arm64-v8a/libfbjni.so",
+        "lib/arm64-v8a/libhermestooling.so",
+        "lib/arm64-v8a/libhermesvm.so",
+        "lib/arm64-v8a/libimagepipeline.so",
+        "lib/arm64-v8a/libjsi.so",
+        "lib/arm64-v8a/libnative-filters.so",
+        "lib/arm64-v8a/libnative-imagetranscoder.so",
+        "lib/arm64-v8a/libordinary_tauri_mobile_fieldnotes_lib.so",
+        "lib/arm64-v8a/libreactnative.so"
+      ],
+      "elfAlignment": "All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed",
+      "packageSha256": "0b751c492d11d51773c4f0d1f29de7ddd007f50bd6c970895329f472d81e4595",
+      "artifactSha256": "fb5f29d07ace2c715df7b4b4121fc57f2fa8df5b4cf4cf32d298dac7dc4595d5",
+      "apkSha256": "389f7fdaf0d5d6b5f5a0d17e014908da8d98775edb413722b7115441a2bdfad0",
+      "defaultActivity": {
+        "activity": "dev.taurinative.mobilefieldnotes.TauriNativeActivity",
+        "pid": "2133",
+        "apkSha256": "5bc4e21e0ff974fd5e9ab569cce75c6284683a40a409b781ff3c81abe0ce28c5",
+        "overriddenHooks": false
+      },
+      "bundleSha256": "c1eb6899fefce07ef01a2289d194daf75f93e357213cc38e3552616ec8a3a94b",
+      "baseline": {
+        "directory": "/data/user/0/dev.taurinative.mobilefieldnotes",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      },
+      "initial": {
+        "generation": 1,
+        "resumed": 1,
+        "paused": 0,
+        "stopped": 0,
+        "hostClosed": false,
+        "hostDestroyed": false,
+        "receivedIntents": [],
+        "listeners": 1,
+        "listenersAfterRelease": -1,
+        "pid": 31815,
+        "notes": []
+      },
+      "remounted": {
+        "generation": 2,
+        "resumed": 4,
+        "paused": 3,
+        "stopped": 1,
+        "hostClosed": false,
+        "hostDestroyed": false,
+        "receivedIntents": [
+          "tauri-fieldnotes://notes/1"
+        ],
+        "listeners": 1,
+        "listenersAfterRelease": 0,
+        "pid": 31815,
+        "notes": [
+          {
+            "id": 1,
+            "text": "A RN place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          }
+        ]
+      },
+      "closed": {
+        "generation": 2,
+        "resumed": 5,
+        "paused": 4,
+        "stopped": 1,
+        "hostClosed": true,
+        "hostDestroyed": true,
+        "receivedIntents": [
+          "tauri-fieldnotes://notes/1",
+          "tauri-fieldnotes://notes/1?remounted=1"
+        ],
+        "listeners": 0,
+        "listenersAfterRelease": 0,
+        "pid": 31815,
+        "notes": [
+          {
+            "id": 1,
+            "text": "A RN place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          }
+        ]
+      },
+      "notes": [
+        {
+          "id": 1,
+          "text": "A RN place to remember",
+          "latitude": 37.5664983,
+          "longitude": 126.9779983
+        }
+      ],
+      "uiScenarios": [
+        "shared original state/setup",
+        "Tauri ACL and native caller denial",
+        "OS permission denial/grant",
+        "save and event",
+        "background deep link and event",
+        "renderer replacement retires native subscriptions",
+        "fresh renderer receives only fresh events",
+        "RN BackHandler and Linking routing",
+        "remove RN and keep original Tauri frontend"
+      ],
+      "testOnlySigning": "Non-debuggable Release with R8 optimization and a debug test signing key; process-scoped logcat telemetry",
+      "nativeReportSha256": "83419797843b2dc11ab7ab50d91343b89401a0cce32c6f33da02bbe18d9048e3",
+      "command": "node --experimental-strip-types packages/react-native/test/retained-android.ts",
+      "generatedFiles": 98,
+      "receiptSha256": "deb75abcb7733ea7dc3f3dc644ec165bed0218a6cb72327751551ec5c06d64a4",
+      "packageFiles": 103,
+      "allPackedFilesMatchCurrentSdk": true,
+      "junitSha256": {
+        "back": "c21cc25bacdc840ac8efd2874fa8df4fe2d66b053f3f93729f214b3074ccefa3",
+        "background": "2877c8206efca5cc419383f68891591bbbc30164a9722af00ab7abf4d962fafa",
+        "default-integration": "16fde3042f8c2073992a3d252fafbb5d5769172d75080125d1dea071cca316a0",
+        "default-link": "deaf88341588c4bd07f67c75e0c21940be52afdb9c9f5bd81d37fd834d486995",
+        "deny-permission": "551afe6cc9911758be7ebf4beec70ad9034b90a705b213f56d22ce9dce9cfa44",
+        "fresh-events": "99ba78435c4495fc19500e55c6fe298da633c9edf3963ced62f60881765cbf0a",
+        "grant-permission": "cdfa6685b9a09c1cc7b513bdaa1a5fcecd3bce2ece3db13f6bca0b68cfd602f7",
+        "initial": "e2412ea7d981a4014d0f6fbe7d3c308aea0bcdcf3434c566cd18cea3c14e136e",
+        "remove-renderer": "111a4383deca631400b23f15b232afb5b1f0e912cbe1cbde265c2f5f0b1a3fdd",
+        "resume": "e36d3f6b11a36af0c6d0bb8f3bd8c7452e54f4a67286e08370266430fe801532"
+      },
+      "buildLogSha256": {
+        "source-free-build": "9094807fbf57b429ad638cd41772fd9e389ade0622bd430fa973d04076ca9e63",
+        "default-source-free-build": "11c0aba4bcc8841341a4f84231f2e052c321f7c15409cd48ffee2aab938cf5d4",
+        "apk-metadata": "6bd8460fdee542ded05dbf15d1f5faf2ee635df519995828d6694df8c46376f4",
+        "apk-alignment": "199dd1314075ea3a06af32777b391dca24a9013cc2c4c60525b44cfb52736ade",
+        "default-apk-alignment": "0844cf63945b3325d4bb78730662a45a187b6276b48eac9c4071f829cb3a6e7c"
+      },
+      "defaultApkMetadataAfterRunSha256": "aeaee77848b545d464136ea896a30dd52957bb2b0c42fc1dc2da3f95538823ed",
+      "gateSourceSha256": "d40889b4dcf47522049961596974c1021551ff9a11f54795d1f9809365e259f8",
+      "compositionCodeSha256": "f69f03ffd31f553d3aee3c6df43b18e67002f3c3399eb766c166e996099d647b"
+    },
+    "lynx": {
+      "passed": true,
+      "platform": "android",
+      "profile": "release",
+      "formatVersion": 2,
+      "abiVersion": 3,
+      "renderer": "Lynx 4.0.1 / PrimJS 4.0.0",
+      "sourceFree": true,
+      "sourceFreeBuild": "PATH=/usr/bin:/bin:/usr/sbin:/sbin ./gradlew --no-daemon assembleRelease",
+      "nonDebuggable": true,
+      "libraries": [
+        "lib/arm64-v8a/liblynx.so",
+        "lib/arm64-v8a/liblynx_service_api.so",
+        "lib/arm64-v8a/liblynx_v8_bridge.so",
+        "lib/arm64-v8a/liblynxbase.so",
+        "lib/arm64-v8a/liblynxtrace.so",
+        "lib/arm64-v8a/libnapi.so",
+        "lib/arm64-v8a/libnapi_adapter.so",
+        "lib/arm64-v8a/libnapi_v8.so",
+        "lib/arm64-v8a/libordinary_tauri_mobile_fieldnotes_lib.so",
+        "lib/arm64-v8a/libquick.so",
+        "lib/arm64-v8a/libwasm.so"
+      ],
+      "elfAlignment": "All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed",
+      "packageSha256": "98883ac9817cf36c406fa8d6e354110b0a371fc9e0731a541226083493365a50",
+      "artifactSha256": "fb5f29d07ace2c715df7b4b4121fc57f2fa8df5b4cf4cf32d298dac7dc4595d5",
+      "apkSha256": "7ca528421038201d5d8b7bad2e5f675fac0c3d6ee78b6cbf51378fe9d3def39a",
+      "bundleSha256": "623f4283a67e0040af22bbe7450815809a895162a5610aa031e13aba023f7810",
+      "baseline": {
+        "directory": "/data/user/0/dev.taurinative.mobilefieldnotes",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      },
+      "initial": {
+        "generation": 1,
+        "resumed": 1,
+        "paused": 0,
+        "stopped": 0,
+        "hostClosed": false,
+        "receivedIntents": [],
+        "listeners": 1,
+        "listenersAfterRelease": -1,
+        "pid": 3738,
+        "notes": []
+      },
+      "remounted": {
+        "generation": 2,
+        "resumed": 4,
+        "paused": 3,
+        "stopped": 1,
+        "hostClosed": false,
+        "receivedIntents": [
+          "tauri-fieldnotes://notes/1"
+        ],
+        "listeners": 1,
+        "listenersAfterRelease": 0,
+        "pid": 3738,
+        "notes": [
+          {
+            "id": 1,
+            "text": "A Lynx place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          }
+        ]
+      },
+      "closed": {
+        "generation": 2,
+        "resumed": 5,
+        "paused": 4,
+        "stopped": 1,
+        "hostClosed": true,
+        "receivedIntents": [
+          "tauri-fieldnotes://notes/1",
+          "tauri-fieldnotes://notes/1?remounted=1"
+        ],
+        "listeners": 0,
+        "listenersAfterRelease": 0,
+        "pid": 3738,
+        "notes": [
+          {
+            "id": 1,
+            "text": "A Lynx place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          }
+        ]
+      },
+      "notes": [
+        {
+          "id": 1,
+          "text": "A Lynx place to remember",
+          "latitude": 37.5664983,
+          "longitude": 126.9779983
+        }
+      ],
+      "defaultActivity": {
+        "activity": "dev.taurinative.mobilefieldnotes.TauriNativeActivity",
+        "pid": "5468",
+        "apkSha256": "945f13654355738018220feb3c18772f5a81fcab6fdd091a613fd3383b8e1068",
+        "overriddenHooks": false,
+        "identicalNativeLibraries": 11
+      },
+      "uiScenarios": [
+        "shared original state/setup",
+        "Tauri ACL and native caller denial",
+        "OS permission denial/grant",
+        "save and event",
+        "background deep link and event",
+        "renderer replacement retires native subscriptions",
+        "fresh renderer receives only fresh events",
+        "remove Lynx and keep original Tauri frontend",
+        "unmodified generated Activity/default layout",
+        "default SDK composition retains original Tauri ACL/state/deep-link events"
+      ],
+      "testOnlySigning": "Non-debuggable Release with R8 optimization and a debug test signing key; process-scoped logcat telemetry",
+      "nativeReportSha256": "5f053e38f3fc951b104c21070f0543dfd6abfa8fdb46799c9b2ca262e59f543f",
+      "command": "node --experimental-strip-types packages/lynx/test/retained-android.ts",
+      "generatedFiles": 98,
+      "receiptSha256": "bbf78c038e2e7672918730908c3b911ba54d2f8e862dd0580e5aac2b6bcbaef8",
+      "packageFiles": 56,
+      "allPackedFilesMatchCurrentSdk": true,
+      "junitSha256": {
+        "background": "2635f8e846acf909823b08bf7bb99138767919b728a963618fc9db4b3c1b2e49",
+        "default-integration": "0f0fde1a33b61f95f5d5a9b93cefcbaebba9c95ccc1c1d1937ab9b9f7bb98755",
+        "default-link": "deaf88341588c4bd07f67c75e0c21940be52afdb9c9f5bd81d37fd834d486995",
+        "deny-permission": "551afe6cc9911758be7ebf4beec70ad9034b90a705b213f56d22ce9dce9cfa44",
+        "fresh-events": "99ba78435c4495fc19500e55c6fe298da633c9edf3963ced62f60881765cbf0a",
+        "grant-permission": "e9bf611cdfea1b8f50135e4bd4d9eb456d05587ce2615f4fb0c2dfc1a76d8d80",
+        "initial": "e2412ea7d981a4014d0f6fbe7d3c308aea0bcdcf3434c566cd18cea3c14e136e",
+        "remove-renderer": "111a4383deca631400b23f15b232afb5b1f0e912cbe1cbde265c2f5f0b1a3fdd",
+        "resume": "e36d3f6b11a36af0c6d0bb8f3bd8c7452e54f4a67286e08370266430fe801532"
+      },
+      "buildLogSha256": {
+        "source-free-build": "bca9a6f8bd0c6e41ce8a0613dc1731201ef2d3553beed641d85890bca0be7023",
+        "default-source-free-build": "8d6f2c565057ace25d656af66958476f87275f8dcc386f6ccd1e43c7b964eca4",
+        "apk-metadata": "836656f8384865bab6f6fbe3aa72505c47e714feb722e5b3eb056aafae43db6c",
+        "apk-alignment": "fce2605f2237cb1435e9fbe25f1e76141267c34b3398dfe147853a0b5acfbb08",
+        "default-apk-alignment": "cefdcfa987bbda8d61d17364ba1f4def0f439836eed3aef7cb59ab9acd497b1c"
+      },
+      "defaultApkMetadataAfterRunSha256": "9c7a4a4b419aa99c71f2e908873490c2b45bc3434f4621319515e607f97143eb",
+      "gateSourceSha256": "252b83b720ffcd8cf71d15dee1f8f0b009dc064d59a288c38715d75c8e5b7dba",
+      "compositionCodeSha256": "491c3086e3ab8a3c8a1c81e93c8108c8f718965ab7f2565932a6a2b7a9bdedc8"
+    }
+  },
+  "verification": {
+    "sdkNativeJUnitFlows": 19,
+    "skippedFlows": 0,
+    "sameArtifactConsumedByBothSdkPackages": true,
+    "bothSdkApksNonDebuggable": true,
+    "identicalLibrariesAcrossEachSdkApkPair": 11,
+    "standaloneDebuggableForTelemetry": true
+  },
+  "earlierAttempts": [
+    {
+      "passed": false,
+      "stage": "initial fresh export dependency inventory",
+      "reason": "cargo metadata --offline required uncached adler2 2.0.1. Explicit locked online cargo fetch populated the dependency cache, then the entire gate reran. No source/lockfile or rejection checks changed.",
+      "failureLogSha256": "d9cca540967c2a9ef9ead2be8a795bdd5b162ca16632a6001f1b59af6af4d573",
+      "recoveryLogSha256": "f15e291a3512afc4c661b65a82ca73758f765cce5bde6a650c409821d281d31e",
+      "recoveryCommand": "CARGO_NET_OFFLINE=false $HOME/.cargo/bin/cargo fetch --locked --manifest-path \"target/retained-portability/ordinary producer/src-tauri/Cargo.toml\""
+    }
+  ],
+  "remaining": [
+    "Repeated fresh-start reliability and diagnosis of the earlier unconfirmed Lynx start failure",
+    "actual RN/Lynx renderer retirement during a pending OS permission callback",
+    "Expo and third-party native-module autolinking",
+    "retained TauriView/navigation",
+    "full parity, physical devices and independent adopters"
+  ]
+}

@@ -1,46 +1,9 @@
 require 'json'
 require 'fileutils'
 require 'open3'
-require 'digest'
+require_relative 'composition'
 
 module TauriNativeReactRetained
-  # CocoaPods edits the user project. Check its known state before installation,
-  # then record only that tool-owned change after successful integration.
-  def self.composition_receipt(ios, project_changes: [])
-    root = File.dirname(File.realpath(ios))
-    receipt_path = File.join(root, 'tauri-native-composition.json')
-    raise 'Expected a regular retained composition receipt' unless File.file?(receipt_path) && !File.symlink?(receipt_path)
-    receipt = JSON.parse(File.read(receipt_path))
-    unless receipt['formatVersion'] == 1 && receipt['platform'] == 'ios' && receipt['renderer'] == 'react-native' && receipt['files'].is_a?(Hash)
-      raise 'Expected an owned retained iOS composition'
-    end
-    receipt['files'].each do |file, digest|
-      parts = file.split('/')
-      raise 'Invalid retained composition path' if parts.any? { |part| ['', '.', '..'].include?(part) } || file.match?(/[\\:\x00]/)
-      cursor = root
-      parts.each do |part|
-        cursor = File.join(cursor, part)
-        raise "Retained composition path changed: #{file}" if File.symlink?(cursor) || !File.exist?(cursor)
-      end
-      unless File.file?(cursor) && (project_changes.include?(file) || Digest::SHA256.file(cursor).hexdigest == digest)
-        raise "Retained composition file changed: #{file}"
-      end
-    end
-    receipt
-  end
-
-  def self.finish_composition(ios, before)
-    projects = before.fetch('files').keys.grep(%r{\Aios/[\w.-]+\.xcodeproj/project\.pbxproj\z})
-    raise 'Expected one original retained Xcode project' unless projects.length == 1
-    raise 'Retained composition receipt changed during pod install' unless composition_receipt(ios, project_changes: projects) == before
-    root = File.dirname(File.realpath(ios))
-    before['files'][projects.first] = Digest::SHA256.file(File.join(root, projects.first)).hexdigest
-    receipt = File.join(root, 'tauri-native-composition.json')
-    temporary = receipt + '.pods-next'
-    File.open(temporary, 'wx') { |file| file.write(JSON.pretty_generate(before) + "\n") }
-    File.rename(temporary, receipt)
-  end
-
   def self.run(*command)
     output, error, status = Open3.capture3(*command)
     raise "Retained RN codegen failed: #{output}\n#{error}" unless status.success?

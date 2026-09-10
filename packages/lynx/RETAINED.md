@@ -131,6 +131,48 @@ libraries and undergo 16 KB alignment checks.
 
 ## iOS integration under development
 
+On macOS, the package can generate the original Tauri Xcode app plus Lynx
+integration from the same artifact contract:
+
+```js
+const { composeIos } = require('@tauri-native/lynx/compose');
+
+const result = composeIos({
+  artifactsDir: './runtime/ios',
+  outputDir: './generated-ios',
+  bundleFile: './dist/main.lynx.bundle',
+});
+console.log(result.project, result.workspace, result.target, result.minimumOsVersion);
+```
+
+Use the same directory ownership rules as Android. The composer reads the
+original project using Apple's `plutil`, preserves its native client/archive,
+permission descriptions, schemes and assets, and adds SDK registration before
+the unchanged `ffi::start_app()`. The consumer uses the highest of Lynx's 14.0
+minimum and all explicit original deployment targets. Original input bytes stay
+unchanged. One standard Tauri app target/main/WebView is supported; existing
+CocoaPods, Node environment files, custom startup/scene ownership or native build
+scripts require explicit integration.
+
+Run `pod install` in `result.project`, then build the returned workspace and
+original target. The generated Podfile validates its owned files before CocoaPods
+runs and records only CocoaPods' project rewrite after integration. Other edited
+files or a changed receipt fail validation. Identical generation is a no-op before
+installation; generation after pod installation restores the original project
+plus SDK configuration, so install pods again before building. Unrelated files
+and Pods caches are preserved. RN and Lynx share this receipt implementation
+without depending on each other's package.
+
+`TNLynxComposition` observes the original launch notification, waits for runtime
+and document readiness and attaches Lynx within the original parent's safe area.
+It keeps the original application delegate, window and root controller. Main-thread
+`reload`, `close` and `host` expose the current renderer's lifetime. Native
+subclasses may override `isTauriDocumentReady:`, `createLynxContainer:` and
+`lynxHostDidAttach`; install the subclass in a consumer-owned entry point and
+resolve that main-file edit before regenerating owned output. These hooks do not
+implement the planned Lynx `TauriView`.
+
+The lower-level host and Podfile helper remain available for explicit attachment.
 In the exported original iOS project's Podfile, add the packed SDK as a local
 dependency:
 
@@ -181,10 +223,14 @@ Tauri startup. Backgrounding and native permission dialogs preserve sessions.
 The native gate is
 `node --experimental-strip-types packages/lynx/test/retained-ios.ts <artifact>`
 with an arm64 `IOS_SIMULATOR_UDID`, Xcode, CocoaPods and Maestro configured. It
-packs the SDK and builds a relocated Release consumer without Rust. The fixture
-provides layout, launch notification registration and telemetry; the packed pod
-owns the module, renderer and session lifecycle. The gate also removes Lynx and
-continues interacting with the original Tauri frontend.
+packs the SDK, composes a relocated consumer, installs pods, regenerates and
+installs pods again before building Release without Rust. The acceptance subclass
+provides only layout, baseline readiness and telemetry; the packed SDK owns
+startup observation, readiness, attachment and session lifetime. The gate removes
+Lynx while the original frontend continues, then builds a second Release app
+with unmodified generated startup/default layout and no acceptance subclass.
+Run macOS metadata/ownership scenarios with
+`node --experimental-strip-types --test packages/lynx/test/retained/compose-ios.test.ts`.
 
 The current exported iOS platform client exposes session-open failure details
 as an NSError description; the JS rejection therefore uses `runtime_error` for
@@ -194,7 +240,7 @@ still required for full parity.
 
 ## Remaining roadmap
 
-iOS automatic source-free composition, third-party Lynx autolinking, retained `TauriView`,
+Third-party Lynx autolinking, retained `TauriView`,
 cross-renderer artifact parity, and complete M8
 acceptance remain tracked in [#46](https://github.com/gronxb/tauri-native/issues/46)
 and [#47](https://github.com/gronxb/tauri-native/issues/47). The format 1 view cannot
@@ -206,5 +252,5 @@ be used as a retained view. This API is not a claim of a published npm release.
 for complete format 2 / ABI 3 validation before integration. It uses Node.js
 without loading Lynx, Rust or producer sources, and checks the native inventory,
 pinned runtime/plugin versions and build receipts. It shares its implementation
-with the RN package. Use the separate `compose` entry point to generate Android
-integration; iOS automatic composition remains under development.
+with the RN package. Use the separate `compose` entry point to generate native
+integration for Android or iOS.

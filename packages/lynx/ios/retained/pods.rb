@@ -1,3 +1,5 @@
+require_relative 'composition'
+
 # Keep Objective-C category loading scoped to the renderer's libraries. The
 # ordinary Tauri archive can contain repeated transitive Swift dependencies;
 # CocoaPods' global -ObjC would load both copies instead of resolving once.

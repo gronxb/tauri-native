@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — packed SDK execution on both platforms and Android automatic composition pass; fresh-export startup reliability and remaining M8 integration stay open.
+- Status: IN PROGRESS — packed automatic composition passes on iOS and Android, including a fresh Android export; remaining M8 lifecycle/view/parity gates stay open.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#41](https://github.com/gronxb/tauri-native/issues/41) (plan 017), [#44](https://github.com/gronxb/tauri-native/issues/44) (plan 020)
@@ -33,7 +33,7 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 
 ## Acceptance
 
-- [x] iOS and Android Lynx Release executions pass (Android automatic composition and iOS explicit consumer attachment; fresh-export startup reliability and iOS automatic composition remain open).
+- [x] iOS and Android Lynx Release automatic-composition executions pass, including unmodified generated startup/default layouts; repeated startup reliability and remaining M8 acceptance stay open.
 - [ ] Same artifact contract and Tauri command/permission semantics as RN are demonstrated.
 - [ ] Standalone Tauri Mobile and producer source are preserved.
 
@@ -144,3 +144,34 @@ layout, with no acceptance subclass. iOS automatic composition, third-party
 autolinking, retained TauriView, consistent session-open diagnostics, pending OS
 callback renderer retirement and full parity/device/adopter acceptance remain
 open. This increment does not complete #46 or authorize a package release.
+
+The fresh current-exporter Android artifact now passes the complete native gate and both packed SDK consumers: [fresh Android export and SDK evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-tauri-fresh-android-composition-2026-09-09.json). Lynx passes all nine UI flows with the same immutable artifact as RN, including a separate non-debuggable APK using the unmodified generated Activity. Original producer hashes and the exported artifact remain unchanged during consumption. This supplies the missing latest-exporter execution; it does not establish the earlier baseline failure's cause or repeated cold-start reliability.
+
+## iOS automatic composition (2026-09-10)
+
+The packed `composeIos` entry point generates the original Xcode consumer,
+offline bundle and CocoaPods integration on macOS. `TNLynxComposition` observes
+launch before the unchanged `ffi::start_app()`, waits for actual runtime/document
+readiness and attaches Lynx inside the original parent's safe area. The original
+Tauri delegate, window, root controller, plugin setup and archive remain intact.
+The minimum OS is the highest of 14.0 and all explicit original targets.
+
+The complete gate passes two pod installations with regeneration between them
+and nine source-free Release UI flows. An acceptance subclass supplies layout,
+baseline readiness and telemetry for permissions, location, events, background
+links and renderer replacement/removal. Native listeners reach zero on retirement,
+and the original frontend continues in the same process after Lynx removal.
+A second clean-installed Release app uses unmodified generated startup/default
+layout and contains no acceptance telemetry. [Lynx iOS composition evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-lynx-compose-ios-2026-09-10.json).
+
+Shared Apple metadata validation and CocoaPods receipt tracking preserve existing
+RN iOS/Android and Lynx Android output bytes. Thirteen existing configuration
+scenarios and four new iOS scenarios pass, alongside both SDK package checks and
+packed public API typechecks. The earlier iOS build had no terminal output or
+completion report when its session/process disappeared; it remains incomplete
+evidence, separate from the completed rerun.
+
+This consumes the existing producer-deleted iOS archive, with no new Rust export.
+Third-party autolinking, retained TauriView, consistent session-open diagnostics,
+pending OS callback renderer retirement, repeated Android startup reliability and
+full parity/device/adopter acceptance remain open. #46 stays IN PROGRESS.

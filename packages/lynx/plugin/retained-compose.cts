@@ -1,7 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { prepareComposition, publishComposition } from '../../../scripts/retained-composition.ts';
-import type { AndroidCompositionOptions } from './retained-compose-types.d.cts';
+import { prepareIosProject } from '../../../scripts/retained-ios-composition.ts';
+import type { AndroidCompositionOptions, IosCompositionOptions } from './retained-compose-types.d.cts';
 
 function read(root: string, file: string) { return readFileSync(path.join(root, file), 'utf8'); }
 function write(root: string, file: string, bytes: string | Buffer) {
@@ -46,4 +47,35 @@ export function composeAndroid(options: AndroidCompositionOptions) {
     write(stage, 'android/app/src/main/assets/tauri-native-lynx/main.lynx.bundle', bundled);
   });
   return { project: path.join(output, 'android'), activity, changed };
+}
+
+export function composeIos(options: IosCompositionOptions) {
+  const context = prepareComposition(options, 'ios', 'lynx', __dirname);
+  const { sdk, output, bundled } = context;
+  const { projectFile, encodedProject, main, originalMain, minimumOsVersion, bootstrap, workspace } = prepareIosProject(context, '14.0');
+  const ruby = groovy;
+  const relative = (dir: string) => path.relative(path.join(output, 'ios'), dir).split(path.sep).join('/');
+  const changed = publishComposition(context, { platform: 'ios', minimumOsVersion, target: bootstrap.target }, stage => {
+    write(stage, `ios/${projectFile}`, encodedProject);
+    write(stage, `ios/${main}`, '#import <TauriNativeLynxRetained/TNLynxComposition.h>\n' + originalMain.replace('ffi::start_app();',
+      '@autoreleasepool {\n\t\tNSURL *bundle = [NSBundle.mainBundle URLForResource:@"main.lynx" withExtension:@"bundle" subdirectory:@"assets/tauri-native-lynx"];\n\t\t[TNLynxComposition installWithBundle:bundle];\n\t}\n\tffi::start_app();'));
+    write(stage, 'ios/assets/tauri-native-lynx/main.lynx.bundle', bundled);
+    write(stage, 'ios/Podfile', `source 'https://cdn.cocoapods.org/'
+require_relative ${ruby(relative(path.join(sdk, 'ios/retained/pods')))}
+composition = TauriNativeLynxRetained.composition_receipt(__dir__)
+platform :ios, ${ruby(minimumOsVersion)}
+use_modular_headers!
+project ${ruby(bootstrap.xcodeProject)}, 'debug' => :debug, 'release' => :release
+target ${ruby(bootstrap.target)} do
+  pod 'TauriNativeLynxRetained', :path => ${ruby(relative(path.join(sdk, 'ios')))}
+end
+post_install do |installer|
+  TauriNativeLynxRetained.post_install(installer, ${ruby(bootstrap.target)})
+end
+post_integrate do |installer|
+  TauriNativeLynxRetained.finish_composition(__dir__, composition)
+end
+`);
+  });
+  return { project: path.join(output, 'ios'), target: bootstrap.target, workspace, minimumOsVersion, changed };
 }

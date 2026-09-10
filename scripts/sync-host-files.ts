@@ -29,6 +29,7 @@ for (const [source, destination] of [
   ['artifacts.ts', host === 'lynx' ? 'artifacts.cjs' : 'artifacts.js'],
   ['retained-artifacts.ts', host === 'lynx' ? 'retained-artifacts.cjs' : 'retained-artifacts.js'],
   ['retained-artifacts.d.cts', 'retained-artifacts.d.ts'],
+  ['retained-pods.rb', 'ios/retained/composition.rb'],
   ...(host === 'react-native' ? [['../packages/react-native/plugin/app.plugin.cts', 'app.plugin.js']] : []),
   [`../packages/${host}/plugin/retained-compose.cts`, host === 'lynx' ? 'compose.cjs' : 'compose.js'],
   [`../packages/${host}/plugin/retained-compose-types.d.cts`, 'compose.d.ts'],
@@ -46,6 +47,8 @@ for (const [source, destination] of [
   ['android-view-state.java', host === 'lynx' ? 'android/src/main/java/dev/taurinative/lynx/TauriViewState.java' : 'android/src/main/java/com/reactnativetauri/TauriViewState.java'],
 ] as [string, string][]) {
   const contents: string = (source === 'artifacts.ts' ? artifacts : source === 'retained-artifacts.ts' ? retainedArtifacts : source.endsWith('app.plugin.cts') ? plugin! : source.endsWith('retained-compose.cts') ? compose! : readFileSync(new URL(source, import.meta.url), 'utf8'))
+    .replaceAll('__TAURI_NATIVE_COMPOSITION_MODULE__', host === 'lynx' ? 'TauriNativeLynxRetained' : 'TauriNativeReactRetained')
+    .replaceAll('__TAURI_NATIVE_RENDERER__', host)
     .replaceAll('__TAURI_NATIVE_JNI_CLASS__', host === 'lynx' ? 'Java_dev_taurinative_lynx_TauriNativeRust' : 'Java_com_reactnativetauri_TauriNativeRust')
     .replaceAll('__TAURI_NATIVE_OBJC_BRIDGE__', host === 'lynx' ? 'TNTauriLynxRustBridge' : 'TNTauriRustBridge')
     .replaceAll('__TAURI_NATIVE_SWIFT_VIEW__', host === 'lynx' ? 'TNTauriLynxWebView' : 'TNTauriWebView')

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { setTimeout } from 'node:timers/promises';
 import { readRetainedArtifacts } from '../../../scripts/retained-artifacts.ts';
@@ -18,7 +19,8 @@ assert(device, 'Choose an arm64 IOS_SIMULATOR_UDID');
 const evidence = path.join(root, 'target/lynx-retained-ios');
 const consumer = path.join(evidence, 'source free consumer');
 const renderer = path.join(consumer, 'renderer');
-const ios = path.join(consumer, 'ios');
+const generated = path.join(consumer, 'composed application');
+const ios = path.join(generated, 'ios');
 const appId = manifest.bootstrap.applicationId;
 const env: NodeJS.ProcessEnv = { ...process.env, NODE_OPTIONS: '' };
 const release = acquireMobileTest(root);
@@ -58,8 +60,9 @@ async function launch() {
   await until(() => report('runtime-report.json').passed === true && report().pid === pid);
 }
 try {
-  rmSync(consumer, { recursive: true, force: true }); cpSync(artifact, consumer, { recursive: true });
-  assert.deepEqual(readRetainedArtifacts(consumer), manifest);
+  rmSync(consumer, { recursive: true, force: true }); mkdirSync(consumer, { recursive: true });
+  const copied = path.join(consumer, 'copied runtime'); cpSync(artifact, copied, { recursive: true });
+  assert.deepEqual(readRetainedArtifacts(copied), manifest);
   run('package', 'npm', ['pack', '--pack-destination', consumer], path.join(root, 'packages/lynx'));
   run('unpack', 'tar', ['-xzf', 'tauri-native-lynx-1.0.0-rc.0.tgz']);
   const sdk = path.join(consumer, 'package');
@@ -72,19 +75,28 @@ try {
   writeFileSync(path.join(renderer, 'lynx.config.ts'), `import { defineConfig } from '@lynx-js/rspeedy';\nimport { pluginReactLynx } from '@lynx-js/react-rsbuild-plugin';\nexport default defineConfig({ plugins: [pluginReactLynx()], source: { alias: { '@tauri-native/lynx/retained': ${JSON.stringify(path.join(sdk, 'src/retained.ts'))} } } });\n`);
   run('renderer-build', path.join(renderer, 'node_modules/.bin/rspeedy'), ['build', '--mode', 'production'], renderer);
   const bundle = path.join(renderer, 'dist/main.lynx.bundle');
-  mkdirSync(path.join(ios, 'assets'), { recursive: true }); cpSync(bundle, path.join(ios, 'assets/main.lynx.bundle'));
+  const { composeIos } = createRequire(import.meta.url)(path.join(sdk, 'compose.cjs'));
+  const { readRetainedArtifacts: packedReader } = createRequire(import.meta.url)(path.join(sdk, 'retained-artifacts.cjs'));
+  assert.deepEqual(packedReader(copied), manifest);
+  const options = { artifactsDir: copied, outputDir: generated, bundleFile: bundle };
+  const composition = composeIos(options); assert.equal(composition.changed, true);
+  assert.equal(composeIos(options).changed, false);
+  const receipt = JSON.parse(readFileSync(path.join(generated, 'tauri-native-composition.json'), 'utf8'));
   const main = path.join(ios, 'Sources/ordinary-tauri-mobile-fieldnotes/main.mm');
-  cpSync(new URL('./retained/IosAcceptance.mm.fixture', import.meta.url), path.join(path.dirname(main), 'IosAcceptance.mm'));
-  const originalMain = readFileSync(main, 'utf8'); assert(originalMain.includes('ffi::start_app();'));
-  writeFileSync(main, '#import "IosAcceptance.mm"\n' + originalMain.replace('ffi::start_app();', '@autoreleasepool { [TNLynxAcceptance install]; }\n\tffi::start_app();'));
-  writeFileSync(path.join(ios, 'Podfile'), `source 'https://cdn.cocoapods.org/'\nrequire_relative '../package/ios/retained/pods'\nplatform :ios, '${manifest.bootstrap.minimumOsVersion}'\nuse_modular_headers!\nproject '${manifest.bootstrap.xcodeProject}', 'debug' => :debug, 'release' => :release\ntarget '${manifest.bootstrap.target}' do\n  pod 'TauriNativeLynxRetained', :path => '../package/ios'\nend\npost_install do |installer|\n  TauriNativeLynxRetained.post_install(installer, '${manifest.bootstrap.target}')\nend\n`);
+  const generatedMain = readFileSync(main, 'utf8');
   run('pods', 'pod', ['install'], ios);
-  const workspace = manifest.bootstrap.xcodeProject.replace(/\.xcodeproj$/, '.xcworkspace');
+  assert.equal(composeIos(options).changed, true, 'Regeneration accepts the recorded CocoaPods project and restores generated inputs');
+  run('pods-regenerated', 'pod', ['install'], ios);
+  const podIntegration = JSON.parse(readFileSync(path.join(generated, 'tauri-native-composition.json'), 'utf8'));
+  cpSync(new URL('./retained/IosAcceptance.mm.fixture', import.meta.url), path.join(path.dirname(main), 'IosAcceptance.mm'));
+  writeFileSync(main, '#import "IosAcceptance.mm"\n' + generatedMain.replace('[TNLynxComposition installWithBundle:', '[TNLynxAcceptance installWithBundle:'));
+  const workspace = composition.workspace;
   const derived = path.join(evidence, 'derived-data');
   run('source-free-build', 'xcodebuild', ['-workspace', workspace, '-scheme', manifest.bootstrap.target, '-configuration', 'release', '-sdk', 'iphonesimulator',
     '-destination', 'generic/platform=iOS Simulator', '-derivedDataPath', derived, 'CODE_SIGNING_ALLOWED=NO', 'build'], ios, { ...env, PATH: '/usr/bin:/bin:/usr/sbin:/sbin' });
   const app = path.join(derived, 'Build/Products/release-iphonesimulator/Tauri Mobile Fieldnotes.app');
   const info = JSON.parse(run('app-info', 'plutil', ['-convert', 'json', '-o', '-', path.join(app, 'Info.plist')]));
+  assert.equal(info.MinimumOSVersion, composition.minimumOsVersion);
   assert.equal(info.NSLocationWhenInUseUsageDescription, 'Attach your current location to a note when you request it.');
   assert(info.CFBundleURLTypes?.some((item: { CFBundleURLSchemes: string[] }) => item.CFBundleURLSchemes.includes('tauri-fieldnotes')));
   run('install', 'xcrun', ['simctl', 'install', device, app]); installed = true;
@@ -118,14 +130,31 @@ try {
   flow('remove-renderer', '- tapOn: "Close Lynx"\n- tapOn: "Refresh notes and links"\n- assertVisible: "Links received 2"');
   const closed = report(); assert.equal(closed.hostClosed, true); assert.equal(closed.listeners, 0);
   assert.equal(closed.pid, saved.pid); assert.equal(closed.appDelegate, saved.appDelegate);
+  const acceptanceBinarySha256 = sha256(readFileSync(path.join(app, info.CFBundleExecutable)));
+  run('uninstall-acceptance', 'xcrun', ['simctl', 'uninstall', device, appId]); installed = false;
+  writeFileSync(main, generatedMain); rmSync(path.join(path.dirname(main), 'IosAcceptance.mm'));
+  run('default-source-free-build', 'xcodebuild', ['-workspace', workspace, '-scheme', manifest.bootstrap.target, '-configuration', 'release', '-sdk', 'iphonesimulator',
+    '-destination', 'generic/platform=iOS Simulator', '-derivedDataPath', derived, 'CODE_SIGNING_ALLOWED=NO', 'build'], ios, { ...env, PATH: '/usr/bin:/bin:/usr/sbin:/sbin' });
+  run('default-install', 'xcrun', ['simctl', 'install', device, app]); installed = true;
+  const defaultContainer = run('default-container', 'xcrun', ['simctl', 'get_app_container', device, appId, 'data']);
+  dataDirectory = path.join(defaultContainer, 'Library/Application Support', appId);
+  const defaultLaunch = run('default-launch', 'xcrun', ['simctl', 'launch', device, appId]);
+  pid = Number(defaultLaunch.match(/: (\d+)$/)?.[1]); assert(Number.isSafeInteger(pid) && pid > 0);
+  await until(() => report('runtime-report.json').passed === true);
+  flow('default-integration', '- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "Lynx events 0"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"');
+  run('default-deep-link', 'xcrun', ['simctl', 'openurl', device, 'tauri-fieldnotes://notes/default']);
+  flow('default-link', '- tapOn:\n    text: "(Open|열기)"\n    optional: true\n- assertVisible: "Lynx events 1"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 0 setup 1 plugins 1"');
+  const defaultIntegration = { pid, overriddenHooks: false, baseline: report('runtime-report.json'), binarySha256: sha256(readFileSync(path.join(app, info.CFBundleExecutable))) };
+  assert(!existsSync(path.join(dataDirectory, 'lynx-lifecycle.json')), 'Pure generated application must not execute acceptance telemetry');
+  assert.deepEqual(packedReader(copied), manifest);
   assert.deepEqual(readRetainedArtifacts(artifact), manifest);
   assert(!existsSync(path.join(consumer, 'src-tauri')));
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform: 'ios', profile: 'release', formatVersion: 2, abiVersion: 3,
     renderer: 'Lynx 4.0.1 / PrimJS 4.0.0', sourceFree: true, sourceFreeBuild: 'PATH=/usr/bin:/bin:/usr/sbin:/sbin xcodebuild -configuration release -sdk iphonesimulator',
     packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-lynx-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
-    binarySha256: sha256(readFileSync(path.join(app, info.CFBundleExecutable))), bundleSha256: sha256(readFileSync(bundle)), baseline, denied, saved, remounted, closed, notes,
-    uiScenarios: ['shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'save and event', 'background deep link and event', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'removing Lynx preserves the independent original Tauri frontend'],
-    testOnlyIntegration: 'Consumer fixture layout and pre-start notification registration; actual packed SDK owns module, renderer and session lifetime. Original Tauri UIApplication delegate preserved. Automatic composition/autolinking remains open.',
+    binarySha256: acceptanceBinarySha256, composition: receipt, podIntegration, defaultIntegration, bundleSha256: sha256(readFileSync(bundle)), baseline, denied, saved, remounted, closed, notes,
+    uiScenarios: ['shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'save and event', 'background deep link and event', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'removing Lynx preserves the independent original Tauri frontend', 'unmodified generated iOS startup/default layout', 'default SDK composition receives original Tauri deep-link events'],
+    testOnlyIntegration: 'Acceptance subclass supplies layout, baseline readiness and telemetry; the packed composer/SDK own startup, notification observation, readiness and attachment. A second Release app executes the unmodified generated startup/default layout with no acceptance subclass. Original Tauri UIApplication delegate preserved. Third-party autolinking and retained TauriView remain open.',
   }, null, 2) + '\n');
   console.log(`PASS: packed Lynx retained iOS SDK native acceptance. ${evidence}/report.json`);
 } finally {
