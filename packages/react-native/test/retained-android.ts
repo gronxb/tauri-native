@@ -152,6 +152,41 @@ try {
   assert.equal(closed.pid, initial.pid);
   assert.equal(run('final-pid', 'adb', ['-s', device, 'shell', 'pidof', appId]), pid);
   const acceptanceApk = path.join(evidence, 'acceptance-release.apk'); cpSync(apk, acceptanceApk);
+  // Fresh installs keep Android denial/rationale history independent from the Tauri-owned requests above.
+  async function freshPermissions(label: string) {
+    run(`${label}-uninstall`, 'adb', ['-s', device!, 'uninstall', appId]); installed = false;
+    run(`${label}-install`, 'adb', ['-s', device!, 'install', acceptanceApk]); installed = true;
+    run(`${label}-launch`, 'adb', ['-s', device!, 'shell', 'am', 'start', '-W', '-n', `${appId}/.AcceptanceActivity`]);
+    pid = run(`${label}-pid`, 'adb', ['-s', device!, 'shell', 'pidof', appId]);
+    await until(() => report('baseline').passed === true);
+  }
+  await freshPermissions('rn-permissions');
+  flow('rn-deny-permission', '- assertVisible: "Tauri 45 setup 1 plugins 1"\n- tapOn: "RN permissions"\n- tapOn: "RN check location"\n- assertVisible: "RN coarse false"\n- tapOn: "RN request coarse"\n- tapOn: "(?i)Don.t allow"\n- assertVisible: "RN coarse denied"\n- tapOn: "Tauri permissions"\n- tapOn: "Check permission"\n- assertVisible: "Permission prompt"\n- tapOn: "Save location"\n- assertVisible: "Location denied"');
+  flow('rn-grant-permissions', '- tapOn: "RN permissions"\n- tapOn: "RN request locations"\n- tapOn: "(?i)While using the app"\n- assertVisible: "RN fine granted coarse granted"\n- tapOn: "RN check location"\n- assertVisible: "RN coarse true"\n- tapOn: "Tauri permissions"\n- tapOn: "Check permission"\n- assertVisible: "Permission granted"\n- tapOn: "Save location"\n- assertVisible: "RN note 1"\n- assertVisible: "RN events 1"');
+  const rnPermissions = report();
+  assert.deepEqual(rnPermissions.rnPermissionRequests.map(({ generation, code }: { generation: number; code: number }) => [generation, code]), [[1, 0], [1, 1]]);
+  assert.deepEqual(rnPermissions.rnPermissionResults.map(({ generation, code, grants }: { generation: number; code: number; grants: number[] }) => [generation, code, grants]), [[1, 0, [-1]], [1, 1, [0, 0]]]);
+  assert.equal(rnPermissions.notes.length, 1); assert.equal(rnPermissions.notes[0].text, 'A RN place to remember');
+  assert.equal(rnPermissions.listeners, 1);
+  flow('rn-queued-permissions', '- tapOn: "RN permissions"\n- tapOn: "RN request queued"\n- assertVisible: "RN queued never_ask_again never_ask_again"');
+  const rnPermissionQueue = report();
+  assert.deepEqual(rnPermissionQueue.rnPermissionResults.map(({ code, grants }: { code: number; grants: number[] }) => [code, grants]), [[0, [-1]], [1, [0, 0]], [2, [-1]], [3, [-1]]]);
+  await freshPermissions('rn-retirement');
+  flow('rn-retire-permission', '- assertVisible: "Tauri 45 setup 1 plugins 1"\n- tapOn: "RN permissions"\n- tapOn: "Retire on pause"\n- tapOn: "RN request then save"\n- assertVisible: "(?i)While using the app"');
+  await until(() => report().permissionRetirement?.generation === 2);
+  const rnPermissionPending = report();
+  assert.equal(rnPermissionPending.permissionRetirement.listeners, 0);
+  assert.equal(rnPermissionPending.permissionRetirement.runtimeStatus, 'ready');
+  assert.deepEqual(rnPermissionPending.rnPermissionRequests.map(({ generation, code }: { generation: number; code: number }) => [generation, code]), [[1, 0]]);
+  assert.deepEqual(rnPermissionPending.rnPermissionResults, []);
+  flow('rn-grant-retired-permission', '- tapOn: "(?i)While using the app"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 0 notes 0 setup 1 plugins 1"\n- tapOn: "RN permissions"\n- tapOn: "RN check location"\n- assertVisible: "RN coarse true"\n- tapOn: "RN undeclared camera"\n- assertVisible: "RN camera never_ask_again"');
+  const rnPermissionRetired = report();
+  assert.equal(rnPermissionRetired.pid, rnPermissionPending.pid);
+  assert.equal(rnPermissionRetired.listeners, 1);
+  assert.deepEqual(rnPermissionRetired.notes, []);
+  // Both RN modules begin at request code zero. The retired listener must never receive the new result.
+  assert.deepEqual(rnPermissionRetired.rnPermissionRequests.map(({ generation, code }: { generation: number; code: number }) => [generation, code]), [[1, 0], [2, 0]]);
+  assert.deepEqual(rnPermissionRetired.rnPermissionResults.map(({ generation, code, grants }: { generation: number; code: number; grants: number[] }) => [generation, code, grants]), [[2, 0, [-1]]]);
   // Execute the unmodified generated Activity too: no acceptance subclass, readiness override or native layout hooks.
   run('uninstall-acceptance', 'adb', ['-s', device, 'uninstall', appId]); installed = false;
   writeFileSync(manifestFile, compositionManifest);
@@ -165,6 +200,7 @@ try {
   run('default-deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', 'tauri-fieldnotes://notes/default', '-p', appId]);
   flow('default-link', '- assertVisible: "RN links 1 back 1"\n- assertVisible: "RN events 1"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 0 setup 1 plugins 1"');
   flow('default-view', '- tapOn: "Show Tauri view"\n- assertVisible: "View attached"\n- tapOn: "Check denied capability"\n- assertVisible: "Tauri capability denied location watch"\n- tapOn: "Hide Tauri view"\n- assertVisible: "View detached"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 0 setup 1 plugins 1"');
+  flow('default-rn-permissions', '- tapOn: "RN permissions"\n- tapOn: "RN request locations"\n- tapOn: "(?i)While using the app"\n- assertVisible: "RN fine granted coarse granted"\n- tapOn: "Tauri permissions"\n- tapOn: "Check permission"\n- assertVisible: "Permission granted"\n- tapOn: "Save location"\n- assertVisible: "RN note 1"\n- assertVisible: "RN events 2"');
   assert.equal(run('default-final-pid', 'adb', ['-s', device, 'shell', 'pidof', appId]), pid);
   assert.deepEqual(readRetainedArtifacts(artifact), manifest);
   assert.deepEqual(packedReader(copied), manifest);
@@ -175,6 +211,7 @@ try {
     packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-react-native-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
     apkSha256: sha256(readFileSync(acceptanceApk)), defaultActivity: { activity: composition.activity, pid, apkSha256: sha256(readFileSync(apk)), overriddenHooks: false },
     bundleSha256: sha256(readFileSync(bundle)), baseline, initial, permissionRetired, remounted, viewIntegration, closed, notes,
+    rnPermissions, rnPermissionQueue, rnPermissionPending, rnPermissionRetired,
     uiScenarios: ['original Tauri document embedded without replacement or reload', 'original frontend and RN share real notes/events/ACL', 'competing view rejected without detaching the first', 'component remount and engine replacement restore the original WebView and native clients', 'shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'renderer retirement during pending OS permission prevents the old continuation save', 'undeclared session preserves original caller_denied code/message', 'save and event', 'background deep link and event', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'RN BackHandler and Linking routing', 'remove RN and keep original Tauri frontend'],
     composition: receipt,
     testOnlyIntegration: 'Acceptance subclass supplies layout, baseline readiness and telemetry; packed composeAndroid generates Tauri/RN attachment, startup and lifecycle forwarding. A second Release APK runs the unmodified generated Activity/default layout without that subclass. The original MainActivity and TauriActivity remain in the inheritance chain. Expo and broader source-form coverage remain open.',

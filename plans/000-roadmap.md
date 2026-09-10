@@ -238,3 +238,19 @@ and both runtime artifacts remain unchanged. See
 Expo/autolinking, broader navigation/lifecycle/source forms and complete parity/
 CI/migration/device/adopter acceptance remain open. No release or roadmap gate
 is closed by this increment.
+
+## RN Android permission progress — 2026-09-11
+
+The generated retained Activity now routes RN `PermissionsAndroid` requests
+through a separate AndroidX result registration while preserving the original
+Tauri plugin callbacks. [24 packed Release UI flows](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-rn-permissions-2026-09-11.json) pass, including
+RN denial/grant, multiple and concurrent native permission results, replacement
+while the OS dialog is open, and the unmodified generated Activity. The retired
+RN listener receives no result; a new engine reusing RN request code zero receives
+only its own result. Existing Tauri permissions, view/state/setup, BackHandler,
+Linking and teardown scenarios still pass. All 14 authored producer files and
+the original artifact inventory remain unchanged. Denial labels keep each
+upstream API's semantics; the SDK does not rewrite Tauri's permission cache.
+Expo native modules/CNG/autolinking, Activity recreation and broader lifecycle/
+source forms, complete parity/CI/migration/device/adopter gates remain open.
+No issue or release gate is closed.

@@ -282,3 +282,47 @@ Expo CNG, third-party autolinking, full navigation/history/back/rotation and
 Activity recreation/RN-owned permissions, OS Universal Link association,
 custom layout/lifecycle owners, complete parity/CI/migration, physical devices
 and independent adopters remain open. No issue or release gate is closed.
+
+## RN-owned Android OS permissions — 2026-09-11
+
+`TauriNativeActivity` implements RN's `PermissionAwareActivity`. The package
+registers an Activity-scoped AndroidX permission launcher before STARTED,
+independently from the original Tauri PluginManager registrations. One queue
+retains each RN request's original code, ordered permissions and listener.
+Delivery waits for Activity resume. Each RN generation has its own scope;
+reload/close removes queued requests and drops an in-flight listener while
+allowing the outstanding OS dialog to finish. A retired request cannot deliver
+to a replacement engine's reused request code. Manual composition passes one
+`TauriReactPermissions` router per Activity to the host and forwards the RN
+permission overload; original Activity callbacks remain in the super chain.
+
+[Native Release evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-rn-permissions-2026-09-11.json) records 24 Android emulator UI flows from
+a 117-file packed SDK and a relocated source-free Release/R8 consumer. The
+original 18 view, Tauri permission, BackHandler, Linking and teardown flows
+still pass. Six additional flows execute RN single denial, multiple grant,
+concurrent native permission results, retirement with a real OS dialog pending,
+result delivery after reload, and the unmodified generated Activity without
+acceptance hooks. Native telemetry observes no invocation of the old listener,
+zero sentinel notes, one current native event subscription, and only the new
+listener receiving a later request with the same RN code zero. CAMERA and
+RECORD_AUDIO are intentionally absent from the unchanged manifest, so their
+native requests return denial without a dialog; these exercise queue/result
+ownership without adding producer permissions. RN location grants are visible
+to the original geolocation plugin and a real GPS note/save/event succeeds.
+
+RN-only denial returns `denied` in RN and `prompt` in original Tauri 2.11.5:
+Tauri reads its own `PluginPermStates` cache for denied permissions. The SDK
+preserves this upstream behavior, does not populate that cache, and never
+converts a denial into a grant. Actual Tauri-owned denial/rationale handling
+continues to pass its existing scenario. All 14 authored producer files and
+the complete original runtime artifact inventory remain unchanged. One initial
+build rejected a lambda for RN's Kotlin `ReactInstanceEventListener`; the final
+code implements that interface explicitly. The failed build/logs are preserved
+separately and establish no native acceptance. No iOS executable code changed
+or iOS rerun is claimed in this Android increment.
+
+This provides the Activity permission contract used by RN and required by
+Expo's permission service; it does not establish Expo integration. Expo CNG,
+third-party native modules/autolinking, Activity recreation, broader navigation/
+lifecycle/source owners, OS Universal Link association, full parity/CI/migration
+and physical device/independent-adopter evidence remain open.

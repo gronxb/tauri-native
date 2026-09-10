@@ -1,0 +1,1037 @@
+{
+  "passed": true,
+  "recordedAt": "2026-09-10T18:06:41.426202+00:00",
+  "baseCommit": "32035569a8c9425eb6d3d8c8d44b61671224b3ac",
+  "scope": "RN-owned Android OS permissions in the packed retained SDK. Generated Activity implements PermissionAwareActivity while preserving original Tauri startup and its independent plugin result registrations. Actual PermissionsAndroid denial, grant, multiple and concurrent requests, renderer retirement with the OS dialog pending, reused RN request code zero, and the unmodified generated Activity execute in Release. No producer source or permission declaration was changed.",
+  "nativeJUnitFlows": 24,
+  "skippedFlows": 0,
+  "platform": "android emulator arm64 API 37 / 16 KB",
+  "producerSourceSha256": {
+    "packages/cli/test/fixtures/mobile-plugin-tauri/README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372"
+  },
+  "sourceSha256": {
+    "packages/react-native/RETAINED.md": "db33efbaeb3cd00f0a8ec209da5d8a2788747aeb8ab9752a86fbbce9fc1333c1",
+    "packages/react-native/android/retained/src/main/java/dev/taurinative/react/retained/TauriReactHost.kt": "d53cc74e7cf6f2ea8c09cbfcf7ba864d02daaa63535e930889c4f1846c4a815f",
+    "packages/react-native/android/retained/src/main/java/dev/taurinative/react/retained/TauriReactPermissions.kt": "a153c3e8a77e78ed8f4866d0428f5c7766a1634e19d3b0a3f2958454b15f8017",
+    "packages/react-native/retained/android/TauriNativeActivity.kt.template": "d0a970e85cee2d25a1a588a10e3e338e59d6314103e3128db95bff5ab97d13f8",
+    "packages/react-native/test/retained-android.ts": "c3969ebfa12fe698fc3762d719165b4608948dc146f482d1fbef468dca0d2095",
+    "packages/react-native/test/retained/AcceptanceActivity.kt.fixture": "bff0a6406eae35751fa9169520087bf06c403caeddc6a5c108a4223821c6e4c0",
+    "packages/react-native/test/retained/index.tsx.fixture": "402ddc61692fb307dd80b763b56cafcd82d08843b3a8bc62487682df01add5d8"
+  },
+  "packedFiles": 117,
+  "allPackedFilesMatchCurrentSdk": true,
+  "result": {
+    "passed": true,
+    "platform": "android",
+    "profile": "release",
+    "formatVersion": 2,
+    "abiVersion": 3,
+    "renderer": "React Native 0.86.3 / Hermes 250829098.0.17 / generated TurboModule and Fabric",
+    "sourceFree": true,
+    "sourceFreeBuild": "PATH=/usr/bin:/bin:/usr/sbin:/sbin ./gradlew --no-daemon assembleRelease",
+    "nonDebuggable": true,
+    "libraries": [
+      "lib/arm64-v8a/libappmodules.so",
+      "lib/arm64-v8a/libc++_shared.so",
+      "lib/arm64-v8a/libfbjni.so",
+      "lib/arm64-v8a/libhermestooling.so",
+      "lib/arm64-v8a/libhermesvm.so",
+      "lib/arm64-v8a/libimagepipeline.so",
+      "lib/arm64-v8a/libjsi.so",
+      "lib/arm64-v8a/libnative-filters.so",
+      "lib/arm64-v8a/libnative-imagetranscoder.so",
+      "lib/arm64-v8a/libordinary_tauri_mobile_fieldnotes_lib.so",
+      "lib/arm64-v8a/libreactnative.so"
+    ],
+    "elfAlignment": "All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed",
+    "packageSha256": "84d66860ae04b9fead0cde82ea3d69e9c1a01292cfd2dfa8b93244d67261a6ee",
+    "artifactSha256": "fb5f29d07ace2c715df7b4b4121fc57f2fa8df5b4cf4cf32d298dac7dc4595d5",
+    "apkSha256": "8ac93e8b9e1a830a2dc0a3cf89579f6b63fb5724375a79d53d0fd6ab0a6250e3",
+    "defaultActivity": {
+      "activity": "dev.taurinative.mobilefieldnotes.TauriNativeActivity",
+      "pid": "7683",
+      "apkSha256": "9c4ac1f26e2f73ce85ecf2d6e4e7f89f2ad0308bc4e3a55fa8437ae5746da24e",
+      "overriddenHooks": false
+    },
+    "bundleSha256": "c36ba5407a6e2cd84efb3f5dc1293dca40aecd4a619ccba2ba3a99ab8b4a58a4",
+    "baseline": {
+      "directory": "/data/user/0/dev.taurinative.mobilefieldnotes",
+      "passed": true,
+      "reloaded": true,
+      "scenarios": [
+        "setup",
+        "state",
+        "app-handle",
+        "async",
+        "rust-event",
+        "plugin-setup",
+        "plugin-allowed",
+        "plugin-denied",
+        "domain-error",
+        "reload"
+      ],
+      "state": {
+        "appIdentifier": "dev.taurinative.mobilefieldnotes",
+        "pluginSetupCount": 1,
+        "setupCount": 1,
+        "value": 45
+      }
+    },
+    "initial": {
+      "generation": 1,
+      "resumed": 1,
+      "paused": 0,
+      "stopped": 0,
+      "hostClosed": false,
+      "retireOnPause": false,
+      "permissionRetirement": null,
+      "hostDestroyed": false,
+      "receivedIntents": [],
+      "rnPermissionRequests": [],
+      "rnPermissionResults": [],
+      "listeners": 1,
+      "listenersAfterRelease": -1,
+      "pid": 3613,
+      "view": {
+        "originalParent": true,
+        "parent": "android.widget.LinearLayout",
+        "documentOrigin": "1.7890630802268e+12",
+        "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138",
+        "navigationDelegateUnchanged": true,
+        "uiDelegateUnchanged": true,
+        "transitions": [
+          {
+            "parent": "android.widget.LinearLayout",
+            "documentOrigin": "1.7890630802268E12",
+            "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+          }
+        ]
+      },
+      "notes": []
+    },
+    "permissionRetired": {
+      "generation": 2,
+      "resumed": 2,
+      "paused": 2,
+      "stopped": 0,
+      "hostClosed": false,
+      "retireOnPause": false,
+      "permissionRetirement": {
+        "generation": 2,
+        "listeners": 0,
+        "paused": 2,
+        "runtimeStatus": "ready",
+        "pid": 3613
+      },
+      "hostDestroyed": false,
+      "receivedIntents": [],
+      "rnPermissionRequests": [],
+      "rnPermissionResults": [],
+      "listeners": 1,
+      "listenersAfterRelease": 0,
+      "pid": 3613,
+      "view": {
+        "originalParent": true,
+        "parent": "android.widget.LinearLayout",
+        "documentOrigin": "1.7890630802268e+12",
+        "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138",
+        "navigationDelegateUnchanged": true,
+        "uiDelegateUnchanged": true,
+        "transitions": [
+          {
+            "parent": "android.widget.LinearLayout",
+            "documentOrigin": "1.7890630802268E12",
+            "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+          }
+        ]
+      },
+      "notes": []
+    },
+    "remounted": {
+      "generation": 3,
+      "resumed": 4,
+      "paused": 3,
+      "stopped": 1,
+      "hostClosed": false,
+      "retireOnPause": false,
+      "permissionRetirement": {
+        "generation": 2,
+        "listeners": 0,
+        "paused": 2,
+        "runtimeStatus": "ready",
+        "pid": 3613
+      },
+      "hostDestroyed": false,
+      "receivedIntents": [
+        "tauri-fieldnotes://notes/1"
+      ],
+      "rnPermissionRequests": [],
+      "rnPermissionResults": [],
+      "listeners": 1,
+      "listenersAfterRelease": 0,
+      "pid": 3613,
+      "view": {
+        "originalParent": true,
+        "parent": "android.widget.LinearLayout",
+        "documentOrigin": "1.7890630802268e+12",
+        "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138",
+        "navigationDelegateUnchanged": true,
+        "uiDelegateUnchanged": true,
+        "transitions": [
+          {
+            "parent": "android.widget.LinearLayout",
+            "documentOrigin": "1.7890630802268E12",
+            "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+          }
+        ]
+      },
+      "notes": [
+        {
+          "id": 1,
+          "text": "A RN place to remember",
+          "latitude": 37.5664983,
+          "longitude": 126.9779983
+        }
+      ]
+    },
+    "viewIntegration": {
+      "attached": {
+        "generation": 3,
+        "resumed": 5,
+        "paused": 4,
+        "stopped": 1,
+        "hostClosed": false,
+        "retireOnPause": false,
+        "permissionRetirement": {
+          "generation": 2,
+          "listeners": 0,
+          "paused": 2,
+          "runtimeStatus": "ready",
+          "pid": 3613
+        },
+        "hostDestroyed": false,
+        "receivedIntents": [
+          "tauri-fieldnotes://notes/1",
+          "tauri-fieldnotes://notes/1?remounted=1"
+        ],
+        "rnPermissionRequests": [],
+        "rnPermissionResults": [],
+        "listeners": 1,
+        "listenersAfterRelease": 0,
+        "pid": 3613,
+        "view": {
+          "originalParent": false,
+          "parent": "I4.b",
+          "documentOrigin": "1.7890630802268e+12",
+          "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138",
+          "navigationDelegateUnchanged": true,
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.7890630802268E12",
+              "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+            },
+            {
+              "parent": "I4.b",
+              "documentOrigin": "1.7890630802268E12",
+              "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+            }
+          ]
+        },
+        "notes": [
+          {
+            "id": 1,
+            "text": "A RN place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          },
+          {
+            "id": 2,
+            "text": "A place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          }
+        ]
+      },
+      "contended": {
+        "generation": 3,
+        "resumed": 5,
+        "paused": 4,
+        "stopped": 1,
+        "hostClosed": false,
+        "retireOnPause": false,
+        "permissionRetirement": {
+          "generation": 2,
+          "listeners": 0,
+          "paused": 2,
+          "runtimeStatus": "ready",
+          "pid": 3613
+        },
+        "hostDestroyed": false,
+        "receivedIntents": [
+          "tauri-fieldnotes://notes/1",
+          "tauri-fieldnotes://notes/1?remounted=1"
+        ],
+        "rnPermissionRequests": [],
+        "rnPermissionResults": [],
+        "listeners": 1,
+        "listenersAfterRelease": 0,
+        "pid": 3613,
+        "view": {
+          "originalParent": false,
+          "parent": "I4.b",
+          "documentOrigin": "1.7890630802268e+12",
+          "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138",
+          "navigationDelegateUnchanged": true,
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.7890630802268E12",
+              "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+            },
+            {
+              "parent": "I4.b",
+              "documentOrigin": "1.7890630802268E12",
+              "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+            }
+          ]
+        },
+        "notes": [
+          {
+            "id": 1,
+            "text": "A RN place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          },
+          {
+            "id": 2,
+            "text": "A place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          }
+        ]
+      },
+      "detached": {
+        "generation": 3,
+        "resumed": 5,
+        "paused": 4,
+        "stopped": 1,
+        "hostClosed": false,
+        "retireOnPause": false,
+        "permissionRetirement": {
+          "generation": 2,
+          "listeners": 0,
+          "paused": 2,
+          "runtimeStatus": "ready",
+          "pid": 3613
+        },
+        "hostDestroyed": false,
+        "receivedIntents": [
+          "tauri-fieldnotes://notes/1",
+          "tauri-fieldnotes://notes/1?remounted=1"
+        ],
+        "rnPermissionRequests": [],
+        "rnPermissionResults": [],
+        "listeners": 1,
+        "listenersAfterRelease": 0,
+        "pid": 3613,
+        "view": {
+          "originalParent": true,
+          "parent": "android.widget.LinearLayout",
+          "documentOrigin": "1.7890630802268e+12",
+          "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138",
+          "navigationDelegateUnchanged": true,
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.7890630802268E12",
+              "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+            },
+            {
+              "parent": "I4.b",
+              "documentOrigin": "1.7890630802268E12",
+              "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+            },
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.7890630802268E12",
+              "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+            }
+          ]
+        },
+        "notes": [
+          {
+            "id": 1,
+            "text": "A RN place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          },
+          {
+            "id": 2,
+            "text": "A place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          }
+        ]
+      },
+      "remounted": {
+        "generation": 3,
+        "resumed": 5,
+        "paused": 4,
+        "stopped": 1,
+        "hostClosed": false,
+        "retireOnPause": false,
+        "permissionRetirement": {
+          "generation": 2,
+          "listeners": 0,
+          "paused": 2,
+          "runtimeStatus": "ready",
+          "pid": 3613
+        },
+        "hostDestroyed": false,
+        "receivedIntents": [
+          "tauri-fieldnotes://notes/1",
+          "tauri-fieldnotes://notes/1?remounted=1"
+        ],
+        "rnPermissionRequests": [],
+        "rnPermissionResults": [],
+        "listeners": 1,
+        "listenersAfterRelease": 0,
+        "pid": 3613,
+        "view": {
+          "originalParent": false,
+          "parent": "I4.b",
+          "documentOrigin": "1.7890630802268e+12",
+          "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138",
+          "navigationDelegateUnchanged": true,
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.7890630802268E12",
+              "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+            },
+            {
+              "parent": "I4.b",
+              "documentOrigin": "1.7890630802268E12",
+              "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+            },
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.7890630802268E12",
+              "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+            },
+            {
+              "parent": "I4.b",
+              "documentOrigin": "1.7890630802268E12",
+              "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+            }
+          ]
+        },
+        "notes": [
+          {
+            "id": 1,
+            "text": "A RN place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          },
+          {
+            "id": 2,
+            "text": "A place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          }
+        ]
+      },
+      "replaced": {
+        "generation": 4,
+        "resumed": 5,
+        "paused": 4,
+        "stopped": 1,
+        "hostClosed": false,
+        "retireOnPause": false,
+        "permissionRetirement": {
+          "generation": 2,
+          "listeners": 0,
+          "paused": 2,
+          "runtimeStatus": "ready",
+          "pid": 3613
+        },
+        "hostDestroyed": false,
+        "receivedIntents": [
+          "tauri-fieldnotes://notes/1",
+          "tauri-fieldnotes://notes/1?remounted=1"
+        ],
+        "rnPermissionRequests": [],
+        "rnPermissionResults": [],
+        "listeners": 1,
+        "listenersAfterRelease": 0,
+        "pid": 3613,
+        "view": {
+          "originalParent": true,
+          "parent": "android.widget.LinearLayout",
+          "documentOrigin": "1.7890630802268e+12",
+          "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138",
+          "navigationDelegateUnchanged": true,
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.7890630802268E12",
+              "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+            },
+            {
+              "parent": "I4.b",
+              "documentOrigin": "1.7890630802268E12",
+              "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+            },
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.7890630802268E12",
+              "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+            },
+            {
+              "parent": "I4.b",
+              "documentOrigin": "1.7890630802268E12",
+              "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+            },
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.7890630802268E12",
+              "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+            }
+          ]
+        },
+        "notes": [
+          {
+            "id": 1,
+            "text": "A RN place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          },
+          {
+            "id": 2,
+            "text": "A place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          }
+        ]
+      }
+    },
+    "closed": {
+      "generation": 4,
+      "resumed": 5,
+      "paused": 4,
+      "stopped": 1,
+      "hostClosed": true,
+      "retireOnPause": false,
+      "permissionRetirement": {
+        "generation": 2,
+        "listeners": 0,
+        "paused": 2,
+        "runtimeStatus": "ready",
+        "pid": 3613
+      },
+      "hostDestroyed": true,
+      "receivedIntents": [
+        "tauri-fieldnotes://notes/1",
+        "tauri-fieldnotes://notes/1?remounted=1"
+      ],
+      "rnPermissionRequests": [],
+      "rnPermissionResults": [],
+      "listeners": 0,
+      "listenersAfterRelease": 0,
+      "pid": 3613,
+      "view": {
+        "originalParent": true,
+        "parent": "android.widget.LinearLayout",
+        "documentOrigin": "1.7890630802268e+12",
+        "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138",
+        "navigationDelegateUnchanged": true,
+        "uiDelegateUnchanged": true,
+        "transitions": [
+          {
+            "parent": "android.widget.LinearLayout",
+            "documentOrigin": "1.7890630802268E12",
+            "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+          },
+          {
+            "parent": "I4.b",
+            "documentOrigin": "1.7890630802268E12",
+            "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+          },
+          {
+            "parent": "android.widget.LinearLayout",
+            "documentOrigin": "1.7890630802268E12",
+            "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+          },
+          {
+            "parent": "I4.b",
+            "documentOrigin": "1.7890630802268E12",
+            "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+          },
+          {
+            "parent": "android.widget.LinearLayout",
+            "documentOrigin": "1.7890630802268E12",
+            "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+          },
+          {
+            "parent": "I4.b",
+            "documentOrigin": "1.7890630802268E12",
+            "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+          },
+          {
+            "parent": "android.widget.LinearLayout",
+            "documentOrigin": "1.7890630802268E12",
+            "documentToken": "4767fcb3-121d-4fbc-a869-ba2559ade138"
+          }
+        ]
+      },
+      "notes": [
+        {
+          "id": 1,
+          "text": "A RN place to remember",
+          "latitude": 37.5664983,
+          "longitude": 126.9779983
+        },
+        {
+          "id": 2,
+          "text": "A place to remember",
+          "latitude": 37.5664983,
+          "longitude": 126.9779983
+        }
+      ]
+    },
+    "notes": [
+      {
+        "id": 1,
+        "text": "A RN place to remember",
+        "latitude": 37.5664983,
+        "longitude": 126.9779983
+      },
+      {
+        "id": 2,
+        "text": "A place to remember",
+        "latitude": 37.5664983,
+        "longitude": 126.9779983
+      }
+    ],
+    "rnPermissions": {
+      "generation": 1,
+      "resumed": 3,
+      "paused": 2,
+      "stopped": 0,
+      "hostClosed": false,
+      "retireOnPause": false,
+      "permissionRetirement": null,
+      "hostDestroyed": false,
+      "receivedIntents": [],
+      "rnPermissionRequests": [
+        {
+          "generation": 1,
+          "code": 0,
+          "permissions": [
+            "android.permission.ACCESS_COARSE_LOCATION"
+          ]
+        },
+        {
+          "generation": 1,
+          "code": 1,
+          "permissions": [
+            "android.permission.ACCESS_FINE_LOCATION",
+            "android.permission.ACCESS_COARSE_LOCATION"
+          ]
+        }
+      ],
+      "rnPermissionResults": [
+        {
+          "generation": 1,
+          "code": 0,
+          "permissions": [
+            "android.permission.ACCESS_COARSE_LOCATION"
+          ],
+          "grants": [
+            -1
+          ]
+        },
+        {
+          "generation": 1,
+          "code": 1,
+          "permissions": [
+            "android.permission.ACCESS_FINE_LOCATION",
+            "android.permission.ACCESS_COARSE_LOCATION"
+          ],
+          "grants": [
+            0,
+            0
+          ]
+        }
+      ],
+      "listeners": 1,
+      "listenersAfterRelease": -1,
+      "pid": 6516,
+      "view": {
+        "originalParent": true,
+        "parent": "android.widget.LinearLayout",
+        "documentOrigin": "1.7890633283049e+12",
+        "documentToken": "ee040e05-0d11-442e-aeea-fa94bafe2afd",
+        "navigationDelegateUnchanged": true,
+        "uiDelegateUnchanged": true,
+        "transitions": [
+          {
+            "parent": "android.widget.LinearLayout",
+            "documentOrigin": "1.7890633283049E12",
+            "documentToken": "ee040e05-0d11-442e-aeea-fa94bafe2afd"
+          }
+        ]
+      },
+      "notes": [
+        {
+          "id": 1,
+          "text": "A RN place to remember",
+          "latitude": 37.5664983,
+          "longitude": 126.9779983
+        }
+      ]
+    },
+    "rnPermissionQueue": {
+      "generation": 1,
+      "resumed": 3,
+      "paused": 2,
+      "stopped": 0,
+      "hostClosed": false,
+      "retireOnPause": false,
+      "permissionRetirement": null,
+      "hostDestroyed": false,
+      "receivedIntents": [],
+      "rnPermissionRequests": [
+        {
+          "generation": 1,
+          "code": 0,
+          "permissions": [
+            "android.permission.ACCESS_COARSE_LOCATION"
+          ]
+        },
+        {
+          "generation": 1,
+          "code": 1,
+          "permissions": [
+            "android.permission.ACCESS_FINE_LOCATION",
+            "android.permission.ACCESS_COARSE_LOCATION"
+          ]
+        },
+        {
+          "generation": 1,
+          "code": 2,
+          "permissions": [
+            "android.permission.CAMERA"
+          ]
+        },
+        {
+          "generation": 1,
+          "code": 3,
+          "permissions": [
+            "android.permission.RECORD_AUDIO"
+          ]
+        }
+      ],
+      "rnPermissionResults": [
+        {
+          "generation": 1,
+          "code": 0,
+          "permissions": [
+            "android.permission.ACCESS_COARSE_LOCATION"
+          ],
+          "grants": [
+            -1
+          ]
+        },
+        {
+          "generation": 1,
+          "code": 1,
+          "permissions": [
+            "android.permission.ACCESS_FINE_LOCATION",
+            "android.permission.ACCESS_COARSE_LOCATION"
+          ],
+          "grants": [
+            0,
+            0
+          ]
+        },
+        {
+          "generation": 1,
+          "code": 2,
+          "permissions": [
+            "android.permission.CAMERA"
+          ],
+          "grants": [
+            -1
+          ]
+        },
+        {
+          "generation": 1,
+          "code": 3,
+          "permissions": [
+            "android.permission.RECORD_AUDIO"
+          ],
+          "grants": [
+            -1
+          ]
+        }
+      ],
+      "listeners": 1,
+      "listenersAfterRelease": -1,
+      "pid": 6516,
+      "view": {
+        "originalParent": true,
+        "parent": "android.widget.LinearLayout",
+        "documentOrigin": "1.7890633283049e+12",
+        "documentToken": "ee040e05-0d11-442e-aeea-fa94bafe2afd",
+        "navigationDelegateUnchanged": true,
+        "uiDelegateUnchanged": true,
+        "transitions": [
+          {
+            "parent": "android.widget.LinearLayout",
+            "documentOrigin": "1.7890633283049E12",
+            "documentToken": "ee040e05-0d11-442e-aeea-fa94bafe2afd"
+          }
+        ]
+      },
+      "notes": [
+        {
+          "id": 1,
+          "text": "A RN place to remember",
+          "latitude": 37.5664983,
+          "longitude": 126.9779983
+        }
+      ]
+    },
+    "rnPermissionPending": {
+      "generation": 2,
+      "resumed": 1,
+      "paused": 1,
+      "stopped": 0,
+      "hostClosed": false,
+      "retireOnPause": false,
+      "permissionRetirement": {
+        "generation": 2,
+        "listeners": 0,
+        "paused": 1,
+        "runtimeStatus": "ready",
+        "pid": 7187
+      },
+      "hostDestroyed": false,
+      "receivedIntents": [],
+      "rnPermissionRequests": [
+        {
+          "generation": 1,
+          "code": 0,
+          "permissions": [
+            "android.permission.ACCESS_COARSE_LOCATION"
+          ]
+        }
+      ],
+      "rnPermissionResults": [],
+      "listeners": 1,
+      "listenersAfterRelease": 0,
+      "pid": 7187,
+      "view": {
+        "originalParent": true,
+        "parent": "android.widget.LinearLayout",
+        "documentOrigin": "1.7890634006989e+12",
+        "documentToken": "a7a70b59-c196-4a3e-b210-23cf6d2bfae1",
+        "navigationDelegateUnchanged": true,
+        "uiDelegateUnchanged": true,
+        "transitions": [
+          {
+            "parent": "android.widget.LinearLayout",
+            "documentOrigin": "1.7890634006989E12",
+            "documentToken": "a7a70b59-c196-4a3e-b210-23cf6d2bfae1"
+          }
+        ]
+      },
+      "notes": []
+    },
+    "rnPermissionRetired": {
+      "generation": 2,
+      "resumed": 2,
+      "paused": 1,
+      "stopped": 0,
+      "hostClosed": false,
+      "retireOnPause": false,
+      "permissionRetirement": {
+        "generation": 2,
+        "listeners": 0,
+        "paused": 1,
+        "runtimeStatus": "ready",
+        "pid": 7187
+      },
+      "hostDestroyed": false,
+      "receivedIntents": [],
+      "rnPermissionRequests": [
+        {
+          "generation": 1,
+          "code": 0,
+          "permissions": [
+            "android.permission.ACCESS_COARSE_LOCATION"
+          ]
+        },
+        {
+          "generation": 2,
+          "code": 0,
+          "permissions": [
+            "android.permission.CAMERA"
+          ]
+        }
+      ],
+      "rnPermissionResults": [
+        {
+          "generation": 2,
+          "code": 0,
+          "permissions": [
+            "android.permission.CAMERA"
+          ],
+          "grants": [
+            -1
+          ]
+        }
+      ],
+      "listeners": 1,
+      "listenersAfterRelease": 0,
+      "pid": 7187,
+      "view": {
+        "originalParent": true,
+        "parent": "android.widget.LinearLayout",
+        "documentOrigin": "1.7890634006989e+12",
+        "documentToken": "a7a70b59-c196-4a3e-b210-23cf6d2bfae1",
+        "navigationDelegateUnchanged": true,
+        "uiDelegateUnchanged": true,
+        "transitions": [
+          {
+            "parent": "android.widget.LinearLayout",
+            "documentOrigin": "1.7890634006989E12",
+            "documentToken": "a7a70b59-c196-4a3e-b210-23cf6d2bfae1"
+          }
+        ]
+      },
+      "notes": []
+    },
+    "uiScenarios": [
+      "original Tauri document embedded without replacement or reload",
+      "original frontend and RN share real notes/events/ACL",
+      "competing view rejected without detaching the first",
+      "component remount and engine replacement restore the original WebView and native clients",
+      "shared original state/setup",
+      "Tauri ACL and native caller denial",
+      "OS permission denial/grant",
+      "renderer retirement during pending OS permission prevents the old continuation save",
+      "undeclared session preserves original caller_denied code/message",
+      "save and event",
+      "background deep link and event",
+      "renderer replacement retires native subscriptions",
+      "fresh renderer receives only fresh events",
+      "RN BackHandler and Linking routing",
+      "remove RN and keep original Tauri frontend"
+    ],
+    "testOnlyIntegration": "Acceptance subclass supplies layout, baseline readiness and telemetry; packed composeAndroid generates Tauri/RN attachment, startup and lifecycle forwarding. A second Release APK runs the unmodified generated Activity/default layout without that subclass. The original MainActivity and TauriActivity remain in the inheritance chain. Expo and broader source-form coverage remain open.",
+    "testOnlySigning": "Non-debuggable Release with R8 optimization and a debug test signing key; process-scoped logcat telemetry",
+    "compositionSummary": {
+      "files": 98,
+      "receiptSha256": "91eb1e33b05a3cc8c0854cc085c5af23788181ffa4f446318bec1708396f7d04"
+    },
+    "reportSha256": "aa31eca5fad1d76abd170c631ac518e519493c594b02f5426c72aec20ff4c105",
+    "junitSha256": {
+      "attach-before-close": "f5f794450384ee14accb768df0453550f7fe730990013e0b1eaefc584e56c943",
+      "back": "c21cc25bacdc840ac8efd2874fa8df4fe2d66b053f3f93729f214b3074ccefa3",
+      "background": "ba73286a7bfbfa1940d7f887add532e8aeca457d14841a97545199d98f6e616f",
+      "competing-view": "bc45f9a43f8f16df8033bc9b07929e144b37ba077b14c5d5f82749500ec8c2e9",
+      "default-integration": "900a6166fc36f43eaac9c238e884a37252ce301e53b53fcb7b79ee525aaf514a",
+      "default-link": "deaf88341588c4bd07f67c75e0c21940be52afdb9c9f5bd81d37fd834d486995",
+      "default-rn-permissions": "f8c7f6e1e19ee7ad899257b67fc222d8901d2b5500ca25d54018352387dff56b",
+      "default-view": "e5649f64cb1f5f23a7c7d7f545f4eb7087eb7910e9c3fab45356cc69d42cf28f",
+      "deny-permission": "551afe6cc9911758be7ebf4beec70ad9034b90a705b213f56d22ce9dce9cfa44",
+      "detach-view": "f038d89b9b272d9ee3aa4f44228d85296476103dd2d6375f726f3a5a129442b0",
+      "embedded-frontend": "39d17a76f98bf591e1d56612925fd7c6551e5826a7a83f026e94d3f835d071a9",
+      "fresh-events": "99ba78435c4495fc19500e55c6fe298da633c9edf3963ced62f60881765cbf0a",
+      "grant-permission": "c09e7bb44aaeab533cedf1990301d35421c1cd8b0a868b5491ceffdea645edcc",
+      "initial": "4489dfbf7417a7951d6dbd91f9be2dc2e62c5965c3a56881c9b4166f444d3afc",
+      "remount-view": "7224190a9f8d919e032ffcc02caa75ee6976017cbeb146f81c1117c9687806a4",
+      "remove-renderer": "111a4383deca631400b23f15b232afb5b1f0e912cbe1cbde265c2f5f0b1a3fdd",
+      "replace-renderer-with-view": "9d125864dcd5dfa08f6facc2709e53803615721cde94773a256a1e29b8a2b172",
+      "resume": "004a4ea7d5cf8128073b0dcee25c007fb7aee1739775040ec6347e45f4fc3aba",
+      "retire-permission": "aeb030e1db4227842e0c6b52a0d2143c4afe022c82fc30e0c111b298370fcf6f",
+      "rn-deny-permission": "b6808e74ff72627b61b65c2ea4ad73fcf5a9d2e284bd0c7f35bb213cc5c364c1",
+      "rn-grant-permissions": "79d7f92e95d7edc4543a2b8837ad87705cccdd3ac219f7a60d13f8338d6fbd31",
+      "rn-grant-retired-permission": "aa22d8230ae9479ac1153d6dd20fbf5761cb523a2c6b3a0a32081e58ab3938a9",
+      "rn-queued-permissions": "9aeaa557ecdd1549937a32c8b4cba0f45cf5ccb45226fd85545f69e4c7f1fc67",
+      "rn-retire-permission": "3f1769044c6bfd45f74b7b5c35c3d23bcc1ec81895e436d7e4e3ca0b3afb571e"
+    },
+    "buildLogSha256": {
+      "source-free-build": "c68036075f6cb4b6ea1dfd3171f7d33336e701c314e1f277748f6b42ff25c934",
+      "default-source-free-build": "99692cc3a5e1096f866883ba22a0fdab8a3b45f98363d2b4a1aa6e00d266a2a8"
+    }
+  },
+  "permissionSemantics": "RN returns denied after the first RN-only denial. Original Tauri 2.11.5 reads its PluginPermStates cache and still reports prompt because RN did not populate that cache. Tauri observes RN OS grants as granted. The SDK preserves these upstream labels and does not write Tauri permission preferences. CAMERA and RECORD_AUDIO are intentionally undeclared in the unchanged original artifact: RN native request results are denied/never_ask_again without an OS prompt, exercising concurrent result routing and request-code reuse.",
+  "instrumentation": "AcceptanceActivity records requests and actual delivery to each original RN PermissionListener, then forwards its exact code, permission list and grants. A second Release APK uses the generated Activity without this subclass. The existing native layout, lifecycle and one-time document-token telemetry remain test-only.",
+  "regressionChecks": {
+    "packageTests": 15,
+    "packageLogSha256": "884b54f29f02cac29142f0f22958dfab1a3ddd27c742a899d1a2adbc7b9dd409",
+    "scriptsAndComposerTypesSha256": "38ba22a8e60134f36e803a31ae3ca03001b6d63a5a96fc31d0de3abe90be3560",
+    "sdkTypesSha256": "f4334b51a0285a38859f3a5c7f42cafe5bd8c794b74786b7b7db28ea52e2c391"
+  },
+  "command": "PATH=\"$HOME/.cargo/bin:$HOME/Library/Android/sdk/platform-tools:$HOME/.maestro/bin:$PATH\" JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" ANDROID_HOME=\"$HOME/Library/Android/sdk\" NDK_HOME=\"$HOME/Library/Android/sdk/ndk/27.1.12297006\" ANDROID_SERIAL=emulator-5554 node --experimental-strip-types packages/react-native/test/retained-android.ts",
+  "toolchain": {
+    "android": {
+      "device": "emulator-5554",
+      "avd": "Pixel_10_Pro_XL\nOK",
+      "fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:17/CP21.260330.005/15181570:user/dev-keys",
+      "api": "37",
+      "pageSize": "16384",
+      "java": "openjdk version \"21.0.10\" 2026-01-20\nOpenJDK Runtime Environment (build 21.0.10+-117844308-b1163.108)\nOpenJDK 64-Bit Server VM (build 21.0.10+-117844308-b1163.108, mixed mode)",
+      "bootCommand": "$HOME/Library/Android/sdk/emulator/emulator -avd Pixel_10_Pro_XL -port 5554 -no-window -no-snapshot-load -no-snapshot-save",
+      "dataWiped": false,
+      "emulatorStoppedAfterGates": true
+    },
+    "node": "v24.15.0",
+    "npm": "11.12.1",
+    "reactNative": "0.86.3",
+    "hermes": "250829098.0.17",
+    "kotlin": "2.1.20",
+    "gradle": "8.14.3",
+    "agp": "8.11.0",
+    "ndk": "27.1.12297006",
+    "maestro": "2.4.0"
+  },
+  "previousAttempt": {
+    "gate": "target/react-retained-android-rn-permissions-listener-failure",
+    "logSha256": "3a16dcf0109085da91a6558e6d83633011fe0c73c005b01a816d17d715429029",
+    "reason": "ReactInstanceEventListener is a Kotlin interface, not a fun interface. The first build rejected a lambda; production now uses its explicit object implementation. No native UI acceptance ran in that failed build."
+  },
+  "references": [
+    "https://developer.android.com/training/basics/intents/result",
+    "https://reactnative.dev/docs/permissionsandroid"
+  ],
+  "remaining": [
+    "Expo CNG and third-party native module autolinking/permissions",
+    "Activity recreation and broader lifecycle/navigation/source forms",
+    "OS Universal Link association",
+    "complete parity/CI/migration and physical devices/independent adopters"
+  ],
+  "ios": "No iOS SDK native/JS/composer executable changed. The shared acceptance fixture adds Android-only permission controls; the prior 25-flow iOS retained-view evidence is not presented as a rerun."
+}

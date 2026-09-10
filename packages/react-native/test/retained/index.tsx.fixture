@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AppRegistry, BackHandler, Linking, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import { AppRegistry, BackHandler, Linking, PermissionsAndroid, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { openTauriSession, TauriView, type RuntimeSession, type InvokeResponse } from '@tauri-native/react-native/retained';
 
 function value<T>(response: InvokeResponse<T>): T {
@@ -13,6 +13,7 @@ export function App() {
   const [events, setEvents] = useState(0);
   const [embedded, setEmbedded] = useState(false);
   const [competing, setCompeting] = useState(false);
+  const [rnPermissions, setRnPermissions] = useState(false);
   const [attachment, setAttachment] = useState('View detached');
   const [links, setLinks] = useState(0);
   const [backs, setBacks] = useState(0);
@@ -90,7 +91,30 @@ export function App() {
       return `Links ${state.links.length} notes ${state.notes.length} setup 1 plugins 1`;
     }],
   ];
+  const permissionActions: typeof actions = [
+    ['RN check location', async () => `RN coarse ${await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION)}`],
+    ['RN request coarse', async () => `RN coarse ${await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION)}`],
+    ['RN request locations', async () => {
+      const results = await PermissionsAndroid.requestMultiple([PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION]);
+      return `RN fine ${results[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION]} coarse ${results[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION]}`;
+    }],
+    ['RN request then save', async runtime => {
+      const result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION);
+      if (result !== PermissionsAndroid.RESULTS.GRANTED) throw new Error(`Unexpected RN permission ${result}`);
+      value(await runtime.invoke('save_note', { text: 'Retired RN permission must not save', latitude: 0, longitude: 0 }));
+      return 'ERROR retired RN permission saved';
+    }],
+    ['RN undeclared camera', async () => `RN camera ${await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA)}`],
+    ['RN request queued', async () => {
+      const results = await Promise.all([
+        PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA),
+        PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.RECORD_AUDIO),
+      ]);
+      return `RN queued ${results.join(' ')}`;
+    }],
+  ];
   const button = (label: string, action: () => void) => <Pressable key={label} accessibilityRole="button" accessibilityLabel={label} onPress={action} style={{ marginTop: 5, padding: 5, backgroundColor: '#fff' }}><Text>{label}</Text></Pressable>;
+  const viewButton = button(embedded ? 'Hide Tauri view' : 'Show Tauri view', () => { setEmbedded(!embedded); setCompeting(false); setRnPermissions(false); setAttachment('View detached'); });
   return <View style={{ flex: 1, backgroundColor: '#e4f3ed' }}>
     <ScrollView style={embedded ? { flexGrow: 0, flexShrink: 0 } : { flex: 1 }} contentContainerStyle={{ padding: 12 }}>
     <Text>{`RN ${Platform.constants.reactNativeVersion.minor} ${global.HermesInternal ? 'Hermes' : 'No Hermes'}`}</Text>
@@ -100,8 +124,10 @@ export function App() {
       <Text style={{ fontSize: 12 }}>{`RN URL ${lastURL}`}</Text>
       <Pressable accessibilityRole="button" accessibilityLabel="Check initial URL" onPress={() => checkInitialURL(true)} style={{ padding: 5, backgroundColor: '#fff' }}><Text>Check initial URL</Text></Pressable>
     </>}
-    {button(embedded ? 'Hide Tauri view' : 'Show Tauri view', () => { setEmbedded(!embedded); setCompeting(false); setAttachment('View detached'); })}
-    {actions.filter(([label]) => !embedded || label === 'Refresh Tauri').map(([label, action]) => <Pressable key={label} accessibilityRole="button" accessibilityLabel={label} onPress={() => run(action)} style={{ marginTop: 5, padding: 5, backgroundColor: '#fff' }}><Text>{label}</Text></Pressable>)}
+    {Platform.OS === 'android' && !embedded ? <View style={{ flexDirection: 'row', gap: 8 }}>
+      {viewButton}{button(rnPermissions ? 'Tauri permissions' : 'RN permissions', () => setRnPermissions(!rnPermissions))}
+    </View> : viewButton}
+    {(rnPermissions ? permissionActions : actions).filter(([label]) => !embedded || label === 'Refresh Tauri').map(([label, action]) => <Pressable key={label} accessibilityRole="button" accessibilityLabel={label} onPress={() => run(action)} style={{ marginTop: 5, padding: 5, backgroundColor: '#fff' }}><Text>{label}</Text></Pressable>)}
     {embedded && button(competing ? 'Remove competing view' : 'Add competing view', () => setCompeting(!competing))}
     </ScrollView>
     {embedded && <>

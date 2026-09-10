@@ -8,7 +8,9 @@ import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
+import com.facebook.react.ReactInstanceEventListener
 import com.facebook.react.bridge.JSBundleLoader
+import com.facebook.react.bridge.ReactContext
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.defaults.DefaultComponentsRegistry
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
@@ -16,12 +18,13 @@ import com.facebook.react.defaults.DefaultReactHostDelegate
 import com.facebook.react.defaults.DefaultTurboModuleManagerDelegate
 import com.facebook.react.fabric.ComponentFactory
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler
+import com.facebook.react.modules.core.PermissionListener
 import com.facebook.react.runtime.ReactHostImpl
 import com.facebook.react.shell.MainReactPackage
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 
-/** One RN engine/surface in an existing Tauri Activity. All methods run on main. */
+/** One RN engine/surface in an existing Tauri Activity. Lifecycle methods run on main. */
 @OptIn(UnstableReactNativeAPI::class)
 class TauriReactHost @JvmOverloads constructor(
   private val activity: ComponentActivity,
@@ -29,6 +32,7 @@ class TauriReactHost @JvmOverloads constructor(
   module: String,
   bundle: String,
   webView: WebView? = null,
+  private val permissions: TauriReactPermissions? = null,
 ) : AutoCloseable {
   private val runtimePackage = TauriRuntimePackage(webView)
   private val reactHost = ReactHostImpl(activity.applicationContext,
@@ -42,13 +46,19 @@ class TauriReactHost @JvmOverloads constructor(
     override fun handleOnBackPressed() { if (!reactHost.onBackPressed()) defaultBack() }
   }
   private var closed = false
+  @Volatile private var permissionScope: TauriReactPermissions.Scope? = null
   var destroyed = false
     private set
 
   init {
     checkMain()
     // RN 0.86 invokes this listener on UI before destroying ReactContext/JSI.
-    reactHost.addBeforeDestroyListener { runtimePackage.retire() }
+    reactHost.addBeforeDestroyListener { retireRenderer() }
+    reactHost.addReactInstanceEventListener(object : ReactInstanceEventListener {
+      override fun onReactContextInitialized(context: ReactContext) {
+        if (!closed) permissionScope = permissions?.openScope()
+      }
+    })
     activity.onBackPressedDispatcher.addCallback(activity, back)
     container.addView(surface.view, ViewGroup.LayoutParams(-1, -1))
     surface.start()
@@ -56,7 +66,7 @@ class TauriReactHost @JvmOverloads constructor(
 
   fun reload() {
     checkMain(); check(!closed) { "RN host is closed" }
-    runtimePackage.retire()
+    retireRenderer()
     reactHost.reload("Retained Tauri renderer reload")
   }
   private fun defaultBack() {
@@ -68,8 +78,15 @@ class TauriReactHost @JvmOverloads constructor(
     if (!closed) reactHost.onHostResume(activity, object : DefaultHardwareBackBtnHandler {
       override fun invokeDefaultOnBackPressed() { defaultBack() }
     })
+    if (!closed) permissions?.onResume()
   }
-  fun onPause() { checkMain(); if (!closed) reactHost.onHostPause(activity) }
+  fun onPause() { checkMain(); if (!closed) { permissions?.onPause(); reactHost.onHostPause(activity) } }
+  /** Called by the Activity's PermissionAwareActivity overload, possibly from RN's module queue. */
+  fun requestPermissions(requested: Array<String>, code: Int, listener: PermissionListener?) {
+    val scope = checkNotNull(permissionScope) { "RN permission scope is not ready or has retired" }
+    val copy = requested.copyOf()
+    Handler(Looper.getMainLooper()).post { scope.request(copy, code, listener) }
+  }
   fun onNewIntent(intent: Intent) { checkMain(); if (!closed) reactHost.onNewIntent(intent) }
   fun onActivityResult(request: Int, result: Int, data: Intent?) { checkMain(); if (!closed) reactHost.onActivityResult(activity, request, result, data) }
   fun onWindowFocusChanged(focused: Boolean) { checkMain(); if (!closed) reactHost.onWindowFocusChange(focused) }
@@ -80,7 +97,7 @@ class TauriReactHost @JvmOverloads constructor(
     if (closed) return
     closed = true
     back.remove()
-    runtimePackage.retire()
+    retireRenderer()
     container.removeView(surface.view)
     reactHost.onHostDestroy(activity)
     reactHost.destroy("Retained Tauri renderer removed", null) { success ->
@@ -90,6 +107,11 @@ class TauriReactHost @JvmOverloads constructor(
         destroyed = true
       }
     }
+  }
+
+  private fun retireRenderer() {
+    permissionScope?.close(); permissionScope = null
+    runtimePackage.retire()
   }
 
   companion object {

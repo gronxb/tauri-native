@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import dev.taurinative.runtime.RuntimeSession
+import com.facebook.react.modules.core.PermissionListener
 import java.io.File
 import org.json.JSONObject
 
@@ -24,6 +25,8 @@ class AcceptanceActivity : TauriNativeActivity() {
   private var retireOnPause = false
   private var permissionRetirement: JSONObject? = null
   private val receivedIntents = org.json.JSONArray()
+  private val rnPermissionRequests = org.json.JSONArray()
+  private val rnPermissionResults = org.json.JSONArray()
 
   private var originalParent: android.view.ViewParent? = null
   private var lastParent: android.view.ViewParent? = null
@@ -102,6 +105,7 @@ class AcceptanceActivity : TauriNativeActivity() {
       .put("retireOnPause", retireOnPause).put("permissionRetirement", permissionRetirement ?: JSONObject.NULL)
       .put("hostDestroyed", host?.destroyed ?: false)
       .put("receivedIntents", receivedIntents)
+      .put("rnPermissionRequests", rnPermissionRequests).put("rnPermissionResults", rnPermissionResults)
       .put("listeners", RuntimeSession.status().getInt("listeners")).put("listenersAfterRelease", listenersAfterRelease).put("pid", android.os.Process.myPid())
     if (originalParent != null) report.put("view", JSONObject().put("originalParent", observedWebView.parent == originalParent)
       .put("parent", observedWebView.parent.javaClass.name).put("documentOrigin", documentOrigin ?: JSONObject.NULL)
@@ -113,6 +117,16 @@ class AcceptanceActivity : TauriNativeActivity() {
     android.util.Log.i("TauriReactAcceptance", JSONObject().put("kind", "lifecycle").put("report", report).toString())
   }
   override fun onResume() { super.onResume(); resumed++ }
+  override fun requestPermissions(permissions: Array<String>, requestCode: Int, listener: PermissionListener?) {
+    // Record actual delivery to the RN module, including the renderer which owned its listener.
+    val owner = generation
+    runOnUiThread { rnPermissionRequests.put(JSONObject().put("generation", owner).put("code", requestCode).put("permissions", org.json.JSONArray(permissions.toList()))) }
+    super.requestPermissions(permissions, requestCode, PermissionListener { code, requested, grants ->
+      rnPermissionResults.put(JSONObject().put("generation", owner).put("code", code).put("permissions", org.json.JSONArray(requested.toList())).put("grants", org.json.JSONArray(grants.toList())))
+      record()
+      listener?.onRequestPermissionsResult(code, requested, grants) ?: true
+    })
+  }
   override fun onPause() {
     paused++; super.onPause()
     if (retireOnPause) {

@@ -66,7 +66,7 @@ destroyed. The Tauri document and its JavaScript state remain alive.
 
 The generated iOS and Android integrations pass the original WebView to the
 host automatically. For manual integration, use the `TNReactHost` initializer
-with `webView` and `launchOptions`, or pass the original WebView as the final
+with `webView` and `launchOptions`, or pass the original WebView as the fifth
 `TauriReactHost` constructor argument. Existing initializers remain valid for
 native sessions; a host without a WebView cannot attach `TauriView`. Component
 ownership follows the mounted Fabric surface/ReactContext generation. The
@@ -143,10 +143,35 @@ supplies these calls automatically. Its lifecycle-bound AndroidX back callback
 sends events to RN `BackHandler` and delegates unhandled events to the original
 dispatcher. RN `Linking` receives the same forwarded Intent as Tauri's own path.
 
+The generated Activity implements RN's `PermissionAwareActivity`, so
+`PermissionsAndroid.request` and `requestMultiple` use the real OS permission
+dialog. RN requests have their own AndroidX Activity Result registration; the
+original Tauri plugin registrations and callbacks remain in place. Requests are
+queued and results reach their original RN listener after the Activity resumes.
+Reloading or closing RN drops that generation's queued requests and listeners.
+An already visible OS dialog can still change the app's permission grant, but
+its result cannot call the retired listener or a new engine's reused RN request
+code. The SDK adds no permission declarations to the producer.
+
+For manual attachment, create one `TauriReactPermissions(activity)` during
+Activity creation, before STARTED, and pass it as the host's sixth constructor
+argument. Implement `PermissionAwareActivity` and forward its three-argument
+`requestPermissions` overload to the host, as the generated Activity does. This
+overload accepts RN module-queue calls; lifecycle methods still run on main.
+Keep the router for that Activity when replacing a host. The Activity lifecycle
+unregisters its result callback at destruction. Activity recreation and Expo
+native modules still require their own integration evidence.
+
+OS grants are shared: a grant requested by RN is visible to the Tauri plugin.
+Denial labels retain upstream behavior. Tauri 2.11.5 reads its own
+`PluginPermStates` cache for denied permissions, so an RN-only denial can remain
+`prompt` in Tauri while RN returns `denied`. Composition does not rewrite that
+cache or turn a denial into a grant.
+
 `reload()` replaces the RN engine and re-renders its surface while retaining
 Tauri. `close()` retires native sessions immediately, removes the RN view/back
 callback and asynchronously destroys RN; `destroyed` becomes true when cleanup
-finishes. Call `close()` during Activity destruction as well. All host methods
+finishes. Call `close()` during Activity destruction as well. Host lifecycle methods
 run on main. Permission dialogs/backgrounding keep native sessions alive.
 
 The native gate is
