@@ -1,0 +1,7 @@
+plugins { id 'com.android.library'; id 'expo-module-gradle-plugin' }
+group = 'dev.taurinative.expoprobe'
+version = '1.0.0'
+android {
+  namespace 'dev.taurinative.expoprobe'
+  defaultConfig { versionCode 1; versionName '1.0.0' }
+}

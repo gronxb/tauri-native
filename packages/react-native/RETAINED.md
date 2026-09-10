@@ -134,8 +134,8 @@ preserve unrelated consumer files; edits to generated files, new file conflicts,
 symlink collisions, custom Activity/Application owners, competing renderer
 configuration and unverified toolchain versions receive explicit diagnostics.
 The current automatic path accepts the pinned standard Tauri `MainActivity`;
-custom lifecycle owners require separate integration evidence. Expo CNG and
-third-party module autolinking remain open.
+custom lifecycle owners require separate integration evidence. Expo CNG remains
+open; the optional Android Expo composition below links installed native modules.
 
 `TauriReactHost` remains available for explicit native attachment. Its lifecycle
 methods must receive the original Activity callbacks; the generated Activity
@@ -159,8 +159,8 @@ argument. Implement `PermissionAwareActivity` and forward its three-argument
 `requestPermissions` overload to the host, as the generated Activity does. This
 overload accepts RN module-queue calls; lifecycle methods still run on main.
 Keep the router for that Activity when replacing a host. The Activity lifecycle
-unregisters its result callback at destruction. Activity recreation and Expo
-native modules still require their own integration evidence.
+unregisters its result callback at destruction. Activity recreation remains open;
+scoped Expo native module integration is described below.
 
 OS grants are shared: a grant requested by RN is visible to the Tauri plugin.
 Denial labels retain upstream behavior. Tauri 2.11.5 reads its own
@@ -183,6 +183,49 @@ the packed composer owns the Activity and its startup/lifecycle integration. A
 second Release APK executes the unmodified generated Activity and default layout
 without acceptance hooks. The SDK owns the generated module, RN engine, surface,
 back routing and native session lifetime.
+
+### Android Expo native modules
+
+Pass `expo: true` to `composeAndroid` to link the renderer's installed Expo and RN
+native dependencies. Use `moduleName: 'main'` with Expo's `registerRootComponent`,
+and build the offline bundle with the consumer's Expo/Metro configuration. This
+option is Android-only; `composeIos` diagnoses it as not integrated yet.
+
+The current path pins Expo 57.0.19, Expo Modules Core 57.0.15, autolinking 57.0.12
+and the RN/codegen versions above. Put `outputDir` inside `rendererDir` so Expo's
+Gradle scripts can resolve the consuming app, and keep Node on the build PATH.
+Rust and the original producer checkout are not required. An explicit Expo
+`android.package` must match the original Tauri application ID. The composer
+adds no permission declarations to the producer; native library manifests are
+merged into the generated consumer by Gradle.
+
+Expo autolinking discovers packages from the renderer's dependencies and local
+modules. The SDK's format 1 native package is excluded; its retained package and
+codegen remain separate. A single generated `appmodules` entry point registers
+retained, RN core and autolinked TurboModules/Fabric components. The generated
+consumer uses AGP 8.12.0 with Java/Kotlin 17 for its RN app. Original Tauri native
+projects keep their own matching Java/Kotlin targets through RN 0.86's project
+alignment opt-out; their build files and the immutable artifact are unchanged.
+
+The generated Application forwards Expo application lifecycle notifications;
+the generated Tauri Activity forwards Expo Activity and supported key/back
+callbacks alongside its existing Tauri and RN paths. Expo host handlers receive
+bundle selection, host/context creation and exception callbacks. Native Expo
+modules belong to the current RN context and are destroyed with that context;
+the original Tauri runtime stays alive. No global Expo ReactHost cache is used.
+
+Modules which replace a `ReactActivity` delegate, require its delayed loading
+hook, or request a development host receive explicit diagnostics. These loading
+owners need separate retained integration. This option does not yet implement
+`expo prebuild --clean`, config-plugin native edits, iOS Expo integration or
+general Activity recreation. It is the native module/autolinking stage of that
+roadmap, not a completed CNG path.
+
+The Android native gate accepts a final `--expo` argument after the artifact
+path. It exercises the same retained app scenarios plus an actual Expo native
+file module, an autolinked SafeAreaProvider, and a local Expo module that records
+native lifecycle and permission delivery. The local module supplies evidence;
+all package discovery and lifecycle forwarding come from generated integration.
 
 ## iOS integration under development
 
@@ -238,7 +281,7 @@ A native subclass may override `isTauriDocumentReady:`, `createReactContainer:`
 and `reactHostDidAttach` when the consumer needs a custom readiness check or
 layout. Install that subclass in the consumer's native entry point. Such edits
 are consumer-owned custom integration and must be resolved before regenerating
-the owned main file. These hooks do not implement the planned React `TauriView`.
+the owned main file. The public `TauriView` component uses the host's original WebView.
 
 For explicit native integration, the lower-level Podfile helpers and `TNReactHost`
 remain available:
@@ -326,10 +369,12 @@ on iOS Simulator and Android emulator: [41 native UI flows](https://github.com/g
 
 ## Remaining roadmap
 
-Third-party autolinking, Expo CNG, OS Universal Link association, retained
-`TauriView`, broader lifecycle/device/adopter acceptance and full framework
+Expo CNG and Expo iOS, broader third-party autolinking, OS Universal Link
+association, full navigation/history/back/rotation, Activity recreation,
+device/adopter acceptance and full framework
 parity remain tracked in [#45](https://github.com/gronxb/tauri-native/issues/45)
-and [#47](https://github.com/gronxb/tauri-native/issues/47). Forwarded hooks alone
-do not establish every native scenario: activity recreation and RN-owned permission
-requests still need their own execution evidence. The default format 1 view/reader cannot
+and [#47](https://github.com/gronxb/tauri-native/issues/47). The pinned native gates
+cover RN-owned Android permissions and borrowing one original Tauri WebView;
+broader lifecycle and source configurations require separate execution evidence.
+The default format 1 view/reader cannot
 consume a retained artifact. This checkout's changes are not a new npm release.

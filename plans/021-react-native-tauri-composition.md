@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — packed RN iOS/Android Release execution and automatic composition pass for the pinned standard Tauri projects; single-original-view attachment also has native evidence; Expo and broader integration remain open.
+- Status: IN PROGRESS — pinned RN iOS/Android composition and original-view attachment pass; Expo Android installed native modules/autolinking also has Release evidence. Expo iOS, CNG and broader integration remain open.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#41](https://github.com/gronxb/tauri-native/issues/41) (plan 017), [#44](https://github.com/gronxb/tauri-native/issues/44) (plan 020)
@@ -326,3 +326,53 @@ Expo's permission service; it does not establish Expo integration. Expo CNG,
 third-party native modules/autolinking, Activity recreation, broader navigation/
 lifecycle/source owners, OS Universal Link association, full parity/CI/migration
 and physical device/independent-adopter evidence remain open.
+
+## Expo Android native module composition — 2026-09-11
+
+`composeAndroid({ expo: true })` links installed Expo modules and RN native
+dependencies in the generated consumer. The original Tauri project remains
+independently authored: no RN/Expo imports, producer bridge, permission edits or
+native plugin build-file changes. The generated Application delivers Expo
+application callbacks; its Activity retains the original Tauri/Wry inheritance
+and forwards supported Expo lifecycle, key/back and host callbacks. One native
+registration combines retained and autolinked TurboModule/Fabric providers.
+The SDK's existing format 1 package is excluded from that native graph.
+
+[Native execution evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-expo-android-2026-09-11.json)
+records 32 Expo Android and 24 plain RN Android Release UI flows from identical
+120-file package payloads. Both consumers build without Rust, use copied runtime
+artifacts and execute a second app with unmodified generated Activity/default
+layout. Expo FileSystem writes and reads across RN context replacement; Constants
+loads consumer configuration; an autolinked SafeAreaProvider reports its native
+frame. A local autolinked Expo module records one Application/Activity creation,
+four module creations and four destructions at close, with no retained host in
+the generated Application. Existing Tauri state/setup, native plugins, embedded
+view, BackHandler/Linking and permission-retirement scenarios still pass.
+
+Expo's real permission service executes OS denial/grant. Replacing RN with the
+dialog open does not invoke the retired Expo callback or save its sentinel note.
+The new context receives its own callback, sees the same OS grant through Tauri
+and saves one GPS note/event. All 14 authored producer files, the runtime artifact
+inventory and generated original native dependency files remain byte-identical.
+Release/R8 and 16 KB alignment checks pass. Six failed build attempts are recorded
+separately; the final ordinary RN constructors keep their existing contract.
+
+This stage pins Expo 57.0.19 / Modules Core 57.0.15 / autolinking 57.0.12 and RN
+0.86.3. Generated output lives inside the renderer project so upstream Expo
+Gradle scripts resolve its installed packages; an explicit Expo application ID
+must match Tauri. Consumer RN/Expo uses Java/Kotlin 17, while original Tauri native
+projects retain their own paired targets. ReactActivity delegate/delayed-loading
+replacement and development-host requests receive explicit diagnostics.
+
+Remaining Expo sequence:
+
+- [x] Android installed native modules/autolinking, native lifecycle and permission delivery under the retained Tauri owner.
+- [ ] iOS Expo native modules and application callbacks under the original Tauri bootstrap/delegate, with Release native execution.
+- [ ] Package-owned Expo CNG/config-plugin integration: clean prebuild recreates both native consumers without producer source edits or Rust.
+- [ ] Clean-prebuild regeneration, configuration conflicts and the same feature in standalone Tauri, RN, Expo and Lynx, with required parity/CI/migration evidence.
+
+App-local codegen, broader native packages/source owners, Activity recreation,
+full navigation/history/back/rotation, OS Universal Link association, physical
+devices and independent adopters also remain open. Four iOS composer metadata
+scenarios pass; this Android increment claims no new iOS native run. No issue,
+release gate or package publication is completed by this stage.

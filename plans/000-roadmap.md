@@ -254,3 +254,23 @@ upstream API's semantics; the SDK does not rewrite Tauri's permission cache.
 Expo native modules/CNG/autolinking, Activity recreation and broader lifecycle/
 source forms, complete parity/CI/migration/device/adopter gates remain open.
 No issue or release gate is closed.
+
+## Expo Android native module progress — 2026-09-11
+
+The optional retained composer now links installed Expo Android modules and RN
+native dependencies in the generated consumer while preserving Tauri's startup,
+Activity chain, original native plugins and authored source. [56 packed Release
+UI flows](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-expo-android-2026-09-11.json)
+pass: 32 Expo Android plus 24 plain RN regressions from identical package payloads.
+Native file persistence, configuration, autolinked Fabric layout, Expo lifecycle
+and actual permission delivery execute alongside the existing Tauri view/state/
+plugin scenarios. Renderer replacement during an Expo OS dialog invokes no
+retired callback or stale save. Both consumers also run unmodified generated
+Activity/default layouts. The 14-file producer and original runtime/native
+dependency inventory remain unchanged; source-free Release/R8 and 16 KB checks pass.
+
+This completes the scoped Android installed-module/autolinking stage in
+[#45](https://github.com/gronxb/tauri-native/issues/45). Expo iOS native integration,
+clean prebuild/CNG/config-plugin generation, broader source/lifecycle owners,
+complete parity/CI/migration, physical devices and independent adopters remain
+required. No issue or release gate is closed.

@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.22.1)
+project(appmodules)
+set(HERMES_V1_ENABLED ON)
+include("${REACT_ANDROID_DIR}/cmake-utils/ReactNative-application.cmake")
+add_subdirectory("${TAURI_RETAINED_CODEGEN}/jni" tauri_retained_codegen)
+target_link_libraries(react_codegen_TauriNativeRetainedSpec common_flags)
+target_link_libraries(appmodules react_codegen_TauriNativeRetainedSpec)
+target_link_options(appmodules PRIVATE "-Wl,-z,max-page-size=16384" "-Wl,-z,common-page-size=16384")

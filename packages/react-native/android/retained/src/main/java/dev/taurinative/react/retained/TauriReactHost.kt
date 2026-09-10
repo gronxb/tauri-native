@@ -20,30 +20,50 @@ import com.facebook.react.fabric.ComponentFactory
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler
 import com.facebook.react.modules.core.PermissionListener
 import com.facebook.react.runtime.ReactHostImpl
+import com.facebook.react.runtime.ReactHostDelegate
 import com.facebook.react.shell.MainReactPackage
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 
 /** One RN engine/surface in an existing Tauri Activity. Lifecycle methods run on main. */
 @OptIn(UnstableReactNativeAPI::class)
-class TauriReactHost @JvmOverloads constructor(
+class TauriReactHost(
   private val activity: ComponentActivity,
   private val container: ViewGroup,
   module: String,
   bundle: String,
-  webView: WebView? = null,
-  private val permissions: TauriReactPermissions? = null,
+  webView: WebView?,
+  private val permissions: TauriReactPermissions?,
+  delegate: ReactHostDelegate?,
+  prepareHost: ((ReactHostImpl) -> Unit)?,
+  private val onBack: (() -> Boolean)?,
 ) : AutoCloseable {
+  // Keep the ordinary entry point independent of RN's unstable host extension types.
+  @JvmOverloads constructor(
+    activity: ComponentActivity,
+    container: ViewGroup,
+    module: String,
+    bundle: String,
+    webView: WebView? = null,
+    permissions: TauriReactPermissions? = null,
+  ) : this(activity, container, module, bundle, webView, permissions, null, null, null)
+
   private val runtimePackage = TauriRuntimePackage(webView)
+  private val configuredDelegate = delegate ?: DefaultReactHostDelegate(jsMainModulePath = "index",
+    jsBundleLoader = JSBundleLoader.createAssetLoader(activity.applicationContext, "assets://$bundle", true),
+    reactPackages = listOf(MainReactPackage()),
+    turboModuleManagerDelegateBuilder = DefaultTurboModuleManagerDelegate.Builder())
   private val reactHost = ReactHostImpl(activity.applicationContext,
-    DefaultReactHostDelegate(jsMainModulePath = "index",
-      jsBundleLoader = JSBundleLoader.createAssetLoader(activity.applicationContext, "assets://$bundle", true),
-      reactPackages = listOf(MainReactPackage(), runtimePackage),
-      turboModuleManagerDelegateBuilder = DefaultTurboModuleManagerDelegate.Builder()),
+    object : ReactHostDelegate by configuredDelegate {
+      override val reactPackages get() = configuredDelegate.reactPackages + runtimePackage
+    },
     ComponentFactory().also { DefaultComponentsRegistry.register(it) }, false, false)
   private val surface = reactHost.createSurface(activity, module, null)
   private val back = object : OnBackPressedCallback(true) {
-    override fun handleOnBackPressed() { if (!reactHost.onBackPressed()) defaultBack() }
+    override fun handleOnBackPressed() {
+      val handled = onBack?.invoke() ?: false
+      if (!reactHost.onBackPressed() && !handled) defaultBack()
+    }
   }
   private var closed = false
   @Volatile private var permissionScope: TauriReactPermissions.Scope? = null
@@ -59,6 +79,7 @@ class TauriReactHost @JvmOverloads constructor(
         if (!closed) permissionScope = permissions?.openScope()
       }
     })
+    prepareHost?.invoke(reactHost)
     activity.onBackPressedDispatcher.addCallback(activity, back)
     container.addView(surface.view, ViewGroup.LayoutParams(-1, -1))
     surface.start()

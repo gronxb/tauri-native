@@ -4,6 +4,7 @@ import path from 'node:path';
 import { prepareComposition, publishComposition } from '../../../scripts/retained-composition.ts';
 import { prepareIosProject } from '../../../scripts/retained-ios-composition.ts';
 import type { AndroidCompositionOptions, IosCompositionOptions } from './retained-compose-types.d.cts';
+import { prepareExpoAndroid } from './retained-expo-android.cts';
 
 const kotlin = (value: string) => JSON.stringify(value).replaceAll('$', '\\$');
 const groovy = (value: string) => `'${value.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
@@ -56,7 +57,8 @@ export function composeAndroid(options: AndroidCompositionOptions) {
   const nativeActivity = replaceOnce(xml, 'android:name=".MainActivity"', `android:name="${activity}"`, 'launcher Activity');
   const relative = (directory: string) => path.relative(path.join(output, 'android'), directory).split(path.sep).join('/');
   const template = read(sdk, 'retained/android/TauriNativeActivity.kt.template');
-  const changed = publishComposition(context, { moduleName: options.moduleName, activity }, stage => {
+  const expo = options.expo ? prepareExpoAndroid({ ...context, manifest }) : undefined;
+  const changed = publishComposition(context, { moduleName: options.moduleName, activity, ...(expo ? { expo: '57.0.19' } : {}) }, stage => {
     write(stage, `android/${source}`, replaceOnce(main, 'class MainActivity', 'open class MainActivity', 'original Activity'));
     const generated = `android/app/src/main/java/${appId.replaceAll('.', '/')}/TauriNativeActivity.kt`;
     if (existsSync(path.join(stage, generated))) fail('artifact already owns TauriNativeActivity');
@@ -72,6 +74,7 @@ export function composeAndroid(options: AndroidCompositionOptions) {
     write(stage, 'android/tauri-native-runtime-client/build.gradle', "plugins { id 'com.android.library' }\nandroid {\n namespace 'dev.taurinative.runtime'\n compileSdk 36\n defaultConfig { minSdk 24 }\n compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }\n}\n");
     if (existsSync(path.join(stage, 'android/app/src/main/assets/tauri-native-react'))) fail('artifact already owns renderer assets');
     write(stage, 'android/app/src/main/assets/tauri-native-react/index.bundle.js', bundled);
+    expo?.(stage);
   });
   return { project: path.join(output, 'android'), activity, changed };
 }
@@ -81,6 +84,7 @@ const shell = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
 
 /** Use the original Tauri Xcode app and Apple plist tools; neither export nor build Rust. */
 export function composeIos(options: IosCompositionOptions) {
+  if (options.expo) fail('Expo iOS composition is not integrated yet');
   if (process.platform !== 'darwin') fail('iOS composition requires macOS Apple project tools');
   const context = compositionInputs(options, 'ios');
   const { sdk, output, manifest, rn, rendererDirectory: renderer, bundled } = context;

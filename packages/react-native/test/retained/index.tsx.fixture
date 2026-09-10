@@ -7,7 +7,8 @@ function value<T>(response: InvokeResponse<T>): T {
   return response.value;
 }
 
-export function App() {
+export type FieldnotesAction = [string, (runtime: RuntimeSession) => Promise<string>];
+export function App({ extraActions = [] }: { extraActions?: FieldnotesAction[] } = {}) {
   const session = useRef<RuntimeSession | undefined>(undefined);
   const [status, setStatus] = useState('Opening Tauri');
   const [events, setEvents] = useState(0);
@@ -90,6 +91,7 @@ export function App() {
       if (state.setupCount !== 1 || state.pluginSetupCount !== 1) throw new Error(JSON.stringify(state));
       return `Links ${state.links.length} notes ${state.notes.length} setup 1 plugins 1`;
     }],
+    ...extraActions,
   ];
   const permissionActions: typeof actions = [
     ['RN check location', async () => `RN coarse ${await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION)}`],

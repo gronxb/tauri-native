@@ -115,10 +115,10 @@ function readRetainedArtifacts(directory) {
 //#endregion
 //#region scripts/retained-composition.ts
 const hash = (bytes) => (0, node_crypto.createHash)("sha256").update(bytes).digest("hex");
-function read$1(root, file) {
+function read$2(root, file) {
 	return (0, node_fs.readFileSync)(node_path$1.default.join(root, file), "utf8");
 }
-function write$1(root, file, bytes) {
+function write$2(root, file, bytes) {
 	(0, node_fs.mkdirSync)(node_path$1.default.dirname(node_path$1.default.join(root, file)), { recursive: true });
 	(0, node_fs.writeFileSync)(node_path$1.default.join(root, file), bytes);
 }
@@ -161,7 +161,7 @@ function publishComposition(context, metadata, generate) {
 	let previous;
 	if ((0, node_fs.existsSync)(output)) {
 		if (!(0, node_fs.lstatSync)(output).isDirectory() || !(0, node_fs.existsSync)(node_path$1.default.join(output, receiptPath)) || !(0, node_fs.lstatSync)(node_path$1.default.join(output, receiptPath)).isFile()) fail("existing output is not an owned composition directory");
-		const value = JSON.parse(read$1(output, receiptPath));
+		const value = JSON.parse(read$2(output, receiptPath));
 		if (value.formatVersion !== 1 || value.renderer !== renderer || (value.platform ?? "android") !== manifest.platform || !value.files || typeof value.files !== "object" || Array.isArray(value.files)) fail("invalid prior composition receipt");
 		previous = value;
 		for (const [file, digest] of Object.entries(previous.files)) {
@@ -191,9 +191,9 @@ function publishComposition(context, metadata, generate) {
 			...metadata,
 			files
 		}, null, 2) + "\n";
-		write$1(stage, receiptPath, receipt);
+		write$2(stage, receiptPath, receipt);
 		if (JSON.stringify(readRetainedArtifacts(artifact)) !== JSON.stringify(manifest) || !(0, node_fs.readFileSync)(bundle).equals(bundled)) fail("inputs changed during composition");
-		if (previous && read$1(output, receiptPath) === receipt) return false;
+		if (previous && read$2(output, receiptPath) === receipt) return false;
 		if (previous) {
 			const merged = node_path$1.default.join(work, "merged");
 			(0, node_fs.cpSync)(output, merged, { recursive: true });
@@ -347,6 +347,123 @@ function prepareIosProject(context, rendererMinimum) {
 	};
 }
 //#endregion
+//#region packages/react-native/plugin/retained-expo-android.cts
+const quote = (s) => JSON.stringify(s).replaceAll("$", "\\$");
+const groovy$1 = (s) => `'${s.replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`;
+const read$1 = (root, file) => (0, node_fs.readFileSync)(node_path.default.join(root, file), "utf8");
+function write$1(root, file, value) {
+	(0, node_fs.mkdirSync)(node_path.default.dirname(node_path.default.join(root, file)), { recursive: true });
+	(0, node_fs.writeFileSync)(node_path.default.join(root, file), value);
+}
+function replace(value, from, to) {
+	if (value.split(from).length !== 2) throw new Error(`Retained Expo composition: expected one ${JSON.stringify(from)}`);
+	return value.replace(from, to);
+}
+/** Configure Expo in the generated Tauri consumer, without replacing its platform startup. */
+function prepareExpoAndroid(context) {
+	const { sdk, output, rendererDirectory: renderer, rn, codegen } = context;
+	const appId = context.manifest.bootstrap.applicationId;
+	if (!output.startsWith(renderer + node_path.default.sep)) throw new Error("Retained Expo composition: outputDir must be inside rendererDir so Expo Gradle scripts resolve the consuming app");
+	const requireRenderer = (0, node_module.createRequire)(node_path.default.join(renderer, "package.json"));
+	const expo = (0, node_fs.realpathSync)(requireRenderer.resolve("expo/package.json"));
+	const requireExpo = (0, node_module.createRequire)(expo);
+	const versions = {
+		expo: [expo, "57.0.19"],
+		"expo-modules-core": [requireExpo.resolve("expo-modules-core/package.json"), "57.0.15"],
+		"expo-modules-autolinking": [requireExpo.resolve("expo-modules-autolinking/package.json"), "57.0.12"]
+	};
+	for (const [name, [file, version]] of Object.entries(versions)) if (JSON.parse((0, node_fs.readFileSync)(file, "utf8")).version !== version) throw new Error(`Retained Expo composition: requires ${name} ${version}`);
+	const { getConfig } = requireExpo("@expo/config");
+	const configuredId = getConfig(renderer, { skipPlugins: true }).exp.android?.package;
+	if (configuredId && configuredId !== appId) throw new Error(`Retained Expo composition: android.package ${configuredId} conflicts with the original Tauri application ${appId}`);
+	const rngp = node_path.default.dirname((0, node_module.createRequire)(node_path.default.join(rn, "package.json")).resolve("@react-native/gradle-plugin/package.json"));
+	const expoGradle = node_path.default.join(node_path.default.dirname(requireExpo.resolve("expo-modules-autolinking/package.json")), "android/expo-gradle-plugin");
+	const relative = (dir) => node_path.default.relative(node_path.default.join(output, "android"), dir).split(node_path.default.sep).join("/");
+	return (stage) => {
+		const android = node_path.default.join(stage, "android");
+		const source = `app/src/main/java/${appId.replaceAll(".", "/")}/TauriNativeActivity.kt`;
+		for (const file of [
+			source.replace("TauriNativeActivity.kt", "TauriExpoIntegration.kt"),
+			"app/src/main/jni/CMakeLists.txt",
+			"app/src/main/jni/OnLoad.cpp"
+		]) if ((0, node_fs.existsSync)(node_path.default.join(android, file))) throw new Error(`Retained Expo composition: artifact already owns ${file}`);
+		let activity = read$1(android, source);
+		activity = replace(activity, "open class TauriNativeActivity", "@OptIn(com.facebook.react.common.annotations.UnstableReactNativeAPI::class)\nopen class TauriNativeActivity");
+		activity = replace(activity, "private var retired = false", "private var retired = false\n  private var expo: TauriExpoIntegration? = null");
+		activity = replace(activity, "createReactContainer(webView),", "expo!!.createContainer(createReactContainer(webView)),");
+		activity = replace(activity, "webView, reactPermissions)", "webView, reactPermissions, expo!!.delegate(\"tauri-native-react/index.bundle.js\"), expo!!::prepareHost, expo!!::onBackPressed)");
+		activity = replace(activity, "reactPermissions = TauriReactPermissions(this)", "expo = TauriExpoIntegration(this)\n    reactPermissions = TauriReactPermissions(this)");
+		activity = replace(activity, "super.onCreate(savedInstanceState)", "super.onCreate(savedInstanceState)\n    expo!!.onCreate(savedInstanceState)");
+		activity = replace(activity, "tauriReactHost?.onResume() }", "tauriReactHost?.onResume(); expo?.onResume() }");
+		activity = replace(activity, "override fun onPause() {", "override fun onPause() { expo?.onPause();");
+		activity = replace(activity, "super.onNewIntent(intent);", "super.onNewIntent(intent); expo?.onNewIntent(intent);");
+		activity = replace(activity, "retired = true;", "expo?.onDestroy()\n    retired = true;");
+		activity = replace(activity, "  override fun onDestroy() {", `  override fun onContentChanged() { super.onContentChanged(); expo?.onContentChanged() }
+  override fun onUserLeaveHint() { super.onUserLeaveHint(); expo?.onUserLeaveHint() }
+  override fun onKeyDown(code: Int, event: android.view.KeyEvent?): Boolean = expo?.onKeyDown(code, event) == true || super.onKeyDown(code, event)
+  override fun onKeyUp(code: Int, event: android.view.KeyEvent): Boolean = expo?.onKeyUp(code, event) == true || super.onKeyUp(code, event)
+  override fun onKeyLongPress(code: Int, event: android.view.KeyEvent?): Boolean = expo?.onKeyLongPress(code, event) == true || super.onKeyLongPress(code, event)
+  override fun onDestroy() {`);
+		write$1(android, source, activity);
+		write$1(android, source.replace("TauriNativeActivity.kt", "TauriExpoIntegration.kt"), read$1(sdk, "retained/android/TauriExpoIntegration.kt.template").replaceAll("__APPLICATION_ID__", appId));
+		write$1(android, "app/src/main/AndroidManifest.xml", replace(read$1(android, "app/src/main/AndroidManifest.xml"), "<application", `<application android:name="${appId}.TauriNativeApplication"`));
+		write$1(android, "settings.gradle", `pluginManagement {
+  includeBuild(new File(settingsDir, ${groovy$1(relative(rngp))}).canonicalPath)
+  includeBuild(new File(settingsDir, ${groovy$1(relative(expoGradle))}).canonicalPath)
+}
+plugins { id 'com.facebook.react.settings'; id 'expo-autolinking-settings' }
+expoAutolinking.projectRoot = new File(settingsDir, ${groovy$1(relative(renderer))}).canonicalFile
+expoAutolinking.exclude = ['@tauri-native/react-native']
+extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
+  ex.autolinkLibrariesFromCommand(expoAutolinking.rnConfigCommand + ['--exclude', '@tauri-native/react-native'], expoAutolinking.projectRoot,
+    files(new File(expoAutolinking.projectRoot, 'package.json'), new File(expoAutolinking.projectRoot, 'pnpm-lock.yaml'), new File(expoAutolinking.projectRoot, 'package-lock.json'), new File(expoAutolinking.projectRoot, 'react-native.config.js'), new File(settingsDir, 'settings.gradle')))
+}
+expoAutolinking.useExpoModules()
+expoAutolinking.useExpoVersionCatalog()
+${read$1(android, "settings.gradle")}
+includeBuild(new File(settingsDir, ${groovy$1(relative(rngp))}))
+`);
+		let root = read$1(android, "build.gradle.kts");
+		root = replace(root, "com.android.tools.build:gradle:8.11.0", "com.android.tools.build:gradle:8.12.0");
+		root = replace(root, "classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20\")", "classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")");
+		write$1(android, "build.gradle.kts", root + `
+extra["tauriNativeAutolinking"] = true
+// Keep original Tauri projects' paired Java/Kotlin targets. RN 0.86 otherwise changes only their Java target to 17.
+subprojects {
+  if (projectDir.toPath().startsWith(rootProject.file("native-dependencies").toPath())) {
+    extra["react.internal.disableJavaVersionAlignment"] = true
+  }
+}
+apply(plugin = "expo-root-project")
+apply(plugin = "com.facebook.react.rootproject")
+`);
+		let app = read$1(android, "app/build.gradle.kts");
+		app = replace(app, "id(\"org.jetbrains.kotlin.android\")", "id(\"org.jetbrains.kotlin.android\")\n    id(\"com.facebook.react\")");
+		app = replace(app, "jvmTarget = \"1.8\"", "jvmTarget = \"17\"");
+		app += `
+react {
+  root.set(rootProject.file(${quote(relative(renderer))}))
+  reactNativeDir.set(rootProject.file(${quote(relative(rn))}))
+  codegenDir.set(rootProject.file(${quote(relative(codegen))}))
+  nodeExecutableAndArgs.set(listOf(${quote(process.execPath)}))
+  // Composition already copied the caller's offline bundle. This does not change Android debuggability.
+  debuggableVariants.set(listOf("debug", "release"))
+  autolinkLibrariesWithApp()
+}
+android {
+  ndkVersion = "27.1.12297006"
+  compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
+  externalNativeBuild { cmake { path = file("src/main/jni/CMakeLists.txt"); version = "3.22.1" } }
+  defaultConfig { externalNativeBuild { cmake { arguments += "-DTAURI_RETAINED_CODEGEN=" + project(":tauri-native-react").layout.buildDirectory.dir("generated/retained-codegen").get().asFile.absolutePath } } }
+}
+tasks.matching { it.name.startsWith("configureCMake") }.configureEach { dependsOn(":tauri-native-react:generateRetainedCode") }
+`;
+		write$1(android, "app/build.gradle.kts", app);
+		write$1(android, "gradle.properties", read$1(android, "gradle.properties") + `\nnewArchEnabled=true\nhermesEnabled=true\nreactNativeArchitectures=${context.manifest.native.map((slice) => slice.abi).join(",")}\n`);
+		for (const file of ["CMakeLists.txt", "OnLoad.cpp"]) write$1(android, `app/src/main/jni/${file}`, read$1(sdk, `retained/android/autolinking/${file}`));
+	};
+}
+//#endregion
 //#region packages/react-native/plugin/retained-compose.cts
 const kotlin = (value) => JSON.stringify(value).replaceAll("$", "\\$");
 const groovy = (value) => `'${value.replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`;
@@ -410,9 +527,14 @@ function composeAndroid(options) {
 	const nativeActivity = replaceOnce(xml, "android:name=\".MainActivity\"", `android:name="${activity}"`, "launcher Activity");
 	const relative = (directory) => node_path.default.relative(node_path.default.join(output, "android"), directory).split(node_path.default.sep).join("/");
 	const template = read(sdk, "retained/android/TauriNativeActivity.kt.template");
+	const expo = options.expo ? prepareExpoAndroid({
+		...context,
+		manifest
+	}) : void 0;
 	const changed = publishComposition(context, {
 		moduleName: options.moduleName,
-		activity
+		activity,
+		...expo ? { expo: "57.0.19" } : {}
 	}, (stage) => {
 		write(stage, `android/${source}`, replaceOnce(main, "class MainActivity", "open class MainActivity", "original Activity"));
 		const generated = `android/app/src/main/java/${appId.replaceAll(".", "/")}/TauriNativeActivity.kt`;
@@ -429,6 +551,7 @@ function composeAndroid(options) {
 		write(stage, "android/tauri-native-runtime-client/build.gradle", "plugins { id 'com.android.library' }\nandroid {\n namespace 'dev.taurinative.runtime'\n compileSdk 36\n defaultConfig { minSdk 24 }\n compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }\n}\n");
 		if ((0, node_fs.existsSync)(node_path.default.join(stage, "android/app/src/main/assets/tauri-native-react"))) fail("artifact already owns renderer assets");
 		write(stage, "android/app/src/main/assets/tauri-native-react/index.bundle.js", bundled);
+		expo?.(stage);
 	});
 	return {
 		project: node_path.default.join(output, "android"),
@@ -440,6 +563,7 @@ const ruby = (value) => `'${value.replaceAll("\\", "\\\\").replaceAll("'", "\\'"
 const shell = (value) => `'${value.replaceAll("'", "'\\''")}'`;
 /** Use the original Tauri Xcode app and Apple plist tools; neither export nor build Rust. */
 function composeIos(options) {
+	if (options.expo) fail("Expo iOS composition is not integrated yet");
 	if (process.platform !== "darwin") fail("iOS composition requires macOS Apple project tools");
 	const context = compositionInputs(options, "ios");
 	const { sdk, output, manifest, rn, rendererDirectory: renderer, bundled } = context;

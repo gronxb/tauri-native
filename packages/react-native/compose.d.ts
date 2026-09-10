@@ -8,6 +8,8 @@ export interface AndroidCompositionOptions {
   moduleName: string;
   /** Existing offline Metro bundle, produced by the consumer. */
   bundleFile: string;
+  /** Android: link installed Expo SDK 57 native modules and RN dependencies in the generated consumer. */
+  expo?: boolean;
 }
 /** Stage and generate the original Tauri project plus package-owned RN attachment. */
 export function composeAndroid(options: AndroidCompositionOptions): { project: string; activity: string; changed: boolean };

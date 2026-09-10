@@ -1,0 +1,107 @@
+package __APPLICATION_ID__
+
+import android.app.Application
+import android.content.Intent
+import android.content.res.Configuration
+import android.os.Bundle
+import android.view.KeyEvent
+import android.view.ViewGroup
+import com.facebook.react.PackageList
+import com.facebook.react.ReactApplication
+import com.facebook.react.ReactHost
+import com.facebook.react.ReactInstanceEventListener
+import com.facebook.react.bridge.JSBundleLoader
+import com.facebook.react.bridge.ReactContext
+import com.facebook.react.common.annotations.UnstableReactNativeAPI
+import com.facebook.react.defaults.DefaultReactHostDelegate
+import com.facebook.react.defaults.DefaultTurboModuleManagerDelegate
+import com.facebook.react.runtime.ReactHostDelegate
+import com.facebook.react.runtime.ReactHostImpl
+import dev.taurinative.react.retained.TauriReactHost
+import expo.modules.ApplicationLifecycleDispatcher
+import expo.modules.ExpoModulesPackage
+import expo.modules.core.interfaces.ReactActivityHandler
+
+// Generated consumer integration. Tauri still owns the Activity, WebView and native startup.
+class TauriNativeApplication : Application(), ReactApplication {
+  @Volatile override var reactHost: ReactHost? = null
+    internal set
+  override fun onCreate() {
+    super.onCreate()
+    TauriReactHost.initialize(this)
+    ApplicationLifecycleDispatcher.onApplicationCreate(this)
+  }
+  override fun onConfigurationChanged(config: Configuration) {
+    super.onConfigurationChanged(config)
+    ApplicationLifecycleDispatcher.onConfigurationChanged(this, config)
+  }
+}
+
+@OptIn(UnstableReactNativeAPI::class)
+class TauriExpoIntegration(private val activity: TauriNativeActivity) {
+  private val application get() = activity.application as TauriNativeApplication
+  private val listeners = ExpoModulesPackage.packageList.flatMap { it.createReactActivityLifecycleListeners(activity) }
+  private val handlers = ExpoModulesPackage.packageList.flatMap { it.createReactActivityHandlers(activity) }
+  private val hostHandlers = ExpoModulesPackage.packageList.flatMap { it.createReactNativeHostHandlers(activity) }
+  private var ownedHost: ReactHost? = null
+
+  init {
+    // These hooks require a ReactActivity/delegate or a different loading owner, which Tauri does not provide.
+    val delegateHooks = setOf("onDidCreateReactActivityDelegate", "onDidCreateReactActivityDelegateNotification", "getDelayLoadAppHandler")
+    for (handler in handlers) check(handler.javaClass.methods.none { it.name in delegateHooks && it.declaringClass != ReactActivityHandler::class.java }) {
+      "Retained Tauri Expo cannot replace the original Activity/loading owner: ${handler.javaClass.name} overrides a ReactActivity delegate hook"
+    }
+    check(hostHandlers.none { it.useDeveloperSupport == true }) { "Retained Tauri Expo currently requires an offline bundle; a module requested a development host" }
+  }
+
+  fun delegate(bundle: String): ReactHostDelegate {
+    val base = DefaultReactHostDelegate(jsMainModulePath = "index",
+      jsBundleLoader = JSBundleLoader.createAssetLoader(application, "assets://$bundle", true),
+      reactPackages = PackageList(application).packages,
+      turboModuleManagerDelegateBuilder = DefaultTurboModuleManagerDelegate.Builder())
+    return object : ReactHostDelegate by base {
+      override val jsBundleLoader: JSBundleLoader get() {
+        val file = hostHandlers.firstNotNullOfOrNull { it.getJSBundleFile(false) }
+        if (file != null) return if (file.startsWith("assets://")) JSBundleLoader.createAssetLoader(application, file, true) else JSBundleLoader.createFileLoader(file)
+        val asset = hostHandlers.firstNotNullOfOrNull { it.getBundleAssetName(false) }
+        return if (asset != null) JSBundleLoader.createAssetLoader(application, "assets://$asset", true) else base.jsBundleLoader
+      }
+      override fun handleInstanceException(error: Exception) {
+        if (hostHandlers.isEmpty()) throw error
+        hostHandlers.forEach { it.onReactInstanceException(false, error) }
+      }
+    }
+  }
+  fun prepareHost(host: ReactHostImpl) {
+    check(ownedHost == null) { "Expo integration already owns an RN host" }
+    hostHandlers.forEach { it.onWillCreateReactInstance(false) }
+    ownedHost = host; application.reactHost = host
+    hostHandlers.forEach { it.onDidCreateReactHost(activity, host); it.onDidCreateDevSupportManager(host.devSupportManager) }
+    host.addBeforeDestroyListener { if (application.reactHost === host) application.reactHost = null }
+    host.addReactInstanceEventListener(object : ReactInstanceEventListener {
+      override fun onReactContextInitialized(context: ReactContext) {
+        if (ownedHost === host) application.reactHost = host
+        hostHandlers.forEach { it.onDidCreateReactInstance(false, context) }
+      }
+    })
+  }
+  fun createContainer(parent: ViewGroup): ViewGroup {
+    val container = handlers.firstNotNullOfOrNull { it.createReactRootViewContainer(activity) } ?: return parent
+    parent.addView(container, ViewGroup.LayoutParams(-1, -1)); return container
+  }
+  fun onCreate(state: Bundle?) { listeners.forEach { it.onCreate(activity, state) } }
+  fun onResume() { listeners.forEach { it.onResume(activity) } }
+  fun onPause() { listeners.forEach { it.onPause(activity) } }
+  fun onUserLeaveHint() { listeners.forEach { it.onUserLeaveHint(activity) } }
+  fun onContentChanged() { listeners.forEach { it.onContentChanged(activity) } }
+  fun onNewIntent(intent: Intent) { listeners.forEach { it.onNewIntent(intent) } }
+  fun onBackPressed(): Boolean = listeners.map { it.onBackPressed() }.any { it }
+  fun onKeyDown(code: Int, event: KeyEvent?): Boolean = handlers.map { it.onKeyDown(code, event) }.any { it }
+  fun onKeyUp(code: Int, event: KeyEvent): Boolean = handlers.map { it.onKeyUp(code, event) }.any { it }
+  fun onKeyLongPress(code: Int, event: KeyEvent?): Boolean = handlers.map { it.onKeyLongPress(code, event) }.any { it }
+  fun onDestroy() {
+    listeners.forEach { it.onDestroy(activity) }
+    if (application.reactHost === ownedHost) application.reactHost = null
+    ownedHost = null
+  }
+}

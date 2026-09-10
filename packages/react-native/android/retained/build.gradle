@@ -10,6 +10,7 @@ if ([reactNative, codegen].any { new groovy.json.JsonSlurper().parse(new File(it
 }
 def generated = layout.buildDirectory.dir('generated/retained-codegen').get().asFile
 def specs = file('../../retained/specs')
+def autolinking = rootProject.ext.has('tauriNativeAutolinking') && rootProject.ext.tauriNativeAutolinking
 def schema = tasks.register('generateRetainedSchema', Exec) {
   inputs.dir(specs); inputs.dir(codegen)
   outputs.file(new File(generated, 'schema.json'))
@@ -34,14 +35,14 @@ android {
   defaultConfig {
     minSdk 24
     consumerProguardFiles 'consumer-rules.pro'
-    externalNativeBuild.cmake.arguments '-DANDROID_STL=c++_shared', "-DREACT_NATIVE_DIR=${reactNative}", "-DCODEGEN_DIR=${generated}"
+    if (!autolinking) externalNativeBuild.cmake.arguments '-DANDROID_STL=c++_shared', "-DREACT_NATIVE_DIR=${reactNative}", "-DCODEGEN_DIR=${generated}"
     ndk.abiFilters.addAll(rootProject.ext.tauriNativeAbis)
   }
   buildFeatures { prefab true }
   // Prefab supplies link inputs; the pinned React/Hermes AARs own these runtime libraries.
   packaging.jniLibs.excludes += ['**/libfbjni.so', '**/libjsi.so', '**/libreactnative.so', '**/libc++_shared.so']
   sourceSets.main.java.srcDir(new File(generated, 'java'))
-  externalNativeBuild.cmake { path 'src/main/jni/CMakeLists.txt'; version '3.22.1' }
+  if (!autolinking) externalNativeBuild.cmake { path 'src/main/jni/CMakeLists.txt'; version '3.22.1' }
   compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
   kotlinOptions { jvmTarget = '17' }
 }

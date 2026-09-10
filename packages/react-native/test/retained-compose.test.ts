@@ -84,6 +84,27 @@ test('damaged input, incompatible dependencies and lifecycle owners leave an exi
   assert.throws(f.run, /both be 0.86.3/); assert.deepEqual(snapshot(f.options.outputDir), before);
 });
 
+test('Expo rejects an incompatible consumer identity or native entrypoint without replacing an existing composition', () => {
+  const f = fixture(); f.run(); const originalOutput = snapshot(f.options.outputDir);
+  assert.throws(() => composeAndroid({ ...f.options, expo: true }), /outputDir must be inside rendererDir/);
+  assert.deepEqual(snapshot(f.options.outputDir), originalOutput);
+
+  f.options.outputDir = path.join(f.renderer, 'generated native'); f.run();
+  const before = snapshot(f.options.outputDir);
+  const expoPackage = createRequire(new URL('../../../examples/react-native/package.json', import.meta.url)).resolve('expo/package.json');
+  symlinkSync(path.dirname(expoPackage), path.join(f.renderer, 'node_modules/expo'));
+  write(f.renderer, 'app.json', JSON.stringify({ expo: { name: 'Fixture', slug: 'fixture', android: { package: 'dev.other.app' } } }));
+  assert.throws(() => composeAndroid({ ...f.options, expo: true }), /conflicts with the original Tauri application/);
+  assert.deepEqual(snapshot(f.options.outputDir), before);
+
+  write(f.renderer, 'app.json', JSON.stringify({ expo: { name: 'Fixture', slug: 'fixture', android: { package: 'dev.tauri.fixture' } } }));
+  write(f.renderer, 'node_modules/@react-native/gradle-plugin/package.json', '{"version":"0.86.3"}');
+  write(f.artifact, 'android/app/src/main/jni/OnLoad.cpp', 'original native entrypoint'); f.receipt();
+  assert.throws(() => composeAndroid({ ...f.options, expo: true }), /artifact already owns app\/src\/main\/jni\/OnLoad.cpp/);
+  assert.deepEqual(snapshot(f.options.outputDir), before);
+  assert.equal(readFileSync(path.join(f.artifact, 'android/app/src/main/jni/OnLoad.cpp'), 'utf8'), 'original native entrypoint');
+});
+
 test('edited generated files and new file collisions fail before replacement', () => {
   const f = fixture(); f.run();
   write(f.options.outputDir, 'android/app/build.gradle.kts', 'consumer customization');
