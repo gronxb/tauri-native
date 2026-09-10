@@ -464,6 +464,49 @@ tasks.matching { it.name.startsWith("configureCMake") }.configureEach { dependsO
 	};
 }
 //#endregion
+//#region packages/react-native/plugin/retained-expo-ios.cts
+const ruby$1 = (s) => `'${s.replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`;
+function prepareExpoIos(context) {
+	const { rendererDirectory: renderer, output, manifest } = context;
+	if (!output.startsWith(renderer + node_path.default.sep)) throw new Error("Retained Expo composition: outputDir must be inside rendererDir so Expo scripts resolve the consuming app");
+	const requireRenderer = (0, node_module.createRequire)(node_path.default.join(renderer, "package.json"));
+	const expo = (0, node_fs.realpathSync)(requireRenderer.resolve("expo/package.json"));
+	const requireExpo = (0, node_module.createRequire)(expo);
+	for (const [name, version] of Object.entries({
+		expo: "57.0.19",
+		"expo-modules-core": "57.0.15",
+		"expo-modules-autolinking": "57.0.12",
+		"expo-constants": "57.0.17"
+	})) {
+		const file = name === "expo" ? expo : requireExpo.resolve(`${name}/package.json`);
+		if (JSON.parse((0, node_fs.readFileSync)(file, "utf8")).version !== version) throw new Error(`Retained Expo composition: requires ${name} ${version}`);
+	}
+	const factory = (0, node_fs.readFileSync)(node_path.default.join(node_path.default.dirname(expo), "ios/AppDelegates/ExpoReactNativeFactory.swift"));
+	if ((0, node_crypto.createHash)("sha256").update(factory).digest("hex") !== "fff6c0bd8c132272675db99583e1cc990dc776820e12a60dfd4809337f7f6529") throw new Error("Retained Expo composition: factory source changed; verify its renderer teardown before composing");
+	const { getConfig } = requireExpo("@expo/config");
+	const id = getConfig(renderer, { skipPlugins: true }).exp.ios?.bundleIdentifier;
+	if (id && id !== manifest.bootstrap.applicationId) throw new Error(`Retained Expo composition: ios.bundleIdentifier ${id} conflicts with the original Tauri application ${manifest.bootstrap.applicationId}`);
+	const relative = (dir) => ruby$1(node_path.default.relative(node_path.default.join(output, "ios"), dir).split(node_path.default.sep).join("/"));
+	const expoRoot = node_path.default.dirname(expo);
+	const constants = node_path.default.dirname(requireExpo.resolve("expo-constants/package.json"));
+	return {
+		setup: `ENV['TAURI_NATIVE_EXPO'] = '1'\nrequire File.expand_path(${relative(node_path.default.join(expoRoot, "scripts/autolinking.rb"))}, __dir__)\n`,
+		target: `  use_expo_modules!(:appRoot => File.expand_path(${relative(renderer)}, __dir__), :projectRoot => File.expand_path(${relative(renderer)}, __dir__), :exclude => ['@tauri-native/react-native'])\n  use_native_modules!([${ruby$1(process.execPath)}, File.join(__dir__, 'tauri-native-autolinking.cjs')])\n`,
+		postInstall: `, expo: { root: File.expand_path(${relative(renderer)}, __dir__), node: ${ruby$1(process.execPath)}, constants: File.expand_path(${relative(constants)}, __dir__) }`,
+		autolinking: `const { execFileSync } = require('node:child_process');
+const { createRequire } = require('node:module');
+const path = require('node:path');
+const root = path.resolve(__dirname, ${JSON.stringify(node_path.default.relative(node_path.default.join(output, "ios"), renderer))});
+const local = createRequire(path.join(root, 'package.json'));
+const config = JSON.parse(execFileSync(process.execPath, [local.resolve('expo/bin/autolinking'), 'react-native-config', '--json', '--platform', 'ios', '--project-root', root, '--exclude', '@tauri-native/react-native'], { cwd: root, encoding: 'utf8' }));
+// RN codegen also reads this output: explicitly disable the format 1 package.
+config.dependencies['@tauri-native/react-native'] = { platforms: { ios: null, android: null } };
+config.project = { ...config.project, ios: { ...config.project?.ios, sourceDir: __dirname } };
+process.stdout.write(JSON.stringify(config));
+`
+	};
+}
+//#endregion
 //#region packages/react-native/plugin/retained-compose.cts
 const kotlin = (value) => JSON.stringify(value).replaceAll("$", "\\$");
 const groovy = (value) => `'${value.replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`;
@@ -563,21 +606,29 @@ const ruby = (value) => `'${value.replaceAll("\\", "\\\\").replaceAll("'", "\\'"
 const shell = (value) => `'${value.replaceAll("'", "'\\''")}'`;
 /** Use the original Tauri Xcode app and Apple plist tools; neither export nor build Rust. */
 function composeIos(options) {
-	if (options.expo) fail("Expo iOS composition is not integrated yet");
 	if (process.platform !== "darwin") fail("iOS composition requires macOS Apple project tools");
 	const context = compositionInputs(options, "ios");
 	const { sdk, output, manifest, rn, rendererDirectory: renderer, bundled } = context;
 	if (manifest.platform !== "ios") fail("requires an iOS format 2 artifact");
+	const expo = options.expo ? prepareExpoIos({
+		...context,
+		manifest
+	}) : void 0;
 	const { projectFile, encodedProject, main, originalMain, minimumOsVersion, bootstrap, workspace } = prepareIosProject(context, "16.4");
 	const relative = (dir) => node_path.default.relative(node_path.default.join(output, "ios"), dir).split(node_path.default.sep).join("/");
 	const changed = publishComposition(context, {
 		moduleName: options.moduleName,
 		platform: "ios",
 		minimumOsVersion,
-		target: bootstrap.target
+		target: bootstrap.target,
+		...expo ? { expo: "57.0.19" } : {}
 	}, (stage) => {
 		write(stage, `ios/${projectFile}`, encodedProject);
-		write(stage, `ios/${main}`, "#import <TauriNativeReactRetained/TNReactComposition.h>\n" + originalMain.replace("ffi::start_app();", `@autoreleasepool {\n\t\tNSURL *bundle = [NSBundle.mainBundle URLForResource:@"index.bundle" withExtension:@"js" subdirectory:@"assets/tauri-native-react"];\n\t\t[TNReactComposition installWithModule:@${JSON.stringify(options.moduleName)} bundle:bundle];\n\t}\n\tffi::start_app();`));
+		write(stage, `ios/${main}`, "#import <TauriNativeReactRetained/TNReactComposition.h>\n" + (expo ? "#import <TauriNativeReactRetained/TNExpoApplication.h>\n" : "") + originalMain.replace("ffi::start_app();", `@autoreleasepool {\n${expo ? "		TNInstallExpoApplication();\n" : ""}\t\tNSURL *bundle = [NSBundle.mainBundle URLForResource:@"index.bundle" withExtension:@"js" subdirectory:@"assets/tauri-native-react"];\n\t\t[TNReactComposition installWithModule:@${JSON.stringify(options.moduleName)} bundle:bundle];\n\t}\n\tffi::start_app();`));
+		if (expo) {
+			if ((0, node_fs.existsSync)(node_path.default.join(stage, "ios/tauri-native-autolinking.cjs"))) fail("artifact already owns Expo autolinking script");
+			write(stage, "ios/tauri-native-autolinking.cjs", expo.autolinking);
+		}
 		write(stage, "ios/assets/tauri-native-react/index.bundle.js", bundled);
 		write(stage, "ios/.xcode.env", `export NODE_BINARY=${shell(process.execPath)}\n`);
 		write(stage, "ios/.xcode.env.local", `export NODE_BINARY=${shell(process.execPath)}\n`);
@@ -587,17 +638,19 @@ rn = File.expand_path(${ruby(relative(rn))}, __dir__)
 require_relative ${ruby(relative(node_path.default.join(sdk, "ios/retained/pods")))}
 composition = TauriNativeReactRetained.composition_receipt(__dir__)
 require File.join(rn, 'scripts/react_native_pods')
+${expo?.setup ?? ""}\
 platform :ios, ${ruby(minimumOsVersion)}
 prepare_react_native_project!
 TauriNativeReactRetained.prepare(rn, ${ruby(process.execPath)})
 project ${ruby(bootstrap.xcodeProject)}, 'debug' => :debug, 'release' => :release
 target ${ruby(bootstrap.target)} do
+${expo?.target ?? ""}\
   use_react_native!(:path => rn, :app_path => File.expand_path(${ruby(relative(renderer))}, __dir__))
   pod 'TauriNativeReactRetained', :path => ${ruby(relative(node_path.default.join(sdk, "ios")))}
 end
 post_install do |installer|
   react_native_post_install(installer, rn, :mac_catalyst_enabled => false)
-  TauriNativeReactRetained.post_install(installer, ${ruby(bootstrap.target)})
+  TauriNativeReactRetained.post_install(installer, ${ruby(bootstrap.target)}${expo?.postInstall ?? ""})
 end
 post_integrate do |installer|
   TauriNativeReactRetained.finish_composition(__dir__, composition)

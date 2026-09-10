@@ -2,6 +2,7 @@ require 'json'
 require 'fileutils'
 require 'open3'
 require_relative 'composition'
+require_relative 'expo'
 
 module TauriNativeReactRetained
   def self.run(*command)
@@ -27,7 +28,7 @@ module TauriNativeReactRetained
 
   # RN's prebuilt frameworks are dynamic. Load its three static libraries
   # explicitly, preserving the ordinary Tauri archive's Swift symbol resolution.
-  def self.post_install(installer, target_name)
+  def self.post_install(installer, target_name, expo: nil)
     targets = installer.aggregate_targets.select { |target| target.user_targets.any? { |item| item.name == target_name } }
     raise "Expected one retained Tauri CocoaPods target: #{target_name}" unless targets.length == 1
     target = targets.first
@@ -36,6 +37,7 @@ module TauriNativeReactRetained
     unless ENV['RCT_USE_RN_DEP'] == '1' && ENV['RCT_USE_PREBUILT_RNCORE'] == '1'
       raise 'Retained RN linking requires the pinned prebuilt RN core and dependency frameworks'
     end
+    return post_install_expo(installer, target, expo) if expo
     target.xcconfigs.each do |configuration, config|
       flags = config.other_linker_flags
       unless flags[:libraries].to_a.sort == libraries.sort && flags[:frameworks].to_a.sort == frameworks.sort

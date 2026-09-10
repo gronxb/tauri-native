@@ -4,6 +4,9 @@ This development path consumes an ordinary Tauri project exported with
 `--runtime retained`. The original Tauri application, WebView, Rust managed
 state, commands, capabilities and native plugins remain alive. The producer
 does not import React Native or maintain a command bridge.
+Authored Rust, frontend, Cargo/configuration, capabilities and plugin files stay
+unchanged. Integration belongs to the generated copy and consuming app; removing
+that layer leaves the original Tauri project independently runnable.
 
 ## JavaScript
 
@@ -189,7 +192,7 @@ back routing and native session lifetime.
 Pass `expo: true` to `composeAndroid` to link the renderer's installed Expo and RN
 native dependencies. Use `moduleName: 'main'` with Expo's `registerRootComponent`,
 and build the offline bundle with the consumer's Expo/Metro configuration. This
-option is Android-only; `composeIos` diagnoses it as not integrated yet.
+option has a corresponding iOS integration described below.
 
 The current path pins Expo 57.0.19, Expo Modules Core 57.0.15, autolinking 57.0.12
 and the RN/codegen versions above. Put `outputDir` inside `rendererDir` so Expo's
@@ -217,7 +220,7 @@ the original Tauri runtime stays alive. No global Expo ReactHost cache is used.
 Modules which replace a `ReactActivity` delegate, require its delayed loading
 hook, or request a development host receive explicit diagnostics. These loading
 owners need separate retained integration. This option does not yet implement
-`expo prebuild --clean`, config-plugin native edits, iOS Expo integration or
+`expo prebuild --clean`, config-plugin native edits or
 general Activity recreation. It is the native module/autolinking stage of that
 roadmap, not a completed CNG path.
 
@@ -354,6 +357,55 @@ Run the separate
 macOS metadata/ownership scenarios with
 `node --experimental-strip-types --test packages/react-native/test/retained/compose-ios.test.ts`.
 
+### iOS Expo native modules
+
+Pass `expo: true` to `composeIos`, use `moduleName: 'main'` with Expo's
+`registerRootComponent`, and place `outputDir` inside `rendererDir`. The installed
+renderer dependencies must include Expo 57.0.19, Expo Modules Core 57.0.15,
+autolinking 57.0.12 and Constants 57.0.17, alongside the pinned RN versions above.
+An explicit Expo `ios.bundleIdentifier` must match the original Tauri app ID.
+Keep Node on the Xcode build PATH for Expo's build scripts. Rust and the producer
+checkout are not required.
+
+The generated Podfile uses Expo autolinking for installed RN and Expo native
+modules, including local Expo modules. It excludes the SDK's format 1 native
+package and codegen. Expo's actual `ExpoReactNativeFactory` creates the renderer;
+its delegate forwards retained session, Linking and Fabric registration to the
+same SDK delegate used by plain RN. Expo modules are destroyed with their RN
+context, while Tauri setup, state, plugins and the original WebView stay alive.
+
+Generated startup installs Expo application callback routing before the unchanged
+`ffi::start_app()`. The original Tauri `UIApplication.delegate` object remains in
+place. Known overlapping callbacks call Tauri first, then Expo's application
+subscriber dispatcher; URL/activity handling accepts either handler's result.
+Expo-only optional application callbacks forward their arguments and completion
+handlers through the original delegate. Unverified overlapping callbacks receive
+an explicit diagnostic. Application subscribers live for the application,
+independently of RN replacement or removal. The plain RN URL wrapper continues to
+retire with its composition.
+
+The CocoaPods helper loads CocoaPods-owned static products explicitly instead of
+force-loading the original Tauri archive with global `-ObjC`. It preserves Tauri
+archive bytes and native plugin integration. It also invokes the pinned Expo
+Constants config generator with the consuming renderer root, including paths
+with spaces; only the generated CocoaPods script phase changes.
+Expo 57.0.19's factory and React delegate retain each other. For renderer teardown,
+the helper compiles a checked copy of that factory with a weak forwarding
+reference. The installed Expo sources stay unchanged; an unexpected factory
+source hash receives a compatibility diagnostic before building.
+
+Run the iOS native gate above with a final `--expo` argument. Its Expo scenarios
+exercise native file persistence, Constants, autolinked SafeAreaProvider,
+application/module lifecycle and Expo Location permission denial/grant. The
+renderer is replaced while an actual Expo permission dialog is pending; a
+retired continuation must not save through Tauri. Memory-warning/background-fetch
+checks inject callbacks through the original application delegate. These are
+distinct from OS location prompts and custom-scheme URL delivery.
+
+This path consumes installed modules and an offline bundle. Expo clean prebuild,
+config-plugin native modifications, development hosts and custom scene/delegate
+owners still require their own integration and execution evidence.
+
 Current CLI iOS exports preserve a failed session open's complete ABI response
 in `NSError.userInfo[@"TauriNativeRuntimeResponse"]`. Both SDKs forward its
 original code and message, including `caller_denied` for an undeclared caller.
@@ -369,7 +421,7 @@ on iOS Simulator and Android emulator: [41 native UI flows](https://github.com/g
 
 ## Remaining roadmap
 
-Expo CNG and Expo iOS, broader third-party autolinking, OS Universal Link
+Expo CNG, broader third-party autolinking, OS Universal Link
 association, full navigation/history/back/rotation, Activity recreation,
 device/adopter acceptance and full framework
 parity remain tracked in [#45](https://github.com/gronxb/tauri-native/issues/45)

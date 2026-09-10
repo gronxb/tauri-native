@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, test } from 'node:test';
@@ -80,6 +80,36 @@ test('a higher authored deployment target remains higher than the RN minimum', (
   assert.equal(f.run().minimumOsVersion, '18.2');
   const project = plist(path.join(f.options.outputDir, 'ios/App.xcodeproj/project.pbxproj'));
   assert.equal(project.objects.debug.buildSettings.IPHONEOS_DEPLOYMENT_TARGET, '18.2');
+});
+
+test('Expo identity and artifact-owned integration conflicts preserve the previous iOS consumer', () => {
+  const f = fixture(); f.options.outputDir = path.join(f.renderer, 'native'); f.run();
+  const before = snapshot(f.options.outputDir), source = snapshot(f.artifact);
+  const example = createRequire(new URL('../../../../examples/react-native/package.json', import.meta.url));
+  symlinkSync(path.dirname(realpathSync(example.resolve('expo/package.json'))), path.join(f.renderer, 'node_modules/expo'), 'dir');
+  write(f.renderer, 'app.json', JSON.stringify({ expo: { name: 'Fixture', slug: 'retained-fixture', ios: { bundleIdentifier: 'dev.other.application' } } }));
+  const options = { ...f.options, expo: true };
+  assert.throws(() => composeIos(options), /ios.bundleIdentifier.*conflicts with the original Tauri/);
+  assert.deepEqual(snapshot(f.options.outputDir), before); assert.deepEqual(snapshot(f.artifact), source);
+  write(f.renderer, 'app.json', JSON.stringify({ expo: { name: 'Fixture', slug: 'retained-fixture', ios: { bundleIdentifier: 'dev.tauri.fixture' } } }));
+  write(f.artifact, 'ios/tauri-native-autolinking.cjs', 'producer-owned script'); f.receipt();
+  assert.throws(() => composeIos(options), /artifact already owns Expo autolinking script/);
+  assert.deepEqual(snapshot(f.options.outputDir), before);
+  assert.equal(readFileSync(path.join(f.artifact, 'ios/tauri-native-autolinking.cjs'), 'utf8'), 'producer-owned script');
+});
+
+test('a same-version Expo factory patch is rejected before replacing the previous consumer', () => {
+  const f = fixture(); f.options.outputDir = path.join(f.renderer, 'native'); f.run();
+  const before = snapshot(f.options.outputDir), source = snapshot(f.artifact);
+  const example = createRequire(new URL('../../../../examples/react-native/package.json', import.meta.url));
+  const expoRoot = path.dirname(realpathSync(example.resolve('expo/package.json')));
+  const installed = path.join(f.renderer, 'node_modules/expo');
+  write(installed, 'package.json', readFileSync(path.join(expoRoot, 'package.json'), 'utf8'));
+  symlinkSync(path.dirname(expoRoot), path.join(installed, 'node_modules'), 'dir');
+  write(installed, 'ios/AppDelegates/ExpoReactNativeFactory.swift', 'changed factory lifetime');
+  assert.throws(() => composeIos({ ...f.options, expo: true }), /factory source changed/);
+  assert.deepEqual(snapshot(f.options.outputDir), before);
+  assert.deepEqual(snapshot(f.artifact), source);
 });
 
 test('corruption, existing pods, custom startup, scene ownership and edited generated projects preserve the previous consumer', () => {

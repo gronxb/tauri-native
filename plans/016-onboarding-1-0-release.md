@@ -242,3 +242,32 @@ This completes the scoped Android installed-module/autolinking stage in
 clean prebuild/CNG/config-plugin generation, broader source/lifecycle owners,
 complete parity/CI/migration, physical devices and independent adopters remain
 required. No issue or release gate is closed.
+
+## Expo iOS native modules and callback routing (2026-09-11)
+
+The optional retained iOS composer now links installed Expo/RN native modules
+under the original Tauri bootstrap and application delegate. The packed arm64
+Release gates pass 34 Expo iOS flows and 25 plain RN regressions, including the
+unmodified generated startup/default layout. Evidence is recorded in `docs/evidence/retained-expo-ios-2026-09-11.json` on local `main`; it has not been pushed or published.
+
+Native Expo FileSystem, Constants, SafeAreaProvider and Location execute beside
+the unchanged Tauri frontend, plugins, ACL and shared state. App initialization
+runs once; RN replacement/removal destroys its Expo modules while preserving the
+original delegate, WebView and Tauri state. Actual Expo OS permission denial/grant
+and renderer retirement prevent a stale save; the current context obtains GPS
+and saves through the original Tauri plugin. Native memory-warning/background-
+fetch and user-activity injections check callback routing and completion results.
+These injections do not claim OS background scheduling or Universal Link association.
+
+The native gate exposed a Swift actor check during RN module lookup and an Expo
+factory/delegate reference cycle. The SDK fixes the immutable delegate access and
+compiles a checked generated Expo factory copy with a weak forwarding reference.
+Installed Expo source, the 14-file Tauri producer and all 39 input iOS artifact
+files remain unchanged. Six iOS ownership/configuration scenarios, package tests
+and typechecks pass. Builds require no Rust or producer checkout; Expo scripts
+use the consumer's installed Node and native dependencies.
+
+This completes the scoped iOS installed-module/callback stage of #45. Expo clean
+prebuild/CNG/config plugins, broader native packages and lifecycle/source owners,
+full parity/CI/migration, physical devices and independent adopters remain open.
+No issue or release gate is closed and no package is published.

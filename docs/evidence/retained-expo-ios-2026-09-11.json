@@ -1,0 +1,655 @@
+{
+  "passed": true,
+  "recordedAt": "2026-09-10T21:19:11.545594+00:00",
+  "baseCommit": "d9d231a471d781739cb457b448d900d8d29b4fc6",
+  "scope": "Optional installed Expo iOS native modules and application callback routing in a generated retained-Tauri consumer. Original authored sources, original delegate object/bootstrap and immutable artifact remain intact. CNG/config plugins and broader owners remain open.",
+  "nativeJUnitFlows": 59,
+  "skippedFlows": 0,
+  "producerSourceSha256": {
+    "packages/cli/test/fixtures/mobile-plugin-tauri/README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372"
+  },
+  "sourceSha256": {
+    "packages/react-native/RETAINED.md": "ddbbda19962a490963b8a4435042bd4e90e67ff9946bf36a1a7d4c47a71c17c3",
+    "packages/react-native/compose.d.ts": "0d2ada5ec198fb893dd0c944ea8790c97122e6928b3e77cc8da7a9e3021b4742",
+    "packages/react-native/compose.js": "1cffa172eaf365050b922797df383cfc8cef893f638492d97083bba7d11fb917",
+    "packages/react-native/ios/TauriNativeReactRetained.podspec": "b2edaa3520a930ae9a2b4fb1d27fe539b9daa0eb5e11fd5728cf3060c7711cf9",
+    "packages/react-native/ios/retained/TNReactHost.mm": "70e7dc73c3caa166223aa294260308c653b36b863a2869dc272c4e7eb55a5e1d",
+    "packages/react-native/ios/retained/expo.rb": "b1005dcd0bcdb4c6b358da88f01b1a37cca27f2a71322242bf772c6cfeae46f1",
+    "packages/react-native/ios/retained/expo/TNExpoApplication.h": "e70d62690e9aab9ec0de150af8db10c0b545b35dc0dd5c9a0f8f8453cd202789",
+    "packages/react-native/ios/retained/expo/TNExpoApplication.mm": "9c36125afae3137803b95b2855b3a3faead459fc33b5bb20fe730e5b7a122597",
+    "packages/react-native/ios/retained/expo/TNExpoFactory.mm": "447ea5943ab1c8485e3df385c4bc7735b24c741abdf9a59d15d3ae834e7a5d0b",
+    "packages/react-native/ios/retained/expo/TNExpoFactory.swift": "6657feda1fdc4b40385625a0745a34b9247f48b6449a8ce481d538e4f8cf3eda",
+    "packages/react-native/ios/retained/pods.rb": "92cb2e637b796215c67cdd5317f398425dc63881fcda31cc36d3fb2c9e02b065",
+    "packages/react-native/package.json": "193b9c16e628f8bec478bcda5ac41a4037a3fda8ba328e67327bbfc64e03bb99",
+    "packages/react-native/plugin/retained-compose-types.d.cts": "0d2ada5ec198fb893dd0c944ea8790c97122e6928b3e77cc8da7a9e3021b4742",
+    "packages/react-native/plugin/retained-compose.cts": "9bb39cc6cf07be970308e88daa13220944c5b7c62fab874645ba8f77801812d6",
+    "packages/react-native/plugin/retained-expo-ios.cts": "8f8b3ef1329ecb27c6d11532c8636a0466c4981fe282912572b75b4988c1d754",
+    "packages/react-native/test/retained-ios.ts": "45b56ed92204c12e8ba439cb116a00ec4a694ce90a87ba84bbdf33ca5be0d873",
+    "packages/react-native/test/retained/compose-ios.test.ts": "47c47258bbafc3d577b242c6733ade01b92b30f9f88e6cb9b28371ac69f10e46",
+    "packages/react-native/test/retained/expo-ios-index.tsx.fixture": "cc66aecb9407b56ba8f01d4e3ac968878a6c58a87eef3cf882bd1cce29d774c1",
+    "packages/react-native/test/retained/expo-probe/expo-module.config.json": "93d63e46ede6ae5b0fe8e14f67aa7f22d15b897b29b4b7eb823515d623a72f16",
+    "packages/react-native/test/retained/expo-probe/ios/RetainedExpoProbe.podspec": "2c75d01e42a97cf562943de522a021f0c83f98e0affc78761039110b7e289ded",
+    "packages/react-native/test/retained/expo-probe/ios/RetainedExpoProbeModule.swift": "996bd59a650e43f76bee45d1c1768db87a3a261389c854f9aaab192c6ba4cc6b"
+  },
+  "identicalPackedPayloadsAcrossFinalGates": true,
+  "packedPayloadSha256": {
+    "LICENSE": "e4193f3cb5cd3cb91d2707046cc235a70e25417cc4023521a919595c4200a73b",
+    "retained/copy-component.cjs": "40894627a3b474b73a88f323b4064a92eb74939e24e82eb4beaf11dd7ec76929",
+    "android/retained/src/main/jni/OnLoad.cpp": "1d62a9e12467f9e7f548c86f8d5c875392f51186b3a62f701cd40f1b179069d9",
+    "retained/android/autolinking/OnLoad.cpp": "4418b9baa75d9a5aeaa50aad1861fceac9810f6a3a75a3415c3bfd0592f7899d",
+    "cpp/TauriNativeImpl.cpp": "18e41da3a1e63b6d9d5bed789fc0a6d22f72bbf9a8752afa6e573142c1a48bca",
+    "android/src/main/jni/TauriNativeJni.cpp": "1b28e584e2eb423f4245a9232a5f5251854b1dba73ce0ac53586dabb352acc71",
+    "android/build.gradle": "b626ad0562e2a881874870413289f80d255991bb5041c51314f3e4344f54e72b",
+    "android/retained/build.gradle": "8ae05aa39b9448c879456d423dd6961ec0cc9089f83a25c3d8ad8dfdb6c711f6",
+    "cpp/TauriNativeImpl.h": "5f16f8c4eb4dec30b8dc5eec6c0e1296b34d079e89136698b92c06dc05f6c8ea",
+    "ios/retained/expo/TNExpoApplication.h": "e70d62690e9aab9ec0de150af8db10c0b545b35dc0dd5c9a0f8f8453cd202789",
+    "ios/retained/TNReactComposition.h": "11eaa0a0098316940e6953e3b98d32f3e79410fab977426282c5d02d563dea56",
+    "ios/retained/TNReactHost.h": "3b3868db0f0e68af395ab93b35a8ed1dfe8b321666dd438910c461d672bb9a3b",
+    "ios/retained/TNReactRuntimeModule.h": "ae0e780b6870393ba61339203ef0eeac4cff59642d737c0d685868f32523d4dc",
+    "ios/retained/TNReactTauriView.h": "5024470ad910399f6c09ed92e5e5881ba7a783ac9cbc504dfb5b25a22dd8bad8",
+    "ios/TNTauriRustBridge.h": "82a06f72fde187f48095d09f24a498151e5750880d64106592db5506805ce2d8",
+    "ios/TNTauriView.h": "18b50285718b54e9af9db0b8a33b36c7476239c4e599b608c9d56c10b717d2a9",
+    "android/src/main/java/com/reactnativetauri/TauriJavascriptBridge.java": "7045ad21e22a0e745b784dff974f0afc0d0de869cd54e83982c9ac1539d50fc4",
+    "android/retained/src/main/java/dev/taurinative/react/retained/TauriRuntimeModule.java": "789c09f64962ead6113c1aa62d2c4a43207ffb074182956d2cb7be082e20723c",
+    "android/retained/src/main/java/dev/taurinative/react/retained/TauriRuntimePackage.java": "6608dd936b74e0b59eb9e5e28d483fca3a119fd53af755783fd71906c816c4fb",
+    "android/src/main/java/com/reactnativetauri/TauriViewState.java": "825786e93a66932fc5864a9f26a5d35963e482cd04b57e4a1a0c1cb8cda45147",
+    "app.plugin.js": "b1b0a7f7971722c1b44333c21f1232df2496aeba2e04601aa78e342c631aff6e",
+    "artifacts.js": "b56b8c54f79981b564455bcfe47d14db57f673d9da7b10901db28984a363a6dd",
+    "lib/module/async-client.js": "c7a7ab431fb6eb4cc4e17e398059df40bf5cfc8ed630c14e6d3fc1e5c1f46b0a",
+    "compose.js": "1cffa172eaf365050b922797df383cfc8cef893f638492d97083bba7d11fb917",
+    "lib/module/index.js": "26e6ba9aae2122d65e9769ff3e2380e3f3853e7caad4d167aea0b9af71a51849",
+    "lib/module/invoke.js": "427141d236510b661536fc6bd0e26c19845603200c5f5be447c203d397b68296",
+    "lib/module/NativeTauri.js": "a47e6726ebf6006db2d2558810eb037fbe056b3ba750fce4f650e7170f72c590",
+    "retained-artifacts.js": "c1deb6ef65cc245540047b3f1c92a827ec7cbd940e56a31de3007383fbeba645",
+    "lib/module/retained-client.js": "f73b8e054c27c300813dc108c0fa18341017e41c7a84234b3f1e4f399155ebd7",
+    "lib/module/retained.js": "1b7761c10a191a2784a55f0b91d4cec66b7c6adda6f96874587c721371329a5f",
+    "lib/module/RetainedTauriView.js": "eeda2d06c8848ee4a47d4cf8bb4e4b3e974cc54fd85511f867b031e95352aed2",
+    "lib/module/TauriView.js": "ea31b70991ba013166cdc205510ea9735b494afc95808de583510090ea5173b2",
+    "lib/module/TauriView.native.js": "a8b3b5baab0b57795b9b521df665e69c5c3eeb08bed7947bcc5cff47b03ab1c6",
+    "lib/module/view-options.js": "0f986d49ba3256d0329494c4e30d0379fe7e85824300d4d4f5ef3241254202d8",
+    "lib/module/package.json": "1239d4d885dcad42201a27ed9324f8f0f760b78700d8db9ced39a511cffe7eae",
+    "lib/typescript/package.json": "1239d4d885dcad42201a27ed9324f8f0f760b78700d8db9ced39a511cffe7eae",
+    "package.json": "193b9c16e628f8bec478bcda5ac41a4037a3fda8ba328e67327bbfc64e03bb99",
+    "android/src/main/java/com/reactnativetauri/TauriNativeModule.kt": "44b355dd13ee66ea13356510cc66521b3bbcb0825bf7b38221912106999336de",
+    "android/src/main/java/com/reactnativetauri/TauriNativePackage.kt": "b9fdb40474f406f14f8b5dac884f13d8ddf6872b28536ef46c2ff5f93c0fbf96",
+    "android/src/main/java/com/reactnativetauri/TauriNativeRust.kt": "7b58e7e4ac190aa6d1f609d00a222ede6143fcfa59b12e7f9b76fa7bd2efcc63",
+    "android/retained/src/main/java/dev/taurinative/react/retained/TauriReactHost.kt": "fa5aa96c23c81661eee8208a6fe2f09bfad618725e2b5586a2f4d07571646668",
+    "android/retained/src/main/java/dev/taurinative/react/retained/TauriReactPermissions.kt": "a153c3e8a77e78ed8f4866d0428f5c7766a1634e19d3b0a3f2958454b15f8017",
+    "android/retained/src/main/java/dev/taurinative/react/retained/TauriViewManager.kt": "668d8e45f7a25d9b4b4755addcecc2eae81d107ade9531839ca2e30a6cc0c8b1",
+    "android/src/main/java/com/reactnativetauri/TauriViewManager.kt": "e94e1f905312e56c7c1810dd05d6c1cf3d361d50a173ed2eccc57f82b6261471",
+    "android/src/main/java/com/reactnativetauri/TauriWebView.kt": "b99acd66e1324e96ab1b6fe193099fa187c3b1e80c8244255792a3119031639d",
+    "lib/typescript/src/async-client.d.ts.map": "560f7d8947ba3eb656e7d9846bf08af871017507e9f9ab41df8ddc2e00b41d1f",
+    "lib/module/async-client.js.map": "ce240324eb1a7cefdb0e7e1e98c5f0fa15a384a9721491398ef6d99b7812ec22",
+    "lib/typescript/src/index.d.ts.map": "b8268f4bd6690032bf3118888914f9df64840b513fb9cb9439c4cacba4a35830",
+    "lib/module/index.js.map": "aff8590ff0426141cbb3e47a031b4fdd4122f312360cc1aae4cb7619e9bdd7d0",
+    "lib/typescript/src/invoke.d.ts.map": "35b61dab2a4c4720876944fc63f30d68a23db693faebd734d895f17c4bcc2eb4",
+    "lib/module/invoke.js.map": "fe2d76b55fa9ea9ce8bfee14bc4154c93a9e9f2612d915af769dc8ce0a7d132e",
+    "lib/typescript/src/NativeTauri.d.ts.map": "9b3707330737a6760ce4595fc2f3e9b55b4ae0f7646ddc8a07dc351eef5a392c",
+    "lib/module/NativeTauri.js.map": "a9ebbefebc95de661b90527069c5d29b0276b5de27d6279e200b567156575cb6",
+    "lib/typescript/retained/specs/NativeTauriRuntime.d.ts.map": "9c9e0b4713855e021d1e9eda822935798259dfa1e7c5bc099c63749d331d90f6",
+    "lib/typescript/src/retained-client.d.ts.map": "7f7e8c31a71a466bd72974d9b7991037bd7db8fa6921a1ac22cd81bacce6e655",
+    "lib/module/retained-client.js.map": "d3af5367282d125350660c6360923aa219ca32311a02e218edda38a03fe3d923",
+    "lib/typescript/src/retained.d.ts.map": "358ed3d0ea4938e239f1e301533d54d3f930706a551aff9d91eaf7a3339e10ec",
+    "lib/module/retained.js.map": "b86db689c35058a6300968f0db78d24203c5a47147315ca152d8910761215a3c",
+    "lib/typescript/src/RetainedTauriView.d.ts.map": "46b0a0af9377aec59a58cd16d9c32b1a71ba9877f73f1e7fa1213449706a15d9",
+    "lib/module/RetainedTauriView.js.map": "3f6195d5ed05044489968bd317a3c1cc0522feef71ba99518e9f8120bb8b0c41",
+    "lib/typescript/retained/specs/TauriRetainedViewNativeComponent.d.ts.map": "916b2f9762a0d105d0838e0933e16279d1ad9fa4c2a35f4023b491737a5fd0e2",
+    "lib/typescript/src/TauriView.d.ts.map": "65d43054fc28f2c21be0d89013e43fc9a99b0de35e81e6c28716bbc5a7910a86",
+    "lib/module/TauriView.js.map": "d1018914ea7e2873747e11be477f6d75fa627cb729744e0298e5bcc498d89343",
+    "lib/typescript/src/TauriView.native.d.ts.map": "b39b6a3f8d9e5bbe5daa9523bd1e7d4cf8a2f6cc851996a6e59c25703c015daf",
+    "lib/module/TauriView.native.js.map": "fc84b8958a3163179514054be4cf9d7309f999e272e1a48b4af23edaa11234c0",
+    "lib/typescript/src/TauriViewNativeComponent.d.ts.map": "3f6955b6b5778af6968eddcd61dcb96a67eddfd7ac24ed33e19d3e43c3b2936d",
+    "lib/typescript/src/view-options.d.ts.map": "c0d85f0447a9bb42657f826385e6e0d045be651e55fabbc49c88c0ccf0324739",
+    "lib/module/view-options.js.map": "23ff3ce6bb0a7e80d4a6e33f3b066972c5c71d8ee2ffbc3261a7956cfed65641",
+    "README.md": "8740504b41177285e3e416b418c2d9d4f082e752c6d295d78d8adb0ec6c37a7c",
+    "RETAINED.md": "ddbbda19962a490963b8a4435042bd4e90e67ff9946bf36a1a7d4c47a71c17c3",
+    "ios/OnLoad.mm": "25bda4e18472e39d0352c35964843f1a76e6b37f5add1445ecb8c23cc2994a53",
+    "ios/retained/expo/TNExpoApplication.mm": "9c36125afae3137803b95b2855b3a3faead459fc33b5bb20fe730e5b7a122597",
+    "ios/retained/expo/TNExpoFactory.mm": "447ea5943ab1c8485e3df385c4bc7735b24c741abdf9a59d15d3ae834e7a5d0b",
+    "ios/retained/TNReactComposition.mm": "0a05281d553b4fc5e39b59577aa020250226fff9ad869b64ade11c3f718b6590",
+    "ios/retained/TNReactHost.mm": "70e7dc73c3caa166223aa294260308c653b36b863a2869dc272c4e7eb55a5e1d",
+    "ios/retained/TNReactRuntimeModule.mm": "fece82719271ccaf0efbd27e805de7e3f69eec532f27bc1c33fc3600a9a3d299",
+    "ios/retained/TNReactTauriView.mm": "21d0ae11f54b3932f5dfb71c3b31c9de74efb6875b71859f811a4084cd21b57c",
+    "ios/TNTauriRustBridge.mm": "fb09efb1317ecbae92b48aebde1898a4492931bed28fc7e019214a5cb32e917e",
+    "ios/TNTauriView.mm": "68ff5e88bbbf558781b6538489a86d596e17ee67f840309073b04f86cbb43500",
+    "TauriNativeReactNative.podspec": "33ff45936392732da2bb4dc16376add1f00ffdf91512dd7224dbd66dda5ae2cb",
+    "ios/TauriNativeReactRetained.podspec": "b2edaa3520a930ae9a2b4fb1d27fe539b9daa0eb5e11fd5728cf3060c7711cf9",
+    "android/consumer-rules.pro": "1a6a1a2cc0eb32d31bf55b5a57d734afa477ab1bb8b76025ce887d2377802905",
+    "android/retained/consumer-rules.pro": "61941bc3acb0af12ff898d147aa4fa174cc1584a5c8858e7ecb68f00c94f3505",
+    "ios/retained/composition.rb": "f6ec07da0ffdda4503f91d9904357af2508c64bc23c84f11738a3c89eda3e37b",
+    "ios/retained/expo.rb": "b1005dcd0bcdb4c6b358da88f01b1a37cca27f2a71322242bf772c6cfeae46f1",
+    "ios/retained/pods.rb": "92cb2e637b796215c67cdd5317f398425dc63881fcda31cc36d3fb2c9e02b065",
+    "ios/retained/expo/TNExpoFactory.swift": "6657feda1fdc4b40385625a0745a34b9247f48b6449a8ce481d538e4f8cf3eda",
+    "ios/TNTauriWebView.swift": "a5152c76973f2791066e2b6252f428d634f1ce8074031f4d0b5aca7bbade801c",
+    "retained/android/TauriExpoIntegration.kt.template": "30ae023c45e2df596b525cfdd337f1cab6d0a31ecf6005d4845b9ba0009ffeb7",
+    "retained/android/TauriNativeActivity.kt.template": "d0a970e85cee2d25a1a588a10e3e338e59d6314103e3128db95bff5ab97d13f8",
+    "artifacts.d.ts": "504a5ce6d73b2e2c7e673b4423cc09de3253ae90cd395d9e354b721738dfc6ae",
+    "lib/typescript/src/async-client.d.ts": "0d0a232d1ca0393584c72b21bed81e5668147205bfac7539d6e8e98a4c2bb6e0",
+    "src/async-client.ts": "cda18f828658e39cae2e709db9b4dde3f3a10d889a74f9706b9b302b45868387",
+    "compose.d.ts": "0d2ada5ec198fb893dd0c944ea8790c97122e6928b3e77cc8da7a9e3021b4742",
+    "lib/typescript/src/index.d.ts": "4b6f8080f18ed10468140ed342f7e07340a39234272ad77bdd710c96234d9178",
+    "src/index.ts": "e81ac60e90e80a573ac19f4254d05b3da08a2189371fa06863d4151a473ec93c",
+    "lib/typescript/src/invoke.d.ts": "5b8cc392c23995ae6d232cfe1982bbdd2bb9b300bb9ba71c35ebc355cba12dc3",
+    "src/invoke.ts": "c1ade2891da2aa057ea2ee0e3c451d1f321afd6209ac30f62b2a8680c8ee0dcc",
+    "lib/typescript/src/NativeTauri.d.ts": "e65bd1aa90d24deab5e9c9213bb16d307135af2db2ec678c598d610981d5d226",
+    "src/NativeTauri.ts": "1c79859375f5226b90f7231e203604446dc5b4f985c543333da464d28c54f383",
+    "lib/typescript/retained/specs/NativeTauriRuntime.d.ts": "0523f8ef0937d20a5a95c6926ba39e7743882252fb9de5587bd3c22cee842ee9",
+    "retained/specs/NativeTauriRuntime.ts": "7bf7588e0073c96a84fb2832c52c947a24956431a915fa5d1afaae33c684f64a",
+    "retained-artifacts.d.ts": "72c512132b056e6e30250644309e8678e0143ea66969a89e6959c35f4ca4d2c6",
+    "lib/typescript/src/retained-client.d.ts": "f7c6bdd85622018dd798fb1f2baf636ac51a0b016aba11520672727736503432",
+    "src/retained-client.ts": "d54bec5bd9f7dab9a1192da661612089b821494417ac259990d4a1e4da45f53a",
+    "lib/typescript/src/retained.d.ts": "6eb07f0df6623f2c9cced5c740317b5f7233b8ba5ead75aa41d3a9207779b500",
+    "src/retained.ts": "8645c2ae672ce17066709a922eb6d5572a3233de81a13ed1d04527e91932de4e",
+    "lib/typescript/src/RetainedTauriView.d.ts": "e5cec44ebeef72779e4403a43e22b4400c0e5ee6b2e46acd537056f0082be4f6",
+    "lib/typescript/retained/specs/TauriRetainedViewNativeComponent.d.ts": "3f0fcaec2731c38519eddc95dc8af24f36385bf41da37fee8d386e1c5f091359",
+    "lib/retained/specs/TauriRetainedViewNativeComponent.ts": "4ead6fa926cf27f2f7d33ee072521ff4e80e099e80bc1da8360d4b8786542d44",
+    "retained/specs/TauriRetainedViewNativeComponent.ts": "4ead6fa926cf27f2f7d33ee072521ff4e80e099e80bc1da8360d4b8786542d44",
+    "lib/typescript/src/TauriView.d.ts": "a476eda3b2fa503e3d75de4a51ec66581c741872a6c5c27972d49253d54e28f6",
+    "lib/typescript/src/TauriView.native.d.ts": "a247dda09fbaea9b42fea4f9b51ecaf21803ec393702def4f6e6b5f45b69ebcb",
+    "lib/typescript/src/TauriViewNativeComponent.d.ts": "e15b5ea52af8ef4b67117e0aca60c84badffcdbe8b0625ea6dce9ab34534e9d1",
+    "lib/module/TauriViewNativeComponent.ts": "2d6ec15cc92cd5b3368c57421f011fee18ac2d35caafa272a84396557676911d",
+    "src/TauriViewNativeComponent.ts": "2d6ec15cc92cd5b3368c57421f011fee18ac2d35caafa272a84396557676911d",
+    "lib/typescript/src/view-options.d.ts": "2bbadfeebab9140ea1e6cc94877c85f0b98825b43b835cfe609d8e43633cc7c9",
+    "src/view-options.ts": "c6c21d2ac333658cef2803cdddb75bafbd043886aeceafb755a65f17a93972cc",
+    "src/RetainedTauriView.tsx": "12f1f2fbd68f836899a7a6a7ad9c87735d9af49075115ba41e1264b377b3b7b1",
+    "src/TauriView.native.tsx": "791a157cbea09851b19610ff02efc35c9008cf73534f2f34781856be59357fd3",
+    "src/TauriView.tsx": "2b768cc9222b0d3cef39841d7b63e0c6949c0f3097ac6ad0409653681f6c9813",
+    "android/retained/src/main/jni/CMakeLists.txt": "5318ed513fd4d6a12325f9f1d0b8642f51e6a83c90c6f3f3313844bd3b930785",
+    "android/src/main/jni/CMakeLists.txt": "8c0d9f6a3b1f05f4a9302ab15a1b6d1f105c0ecd05677da9e4b0b4fb6a557ae0",
+    "retained/android/autolinking/CMakeLists.txt": "b7e13d1017bb2fd6466ed31831781c6d70cfc2b21db0151f8fbb12b6bac0ca97",
+    "android/src/main/AndroidManifest.xml": "343d5be1ac17cdd45d1a2f2ddc616c509290e655869125a9422a96d88aa66066"
+  },
+  "results": {
+    "expo": {
+      "passed": true,
+      "expo": true,
+      "architectures": [
+        "arm64"
+      ],
+      "sourceFreeBuild": "PATH=/Users/gronxb/.local/share/mise/installs/node/24.15.0/bin:/usr/bin:/bin:/usr/sbin:/sbin xcodebuild -configuration release -sdk iphonesimulator",
+      "packageSha256": "608335e7d02f19c08c6e620daabeca1fd4080fddfa8190a55f8471a921d641ff",
+      "artifactSha256": "38e1592e2dddd3fca1fe197b9cf7220aea389fb9e7367a0af3592ed813d1c4a9",
+      "binarySha256": "cfe35a9f7e4ae43cf79d2ac4b2b7900501798213a4167e0abcd0ef43c3dbd9b4",
+      "defaultIntegration": {
+        "pid": 16267,
+        "overriddenHooks": false,
+        "baseline": {
+          "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/435E19F4-71C2-4FEB-9902-527D2D5D1A45/Library/Application Support/dev.taurinative.mobilefieldnotes",
+          "passed": true,
+          "reloaded": true,
+          "scenarios": [
+            "setup",
+            "state",
+            "app-handle",
+            "async",
+            "rust-event",
+            "plugin-setup",
+            "plugin-allowed",
+            "plugin-denied",
+            "domain-error",
+            "reload"
+          ],
+          "state": {
+            "appIdentifier": "dev.taurinative.mobilefieldnotes",
+            "pluginSetupCount": 1,
+            "setupCount": 1,
+            "value": 45
+          }
+        },
+        "binarySha256": "f4d998328c0c41517e1f7b8692bc28df500bd3af5c22bb1ef829b4edd1645ad0"
+      },
+      "bundleSha256": "745be7a9e1fa09f1afdd096bea5cc57e86ccc2c49a9b75ea469958819b8c97ec",
+      "baseline": {
+        "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/9CFEC5AC-DAA2-4B10-9916-0590A2D0AD6C/Library/Application Support/dev.taurinative.mobilefieldnotes",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      },
+      "packedFiles": 125,
+      "executablePackedFilesMatchCheckout": true,
+      "documentationUpdatedAfterPacking": [],
+      "unchangedArtifactFiles": 39,
+      "reportSha256": "e9ad932ff9d1833818984a219e9d24be48ab32da9bff1a5cee1d27d91ded74af",
+      "junitSha256": {
+        "activity-routing": "3b50c8c12570c94e848114e5029738b57b1a8e9a285f87943133e89c13e1eed7",
+        "attach-before-close": "cd5337e9aa9419d1fe7067e437e3d14f346413e64d26f22cfe65535f8f777284",
+        "background": "2d44e4dd508e6fb0a63315a5161cb00a8c6019c39dceed23bbcb2a80b6a0af2b",
+        "closed-link": "0e1572b713602208c734c63930994adfcf33ce3fa9e41957705a201088996145",
+        "cold-initial": "52a7fd5d845b8eb8bdbedec309b94845edabc38ede091d4328da207819c7586b",
+        "cold-next-link": "70cd93deb2b31738b6bfbfab45d9a2677f0c1de27a8e843f9ff74c336fa0b8d6",
+        "cold-remount": "2629cf77259de927ee8a5f4a81469385802157512525aafd7fbb82cfacadb418",
+        "competing-view": "15ab82d69453ccf401702ed4435cbc4a256e246321762a130c08bdcad4d556f9",
+        "default-integration": "7f8e1d91c8b903e071098dcf7d6f2c149f776f7e274a41c59799f3958bdabd9a",
+        "default-link": "11b83cfb06c395e2790bc20b35e43fb0fd623477d9d6040ce452698dec2bdd0f",
+        "default-view": "2958c0f63a5d407025d0fb354fa24b21ddc6746353e84ad7ab9878fed9b99c25",
+        "delayed-original-link": "55a8094417c978770a2712bbc647688657ebe88cc5cdde28dceed1be29cc6d7c",
+        "delayed-renderer-link": "fedeaff7340608125b5c567aa3b8433624e9944fbbc3ebb36749c5fb040cfb07",
+        "deny-permission": "c2a954510f66ca8f3b3d7c773d10ebb22c3128291e04e7fcbf9003b19ae3e86f",
+        "detach-view": "46f5afa9b85065bd02fe80cdcae0ea606ee031bd1a4969c8e1d79e7557af47d6",
+        "embedded-frontend": "ec56f79cfe236dca125802c4a02f6de3b8a3ce3236a41d65577a708aa680b610",
+        "expo-current-permission": "403939b18a6c4a4f06885bea50d9a9834560cbcac2f553459502114c5da518ad",
+        "expo-default-modules": "6dbdd8526f521fa7dd991242dcf0fa224fb3ba976ccee6ba8ffd53edda795f3e",
+        "expo-default-permission": "26a1467f4e991d2e0352d27d0717be44619993b73ebd4e3283aaa10c97550fb0",
+        "expo-deny-permission": "8512223a4fb5647ca3b847a33186f8729d23f7306e98628788655e356daf177a",
+        "expo-file-after-reload": "15ea29d1decfa067b3785842443760cdc168d0cf7dc3f1491ca9bffdc8a0981e",
+        "expo-file-after-retirement": "b4b46ac62a4646bf8f4386859f0965f1f866cd3cd27f2263c7c610ff8c283897",
+        "expo-grant-retired-permission": "8fe8b2ad698bba20bee8d8d160f7026e3f6f7a4908e2d28aae7030be5b9b44d6",
+        "expo-initial-modules": "18f650b96e88b68805d84fcc598dee662b0c119815da8bcf39da5a5256d5e0ed",
+        "expo-retire-permission": "7e430fa73e1b0624f4bfc29b3c637c4fca31fb868d9d13c1adeeef76e2756aef",
+        "fresh-events": "315b13e50de1c448fb35815c72484c8b5ccc6681e446f7d43f318d033214a38f",
+        "grant-permission": "64a86ebf379730e9f5ce312690af21b0631aa13104a7da997ebed2c41c30309a",
+        "initial": "7bd268cd5b47c184f973e04183f0e11e6c42ed1a211620cf178995b9713ac480",
+        "remount-view": "4703758a13868c26b0d350d17a7fba1a1a944c97055cba64252eece39e53e8c1",
+        "remove-renderer": "5577015b402fa9adf7de501b4f802dbb63115c5a008f59cbffbb4e4e497945a3",
+        "repeated-link": "191afe66905770771f8acf68131103f2dd4738beb3b83ba88b5b00de53467331",
+        "replace-renderer-with-view": "578f2db346fad802365e6df25b21d00857447c30f0fc6bc7923abfed949fd7df",
+        "resume": "e57f91cc8ecb287703cf1fb1fbbad95ca3a2d1c7317e3cc6c8edfc1e4b712400",
+        "retire-permission": "711043bd4dcc92f31b8362c4ed0ef1c88dccf3b95e95a53841562e17410c0aba"
+      },
+      "buildLogSha256": {
+        "source-free-build": "0329f54fae9d3a6130ab532df496401671d31a507923616c3740d52b10f76e59",
+        "default-source-free-build": "ec32cd5fd7c0ec6fc908d63c1d941119fa2edc79ff5c773c325ed372ef2b200f"
+      },
+      "closed": {
+        "hostClosed": true,
+        "listeners": 0,
+        "reactThreads": [],
+        "appDelegate": "AppDelegate",
+        "delegateUnchanged": true,
+        "urlCallbacksRestored": true
+      },
+      "expoLifecycle": {
+        "denied": {
+          "created": 1,
+          "fetches": 1,
+          "applicationCreates": 1,
+          "fetchCompletions": 1,
+          "didLaunch": 1,
+          "pauses": 1,
+          "resumes": 2,
+          "customizations": 1,
+          "willLaunch": 1,
+          "memoryWarnings": 1
+        },
+        "permissionRetired": {
+          "destroyed": 1,
+          "customizations": 2,
+          "resumes": 1,
+          "pauses": 1,
+          "created": 2,
+          "didLaunch": 1,
+          "applicationCreates": 1,
+          "willLaunch": 1
+        },
+        "remounted": {
+          "destroyed": 2,
+          "customizations": 3,
+          "resumes": 3,
+          "urls": 1,
+          "pauses": 2,
+          "created": 3,
+          "didLaunch": 1,
+          "applicationCreates": 1,
+          "willLaunch": 1,
+          "backgrounds": 1
+        },
+        "closed": {
+          "activities": 2,
+          "destroyed": 4,
+          "customizations": 4,
+          "resumes": 3,
+          "urls": 3,
+          "pauses": 2,
+          "created": 4,
+          "didLaunch": 1,
+          "applicationCreates": 1,
+          "willLaunch": 1,
+          "backgrounds": 1
+        }
+      },
+      "expoPermissionLifecycle": {
+        "didLaunch": 1,
+        "created": 2,
+        "destroyed": 1,
+        "applicationCreates": 1,
+        "willLaunch": 1,
+        "customizations": 2,
+        "pauses": 1,
+        "resumes": 2
+      },
+      "expoPermissionNotes": [
+        {
+          "id": 1,
+          "text": "A RN place to remember",
+          "latitude": 37.5665,
+          "longitude": 126.978
+        },
+        {
+          "id": 2,
+          "text": "A place to remember",
+          "latitude": 37.5665,
+          "longitude": 126.978
+        },
+        {
+          "id": 3,
+          "text": "A RN place to remember",
+          "latitude": 37.5665,
+          "longitude": 126.978
+        }
+      ],
+      "expoDefaultPermissionNotes": [
+        {
+          "id": 1,
+          "text": "A RN place to remember",
+          "latitude": 37.5665,
+          "longitude": 126.978
+        }
+      ]
+    },
+    "plain": {
+      "passed": true,
+      "expo": false,
+      "architectures": [
+        "arm64"
+      ],
+      "sourceFreeBuild": "PATH=/usr/bin:/bin:/usr/sbin:/sbin xcodebuild -configuration release -sdk iphonesimulator",
+      "packageSha256": "608335e7d02f19c08c6e620daabeca1fd4080fddfa8190a55f8471a921d641ff",
+      "artifactSha256": "38e1592e2dddd3fca1fe197b9cf7220aea389fb9e7367a0af3592ed813d1c4a9",
+      "binarySha256": "f548df24ed1dc2ddce120e8f0e2078668e429c990126ff76b6168ac932197f59",
+      "defaultIntegration": {
+        "pid": 20852,
+        "overriddenHooks": false,
+        "baseline": {
+          "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/1948B34F-FE5E-4250-B1D1-80BBF84AD6EC/Library/Application Support/dev.taurinative.mobilefieldnotes",
+          "passed": true,
+          "reloaded": true,
+          "scenarios": [
+            "setup",
+            "state",
+            "app-handle",
+            "async",
+            "rust-event",
+            "plugin-setup",
+            "plugin-allowed",
+            "plugin-denied",
+            "domain-error",
+            "reload"
+          ],
+          "state": {
+            "appIdentifier": "dev.taurinative.mobilefieldnotes",
+            "pluginSetupCount": 1,
+            "setupCount": 1,
+            "value": 45
+          }
+        },
+        "binarySha256": "8f1beed51fe1bcd919d1c15f19aaad471d97a19634a3ecd994eedde0e7c03c87"
+      },
+      "bundleSha256": "f80ebb0dbd87a62a2afacbfdb84dc3204f6aee02e33ccbc3db81001d06e9f9ab",
+      "baseline": {
+        "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/FB99BF23-B213-4CD6-ABAE-52D21DF566A3/Library/Application Support/dev.taurinative.mobilefieldnotes",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      },
+      "packedFiles": 125,
+      "executablePackedFilesMatchCheckout": true,
+      "documentationUpdatedAfterPacking": [],
+      "unchangedArtifactFiles": 39,
+      "reportSha256": "8b6ac09c75af99c975e700940760b9c21c9ed88a10bc229110ed6cb06b44e86d",
+      "junitSha256": {
+        "activity-routing": "3b50c8c12570c94e848114e5029738b57b1a8e9a285f87943133e89c13e1eed7",
+        "attach-before-close": "cd5337e9aa9419d1fe7067e437e3d14f346413e64d26f22cfe65535f8f777284",
+        "background": "5c99c1b60019af16739b8a9a080957ad91ac1a4ab6f1ef9e07a24fa611513145",
+        "closed-link": "0e1572b713602208c734c63930994adfcf33ce3fa9e41957705a201088996145",
+        "cold-initial": "52a7fd5d845b8eb8bdbedec309b94845edabc38ede091d4328da207819c7586b",
+        "cold-next-link": "70cd93deb2b31738b6bfbfab45d9a2677f0c1de27a8e843f9ff74c336fa0b8d6",
+        "cold-remount": "2629cf77259de927ee8a5f4a81469385802157512525aafd7fbb82cfacadb418",
+        "competing-view": "15ab82d69453ccf401702ed4435cbc4a256e246321762a130c08bdcad4d556f9",
+        "default-integration": "7f8e1d91c8b903e071098dcf7d6f2c149f776f7e274a41c59799f3958bdabd9a",
+        "default-link": "11b83cfb06c395e2790bc20b35e43fb0fd623477d9d6040ce452698dec2bdd0f",
+        "default-view": "2958c0f63a5d407025d0fb354fa24b21ddc6746353e84ad7ab9878fed9b99c25",
+        "delayed-original-link": "55a8094417c978770a2712bbc647688657ebe88cc5cdde28dceed1be29cc6d7c",
+        "delayed-renderer-link": "fedeaff7340608125b5c567aa3b8433624e9944fbbc3ebb36749c5fb040cfb07",
+        "deny-permission": "c2a954510f66ca8f3b3d7c773d10ebb22c3128291e04e7fcbf9003b19ae3e86f",
+        "detach-view": "46f5afa9b85065bd02fe80cdcae0ea606ee031bd1a4969c8e1d79e7557af47d6",
+        "embedded-frontend": "e563ad224d57c893788400ada741ee5f135adf90dd1618db8056958e030b27e6",
+        "fresh-events": "315b13e50de1c448fb35815c72484c8b5ccc6681e446f7d43f318d033214a38f",
+        "grant-permission": "64a86ebf379730e9f5ce312690af21b0631aa13104a7da997ebed2c41c30309a",
+        "initial": "7bd268cd5b47c184f973e04183f0e11e6c42ed1a211620cf178995b9713ac480",
+        "remount-view": "4703758a13868c26b0d350d17a7fba1a1a944c97055cba64252eece39e53e8c1",
+        "remove-renderer": "5577015b402fa9adf7de501b4f802dbb63115c5a008f59cbffbb4e4e497945a3",
+        "repeated-link": "191afe66905770771f8acf68131103f2dd4738beb3b83ba88b5b00de53467331",
+        "replace-renderer-with-view": "578f2db346fad802365e6df25b21d00857447c30f0fc6bc7923abfed949fd7df",
+        "resume": "e57f91cc8ecb287703cf1fb1fbbad95ca3a2d1c7317e3cc6c8edfc1e4b712400",
+        "retire-permission": "711043bd4dcc92f31b8362c4ed0ef1c88dccf3b95e95a53841562e17410c0aba"
+      },
+      "buildLogSha256": {
+        "source-free-build": "2e4ef04fb2b224d869435471f515d3e36ff3eb8b636e150263c609a1af93d0aa",
+        "default-source-free-build": "c2d28ded68cf24f0e11ee8e221d3843266d2306a4b2766d3a54616ef65deb224"
+      },
+      "closed": {
+        "hostClosed": true,
+        "listeners": 0,
+        "reactThreads": [],
+        "appDelegate": "AppDelegate",
+        "delegateUnchanged": true,
+        "urlCallbacksRestored": true
+      }
+    }
+  },
+  "toolchain": {
+    "xcode": "Xcode 26.4.1\nBuild version 17E202",
+    "node": "v24.15.0",
+    "npm": "11.12.1",
+    "ruby": "ruby 3.3.10 (2025-10-23 revision 343ea05002) [arm64-darwin23]",
+    "device": [
+      {
+        "lastBootedAt": "2026-09-09T15:45:42Z",
+        "dataPath": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data",
+        "dataPathSize": 4081926144,
+        "logPath": "/Users/gronxb/Library/Logs/CoreSimulator/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A",
+        "udid": "0368C5D9-63CF-447E-B6BB-0E3184B1CD0A",
+        "isAvailable": true,
+        "logPathSize": 319488,
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-16",
+        "state": "Booted",
+        "name": "iPhone 16",
+        "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-4"
+      }
+    ]
+  },
+  "autolinking": {
+    "evidence": {
+      "0-ExpoModulesProvider.swift": {
+        "source": "Pods/Target Support Files/Pods-ordinary-tauri-mobile-fieldnotes_iOS/ExpoModulesProvider.swift",
+        "sha256": "778de5608143e56347294629eb90feee4ecc0cd3575afd6ecbe7208dc719f2ec"
+      },
+      "1-ExpoReactNativeFactory.swift": {
+        "source": "Pods/TauriNativeExpo/ExpoReactNativeFactory.swift",
+        "sha256": "6ddb061e29221c490092ac94226e87d86a6e38555bcb4b59064a1496b500f68e"
+      },
+      "2-autolinking.json": {
+        "source": "build/generated/autolinking/autolinking.json",
+        "sha256": "b7923ca5965d79ae293031f654fadb318b62cba6cb6bc227ca5b22aa397f2629"
+      }
+    },
+    "nativeDependencies": [
+      "@tauri-native/react-native",
+      "expo",
+      "react-native-safe-area-context"
+    ],
+    "format1SdkDisabled": true,
+    "unchangedInstalledExpoFactorySha256": "fff6c0bd8c132272675db99583e1cc990dc776820e12a60dfd4809337f7f6529",
+    "factoryLifetime": "The generated copy replaces the strong factory reference with a weak forwarding proxy. The Expo factory otherwise retains its pinned implementation and native module initialization."
+  },
+  "compilationCacheReuse": {
+    "reason": "Reuse only compiler intermediates at the identical derived-data path. Preserve failed package, input sources, generated project, lockfiles and build logs; remove reproducible Pods downloads from terminal failed attempts to recover disk space.",
+    "latestCacheSource": "target/react-retained-expo-ios-location-unknown-failure",
+    "cacheDestination": "target/react-retained-expo-ios/derived-data",
+    "removedPods": [
+      "target/react-retained-expo-ios-podspec-getter-failure/source free consumer/renderer/composed application/ios/Pods",
+      "target/react-retained-expo-ios-pod-build-type-failure/source free consumer/renderer/composed application/ios/Pods",
+      "target/react-retained-expo-ios-pod-native-target-failure/source free consumer/renderer/composed application/ios/Pods",
+      "target/react-retained-expo-ios-swift-header-failure/source free consumer/renderer/composed application/ios/Pods",
+      "target/react-retained-expo-ios-dependency-headers-failure/source free consumer/renderer/composed application/ios/Pods",
+      "target/react-retained-expo-ios-callback-pointer-failure/source free consumer/renderer/composed application/ios/Pods",
+      "target/react-retained-expo-ios-swift-actor-failure/source free consumer/renderer/composed application/ios/Pods",
+      "target/react-retained-expo-ios-factory-cycle-failure/source free consumer/renderer/composed application/ios/Pods",
+      "target/react-retained-expo-ios-clipped-view-control-failure/source free consumer/renderer/composed application/ios/Pods",
+      "target/react-retained-expo-ios-location-unknown-failure/source free consumer/renderer/composed application/ios/Pods"
+    ],
+    "diagnosticCompilation": "diagnostic-build.json describes the successful SDK-only compile fix before final repacking and native acceptance.",
+    "startupDiagnostic": "startup-diagnostic.json records the successful module-queue fix before final repacking; a successful diagnostic does not complete native UI acceptance.",
+    "factoryCycleDiagnostic": "cycle-diagnostic.json records four real UI flows against the compile-only diagnostic package and actual prior Expo module destruction. Final freshly packed acceptance is still required.",
+    "viewControlDiagnostic": "view-diagnostic.json and clipped-view-control-commands.json distinguish an off-viewport Maestro tap from native attachment; restoring the actual RN viewport verifies the original view and ACL without SDK changes.",
+    "locationDiagnostic": "location-diagnostic.json and permission-diagnostic.json record native GPS and actual Expo permission retirement with Highest accuracy, matching the GPS coordinate assertion. The earlier Lowest/three-kilometer request returned CoreLocation LocationUnknown. No SDK source change was needed."
+  },
+  "regressionChecks": {
+    "packageTests": 16,
+    "iosComposerMetadataTests": 6,
+    "logSha256": {
+      "package-test-final.log": "520e323401898d7a790c6720ba2d525dd44fcaf03cc00985f97c550a0801ceb8",
+      "ios-composer-tests.log": "4ea76efb4bda087fb4ea1ace8c909d728e3fb8250d3c92e56269b032f0ceb845",
+      "typecheck-scripts-final.log": "d9c706f215a73bdb9a3da486433e1ecc86b12af5a279e696210d0b710abe4875",
+      "typecheck-package-final.log": "8366207267355d3e3d5bf3bf6e8c94c5f93f6078c34f08973fa2b38cdda6cc92"
+    }
+  },
+  "failedAttempts": {
+    "location-resolution": {
+      "reason": "Metro could not resolve Expo peers for the initially misplaced installed location package. The test consumer now installs it within the renderer ancestry.",
+      "logSha256": "8a0fe0bf04d72fde8041b588096210408655af5dcc29adaa4780e522caec90aa",
+      "nativeUiAcceptance": false,
+      "nativeUiReached": false
+    },
+    "autolinking-json": {
+      "reason": "The upstream Expo CLI required --json before RN could parse its native dependency output.",
+      "logSha256": "6582651a453e2af5c5b7795080ca4d117e6b375a88092da8bf6d3f335fbb6767",
+      "nativeUiAcceptance": false,
+      "nativeUiReached": false
+    },
+    "podspec-getter": {
+      "reason": "CocoaPods specifications have setter-only attributes. The SDK uses local configuration values before assigning them.",
+      "logSha256": "34371a0b4d8ec9c4ac679ddc2f1366b6b83bc2a6730d8170734d2977a1d20759",
+      "nativeUiAcceptance": false,
+      "nativeUiReached": false
+    },
+    "pod-build-type": {
+      "reason": "The SDK linker helper initially called a private CocoaPods build_type method; it now uses public build_as predicates.",
+      "logSha256": "f3ceecd62d8df9d8416298ee54eb142a556007d0b27857285d18a0e7c06b6771",
+      "nativeUiAcceptance": false,
+      "nativeUiReached": false
+    },
+    "pod-native-target": {
+      "reason": "The SDK Constants integration now locates the installed native target through CocoaPods installation results.",
+      "logSha256": "74b2fd99847a0a67c13d45e2d84b1c16773379d7cec53d7ef80309674fa69207",
+      "nativeUiAcceptance": false,
+      "nativeUiReached": false
+    },
+    "swift-header": {
+      "reason": "The own generated Swift header required a quoted include.",
+      "logSha256": "459015fc605284b2691174dc9d4c05d7a6e6a625f604294574969b3c78b46a90",
+      "nativeUiAcceptance": false,
+      "nativeUiReached": false
+    },
+    "dependency-headers": {
+      "reason": "RN dependency configuration had been overwritten after installation, removing Yoga paths; install_modules_dependencies now merges last. The Expo superclass header is imported before the own Swift header.",
+      "logSha256": "3890d5750fb52da78b92a01c2e54143fc28dc0f9be919536762093e39cd874dd",
+      "nativeUiAcceptance": false,
+      "nativeUiReached": false
+    },
+    "callback-pointer": {
+      "reason": "Objective-C++ requires explicit function-pointer conversion when storing callback implementations in NSValue.",
+      "logSha256": "8f1b5aebf2364f72e15837fe5a15c81a30eebeaba513232305667d2ba6a10528",
+      "nativeUiAcceptance": false,
+      "nativeUiReached": false
+    },
+    "location-unknown": {
+      "reason": "The GPS scenario received CoreLocation LocationUnknown with Lowest (three-kilometer) accuracy. It now requests Highest, matching the expected GPS precision; native GPS and Expo permission-retirement diagnostics pass without SDK changes.",
+      "logSha256": "c6f4fd9dab01cc6f9566c796c6461df3964b98206f7c80d008c77ac5fa86116d",
+      "nativeUiAcceptance": false,
+      "nativeUiReached": true
+    },
+    "clipped-view-control": {
+      "reason": "iOS accessibility exposed an off-viewport RN button over the native deep-link control. The test now restores the actual RN scroll viewport before later taps; the same packed SDK attaches the original view and preserves its ACL in the native diagnostic.",
+      "logSha256": "120c1a3a7b9c046d36cc481c7f3a2493d69c9fa88270b16049360e21047bc5b7",
+      "nativeUiAcceptance": false,
+      "nativeUiReached": true
+    },
+    "factory-cycle": {
+      "reason": "The first native permission-retirement run retained the old Expo modules. Expo 57 factory and React delegate strongly retain each other. A source-hash-checked generated copy now uses a weak factory proxy, leaving installed Expo and producer sources unchanged.",
+      "logSha256": "8d4b8b5ab37cf3bd1c41d824c653969e0d06e732e15655a9a09709b10efd822d",
+      "nativeUiAcceptance": false,
+      "nativeUiReached": true
+    },
+    "swift-actor": {
+      "reason": "The app built but crashed during an off-main RN module lookup through a Swift actor-isolated getter. The adapter exposes only its immutable reference nonisolated; the retained Objective-C delegate keeps existing module synchronization.",
+      "logSha256": "47beba922d7c5aa4cc792fca2e1c7f76a9524347555bcdbf519d8fd6327035fc",
+      "nativeUiAcceptance": false,
+      "nativeUiReached": false
+    }
+  },
+  "startupCrashSha256": "8c4e2fe7b71785863c4ea8acc4082e51b2a3c6864f126aa14a6ac421c634964f",
+  "commands": [
+    "IOS_SIMULATOR_UDID=0368C5D9-63CF-447E-B6BB-0E3184B1CD0A node --experimental-strip-types packages/react-native/test/retained-ios.ts target/retained-ios-portability/exported-runtime --expo",
+    "IOS_SIMULATOR_UDID=0368C5D9-63CF-447E-B6BB-0E3184B1CD0A node --experimental-strip-types packages/react-native/test/retained-ios.ts target/retained-ios-portability/exported-runtime"
+  ],
+  "callbackScope": {
+    "actualOs": "Location denial/grant and custom-scheme URLs use iOS. Expo permission retirement cannot save from the retired context; a current context obtains GPS and saves through the original Tauri plugin.",
+    "injected": "Memory warning/background fetch and browsing/unrelated user activity are native delegate injections. The real Expo subscriber dispatcher runs with typed completion/return handling; OS background fetch scheduling and associated-domain Universal Links are not claimed.",
+    "lifetimes": "Expo application subscribers remain for the application. Each Expo module context is destroyed with RN. Closing RN restores its own URL wrappers to the Expo-aware Tauri callbacks while preserving the original delegate object."
+  },
+  "remaining": [
+    "Expo clean prebuild/CNG and config-plugin native edits",
+    "Broader native packages, development hosts and custom scene/delegate/Activity owners",
+    "Activity recreation and full navigation/history/back/rotation",
+    "OS Universal Link association and untested OS callback families",
+    "Complete parity/CI/migration, physical devices and independent adopters"
+  ]
+}

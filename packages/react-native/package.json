@@ -52,6 +52,7 @@
     "ios/retained/*.h",
     "ios/retained/*.mm",
     "ios/retained/*.rb",
+    "ios/retained/expo",
     "LICENSE",
     "lib",
     "README.md",

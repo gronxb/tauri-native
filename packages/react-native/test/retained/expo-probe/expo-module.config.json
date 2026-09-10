@@ -1,1 +1,1 @@
-{"platforms":["android"],"android":{"modules":["dev.taurinative.expoprobe.RetainedExpoProbeModule"]}}
+{"platforms":["android","apple"],"android":{"modules":["dev.taurinative.expoprobe.RetainedExpoProbeModule"]},"apple":{"modules":["RetainedExpoProbeModule"],"appDelegateSubscribers":["RetainedExpoProbeSubscriber"]}}

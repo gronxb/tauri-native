@@ -5,6 +5,7 @@ import { prepareComposition, publishComposition } from '../../../scripts/retaine
 import { prepareIosProject } from '../../../scripts/retained-ios-composition.ts';
 import type { AndroidCompositionOptions, IosCompositionOptions } from './retained-compose-types.d.cts';
 import { prepareExpoAndroid } from './retained-expo-android.cts';
+import { prepareExpoIos } from './retained-expo-ios.cts';
 
 const kotlin = (value: string) => JSON.stringify(value).replaceAll('$', '\\$');
 const groovy = (value: string) => `'${value.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
@@ -84,17 +85,21 @@ const shell = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
 
 /** Use the original Tauri Xcode app and Apple plist tools; neither export nor build Rust. */
 export function composeIos(options: IosCompositionOptions) {
-  if (options.expo) fail('Expo iOS composition is not integrated yet');
   if (process.platform !== 'darwin') fail('iOS composition requires macOS Apple project tools');
   const context = compositionInputs(options, 'ios');
   const { sdk, output, manifest, rn, rendererDirectory: renderer, bundled } = context;
   if (manifest.platform !== 'ios') fail('requires an iOS format 2 artifact');
+  const expo = options.expo ? prepareExpoIos({ ...context, manifest }) : undefined;
   const { projectFile, encodedProject, main, originalMain, minimumOsVersion, bootstrap, workspace } = prepareIosProject(context, '16.4');
   const relative = (dir: string) => path.relative(path.join(output, 'ios'), dir).split(path.sep).join('/');
-  const changed = publishComposition(context, { moduleName: options.moduleName, platform: 'ios', minimumOsVersion, target: bootstrap.target }, stage => {
+  const changed = publishComposition(context, { moduleName: options.moduleName, platform: 'ios', minimumOsVersion, target: bootstrap.target, ...(expo ? { expo: '57.0.19' } : {}) }, stage => {
     write(stage, `ios/${projectFile}`, encodedProject);
-    write(stage, `ios/${main}`, '#import <TauriNativeReactRetained/TNReactComposition.h>\n' + originalMain.replace('ffi::start_app();',
-      `@autoreleasepool {\n\t\tNSURL *bundle = [NSBundle.mainBundle URLForResource:@"index.bundle" withExtension:@"js" subdirectory:@"assets/tauri-native-react"];\n\t\t[TNReactComposition installWithModule:@${JSON.stringify(options.moduleName)} bundle:bundle];\n\t}\n\tffi::start_app();`));
+    write(stage, `ios/${main}`, '#import <TauriNativeReactRetained/TNReactComposition.h>\n' + (expo ? '#import <TauriNativeReactRetained/TNExpoApplication.h>\n' : '') + originalMain.replace('ffi::start_app();',
+      `@autoreleasepool {\n${expo ? '\t\tTNInstallExpoApplication();\n' : ''}\t\tNSURL *bundle = [NSBundle.mainBundle URLForResource:@"index.bundle" withExtension:@"js" subdirectory:@"assets/tauri-native-react"];\n\t\t[TNReactComposition installWithModule:@${JSON.stringify(options.moduleName)} bundle:bundle];\n\t}\n\tffi::start_app();`));
+    if (expo) {
+      if (existsSync(path.join(stage, 'ios/tauri-native-autolinking.cjs'))) fail('artifact already owns Expo autolinking script');
+      write(stage, 'ios/tauri-native-autolinking.cjs', expo.autolinking);
+    }
     write(stage, 'ios/assets/tauri-native-react/index.bundle.js', bundled);
     write(stage, 'ios/.xcode.env', `export NODE_BINARY=${shell(process.execPath)}\n`);
     write(stage, 'ios/.xcode.env.local', `export NODE_BINARY=${shell(process.execPath)}\n`);
@@ -104,17 +109,19 @@ rn = File.expand_path(${ruby(relative(rn))}, __dir__)
 require_relative ${ruby(relative(path.join(sdk, 'ios/retained/pods')))}
 composition = TauriNativeReactRetained.composition_receipt(__dir__)
 require File.join(rn, 'scripts/react_native_pods')
+${expo?.setup ?? ''}\
 platform :ios, ${ruby(minimumOsVersion)}
 prepare_react_native_project!
 TauriNativeReactRetained.prepare(rn, ${ruby(process.execPath)})
 project ${ruby(bootstrap.xcodeProject)}, 'debug' => :debug, 'release' => :release
 target ${ruby(bootstrap.target)} do
+${expo?.target ?? ''}\
   use_react_native!(:path => rn, :app_path => File.expand_path(${ruby(relative(renderer))}, __dir__))
   pod 'TauriNativeReactRetained', :path => ${ruby(relative(path.join(sdk, 'ios')))}
 end
 post_install do |installer|
   react_native_post_install(installer, rn, :mac_catalyst_enabled => false)
-  TauriNativeReactRetained.post_install(installer, ${ruby(bootstrap.target)})
+  TauriNativeReactRetained.post_install(installer, ${ruby(bootstrap.target)}${expo?.postInstall ?? ''})
 end
 post_integrate do |installer|
   TauriNativeReactRetained.finish_composition(__dir__, composition)

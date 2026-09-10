@@ -7,6 +7,10 @@
 #import <React_RCTAppDelegate/RCTDefaultReactNativeFactoryDelegate.h>
 #import <React_RCTAppDelegate/RCTReactNativeFactory.h>
 #import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
+#if TAURI_NATIVE_EXPO
+#import "Expo-Swift.h"
+#import "TauriNativeReactRetained-Swift.h"
+#endif
 
 // Each engine owns its Linking delivery; retiring it cannot notify its successor.
 @interface TNReactLinkingManager : RCTLinkingManager
@@ -96,6 +100,9 @@
   RCTSurfaceHostingProxyRootView *_surface;
   RCTReactNativeFactory *_factory;
   TNReactFactoryDelegate *_delegate;
+#if TAURI_NATIVE_EXPO
+  TNExpoFactory *_expo;
+#endif
   BOOL _closed;
 }
 - (instancetype)initWithContainer:(UIView *)container module:(NSString *)module bundle:(NSURL *)bundle {
@@ -119,7 +126,12 @@
   if (_closed) [NSException raise:NSInternalInconsistencyException format:@"RN host is closed"];
   [self releaseSurface];
   _delegate = [TNReactFactoryDelegate new]; _delegate.url = _bundle;
+#if TAURI_NATIVE_EXPO
+  _expo = [[TNExpoFactory alloc] initWithRetained:_delegate];
+  _factory = _expo.factory;
+#else
   _factory = [[RCTReactNativeFactory alloc] initWithDelegate:_delegate];
+#endif
   UIView *view = [_factory.rootViewFactory viewWithModuleName:_module initialProperties:nil launchOptions:_launchOptions];
   if (![view isKindOfClass:RCTSurfaceHostingProxyRootView.class])
     [NSException raise:NSInternalInconsistencyException format:@"Retained Tauri requires a Fabric surface"];
@@ -142,6 +154,9 @@
   // RCTHost 0.86 releases its RCTInstance asynchronously from dealloc.
   _factory.rootViewFactory.reactHost = nil;
   _factory = nil; _delegate = nil;
+#if TAURI_NATIVE_EXPO
+  _expo = nil;
+#endif
 }
 - (void)close {
   NSAssert(NSThread.isMainThread, @"Close TNReactHost on main");

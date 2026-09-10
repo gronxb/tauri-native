@@ -1,0 +1,50 @@
+import { registerRootComponent } from 'expo';
+import { File, Paths } from 'expo-file-system';
+import Constants from 'expo-constants';
+import * as Location from 'expo-location';
+import { requireNativeModule } from 'expo-modules-core';
+import { SafeAreaProvider, useSafeAreaFrame } from 'react-native-safe-area-context';
+import { App as Fieldnotes, type FieldnotesAction } from './fieldnotes';
+
+const probe = requireNativeModule<{
+  snapshot(): Record<string, number>;
+  appCallbacks(): Promise<{ result: number; counts: Record<string, number> }>;
+}>('RetainedExpoProbe');
+const file = () => new File(Paths.document, 'retained-expo-note.txt');
+function ExpoFieldnotes() {
+  const frame = useSafeAreaFrame();
+  const extraActions: FieldnotesAction[] = [
+    ['Expo write file', async () => { file().write('Written by the Expo native file module'); return 'Expo file saved'; }],
+    ['Expo read file', async () => {
+      if (await file().text() !== 'Written by the Expo native file module') throw new Error('Expo file bytes changed');
+      return 'Expo file preserved';
+    }],
+    ['Expo native modules', async () => {
+      const state = probe.snapshot();
+      if (!(frame.width > 0 && frame.height > 0) || Constants.expoConfig?.slug !== 'retained-expo-fieldnotes') throw new Error('Expo config or native SafeAreaProvider did not initialize');
+      if (state.applicationCreates !== 1 || state.willLaunch !== 1 || state.didLaunch !== 1 || state.created - (state.destroyed ?? 0) !== 1 || state.customizations !== state.created) throw new Error(JSON.stringify(state));
+      return `Expo created ${state.created} destroyed ${state.destroyed ?? 0} URLs ${state.urls ?? 0} activities ${state.activities ?? 0}`;
+    }],
+    ['Expo app callbacks', async () => {
+      const { result, counts } = await probe.appCallbacks();
+      if (result !== 0 || counts.memoryWarnings !== 1 || counts.fetches !== 1 || counts.fetchCompletions !== 1) throw new Error(JSON.stringify({ result, counts }));
+      return 'Expo callbacks once';
+    }],
+    ['Expo request permission', async () => `Expo permission ${(await Location.requestForegroundPermissionsAsync()).status}`],
+    ['Expo get location', async () => {
+      const { coords } = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest });
+      if (Math.abs(coords.latitude - 37.5665) > 0.01 || Math.abs(coords.longitude - 126.978) > 0.01) throw new Error(JSON.stringify(coords));
+      return 'Expo location received';
+    }],
+    ['Expo request then save', async runtime => {
+      const result = await Location.requestForegroundPermissionsAsync();
+      if (result.status !== 'granted') throw new Error(result.status);
+      const saved = await runtime.invoke('save_note', { text: 'Retired Expo permission must not save', latitude: 0, longitude: 0 });
+      if (!saved.ok) throw new Error(JSON.stringify(saved.error));
+      return 'ERROR retired Expo permission saved';
+    }],
+  ];
+  return <Fieldnotes extraActions={extraActions} />;
+}
+function App() { return <SafeAreaProvider><ExpoFieldnotes /></SafeAreaProvider>; }
+registerRootComponent(App);

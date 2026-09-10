@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — pinned RN iOS/Android composition and original-view attachment pass; Expo Android installed native modules/autolinking also has Release evidence. Expo iOS, CNG and broader integration remain open.
+- Status: IN PROGRESS — pinned RN and Expo iOS/Android installed native modules have Release evidence. Expo CNG and broader integration remain open.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#41](https://github.com/gronxb/tauri-native/issues/41) (plan 017), [#44](https://github.com/gronxb/tauri-native/issues/44) (plan 020)
@@ -33,7 +33,7 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 
 ## Acceptance
 
-- [x] iOS and Android RN Release executions pass with copied runtime artifacts (packed SDK automatic composition, including unmodified generated startup/default layouts; Expo and broader source forms remain open).
+- [x] iOS and Android RN Release executions pass with copied runtime artifacts (packed SDK automatic composition, including unmodified generated startup/default layouts; Expo CNG and broader source forms remain open).
 - [ ] Ordinary standalone Tauri Mobile remains independently runnable.
 - [ ] Existing limited-adapter users have an explicit migration path.
 
@@ -367,7 +367,7 @@ replacement and development-host requests receive explicit diagnostics.
 Remaining Expo sequence:
 
 - [x] Android installed native modules/autolinking, native lifecycle and permission delivery under the retained Tauri owner.
-- [ ] iOS Expo native modules and application callbacks under the original Tauri bootstrap/delegate, with Release native execution.
+- [x] iOS Expo native modules and application callbacks under the original Tauri bootstrap/delegate, with Release native execution.
 - [ ] Package-owned Expo CNG/config-plugin integration: clean prebuild recreates both native consumers without producer source edits or Rust.
 - [ ] Clean-prebuild regeneration, configuration conflicts and the same feature in standalone Tauri, RN, Expo and Lynx, with required parity/CI/migration evidence.
 
@@ -376,3 +376,32 @@ full navigation/history/back/rotation, OS Universal Link association, physical
 devices and independent adopters also remain open. Four iOS composer metadata
 scenarios pass; this Android increment claims no new iOS native run. No issue,
 release gate or package publication is completed by this stage.
+
+## Expo iOS native modules and callback routing (2026-09-11)
+
+The optional retained iOS composer now links installed Expo/RN native modules
+under the original Tauri bootstrap and application delegate. The packed arm64
+Release gates pass 34 Expo iOS flows and 25 plain RN regressions, including the
+unmodified generated startup/default layout. Evidence is recorded in `docs/evidence/retained-expo-ios-2026-09-11.json` on local `main`; it has not been pushed or published.
+
+Native Expo FileSystem, Constants, SafeAreaProvider and Location execute beside
+the unchanged Tauri frontend, plugins, ACL and shared state. App initialization
+runs once; RN replacement/removal destroys its Expo modules while preserving the
+original delegate, WebView and Tauri state. Actual Expo OS permission denial/grant
+and renderer retirement prevent a stale save; the current context obtains GPS
+and saves through the original Tauri plugin. Native memory-warning/background-
+fetch and user-activity injections check callback routing and completion results.
+These injections do not claim OS background scheduling or Universal Link association.
+
+The native gate exposed a Swift actor check during RN module lookup and an Expo
+factory/delegate reference cycle. The SDK fixes the immutable delegate access and
+compiles a checked generated Expo factory copy with a weak forwarding reference.
+Installed Expo source, the 14-file Tauri producer and all 39 input iOS artifact
+files remain unchanged. Six iOS ownership/configuration scenarios, package tests
+and typechecks pass. Builds require no Rust or producer checkout; Expo scripts
+use the consumer's installed Node and native dependencies.
+
+This completes the scoped iOS installed-module/callback stage of #45. Expo clean
+prebuild/CNG/config plugins, broader native packages and lifecycle/source owners,
+full parity/CI/migration, physical devices and independent adopters remain open.
+No issue or release gate is closed and no package is published.
