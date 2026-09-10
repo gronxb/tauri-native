@@ -20,16 +20,16 @@ const rustTargets = { aarch64: 'aarch64-linux-android', armv7: 'armv7-linux-andr
 const roots = new Set(['manifest.json', 'build.json', 'commands.json', 'commands.ts', 'callers.json', 'include', 'android']);
 
 export function exportRetainedAndroid(options: RetainedExportOptions): void {
-  const { project, output, config, applicationId, policy, plugins } = readRuntimeExport(options, 'android');
   const targets = (options.targets ?? Object.keys(retainedAndroidAbis).join(',')).split(',') as (keyof typeof retainedAndroidAbis)[];
   if (!targets.length || new Set(targets).size !== targets.length || targets.some(target => !Object.hasOwn(retainedAndroidAbis, target))) throw new Error('Select unique retained Android --targets from aarch64,armv7,i686,x86_64.');
+  const { project, output, config, applicationId, policy, plugins, selection } = readRuntimeExport(options, 'android', targets.map(target => rustTargets[target]));
   if (!/^[a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)+$/.test(applicationId)) throw new Error('Retained Android export requires a Java-compatible Tauri identifier.');
   if (config.bundle?.android?.minSdkVersion != null && config.bundle.android.minSdkVersion !== 24) throw new Error('Retained Android export currently verifies API 24 native libraries.');
   const release = acquireRuntimeBuild(applicationId);
   let runtime: ReturnType<typeof prepareRuntime> | undefined;
   let build: ReturnType<typeof runtimeBuildEnvironment> | undefined;
   try {
-    const cache = createRuntimeCache(project, output, 'android', targets, options.debug ? 'debug' : 'release', policy);
+    const cache = createRuntimeCache(project, output, 'android', targets, options.debug ? 'debug' : 'release', policy, selection);
     if (options.incremental && !options.force && cache.hit()) { cache.verify(); message(`Reused validated retained Android artifacts in ${output}`, '◆ '); return; }
     const tools = androidTools();
     publishArtifacts(output, stage => {
@@ -45,7 +45,11 @@ export function exportRetainedAndroid(options: RetainedExportOptions): void {
       // Native build.rs side effects must run for this fresh output directory.
       for (const target of targets) run('cargo', ['clean', '--package', 'tauri', ...Object.keys(plugins).flatMap(name => ['--package', name]),
         '--target', rustTargets[target], '--manifest-path', runtime.project.manifest], { cwd, env });
-      run('npm', ['run', 'tauri-native:runtime', '--', 'android', 'build', '--ci', ...(options.debug ? ['--debug'] : []), '--target', ...targets, '--apk'], { cwd, env });
+      // CLI 2.11.4 creates its APK Cargo configuration before build::setup adds
+      // config.build.features. Forward those features explicitly to that config.
+      const features = selection.features.filter(feature => feature !== 'tauri/custom-protocol');
+      run('npm', ['run', 'tauri-native:runtime', '--', 'android', 'build', '--ci', ...(features.length ? ['--features', ...features] : []),
+        ...(options.debug ? ['--debug'] : []), '--target', ...targets, '--apk'], { cwd, env });
       const android = path.join(stage, 'android');
       const captured = copyAndroidRuntimeProject(nativeProject, android);
       if (captured.modules.slice().sort().join(',') !== ['tauri-android', ...Object.keys(plugins)].sort().join(',')) throw new Error('Resolved Rust plugins differ from generated Android native registrations.');

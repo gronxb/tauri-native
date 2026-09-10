@@ -2,6 +2,33 @@
 
 The ordinary producer lives in `../fixtures/runtime-tauri`. Standalone checks are documented there. Composition checks copy that producer, preserve its authored files and modify only generated platform integration. They execute real native renderers and Tauri/Wry. These are M6 feasibility gates, not the public exporter or portable host SDK. Run all runtime/composition gates one at a time, including across iOS and Android: Tauri CLI 2.11.4 shares mobile build connection options for this application identifier, so concurrent builds can overwrite a still-running build's options.
 
+## Retained native dependency selection
+
+From the repository root, with the mobile toolchain environment below and a
+selected device, run these gates serially:
+
+```sh
+node --experimental-strip-types packages/cli/test/runtime/baseline.ts plugins --dependency-selection
+node --experimental-strip-types packages/cli/test/runtime/portable.ts ios --release --dependency-selection
+node --experimental-strip-types packages/cli/test/runtime/portable.ts android --release --dependency-selection
+```
+
+These use `mobile-plugin-tauri` and the public retained exporter. Before hashing,
+the fixture variant makes geolocation optional, enables it in `build.features`,
+and adds a renamed opener dependency restricted to non-mobile targets. Rust,
+frontend and plugin registration code remain unchanged. All three runs compare
+the same variant source hashes; both mobile gates delete the producer, relocate
+the complete artifact and build without Rust on PATH. Each requires twelve real
+native UI flows for permissions, callback retirement, events and persistence.
+Android uses Release/R8 with test-only signing/debuggability for telemetry.
+Reports live in `target/retained-dependency-selection-{desktop,ios,android}`.
+
+The CLI's six `retained-dependencies.test.ts` scenarios exercise actual Cargo
+resolution for aliases, target conditions, optional/default features, build/dev
+dependencies and differing slices. They do not establish native compatibility;
+the [native evidence](../../../../docs/evidence/retained-target-dependencies-2026-09-11.json)
+records that separately. Unsupported active plugins still fail before export.
+
 ## Android Lynx
 
 Install workspace dependencies first (`nub ci`). On macOS with an arm64 emulator booted:

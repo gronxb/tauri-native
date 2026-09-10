@@ -11,14 +11,17 @@ import { acquireMobileTest } from './mobile-lock.ts';
 import { prepareNativeConfiguration, assertNativeConfiguration } from './native-configuration.ts';
 import { retainedInputs } from '../../src/runtime/cache.ts';
 import { discoverProject } from '../../src/discovery/project.ts';
+import { prepareDependencySelection } from './dependency-selection.ts';
 
 const root = fileURLToPath(new URL('../../../..', import.meta.url));
 const platform = process.argv[2];
 assert(platform === 'android' || platform === 'ios', 'Select ios or android');
 const flags = new Set(process.argv.slice(3));
-assert([...flags].every(flag => ['--consume', '--release', '--native-config'].includes(flag)), 'Use --consume, --release or --native-config');
+assert([...flags].every(flag => ['--consume', '--release', '--native-config', '--dependency-selection'].includes(flag)), 'Use --consume, --release, --native-config or --dependency-selection');
 const nativeConfiguration = flags.has('--native-config');
-const evidence = path.join(root, nativeConfiguration ? `target/retained-native-config-${platform}` : platform === 'android' ? 'target/retained-portability' : 'target/retained-ios-portability');
+const dependencySelection = flags.has('--dependency-selection');
+assert(!(nativeConfiguration && dependencySelection), 'Run native configuration and dependency selection variants separately');
+const evidence = path.join(root, dependencySelection ? `target/retained-dependency-selection-${platform}` : nativeConfiguration ? `target/retained-native-config-${platform}` : platform === 'android' ? 'target/retained-portability' : 'target/retained-ios-portability');
 const fixture = path.join(root, 'packages/cli/test/fixtures/mobile-plugin-tauri');
 const producer = path.join(evidence, 'ordinary producer');
 const exported = path.join(evidence, 'exported-runtime');
@@ -40,6 +43,9 @@ let binary: string;
 let iosPid: number;
 let incrementalAcceptance: { unchangedHit: true; invalidCapabilityRejected: true; previousArtifactPreserved: true } | undefined;
 let nativeInputsSha256: string | undefined;
+let producerHashes = dependencySelection && consume
+  ? JSON.parse(readFileSync(path.join(evidence, 'producer-source-hashes.json'), 'utf8')) as Record<string, string>
+  : original;
 
 function run(label: string, command: string, args: string[], cwd = evidence, environment: NodeJS.ProcessEnv = env) {
   console.log(`> portable-${platform}: ${label}`);
@@ -95,13 +101,26 @@ try {
     rmSync(producer, { recursive: true, force: true }); cpSync(fixture, producer, { recursive: true });
     run('dependencies', 'npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], producer);
     if (nativeConfiguration) prepareNativeConfiguration(platform, producer, run);
+    if (dependencySelection) prepareDependencySelection(producer, run);
     const before = snapshot(producer);
+    if (dependencySelection) {
+      producerHashes = before;
+      writeFileSync(path.join(evidence, 'producer-source-hashes.json'), JSON.stringify(before, null, 2) + '\n');
+    }
     const inputs = () => retainedInputs(discoverProject(path.join(producer, 'src-tauri'), producer, false, 'retained'), exported).files;
     if (nativeConfiguration) nativeInputsSha256 = sha256(JSON.stringify(inputs()));
     cpSync(new URL('./composition/fieldnotes-callers.json', import.meta.url), path.join(evidence, 'callers.json'));
     const exportArguments = [path.join(root, 'packages/cli/dist/index.mjs'), 'export', platform, '--runtime', 'retained',
       '--tauri-dir', path.join(producer, 'src-tauri'), '--caller-policy', path.join(evidence, 'callers.json'), '--targets', platform === 'android' ? 'aarch64' : 'aarch64-sim', ...(profile === 'debug' ? ['--debug'] : []), '--output-dir', exported, '--incremental'];
     run('export', process.execPath, exportArguments);
+    if (dependencySelection) {
+      const artifact = readRetainedArtifacts(exported);
+      assert.deepEqual(artifact.plugins, { 'tauri-plugin-deep-link': '2.4.10', 'tauri-plugin-geolocation': '2.3.3' });
+      const build = JSON.parse(readFileSync(path.join(exported, 'build.json'), 'utf8'));
+      assert.deepEqual(build.cargoSelection.features, ['native-location', 'tauri/custom-protocol']);
+      assert(build.cargo.some((pkg: { name: string }) => pkg.name === 'tauri-plugin-geolocation'));
+      assert(build.cargo.some((pkg: { name: string }) => pkg.name === 'tauri-plugin-opener'), 'Cache fingerprints still cover host build inputs; native receipt selection is separate');
+    }
     if (nativeConfiguration && platform === 'ios') {
       const artifact = readRetainedArtifacts(exported);
       assert.equal(artifact.platform, 'ios');
@@ -254,7 +273,8 @@ try {
   assert.deepEqual(readRetainedArtifacts(exported), manifest, 'Consumer integration preserves the original published artifact');
   assert(!existsSync(producer));
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform, formatVersion: 2, abiVersion: 3,
-    profile, target: platform === 'android' ? 'arm64 16 KB emulator' : 'arm64 simulator', producerDeleted: true, producerUnchanged: true, sourceHashes: original,
+    profile, target: platform === 'android' ? 'arm64 16 KB emulator' : 'arm64 simulator', producerDeleted: true, producerUnchanged: true, sourceHashes: producerHashes,
+    ...(dependencySelection ? { dependencySelection: true, originalFixtureHashes: original } : {}),
     sourceFreeBuild: `${platform === 'android' ? `./gradlew --no-daemon assemble${profile === 'debug' ? 'Debug' : 'Release'}` : `xcodebuild -configuration ${profile} -sdk iphonesimulator`}; PATH=/usr/bin:/bin:/usr/sbin:/sbin; relocated path has spaces`,
     ...(platform === 'android' && profile === 'release' ? { testOnlySigning: 'Release/R8 with debug test key and android:debuggable for run-as telemetry; exported project unchanged' } : {}),
     ...(platform === 'android' ? { apkAlignment: 'zipalign -c -P 16 -v 4 passed' } : {}),

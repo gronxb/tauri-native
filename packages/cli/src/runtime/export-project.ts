@@ -6,6 +6,7 @@ import { discoverProject } from '../discovery/project.ts';
 import { nativeTool } from '../discovery/native-tool.ts';
 import { sha256 } from '../artifacts/files.ts';
 import { prepareRuntime, validateCallerPolicy } from './workspace.ts';
+import { resolveRuntimeDependencies } from './dependencies.ts';
 
 export interface RetainedExportOptions {
   tauriDir: string;
@@ -20,7 +21,7 @@ export interface RetainedExportOptions {
   watch?: boolean;
 }
 
-export function readRuntimeExport(options: RetainedExportOptions, platform: 'ios' | 'android') {
+export function readRuntimeExport(options: RetainedExportOptions, platform: 'ios' | 'android', targets: string[]) {
   if (options.manifest || options.header || options.watch) throw new Error('Retained export requires the ordinary producer; legacy manifests and watch need retained-runtime acceptance.');
   if (!options.callerPolicy) throw new Error('Retained export requires --caller-policy with explicit original WebView labels and exact command grants.');
   const policy = JSON.parse(readFileSync(path.resolve(options.callerPolicy), 'utf8'));
@@ -38,14 +39,13 @@ export function readRuntimeExport(options: RetainedExportOptions, platform: 'ios
     const found = lock.package.filter(dependency => dependency.name === name);
     if (found.length !== 1 || found[0]!.version !== version) throw new Error(`Retained mobile native integration verifies ${name}@${version}.`);
   }
-  const plugins: Record<string, string> = {};
-  for (const dependency of lock.package.filter(dependency => dependency.name.startsWith('tauri-plugin-'))) {
-    if (!['tauri-plugin-geolocation@2.3.3', 'tauri-plugin-deep-link@2.4.10'].includes(`${dependency.name}@${dependency.version}`)) {
-      throw new Error(`Retained mobile export has no native compatibility evidence for ${dependency.name}@${dependency.version}. Desktop-only plugins keep their upstream restriction.`);
-    }
-    plugins[dependency.name] = dependency.version;
-  }
-  return { project, output, config, applicationId, policy, plugins };
+  const features = config.build?.features ?? [];
+  if (!Array.isArray(features) || features.some(feature => typeof feature !== 'string' || !feature.trim())) throw new Error('Tauri build.features must be a list of Cargo feature names.');
+  // Tauri CLI 2.11.4 build::setup retains defaults, adds configured features
+  // and activates tauri/custom-protocol for both Debug and Release mobile builds.
+  const selection = { targets, features: [...new Set(['tauri/custom-protocol', ...features])].sort() };
+  const { plugins } = resolveRuntimeDependencies(project.manifest, selection);
+  return { project, output, config, applicationId, policy, plugins, selection };
 }
 
 export function acquireRuntimeBuild(applicationId: string) {

@@ -77,13 +77,23 @@ other slices does not establish execution on those architectures or devices.
 
 ## Diagnosed boundaries and remaining acceptance
 
-Export currently checks every `tauri-plugin-*` package in `Cargo.lock` against
-the two verified external versions above. An unverified package fails with its
-exact name/version and a reminder that desktop-only plugins retain upstream
-restrictions. This check is conservative: a desktop-only dependency elsewhere
-in the lockfile can also block export. Target-specific dependency selection
-needs its own compatibility proof; do not delete a producer's desktop plugin
-or move its logic into a renderer to work around that limit.
+Export resolves the selected target's Cargo dependency graph with default
+features, `build.features` and Tauri's `custom-protocol` feature. It follows
+aliases and transitive normal/build dependencies from the producer, excluding
+dev-only and unrelated workspace dependencies. An inactive desktop dependency
+can remain in the producer and its lockfile. An active unverified plugin fails
+with its exact name, version and target; slices with different native plugin
+sets must be exported separately. Dependency source fingerprints also retain
+host build inputs.
+
+The [dependency-selection gate](evidence/retained-target-dependencies-2026-09-11.json)
+executes a desktop baseline and 24 source-free Release mobile UI flows with
+optional geolocation enabled by `build.features` and a renamed opener dependency
+restricted to non-mobile targets. Both mobile exports preserve producer bytes,
+cache hits and failure recovery. This verifies dependency selection, not mobile
+opener support. The pinned Android CLI needs configured features forwarded
+explicitly; that correction follows a preserved failed native export. The iOS
+execution used identical shared/iOS code before this Android-only correction.
 
 Unsupported native dependency declarations, changed original registrations,
 conflicting startup owners and edited generated files are rejected. Adding a

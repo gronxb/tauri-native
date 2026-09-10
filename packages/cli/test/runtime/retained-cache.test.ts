@@ -54,7 +54,8 @@ test('a Cargo-config compiler wrapper is diagnosed before it can be silently rep
     writeFileSync(path.join(directory, '.cargo/config.toml'), '[build]\nrustc-wrapper="producer-compiler-wrapper"\n');
     delete process.env.RUSTC_WRAPPER;
     assert.throws(() => createRuntimeCache(project, path.join(directory, 'artifacts'), 'ios', ['aarch64-sim'], 'debug',
-      { version: 1, callers: { native: { webview: 'main', commands: ['snapshot'] } } }), /RUSTC_WRAPPER.*producer Cargo compiler wrapper/);
+      { version: 1, callers: { native: { webview: 'main', commands: ['snapshot'] } } },
+      { targets: ['aarch64-apple-ios-sim'], features: ['tauri/custom-protocol'] }), /RUSTC_WRAPPER.*producer Cargo compiler wrapper/);
   } finally {
     if (previous === undefined) delete process.env.RUSTC_WRAPPER; else process.env.RUSTC_WRAPPER = previous;
     rmSync(directory, { recursive: true, force: true });

@@ -21,7 +21,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 1. Package/register a representative Swift plugin and Kotlin plugin using the upstream plugin contract.
 2. Preserve plugin setup and configuration, permission requests/results, Activity/UIApplication callbacks, deep links, background/resume and native resource cleanup.
 3. Carry Tauri capabilities and scopes for frontend and direct native callers; do not grant a wildcard to make integration work.
-4. Document a verified plugin support matrix and reject unsupported platform dependencies or manifest conflicts before publishing an export. Resolve the selected mobile dependency graph before diagnosing a desktop-only plugin; the current whole-lockfile check is conservative and must not require removing a producer's valid desktop dependency.
+4. Document a verified plugin support matrix and reject unsupported platform dependencies or manifest conflicts before publishing an export. Resolve the selected mobile dependency graph before diagnosing a desktop-only plugin, preserving a producer's valid inactive desktop dependency.
 
 ## Meaningful verification
 
@@ -43,8 +43,23 @@ using the original standalone gates and packed RN/Lynx Release gates linked in
 the [verified support matrix](../docs/retained-support.md). The
 [evidence audit](../docs/evidence/retained-support-audit-2026-09-11.json) checks
 their common producer hashes and assertion-bearing results. Activity recreation,
-broader native lifecycle/source forms and target-specific plugin dependency
-selection remain open; this does not close the issue or establish release parity.
+broader native lifecycle/source forms remain open; this does not close the issue
+or establish release parity. Target-specific selection now has the separate
+native evidence below.
+
+## Target and feature dependency selection — 2026-09-11
+
+The exporter resolves the selected Cargo targets with default/configured
+features before validating native plugins. Inactive desktop dependencies remain
+in the producer; active unverified plugins fail with name/version/target.
+[Evidence](../docs/evidence/retained-target-dependencies-2026-09-11.json) records
+the desktop baseline and 24 source-free Release mobile UI flows using optional
+geolocation enabled by `build.features` and a renamed non-mobile opener
+dependency. Actual Swift/Kotlin permissions, retirement, events and persistence
+pass; source bytes match across platforms and after success/failure. The first
+Android export exposed a pinned CLI feature-forwarding omission, now corrected
+without producer edits. This does not add native opener support or complete
+Activity recreation and the broader lifecycle acceptance.
 
 ## Scope and constraints
 

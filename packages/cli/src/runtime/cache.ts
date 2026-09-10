@@ -7,19 +7,23 @@ import { commandOutput, nativeDirectory, nativeTool } from '../discovery/native-
 import type { ProjectModel } from '../discovery/project.ts';
 import { readRetainedArtifacts } from '../../../../scripts/retained-artifacts.ts';
 import { runtimeGeneratedPaths, type NativeCallerPolicy } from './workspace.ts';
+import type { RuntimeSelection } from './dependencies.ts';
 
 export function retainedInputs(project: ProjectModel, output: string) {
   return exportInputs(project, output, runtimeGeneratedPaths(project));
 }
 
-function dependencies(project: ProjectModel) {
-  const metadata = JSON.parse(commandOutput('cargo', ['metadata', '--format-version', '1', '--locked', '--offline', '--manifest-path', project.manifest])) as {
+function dependencies(project: ProjectModel, selection: RuntimeSelection) {
+  // Keep host build-script/proc-macro dependencies in the source fingerprint as
+  // well as target dependencies. Include the features used by the actual build.
+  const { packages } = JSON.parse(commandOutput('cargo', ['metadata', '--format-version', '1', '--locked', '--offline',
+    '--manifest-path', project.manifest, '--features', selection.features.join(',')])) as {
     packages: { name: string; version: string; source: string | null; manifest_path: string }[];
   };
   // Native plugin build scripts create caches in registry directories. Hash
   // their actual authored inputs as well as Cargo.lock, including local patches.
   const generated = new Set(['.git', 'target', '.build', '.gradle', '.kotlin', '.tauri', 'node_modules']);
-  return metadata.packages.filter(pkg => pkg.source !== null).map(pkg => {
+  return packages.filter(pkg => pkg.source !== null).map(pkg => {
     const root = path.dirname(pkg.manifest_path);
     const nativeBuilds = new Set(['android/build', 'mobile/android/build'].map(file => path.join(root, file)));
     return { name: pkg.name, version: pkg.version, source: pkg.source,
@@ -28,7 +32,7 @@ function dependencies(project: ProjectModel) {
   }).sort((a, b) => `${a.name}@${a.version}`.localeCompare(`${b.name}@${b.version}`));
 }
 
-export function createRuntimeCache(project: ProjectModel, output: string, platform: 'ios' | 'android', targets: string[], profile: 'debug' | 'release', policy: NativeCallerPolicy) {
+export function createRuntimeCache(project: ProjectModel, output: string, platform: 'ios' | 'android', targets: string[], profile: 'debug' | 'release', policy: NativeCallerPolicy, selection: RuntimeSelection) {
   const before = retainedInputs(project, output);
   // The generated path-remapping wrapper can compose an explicit environment
   // wrapper. Cargo-config wrapper path resolution is not inferred or discarded.
@@ -39,7 +43,7 @@ export function createRuntimeCache(project: ProjectModel, output: string, platfo
     }
   }
   const inputsSha256 = sha256(JSON.stringify(before));
-  const cargo = dependencies(project);
+  const cargo = dependencies(project, selection);
   const tools: Record<string, string> = {};
   const tool = (name: string, command: string, args: string[]) => { tools[name] = sha256(commandOutput(command, args)); };
   tool('rustc', 'rustc', ['-vV']); tool('cargo', 'cargo', ['-vV']); tool('npm', 'npm', ['--version']);
@@ -60,11 +64,11 @@ export function createRuntimeCache(project: ProjectModel, output: string, platfo
   };
   const build = { schemaVersion: 1, platform, targets: targets.slice().sort(), profile, inputsSha256,
     callerPolicySha256: sha256(JSON.stringify(policy)), inputs: before.files,
-    configurationSha256: sha256(JSON.stringify(before.configs)), environmentSha256: before.environment, tools, generator, cargo };
+    configurationSha256: sha256(JSON.stringify(before.configs)), environmentSha256: before.environment, tools, generator, cargoSelection: selection, cargo };
   const buildSha256 = sha256(JSON.stringify(build));
   const verify = () => {
     if (sha256(JSON.stringify(retainedInputs(project, output))) !== inputsSha256) throw new Error('Retained producer inputs changed during export; previous artifacts preserved. Retry after edits settle.');
-    const after = dependencies(project);
+    const after = dependencies(project, selection);
     if (JSON.stringify(after) !== JSON.stringify(cargo)) throw new Error(`Retained dependency inputs changed during export (${after.filter((pkg, index) => JSON.stringify(pkg) !== JSON.stringify(cargo[index])).map(pkg => `${pkg.name}@${pkg.version}`).join(', ')}); previous artifacts preserved.`);
   };
   return {

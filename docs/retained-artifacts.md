@@ -6,6 +6,24 @@ See the [verified support matrix](retained-support.md) for original and composed
 execution, native dependencies and remaining lifecycle limits. Moving from the
 limited adapter requires [re-export and retained composition](migration.md#moving-to-retained-tauri-mobile).
 
+Native plugin validation uses Cargo's resolved graph for the selected targets,
+including default features and `tauri.conf.json`'s `build.features`. Inactive
+desktop dependencies can stay in the original project. `build.json` records
+the target/feature selection and fingerprints dependency sources, including
+host build inputs, for incremental invalidation. Each slice in one export must
+resolve the same verified native plugins.
+
+The [dependency-selection evidence](evidence/retained-target-dependencies-2026-09-11.json)
+records the ordinary desktop baseline and 12 actual Release UI flows per mobile
+platform with an optional configured geolocation dependency and an inactive
+desktop opener dependency. Producer deletion, relocation, source-free build,
+cache hit, invalid-capability failure preservation and plugin permission/event
+behavior pass. Android retains R8 with test-only signing/debuggability for
+telemetry. Tauri CLI 2.11.4 constructs its Android APK configuration before
+adding configured build features; export forwards these features explicitly
+through the ordinary CLI without editing producer configuration. The failed
+attempt and the subsequent passing execution are recorded separately.
+
 ## Export and consume
 
 Install the ordinary producer's dependencies and mobile toolchain first. Define a separate caller policy; for example:

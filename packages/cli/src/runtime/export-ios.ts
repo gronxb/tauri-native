@@ -25,13 +25,13 @@ export function exportRetainedIos(options: RetainedExportOptions) {
   if (process.platform !== 'darwin') throw new Error('Retained iOS export requires macOS and Xcode.');
   const targets = (options.targets ?? Object.keys(iosTargets).join(',')).split(',') as (keyof typeof iosTargets)[];
   if (!targets.length || new Set(targets).size !== targets.length || targets.some(target => !Object.hasOwn(iosTargets, target))) throw new Error('Select unique retained iOS --targets from aarch64,aarch64-sim,x86_64.');
-  const { project, output, applicationId, policy, plugins } = readRuntimeExport(options, 'ios');
+  const { project, output, applicationId, policy, plugins, selection } = readRuntimeExport(options, 'ios', targets.map(target => iosTargets[target].rust));
   const release = acquireRuntimeBuild(applicationId);
   const profile = options.debug ? 'debug' : 'release';
   let runtime: ReturnType<typeof prepareRuntime> | undefined;
   let build: ReturnType<typeof runtimeBuildEnvironment> | undefined;
   try {
-    const cache = createRuntimeCache(project, output, 'ios', targets, profile, policy);
+    const cache = createRuntimeCache(project, output, 'ios', targets, profile, policy, selection);
     if (options.incremental && !options.force && cache.hit()) { cache.verify(); message(`Reused validated retained iOS artifacts in ${output}`, '◆ '); return; }
     publishArtifacts(output, stage => {
       runtime = prepareRuntime(project, policy, cache);

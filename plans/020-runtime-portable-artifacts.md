@@ -43,6 +43,21 @@ re-export, caller policy, SDK entry points, native ownership, Expo regeneration
 and rollback/removal. This documents the implemented route; independent
 onboarding and the other export acceptance items remain open.
 
+## Target and feature dependency selection — 2026-09-11
+
+`build.json` now fingerprints the configured Cargo features and selected target
+triples alongside dependency sources, retaining host build inputs. Validation
+uses the producer's target graph so inactive desktop dependencies do not block
+mobile export. [Fresh arm64 Release evidence](../docs/evidence/retained-target-dependencies-2026-09-11.json)
+passes producer deletion/relocation, source-free builds, cache hits and actual
+invalid-capability failure preservation on both platforms, followed by 24 real
+native UI flows. The same configured optional-plugin producer passes the
+ordinary desktop baseline. Six Cargo graph scenarios, all 71 CLI tests,
+typecheck and packing pass. The preserved failed Android attempt led to explicit
+forwarding of `build.features` through the pinned Tauri CLI; no producer feature
+or dependency was removed to pass the gate. Broader source/lifecycle, retained
+CI and final release parity remain open.
+
 ## Scope and constraints
 
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.

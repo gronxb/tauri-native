@@ -1,0 +1,381 @@
+{
+  "passed": true,
+  "recordedAt": "2026-09-10T23:51:57.138506+00:00",
+  "baseCommit": "4cb08df1a1e8e6c485079c754c278d6630f6f0ac",
+  "scope": "Actual desktop Tauri baseline and fresh source-free arm64 Release iOS/Android native plugin gates for an ordinary fixture variant: geolocation is optional and enabled by build.features; a renamed opener dependency is restricted to non-mobile targets. No renderer or producer bridge source changes. No mobile opener compatibility, additional SDK composition, physical-device or adopter claim.",
+  "originalFixtureHashes": {
+    "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+    "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+  },
+  "variantSourceHashes": {
+    "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+    "src-tauri/Cargo.lock": "132e06862fc5b378c5074f7599f47672a75cd9c0d9bc7a7559eda385b78f14a7",
+    "src-tauri/Cargo.toml": "64ebd2c0a9c34f4a92eefc779d13cdc987e0b4f33c4d0510eb3cfcb25384b48a",
+    "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "src-tauri/tauri.conf.json": "7c33cdd9d7bc8388f839f3c9f3e0f10db5a9fdffe2add0c0ab53c871724f4cd4"
+  },
+  "baseline": {
+    "passed": true,
+    "reloaded": true,
+    "scenarios": [
+      "setup",
+      "state",
+      "app-handle",
+      "async",
+      "rust-event",
+      "plugin-setup",
+      "plugin-allowed",
+      "plugin-denied",
+      "domain-error",
+      "reload"
+    ],
+    "state": {
+      "appIdentifier": "dev.taurinative.mobilefieldnotes",
+      "pluginSetupCount": 1,
+      "setupCount": 1,
+      "value": 45
+    }
+  },
+  "nativeJUnitFlows": 24,
+  "skippedFlows": 0,
+  "results": [
+    {
+      "platform": "ios",
+      "profile": "release",
+      "target": "arm64 simulator",
+      "nativeJUnitFlows": 12,
+      "sourceFreeBuild": "xcodebuild -configuration release -sdk iphonesimulator; PATH=/usr/bin:/bin:/usr/sbin:/sbin; relocated path has spaces",
+      "producerDeleted": true,
+      "producerUnchanged": true,
+      "incrementalAcceptance": {
+        "unchangedHit": true,
+        "invalidCapabilityRejected": true,
+        "previousArtifactPreserved": true
+      },
+      "plugins": {
+        "tauri-plugin-deep-link": "2.4.10",
+        "tauri-plugin-geolocation": "2.3.3"
+      },
+      "selection": {
+        "targets": [
+          "aarch64-apple-ios-sim"
+        ],
+        "features": [
+          "native-location",
+          "tauri/custom-protocol"
+        ]
+      },
+      "artifactSha256": "7757e31a658eea023005ad24875a8ade2a813ee0faca28da28a9b860ec8076f9",
+      "unchangedArtifactFiles": 39,
+      "binarySha256": "82da31cc8b9113297b5253a90e952cfce3ec601a4a77e8e455100465269a650b",
+      "nativeReportSha256": "cb68c8b82eead6c13d066cbf74729e72b7f42ec6c49db1bf5ab678e387fca6b4",
+      "junitSha256": {
+        "deny-native-permission": "04722090f76723411f867a3cc73a0b689f85b0ae4c4f0c2344dab0220384a90a",
+        "grant-retired-permission": "2800f600ded1db297d9ab5484a98bf06834108287dc2d15513b11bc36bc1bf35",
+        "initial-native": "8acaab8845ad658def28283327786d294042a2b495cb929a507361fee14e33db",
+        "native-background": "fae60cdf4e888dbe300cdd189989f8afeee4466a64de1db4c7eec311f140f4e4",
+        "native-denied-position": "ee9c353fbc3bba29834b98b57c075928009736e578ebd32db6f15b1ebd18e31f",
+        "native-link": "793599774a6b976dba252774e3a4cf81cb2f4c1d34ecd9a1eac8cd1bb8b334f2",
+        "native-no-denied-save": "053fdf24d0c138777372e033a49944f6db2c6fbd984bd11446f616ad25940bd0",
+        "native-persistence": "cf6008a54e00f78a5c6cd3449f57dc064516ee9943d1c09a8c6f98dac896fff0",
+        "native-remount": "cf9f5280b583cea9c103eb658a2c8f9033e350d4babdd4a7cb23fd7197d02bd0",
+        "native-remounted-event": "2caa4c0a5cafd43ecdfc69ee59b9b975025dfc982f1f8a3aa8c786aeb96e74b7",
+        "native-save": "551e47671478d60ca11e26a95bbc537552545ca2449a2b19e7724c2b70d18403",
+        "retire-native-permission": "a73cd484dba271d8187a6ab98088aa937259ac537849ce065f450aa16fc0cc59"
+      },
+      "osDenied": {
+        "location": "denied",
+        "coarseLocation": "denied"
+      },
+      "nativeRetiredClosures": 1,
+      "lateNativeCallbacks": 0,
+      "savedNote": {
+        "id": 1,
+        "latitude": 37.5665,
+        "longitude": 126.978,
+        "text": "A native place to remember"
+      },
+      "saveAndLinkEvents": 2,
+      "freshRemountEvents": 1,
+      "relaunchNotesMatch": true,
+      "testOnlySigning": null,
+      "apkAlignment": null,
+      "logsSha256": {
+        "export": "f5e14b707752a40639048ecdbe854431492b3a321485da909af948a2a3753a0f",
+        "incremental-hit": "e39ed2be7a6f5e109e582d0b0b77fabc9780fd2868b78c5861ceba1166f1e06a",
+        "capability-cache-invalidation": "bea540530e110384e75d3aa473626f2eacfad47e2142a783c6865fbf10649595",
+        "source-free-doctor": "8699a2b70a24dd339eca9e17d93f0f3ab759885513c1b5ba2f4ea4427fdf4b27",
+        "source-free-build": "52792c8e11a1303eec1c034b25f5f7c032fef178e978e34e15d5f102faa5b949"
+      }
+    },
+    {
+      "platform": "android",
+      "profile": "release",
+      "target": "arm64 16 KB emulator",
+      "nativeJUnitFlows": 12,
+      "sourceFreeBuild": "./gradlew --no-daemon assembleRelease; PATH=/usr/bin:/bin:/usr/sbin:/sbin; relocated path has spaces",
+      "producerDeleted": true,
+      "producerUnchanged": true,
+      "incrementalAcceptance": {
+        "unchangedHit": true,
+        "invalidCapabilityRejected": true,
+        "previousArtifactPreserved": true
+      },
+      "plugins": {
+        "tauri-plugin-deep-link": "2.4.10",
+        "tauri-plugin-geolocation": "2.3.3"
+      },
+      "selection": {
+        "targets": [
+          "aarch64-linux-android"
+        ],
+        "features": [
+          "native-location",
+          "tauri/custom-protocol"
+        ]
+      },
+      "artifactSha256": "ad286d394fe306eada89a4f12b559500d339e6c85a6514372f7b6bb2f0dd0171",
+      "unchangedArtifactFiles": 100,
+      "binarySha256": "d261ca173ec3100297e4410a8ad15c915ae5eac551d6824ef9198a3865e983aa",
+      "nativeReportSha256": "67efd49430e36faf1693ba00f17b34d55a82ccf8ee77cc2be1bc321a34e0a277",
+      "junitSha256": {
+        "deny-native-permission": "06d8c5b8e3fe9385ad8512aa6437db983454e5654555ec343d818163830cdbdb",
+        "grant-retired-permission": "60a7301450e768e727ba0d043b5c976c7f49ba9a403c581b11a4f5870854b722",
+        "initial-native": "15dc4653e2c8e4e3ba03af3badd2ccbcef4f23dc4504728adc956d82ddef7539",
+        "native-background": "e71670ec8e6eff740900dad4e5326e8dd0784c780f085ad952422e0ac8e509ac",
+        "native-denied-position": "97982fd929ce815fc289ef2754a1a9b98a466caeb4754ae6a6ccaa4b39c2fd87",
+        "native-link": "75ba51a6603bc9052a119c21bb302d002373e9572ee7cdfaa323bf892b3e3f90",
+        "native-no-denied-save": "c8d8823239c037b6dbfe751d2d276d1698d122138c5d6b8cebe262e053e7ba6b",
+        "native-persistence": "98c2cf99d4ef5dfc41ef5675018827fad512de9416af80b3c94bd3d9322fc49d",
+        "native-remount": "dc62532316e9469014ddbb9dd2911bb3b5f46a058815186844f42719c8b0ace3",
+        "native-remounted-event": "aff48f4ba6137587886cff87e5efa901384a7b3a71cd3f61f6dc2f4339ed1120",
+        "native-save": "5d2a813240ad9319ea586660ad5bbd3a84174a621b4c7933c0866c23796a6fd2",
+        "retire-native-permission": "1d9cf4e905c5468ef80a397282ceae6d5c4e8b62324a875f98326119a348faf6"
+      },
+      "osDenied": {
+        "coarseLocation": "prompt-with-rationale",
+        "location": "prompt-with-rationale"
+      },
+      "nativeRetiredClosures": 1,
+      "lateNativeCallbacks": 0,
+      "savedNote": {
+        "id": 1,
+        "latitude": 37.5664983,
+        "longitude": 126.9779983,
+        "text": "A native place to remember"
+      },
+      "saveAndLinkEvents": 2,
+      "freshRemountEvents": 1,
+      "relaunchNotesMatch": true,
+      "testOnlySigning": "Release/R8 with debug test key and android:debuggable for run-as telemetry; exported project unchanged",
+      "apkAlignment": "zipalign -c -P 16 -v 4 passed",
+      "logsSha256": {
+        "export": "0eedc6121b7cbb58f7ddbe36ac25113bba42181be9c13b746ab8d76283cc03f3",
+        "incremental-hit": "d1b7e566cd342fd6ba1d7f47d0b3ecd11cb5c343f3185a44417a299037c5355b",
+        "capability-cache-invalidation": "69fbec02b2e8addd383a9c014581699ac739e71c9c94b8adb381a5fc72254016",
+        "source-free-doctor": "bcb2a9eb3d7cb930cd8c9a5e727393060d386ece5b4dc01b1e74ca38c047de26",
+        "source-free-build": "d8f3dd431b5588c69a25d6bba693e3ec778b36100a88820df6cf920421baf6fe"
+      }
+    }
+  ],
+  "desktopReportSha256": "d59e000597cd1e7c7f2a1ab124d44138fe1d9dee808622f5c5d0a3b92f73b31f",
+  "preflight": {
+    "passed": true,
+    "scope": "Real Cargo and public exporter preflight; no native build or plugin execution in this counterexample.",
+    "originalCliSha256": "7cd9b04ba911624b05d0cddc2918f02c6e29d23ebf32744caef4082315f2bb43",
+    "observations": [
+      {
+        "platform": "ios",
+        "originalCliExit": 1,
+        "originalCliRejectedInactiveDesktopOpener": true,
+        "currentPreflightPassed": true,
+        "selectedPlugins": {
+          "tauri-plugin-deep-link": "2.4.10",
+          "tauri-plugin-geolocation": "2.3.3"
+        },
+        "selection": {
+          "targets": [
+            "aarch64-apple-ios-sim"
+          ],
+          "features": [
+            "native-location",
+            "tauri/custom-protocol"
+          ]
+        }
+      },
+      {
+        "platform": "android",
+        "originalCliExit": 1,
+        "originalCliRejectedInactiveDesktopOpener": true,
+        "currentPreflightPassed": true,
+        "selectedPlugins": {
+          "tauri-plugin-deep-link": "2.4.10",
+          "tauri-plugin-geolocation": "2.3.3"
+        },
+        "selection": {
+          "targets": [
+            "aarch64-linux-android"
+          ],
+          "features": [
+            "native-location",
+            "tauri/custom-protocol"
+          ]
+        }
+      }
+    ],
+    "activeUnverifiedAndroidPluginRejected": true,
+    "producerUnchanged": true,
+    "sourceHashes": {
+      "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+      "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+      "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+      "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+      "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+      "src-tauri/Cargo.lock": "132e06862fc5b378c5074f7599f47672a75cd9c0d9bc7a7559eda385b78f14a7",
+      "src-tauri/Cargo.toml": "64ebd2c0a9c34f4a92eefc779d13cdc987e0b4f33c4d0510eb3cfcb25384b48a",
+      "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+      "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+      "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+      "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+      "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+      "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+      "src-tauri/tauri.conf.json": "7c33cdd9d7bc8388f839f3c9f3e0f10db5a9fdffe2add0c0ab53c871724f4cd4"
+    },
+    "originalFixtureHashes": {
+      "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+      "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+      "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+      "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+      "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+      "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+      "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+      "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+      "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+      "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+      "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+      "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+      "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+      "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+    }
+  },
+  "androidFeatureFailure": {
+    "stage": "Android native export before UI",
+    "exitCode": 1,
+    "successfulArtifactPublished": false,
+    "nativeUiExecuted": false,
+    "failure": "Pinned Tauri Android APK build omitted configured native-location Cargo feature; ordinary geolocation capability declaration was rejected because the optional plugin was not built.",
+    "observedCargoFeatures": "tauri/custom-protocol tauri/custom-protocol",
+    "configuredFeatures": [
+      "native-location"
+    ],
+    "logSha256": "84efa6119fbfbd7456bb18bd981b9af83bdc04a9f63a173235da2033b234173e",
+    "cliSha256": "41e924b4c2d6b6ee0759f57a76312e0523cbdb7d124540cd6ac76a408a0ab608",
+    "producerUnchangedAfterFailure": true,
+    "sourceHashes": {
+      "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+      "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+      "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+      "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+      "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+      "src-tauri/Cargo.lock": "132e06862fc5b378c5074f7599f47672a75cd9c0d9bc7a7559eda385b78f14a7",
+      "src-tauri/Cargo.toml": "64ebd2c0a9c34f4a92eefc779d13cdc987e0b4f33c4d0510eb3cfcb25384b48a",
+      "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+      "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+      "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+      "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+      "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+      "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+      "src-tauri/tauri.conf.json": "7c33cdd9d7bc8388f839f3c9f3e0f10db5a9fdffe2add0c0ab53c871724f4cd4"
+    }
+  },
+  "iosCliEquivalence": {
+    "passed": true,
+    "scope": "The only changed bundled CLI code after iOS native execution is the body of exportRetainedAndroid. Every byte outside that function, including iOS and shared export/cache/dependency code, is identical. This is source equivalence, not another native run.",
+    "beforeCliSha256": "41e924b4c2d6b6ee0759f57a76312e0523cbdb7d124540cd6ac76a408a0ab608",
+    "afterCliSha256": "d7d73c52e44a9ad864f1305d4a9d831a31ba82cea1acd8f7c7666b0587fb9a35"
+  },
+  "finalCliSha256": "d7d73c52e44a9ad864f1305d4a9d831a31ba82cea1acd8f7c7666b0587fb9a35",
+  "commands": [
+    "node --experimental-strip-types packages/cli/test/runtime/baseline.ts plugins --dependency-selection",
+    "node --experimental-strip-types packages/cli/test/runtime/portable.ts ios --release --dependency-selection",
+    "node --experimental-strip-types packages/cli/test/runtime/portable.ts android --release --dependency-selection",
+    "npm test (packages/cli)",
+    "node_modules/.bin/tsc --noEmit -p packages/cli/tsconfig.json",
+    "npm run test:package (packages/cli)"
+  ],
+  "toolchain": {
+    "node": "24.15.0",
+    "npm": "11.12.1",
+    "rustc": "1.97.1",
+    "xcode": "26.4.1 (17E202)",
+    "cocoapods": "1.16.2",
+    "maestro": "2.4.0",
+    "java": "21.0.10",
+    "ndk": "27.1.12297006",
+    "ios": "arm64 iPhone 16 Simulator, iOS 26.4.1",
+    "android": "arm64 Pixel 10 Pro XL emulator, API 37, 16 KB pages"
+  },
+  "cleanup": {
+    "startedEmulatorExited": true,
+    "otherAndroidEmulatorsLeftRunning": true,
+    "existingIosSimulatorLeftRunning": true,
+    "worktrees": [
+      "main"
+    ]
+  },
+  "verification": {
+    "cliTests": 71,
+    "failed": 0,
+    "skipped": 0,
+    "typecheck": "passed",
+    "packedCliFiles": 25,
+    "logSha256": {
+      "cli-tests-final.log": "3eb80272ad80e9ac16b2e629d5786bfda6066031e8d2c18696d645299f4c2233",
+      "typecheck-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "package-check-final.log": "13b8acdfe498a8b0fe8572bb4fbb8ecf801096c803dabdb5f10b5abd35179199"
+    }
+  },
+  "sourceSha256": {
+    "packages/cli/src/runtime/dependencies.ts": "35f003a2fe7daa8bc742397970b62b51b44d7e944ccf85ce7aeaa3ddfc040aad",
+    "packages/cli/src/runtime/export-project.ts": "01ccd12690bbf71fd3151f32fe65ab3a20d406fbdb0318fb811bd34ee9cb461d",
+    "packages/cli/src/runtime/export-android.ts": "642a4613686c8184cf44ae0ca3afa4582fb0f53b0f1906b3a401c423e318ab43",
+    "packages/cli/src/runtime/export-ios.ts": "ca073f599afef20fda5fd0362c4815b9cf30abc43d6ad227f7f52d15d1b55d0f",
+    "packages/cli/src/runtime/cache.ts": "a0f4afbc729bb6d673ddf563baf436f0594895b3261b764e011731e4db2ae1e6",
+    "packages/cli/test/runtime/retained-dependencies.test.ts": "3b1a07a2865bdfb1000a251bb5658c44bcbee9f92508e438828f9a754a6a8770",
+    "packages/cli/test/runtime/dependency-selection.ts": "5b874cdde64c534b77e44f8f1783bd137220bfc84a2ebc8443f7fd4444363e2a",
+    "packages/cli/test/runtime/baseline.ts": "eb48458df2320d6bd221bba563b892e566261953cbee8e5194b2b06e655d7746",
+    "packages/cli/test/runtime/portable.ts": "e496a6e1307bfb31698933c7d4d132204e790c45ae0f1e8cf9d67ba751e892b4",
+    "packages/cli/test/runtime/retained-cache.test.ts": "12cf1f1656ed796a4e77663147b0db3d3a08f2f46a7fb26925e9e233d9787846"
+  },
+  "primarySources": [
+    "https://doc.rust-lang.org/cargo/commands/cargo-metadata.html",
+    "https://github.com/tauri-apps/tauri/blob/tauri-cli-v2.11.4/crates/tauri-cli/src/mobile/android/build.rs",
+    "https://github.com/tauri-apps/tauri/blob/tauri-cli-v2.11.4/crates/tauri-cli/src/build.rs"
+  ],
+  "remaining": [
+    "Activity recreation and broader lifecycle/navigation/source forms",
+    "Retained transferred-package CI and final parity",
+    "Physical devices and two independent adopters"
+  ]
+}
