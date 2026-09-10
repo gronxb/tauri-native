@@ -28,7 +28,7 @@ open class TauriNativeActivity : MainActivity() {
         webView.postDelayed(this, 100); return
       }
       awaitingDocument = null
-      tauriReactHost = TauriReactHost(this@TauriNativeActivity, createReactContainer(webView), __MODULE__, "tauri-native-react/index.bundle.js")
+      tauriReactHost = TauriReactHost(this@TauriNativeActivity, createReactContainer(webView), __MODULE__, "tauri-native-react/index.bundle.js", webView)
       if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) tauriReactHost!!.onResume()
       tauriReactHost!!.onWindowFocusChanged(hasWindowFocus())
       onReactHostAttached()

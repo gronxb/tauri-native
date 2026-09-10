@@ -1,6 +1,7 @@
 #include <cstring>
 #import "TNReactHost.h"
 #import "TNReactRuntimeModule.h"
+#import "TNReactTauriView.h"
 #import <React/RCTLinkingManager.h>
 #import <React/RCTSurfaceHostingProxyRootView.h>
 #import <React_RCTAppDelegate/RCTDefaultReactNativeFactoryDelegate.h>
@@ -55,6 +56,11 @@
   return self;
 }
 - (NSURL *)bundleURL { return self.url; }
+- (NSDictionary<NSString *, Class<RCTComponentViewProtocol>> *)thirdPartyFabricComponents {
+  NSMutableDictionary *components = [[super thirdPartyFabricComponents] mutableCopy];
+  components[@"TauriRetainedView"] = TNReactTauriView.class;
+  return components;
+}
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge { return self.url; }
 - (Class)getModuleClassFromName:(const char *)name {
   if (strcmp(name, "LinkingManager") == 0) return TNReactLinkingManager.class;
@@ -82,6 +88,8 @@
 
 @implementation TNReactHost {
   UIView *_container;
+  WKWebView *_webView;
+  TNReactViewScope *_viewScope;
   NSString *_module;
   NSURL *_bundle;
   NSDictionary *_launchOptions;
@@ -94,9 +102,13 @@
   return [self initWithContainer:container module:module bundle:bundle launchOptions:nil];
 }
 - (instancetype)initWithContainer:(UIView *)container module:(NSString *)module bundle:(NSURL *)bundle launchOptions:(NSDictionary *)launchOptions {
+  return [self initWithContainer:container webView:nil module:module bundle:bundle launchOptions:launchOptions];
+}
+- (instancetype)initWithContainer:(UIView *)container webView:(WKWebView *)webView module:(NSString *)module bundle:(NSURL *)bundle launchOptions:(NSDictionary *)launchOptions {
   NSAssert(NSThread.isMainThread, @"Use TNReactHost on main");
   if ((self = [super init])) {
     _container = container; _module = [module copy]; _bundle = bundle;
+    _webView = webView;
     _launchOptions = [launchOptions copy];
     [self reload];
   }
@@ -112,6 +124,8 @@
   if (![view isKindOfClass:RCTSurfaceHostingProxyRootView.class])
     [NSException raise:NSInternalInconsistencyException format:@"Retained Tauri requires a Fabric surface"];
   _surface = (RCTSurfaceHostingProxyRootView *)view;
+  _viewScope = [[TNReactViewScope alloc] initWithWebView:_webView];
+  [_viewScope bindToSurface:_surface];
   _surface.frame = _container.bounds;
   _surface.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   [_container addSubview:_surface];
@@ -123,6 +137,7 @@
 - (void)releaseSurface {
   // Close sessions before RN invalidates its modules/JSI, without blocking the UI thread.
   [_delegate retire];
+  [_viewScope close]; _viewScope = nil;
   [_surface removeFromSuperview]; [_surface.surface stop]; _surface = nil;
   // RCTHost 0.86 releases its RCTInstance asynchronously from dealloc.
   _factory.rootViewFactory.reactHost = nil;

@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — packed RN iOS/Android Release execution and automatic composition pass for the pinned standard Tauri projects; Expo, retained TauriView and broader integration remain open.
+- Status: IN PROGRESS — packed RN iOS/Android Release execution and automatic composition pass for the pinned standard Tauri projects; single-original-view attachment also has native evidence; Expo and broader integration remain open.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#41](https://github.com/gronxb/tauri-native/issues/41) (plan 017), [#44](https://github.com/gronxb/tauri-native/issues/44) (plan 020)
@@ -236,3 +236,49 @@ Those checks, Expo CNG, third-party autolinking, retained TauriView/navigation,
 custom source/lifecycle owners, complete parity/CI/migration, physical devices
 and independent adopters remain open. This increment does not close the issue
 or authorize a package release.
+
+## Retained RN document attachment — 2026-09-11
+
+`TauriView` from `@tauri-native/react-native/retained` now borrows the original
+Tauri WebView on iOS and Android. The generated consumer supplies the view;
+the producer's Rust, frontend, Cargo/configuration, capabilities and plugin
+sources remain unchanged. Original IPC and direct RN sessions share one Tauri
+application, managed state and native plugins. The component does not create,
+reload or navigate a WebView and does not replace native delegates/clients.
+
+[Native Release evidence](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-rn-view-2026-09-11.json) records 25 iOS Simulator and 18 Android
+emulator UI flows from packed SDKs. Both the acceptance subclass and a
+second clean-installed app with unmodified generated startup/default layout
+execute the public component. The original frontend saves a real location note,
+and RN receives its event and reads both notes from Tauri. Capability denial,
+competing attachment, component remount, engine replacement and removal pass.
+The nonpersistent test document token, native delegates/clients, state 45 and
+single app/plugin setup remain intact. Closing RN restores the original parent,
+retires native listeners and destroys its engine; the original frontend remains
+interactive. iOS Linking warm/repeated/cold/delayed URL and callback restoration
+checks, Android BackHandler/Linking, and pending OS permission retirement all
+remain in the passing gates.
+
+The contract is one original WebView and one retained RN host. Only one mounted
+component may borrow the view. Fabric ownership follows the mounted surface or
+ReactContext generation, including recycled native components; retiring an old
+renderer cannot detach a new renderer's view. A second attachment reports
+`view_in_use`; missing/retired owners report `view_unavailable`. Remount a failed
+component before retrying. The existing native host initializers remain callable
+for direct sessions; manual view integration supplies the original WebView.
+Retained component codegen stays separate from the format 1 entry point.
+
+One failed iOS build exposed a missing generated-header search root. A later
+remount UI assertion targeted content below the embedded viewport; final tests
+scroll inside the original WebView without removing assertions. Logs and the
+latter acceptance binary are preserved separately. The first Android Fabric
+startup also exposed missing standard RN Folly compiler options, which the final Android CMake now applies to generated props
+and their consumers. Its APK and crash dump are preserved. The iOS and Android
+tarballs differ only in this Android-specific CMake file; iOS native/JS/composer
+files are unchanged. No authored Tauri source or runtime artifact was changed
+to make these checks pass.
+
+Expo CNG, third-party autolinking, full navigation/history/back/rotation and
+Activity recreation/RN-owned permissions, OS Universal Link association,
+custom layout/lifecycle owners, complete parity/CI/migration, physical devices
+and independent adopters remain open. No issue or release gate is closed.

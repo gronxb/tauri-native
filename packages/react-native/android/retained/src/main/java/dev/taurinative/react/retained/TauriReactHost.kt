@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.view.ViewGroup
+import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import com.facebook.react.bridge.JSBundleLoader
@@ -22,13 +23,14 @@ import com.facebook.soloader.SoLoader
 
 /** One RN engine/surface in an existing Tauri Activity. All methods run on main. */
 @OptIn(UnstableReactNativeAPI::class)
-class TauriReactHost(
+class TauriReactHost @JvmOverloads constructor(
   private val activity: ComponentActivity,
   private val container: ViewGroup,
   module: String,
   bundle: String,
+  webView: WebView? = null,
 ) : AutoCloseable {
-  private val runtimePackage = TauriRuntimePackage()
+  private val runtimePackage = TauriRuntimePackage(webView)
   private val reactHost = ReactHostImpl(activity.applicationContext,
     DefaultReactHostDelegate(jsMainModulePath = "index",
       jsBundleLoader = JSBundleLoader.createAssetLoader(activity.applicationContext, "assets://$bundle", true),

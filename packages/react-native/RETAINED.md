@@ -38,6 +38,41 @@ cleanup. Engine replacement/destruction also retires all native requests and
 listeners before RN destroys its ReactContext and JSI runtime. Overflow is
 reported explicitly; authorization or transport failure closes the event stream.
 
+## Original Tauri view
+
+```tsx
+import { TauriView } from '@tauri-native/react-native/retained';
+
+<TauriView
+  style={{ flex: 1 }}
+  onAttach={() => console.log('Original document attached')}
+  onAttachError={error => console.error(error.code, error.message)}
+/>
+```
+
+The component borrows the original Tauri WebView from the generated composition.
+It does not create a WebView, load a URL or change its navigation/native plugin
+handlers. Original frontend IPC and direct session calls use the same Tauri app
+and managed state. `onAttach` acknowledges native attachment, not a later page
+load. Give the component a nonzero layout size; it has no intrinsic height.
+
+The current contract is one original WebView and one retained RN host. One
+component may display that document at a time. A competing component reports
+`view_in_use`; a missing or retired owner reports `view_unavailable`. Unmount a
+failed component before retrying. No URL/path, navigation or children props are
+provided. Unmounting restores the original native parent/layout. Reloading or
+closing RN restores the original view before its engine and component tree are
+destroyed. The Tauri document and its JavaScript state remain alive.
+
+The generated iOS and Android integrations pass the original WebView to the
+host automatically. For manual integration, use the `TNReactHost` initializer
+with `webView` and `launchOptions`, or pass the original WebView as the final
+`TauriReactHost` constructor argument. Existing initializers remain valid for
+native sessions; a host without a WebView cannot attach `TauriView`. Component
+ownership follows the mounted Fabric surface/ReactContext generation. The
+retained component specs and registration stay separate from the existing
+format 1 component exported by the package's default entry.
+
 ## Android integration under development
 
 This path pins RN/codegen 0.86.3, Hermes 250829098.0.17, Kotlin 2.1.20, NDK
@@ -82,7 +117,7 @@ The default RN surface fills a container above the retained original WebView.
 A consumer subclass may override `createReactContainer(webView)` to choose a
 native layout and use the protected `tauriReactHost` for reload/removal. The
 `onReactHostAttached()` hook runs after attachment. Keep all original superclass
-calls. These hooks do not replace the planned React `TauriView` component.
+calls. Use `TauriView` to display the original document inside the RN component tree.
 
 The generated Gradle integration compiles `RuntimeSession.java` once in a shared
 library, links the installed SDK, resolves RN/codegen through Node (including

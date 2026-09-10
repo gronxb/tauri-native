@@ -1,0 +1,2123 @@
+{
+  "passed": true,
+  "recordedAt": "2026-09-10T17:34:12.987608+00:00",
+  "baseCommit": "9322114e187c39aff7cdb6861bdec04d4b573bbf",
+  "scope": "Packed retained RN SDK arm64 Release executions on iOS Simulator and Android emulator. Both the native acceptance subclass and unmodified generated default startup/layout execute the public retained TauriView component. The exact original WebView moves between parents; its nonpersistent document token and native navigation/UI delegates or clients remain unchanged. Actual frontend geolocation/save and capability denial share Tauri state with direct native calls. Simultaneous second attachment is rejected without stealing the first view. Component unmount/remount, renderer replacement and close restore the original view and retain the document. Native renderer sessions are retired independently of the original Tauri document.",
+  "nativeJUnitFlows": 43,
+  "skippedFlows": 0,
+  "androidFollyVerification": {
+    "flags": [
+      "-DFOLLY_NO_CONFIG=1",
+      "-DFOLLY_HAVE_CLOCK_GETTIME=1",
+      "-DFOLLY_USE_LIBCPP=1",
+      "-DFOLLY_CFG_NO_COROUTINES=1",
+      "-DFOLLY_MOBILE=1",
+      "-DFOLLY_HAVE_RECVMMSG=1",
+      "-DFOLLY_HAVE_PTHREAD=1",
+      "-DFOLLY_HAVE_XSI_STRERROR_R=1"
+    ],
+    "packageDifferences": [
+      "package/android/retained/src/main/jni/CMakeLists.txt"
+    ],
+    "compileCommandsSha256": "bb1934c1ce05d847785c41f9b73f577a70a74da6ff6fcef39c011beb04e798a2"
+  },
+  "documentIdentityInstrumentation": "Only the native acceptance subclasses install an immutable, nonpersistent UUID in the ready original document, once at composition startup. Every observed parent transition reads it without reinjection. The SDK adds no document script and the authored frontend is unchanged.",
+  "packageDifferencesBetweenPlatformRuns": [
+    "package/android/retained/src/main/jni/CMakeLists.txt"
+  ],
+  "producerSourceSha256": {
+    "packages/cli/test/fixtures/mobile-plugin-tauri/README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786",
+    "packages/cli/test/fixtures/mobile-plugin-tauri/src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372"
+  },
+  "toolchain": {
+    "node": "v24.15.0",
+    "npm": "11.12.1",
+    "xcode": "Xcode 26.4.1\nBuild version 17E202",
+    "reactNative": "0.86.3",
+    "codegen": "0.86.3",
+    "hermes": "250829098.0.17",
+    "ruby": "ruby 3.3.10 (2025-10-23 revision 343ea05002) [arm64-darwin23]",
+    "cocoaPods": "1.16.2 (from successful pod install logs)",
+    "maestro": "2.4.0",
+    "simulator": {
+      "lastBootedAt": "2026-09-09T15:45:42Z",
+      "dataPath": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data",
+      "dataPathSize": 4160348160,
+      "logPath": "/Users/gronxb/Library/Logs/CoreSimulator/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A",
+      "udid": "0368C5D9-63CF-447E-B6BB-0E3184B1CD0A",
+      "isAvailable": true,
+      "logPathSize": 438272,
+      "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-16",
+      "state": "Booted",
+      "name": "iPhone 16"
+    },
+    "runtime": {
+      "isAvailable": true,
+      "version": "26.4.1",
+      "isInternal": false,
+      "buildversion": "23E254a",
+      "supportedArchitectures": [
+        "arm64"
+      ],
+      "supportedDeviceTypes": [
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 17 Pro.simdevicetype",
+          "name": "iPhone 17 Pro",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 17 Pro Max.simdevicetype",
+          "name": "iPhone 17 Pro Max",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 17e.simdevicetype",
+          "name": "iPhone 17e",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17e",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone Air.simdevicetype",
+          "name": "iPhone Air",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-Air",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 17.simdevicetype",
+          "name": "iPhone 17",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 16 Pro.simdevicetype",
+          "name": "iPhone 16 Pro",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 16 Pro Max.simdevicetype",
+          "name": "iPhone 16 Pro Max",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro-Max",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 16e.simdevicetype",
+          "name": "iPhone 16e",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-16e",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 16.simdevicetype",
+          "name": "iPhone 16",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-16",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 16 Plus.simdevicetype",
+          "name": "iPhone 16 Plus",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-16-Plus",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 15 Pro.simdevicetype",
+          "name": "iPhone 15 Pro",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-15-Pro",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 15 Pro Max.simdevicetype",
+          "name": "iPhone 15 Pro Max",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-15-Pro-Max",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 15.simdevicetype",
+          "name": "iPhone 15",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-15",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 15 Plus.simdevicetype",
+          "name": "iPhone 15 Plus",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-15-Plus",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 14 Pro.simdevicetype",
+          "name": "iPhone 14 Pro",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-14-Pro",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 14 Pro Max.simdevicetype",
+          "name": "iPhone 14 Pro Max",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-14-Pro-Max",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 14.simdevicetype",
+          "name": "iPhone 14",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-14",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 14 Plus.simdevicetype",
+          "name": "iPhone 14 Plus",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-14-Plus",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone SE (3rd generation).simdevicetype",
+          "name": "iPhone SE (3rd generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-SE-3rd-generation",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 13 Pro.simdevicetype",
+          "name": "iPhone 13 Pro",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-13-Pro",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 13 Pro Max.simdevicetype",
+          "name": "iPhone 13 Pro Max",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-13-Pro-Max",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 13.simdevicetype",
+          "name": "iPhone 13",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-13",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 13 mini.simdevicetype",
+          "name": "iPhone 13 mini",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-13-mini",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 12 Pro.simdevicetype",
+          "name": "iPhone 12 Pro",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-12-Pro",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 12 Pro Max.simdevicetype",
+          "name": "iPhone 12 Pro Max",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-12-Pro-Max",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 12.simdevicetype",
+          "name": "iPhone 12",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-12",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 12 mini.simdevicetype",
+          "name": "iPhone 12 mini",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-12-mini",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone SE (2nd generation).simdevicetype",
+          "name": "iPhone SE (2nd generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-SE--2nd-generation-",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 11 Pro.simdevicetype",
+          "name": "iPhone 11 Pro",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 11 Pro Max.simdevicetype",
+          "name": "iPhone 11 Pro Max",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro-Max",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 11.simdevicetype",
+          "name": "iPhone 11",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-11",
+          "productFamily": "iPhone"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro 13-inch (M5) (16GB).simdevicetype",
+          "name": "iPad Pro 13-inch (M5) (16GB)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-16GB",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro 13-inch (M5).simdevicetype",
+          "name": "iPad Pro 13-inch (M5)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-12GB",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro 11-inch (M5) (16GB).simdevicetype",
+          "name": "iPad Pro 11-inch (M5) (16GB)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M5-16GB",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro 11-inch (M5).simdevicetype",
+          "name": "iPad Pro 11-inch (M5)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M5-12GB",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro 11-inch (M4) (16GB).simdevicetype",
+          "name": "iPad Pro 11-inch (M4) (16GB)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M4-16GB",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro 11-inch (M4).simdevicetype",
+          "name": "iPad Pro 11-inch (M4)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M4-8GB",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro 13-inch (M4) (16GB).simdevicetype",
+          "name": "iPad Pro 13-inch (M4) (16GB)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M4-16GB",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro 13-inch (M4).simdevicetype",
+          "name": "iPad Pro 13-inch (M4)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M4-8GB",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Air 13-inch (M4).simdevicetype",
+          "name": "iPad Air 13-inch (M4)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-13-inch-M4",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Air 11-inch (M4).simdevicetype",
+          "name": "iPad Air 11-inch (M4)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-11-inch-M4",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad (A16).simdevicetype",
+          "name": "iPad (A16)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-A16",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Air 13-inch (M3).simdevicetype",
+          "name": "iPad Air 13-inch (M3)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-13-inch-M3",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Air 11-inch (M3).simdevicetype",
+          "name": "iPad Air 11-inch (M3)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-11-inch-M3",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Air 11-inch (M2).simdevicetype",
+          "name": "iPad Air 11-inch (M2)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-11-inch-M2",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Air 13-inch (M2).simdevicetype",
+          "name": "iPad Air 13-inch (M2)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-13-inch-M2",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad mini (A17 Pro).simdevicetype",
+          "name": "iPad mini (A17 Pro)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro (11-inch) (4th generation) (16GB).simdevicetype",
+          "name": "iPad Pro (11-inch) (4th generation) (16GB)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-4th-generation-16GB",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro (11-inch) (4th generation).simdevicetype",
+          "name": "iPad Pro (11-inch) (4th generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-4th-generation-8GB",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro (12.9-inch) (6th generation) (16GB).simdevicetype",
+          "name": "iPad Pro (12.9-inch) (6th generation) (16GB)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-12-9-inch-6th-generation-16GB",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro (12.9-inch) (6th generation).simdevicetype",
+          "name": "iPad Pro (12.9-inch) (6th generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-12-9-inch-6th-generation-8GB",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad (10th generation).simdevicetype",
+          "name": "iPad (10th generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-10th-generation",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Air (5th generation).simdevicetype",
+          "name": "iPad Air (5th generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-5th-generation",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad mini (6th generation).simdevicetype",
+          "name": "iPad mini (6th generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-6th-generation",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro (11-inch) (3rd generation).simdevicetype",
+          "name": "iPad Pro (11-inch) (3rd generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-3rd-generation",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro (12.9-inch) (5th generation).simdevicetype",
+          "name": "iPad Pro (12.9-inch) (5th generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-12-9-inch-5th-generation",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad (9th generation).simdevicetype",
+          "name": "iPad (9th generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-9th-generation",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Air (4th generation).simdevicetype",
+          "name": "iPad Air (4th generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air--4th-generation-",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad (8th generation).simdevicetype",
+          "name": "iPad (8th generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad--8th-generation-",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Air (3rd generation).simdevicetype",
+          "name": "iPad Air (3rd generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air--3rd-generation-",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad mini (5th generation).simdevicetype",
+          "name": "iPad mini (5th generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini--5th-generation-",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro (11-inch) (2nd generation).simdevicetype",
+          "name": "iPad Pro (11-inch) (2nd generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--11-inch---2nd-generation-",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro (12.9-inch) (4th generation).simdevicetype",
+          "name": "iPad Pro (12.9-inch) (4th generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--12-9-inch---4th-generation-",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro (11-inch) (1st generation).simdevicetype",
+          "name": "iPad Pro (11-inch) (1st generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--11-inch-",
+          "productFamily": "iPad"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro (12.9-inch) (3rd generation).simdevicetype",
+          "name": "iPad Pro (12.9-inch) (3rd generation)",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--12-9-inch---3rd-generation-",
+          "productFamily": "iPad"
+        }
+      ],
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-4",
+      "platform": "iOS",
+      "bundlePath": "/Library/Developer/CoreSimulator/Volumes/iOS_23E254a/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.4.simruntime",
+      "runtimeRoot": "/Library/Developer/CoreSimulator/Volumes/iOS_23E254a/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.4.simruntime/Contents/Resources/RuntimeRoot",
+      "lastUsage": {
+        "arm64": "2026-09-10T17:18:31Z"
+      },
+      "name": "iOS 26.4"
+    },
+    "android": {
+      "device": "emulator-5554",
+      "avd": "Pixel_10_Pro_XL\nOK",
+      "fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:17/CP21.260330.005/15181570:user/dev-keys",
+      "api": "37",
+      "pageSize": "16384",
+      "java": "openjdk version \"21.0.10\" 2026-01-20\nOpenJDK Runtime Environment (build 21.0.10+-117844308-b1163.108)\nOpenJDK 64-Bit Server VM (build 21.0.10+-117844308-b1163.108, mixed mode)",
+      "bootCommand": "$HOME/Library/Android/sdk/emulator/emulator -avd Pixel_10_Pro_XL -port 5554 -no-window -no-snapshot-load -no-snapshot-save",
+      "dataWiped": false,
+      "emulatorStoppedAfterGates": true
+    }
+  },
+  "sourceSha256": {
+    "packages/react-native/android/retained/build.gradle": "e5e722a3ebdda7fc7972aa3ee92c6e5017360927cb9c818b31b8f5e7854692b8",
+    "packages/react-native/android/retained/src/main/java/dev/taurinative/react/retained/TauriReactHost.kt": "2980a3e8e7f2ff3c5077059302e596fe7845d3badf452c235f6234a2d319bc57",
+    "packages/react-native/android/retained/src/main/java/dev/taurinative/react/retained/TauriRuntimePackage.java": "6608dd936b74e0b59eb9e5e28d483fca3a119fd53af755783fd71906c816c4fb",
+    "packages/react-native/android/retained/src/main/java/dev/taurinative/react/retained/TauriViewManager.kt": "668d8e45f7a25d9b4b4755addcecc2eae81d107ade9531839ca2e30a6cc0c8b1",
+    "packages/react-native/android/retained/src/main/jni/CMakeLists.txt": "5318ed513fd4d6a12325f9f1d0b8642f51e6a83c90c6f3f3313844bd3b930785",
+    "packages/react-native/android/retained/src/main/jni/OnLoad.cpp": "1d62a9e12467f9e7f548c86f8d5c875392f51186b3a62f701cd40f1b179069d9",
+    "packages/react-native/ios/TauriNativeReactRetained.podspec": "9f6939d85a852a84f6f7eed245d6ed6c1e5db6b96d91b7266d68bf4264b0c158",
+    "packages/react-native/ios/retained/TNReactComposition.mm": "0a05281d553b4fc5e39b59577aa020250226fff9ad869b64ade11c3f718b6590",
+    "packages/react-native/ios/retained/TNReactHost.h": "3b3868db0f0e68af395ab93b35a8ed1dfe8b321666dd438910c461d672bb9a3b",
+    "packages/react-native/ios/retained/TNReactHost.mm": "9ab513e5e62af7eb87229acff51e0f456e31cfe8d86887128eda5b2b0c33af9c",
+    "packages/react-native/ios/retained/TNReactTauriView.h": "5024470ad910399f6c09ed92e5e5881ba7a783ac9cbc504dfb5b25a22dd8bad8",
+    "packages/react-native/ios/retained/TNReactTauriView.mm": "21d0ae11f54b3932f5dfb71c3b31c9de74efb6875b71859f811a4084cd21b57c",
+    "packages/react-native/ios/retained/pods.rb": "5055c3ff47b572bd0dad77ffaf7e0192c23e53de5d8bf721d11da2559931c8bd",
+    "packages/react-native/package.json": "33bf7e994e52190543dfa791f1e93a9014c6bacb0fce2205431154aed5838e89",
+    "packages/react-native/retained/android/TauriNativeActivity.kt.template": "061ae7679c64d452a15b7647a7e47b2088869b1202f49b4c10b6752defb0a2d7",
+    "packages/react-native/retained/copy-component.cjs": "40894627a3b474b73a88f323b4064a92eb74939e24e82eb4beaf11dd7ec76929",
+    "packages/react-native/retained/specs/TauriRetainedViewNativeComponent.ts": "4ead6fa926cf27f2f7d33ee072521ff4e80e099e80bc1da8360d4b8786542d44",
+    "packages/react-native/src/RetainedTauriView.tsx": "12f1f2fbd68f836899a7a6a7ad9c87735d9af49075115ba41e1264b377b3b7b1",
+    "packages/react-native/src/retained.ts": "8645c2ae672ce17066709a922eb6d5572a3233de81a13ed1d04527e91932de4e",
+    "packages/react-native/test/retained-android.ts": "6843089b51c10b31f0a56c76eabb76fb9b470d5beeb502bd6a43109e1e9bf9e3",
+    "packages/react-native/test/retained-ios.ts": "729a03f464997ab5f95acc16151fb8df3f9bc8d1bf5cebe4ac6d844ef9d46ee1",
+    "packages/react-native/test/retained/AcceptanceActivity.kt.fixture": "7dd0735a44269abac593a9627c31668986b3850a5b93490ad1b4cc94d71774f3",
+    "packages/react-native/test/retained/IosAcceptance.mm.fixture": "afb08135cb22c00ca84a12b9be96044f797795a9fad1eaf78c437ae86cb3f281",
+    "packages/react-native/test/retained/index.tsx.fixture": "da6cd7d967eb42ad691c4d9c5fba52bb352fc02639e9ff226e5880021caaa767",
+    "packages/react-native/test/retained/view-scenarios.ts": "ea62d1285007a122ea1b078c8ca9cd3e9e24fab95cd9560bdecad67b10335f8b"
+  },
+  "regressionChecks": {
+    "package": {
+      "passed": 15,
+      "command": "npm test in packages/react-native",
+      "logSha256": "b27e4e03325cefb04f028c595aedd705b3514ad7f1d66041390b0574fa027fcf"
+    },
+    "iosComposer": {
+      "passed": 4,
+      "command": "node --experimental-strip-types --test packages/react-native/test/retained/compose-ios.test.ts",
+      "logSha256": "9339701adf113a564ff9f21d57ab8f69a996334159cf018059b70b6bece3beaa"
+    },
+    "typescript": "SDK build/typecheck and scripts/tsconfig.json --noEmit passed"
+  },
+  "commands": {
+    "ios": "PATH=\"$HOME/.local/share/mise/installs/ruby/3.3.10/bin:$HOME/.maestro/bin:$PATH\" IOS_SIMULATOR_UDID=0368C5D9-63CF-447E-B6BB-0E3184B1CD0A node --experimental-strip-types packages/react-native/test/retained-ios.ts",
+    "android": "PATH=\"$HOME/.cargo/bin:$HOME/Library/Android/sdk/platform-tools:$HOME/.maestro/bin:$PATH\" JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" ANDROID_HOME=\"$HOME/Library/Android/sdk\" NDK_HOME=\"$HOME/Library/Android/sdk/ndk/27.1.12297006\" ANDROID_SERIAL=emulator-5554 node --experimental-strip-types packages/react-native/test/retained-android.ts"
+  },
+  "results": [
+    {
+      "passed": true,
+      "platform": "ios",
+      "profile": "release",
+      "formatVersion": 2,
+      "abiVersion": 3,
+      "renderer": "React Native/codegen 0.86.3 / Hermes / generated TurboModule and Fabric",
+      "sourceFree": true,
+      "sourceFreeBuild": "PATH=/usr/bin:/bin:/usr/sbin:/sbin xcodebuild -configuration release -sdk iphonesimulator",
+      "packageSha256": "4835c1e3f3834311983e80aaacabf2d7d8893c9ae3ecd6a5b6ff1846d88a01e2",
+      "artifactSha256": "38e1592e2dddd3fca1fe197b9cf7220aea389fb9e7367a0af3592ed813d1c4a9",
+      "binarySha256": "2acabfe8ed1562fa0894860d9c9aa909794d79b99c05f486d9b0f54e9a568649",
+      "defaultIntegration": {
+        "pid": 33487,
+        "overriddenHooks": false,
+        "baseline": {
+          "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/B0C862B2-AEDF-490D-97DC-656E2415B883/Library/Application Support/dev.taurinative.mobilefieldnotes",
+          "passed": true,
+          "reloaded": true,
+          "scenarios": [
+            "setup",
+            "state",
+            "app-handle",
+            "async",
+            "rust-event",
+            "plugin-setup",
+            "plugin-allowed",
+            "plugin-denied",
+            "domain-error",
+            "reload"
+          ],
+          "state": {
+            "appIdentifier": "dev.taurinative.mobilefieldnotes",
+            "pluginSetupCount": 1,
+            "setupCount": 1,
+            "value": 45
+          }
+        },
+        "binarySha256": "8f1beed51fe1bcd919d1c15f19aaad471d97a19634a3ecd994eedde0e7c03c87"
+      },
+      "coldIntegration": {
+        "pid": 33909,
+        "initialURL": "tauri-fieldnotes://notes/cold",
+        "baseline": {
+          "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/B0C862B2-AEDF-490D-97DC-656E2415B883/Library/Application Support/dev.taurinative.mobilefieldnotes",
+          "passed": true,
+          "reloaded": true,
+          "scenarios": [
+            "setup",
+            "state",
+            "app-handle",
+            "async",
+            "rust-event",
+            "plugin-setup",
+            "plugin-allowed",
+            "plugin-denied",
+            "domain-error",
+            "reload"
+          ],
+          "state": {
+            "appIdentifier": "dev.taurinative.mobilefieldnotes",
+            "pluginSetupCount": 1,
+            "setupCount": 1,
+            "value": 45
+          }
+        }
+      },
+      "coldRemount": {
+        "pid": 33216,
+        "initialURL": "tauri-fieldnotes://notes/cold-remount",
+        "baseline": {
+          "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/DF6A72A6-DDE3-4567-815E-105FC2D40417/Library/Application Support/dev.taurinative.mobilefieldnotes",
+          "passed": true,
+          "reloaded": true,
+          "scenarios": [
+            "setup",
+            "state",
+            "app-handle",
+            "async",
+            "rust-event",
+            "plugin-setup",
+            "plugin-allowed",
+            "plugin-denied",
+            "domain-error",
+            "reload"
+          ],
+          "state": {
+            "appIdentifier": "dev.taurinative.mobilefieldnotes",
+            "pluginSetupCount": 1,
+            "setupCount": 1,
+            "value": 45
+          }
+        }
+      },
+      "coldRemounted": {
+        "paused": 0,
+        "unrelatedActivityHandled": false,
+        "browsingActivityHandled": false,
+        "generation": 2,
+        "restorationCalls": 0,
+        "hostClosed": false,
+        "stopped": 0,
+        "retireOnPause": false,
+        "resumed": 1,
+        "urlCallbacksRestored": false,
+        "view": {
+          "originalParent": true,
+          "parent": "TaoUIView0",
+          "documentOrigin": 1789060757912,
+          "frame": "{{0, 0}, {393, 852}}",
+          "documentToken": "9937B215-1F7B-430C-A165-E542920A9E3C",
+          "parentBounds": "{{0, 0}, {393, 852}}",
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "documentOrigin": 1789060757912,
+              "documentToken": "9937B215-1F7B-430C-A165-E542920A9E3C",
+              "error": "",
+              "parent": "TaoUIView0"
+            }
+          ],
+          "navigationDelegateUnchanged": true,
+          "parentFrame": "{{0, 0}, {393, 852}}"
+        },
+        "delegateUnchanged": true,
+        "listeners": 1,
+        "permissionRetirement": null,
+        "reactThreads": [
+          "com.facebook.react.runtime.JavaScript"
+        ],
+        "launchURL": "tauri-fieldnotes://notes/cold-remount",
+        "pid": 33216,
+        "listenersAfterRelease": 0,
+        "appDelegate": "AppDelegate"
+      },
+      "delayedStartup": {
+        "pid": 32976,
+        "baseline": {
+          "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/DF6A72A6-DDE3-4567-815E-105FC2D40417/Library/Application Support/dev.taurinative.mobilefieldnotes",
+          "passed": true,
+          "reloaded": true,
+          "scenarios": [
+            "setup",
+            "state",
+            "app-handle",
+            "async",
+            "rust-event",
+            "plugin-setup",
+            "plugin-allowed",
+            "plugin-denied",
+            "domain-error",
+            "reload"
+          ],
+          "state": {
+            "appIdentifier": "dev.taurinative.mobilefieldnotes",
+            "pluginSetupCount": 1,
+            "setupCount": 1,
+            "value": 45
+          }
+        },
+        "lifecycle": {
+          "paused": 0,
+          "unrelatedActivityHandled": false,
+          "browsingActivityHandled": false,
+          "generation": 1,
+          "restorationCalls": 0,
+          "hostClosed": false,
+          "stopped": 0,
+          "retireOnPause": false,
+          "resumed": 1,
+          "urlCallbacksRestored": false,
+          "view": {
+            "originalParent": true,
+            "parent": "TaoUIView0",
+            "documentOrigin": 1789060732299,
+            "frame": "{{0, 0}, {393, 852}}",
+            "documentToken": "DE9A75CF-7307-4031-87B3-8FA0868D54AA",
+            "parentBounds": "{{0, 0}, {393, 852}}",
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "documentOrigin": 1789060732299,
+                "documentToken": "DE9A75CF-7307-4031-87B3-8FA0868D54AA",
+                "error": "",
+                "parent": "TaoUIView0"
+              }
+            ],
+            "navigationDelegateUnchanged": true,
+            "parentFrame": "{{0, 0}, {393, 852}}"
+          },
+          "delegateUnchanged": true,
+          "listeners": 1,
+          "permissionRetirement": null,
+          "reactThreads": [
+            "com.facebook.react.runtime.JavaScript"
+          ],
+          "launchURL": null,
+          "pid": 32976,
+          "listenersAfterRelease": -1,
+          "appDelegate": "AppDelegate"
+        }
+      },
+      "activityRouting": {
+        "paused": 2,
+        "unrelatedActivityHandled": false,
+        "browsingActivityHandled": true,
+        "generation": 3,
+        "restorationCalls": 0,
+        "hostClosed": false,
+        "stopped": 1,
+        "retireOnPause": false,
+        "resumed": 3,
+        "urlCallbacksRestored": false,
+        "view": {
+          "originalParent": true,
+          "parent": "TaoUIView0",
+          "documentOrigin": 1789060550345,
+          "frame": "{{0, 0}, {393, 852}}",
+          "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+          "parentBounds": "{{0, 0}, {393, 852}}",
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "documentOrigin": 1789060550345,
+              "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+              "error": "",
+              "parent": "TaoUIView0"
+            }
+          ],
+          "navigationDelegateUnchanged": true,
+          "parentFrame": "{{0, 0}, {393, 852}}"
+        },
+        "delegateUnchanged": true,
+        "listeners": 1,
+        "permissionRetirement": {
+          "listeners": 0,
+          "generation": 2,
+          "runtimeStatus": "ready",
+          "paused": 1,
+          "pid": 31250
+        },
+        "reactThreads": [
+          "com.facebook.react.runtime.JavaScript"
+        ],
+        "launchURL": null,
+        "pid": 31250,
+        "listenersAfterRelease": 0,
+        "appDelegate": "AppDelegate"
+      },
+      "bundleSha256": "70c717616e989dd51814707d3de28e993f31f1e9e75e5bec153fd793b789dadf",
+      "baseline": {
+        "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/0368C5D9-63CF-447E-B6BB-0E3184B1CD0A/data/Containers/Data/Application/DF6A72A6-DDE3-4567-815E-105FC2D40417/Library/Application Support/dev.taurinative.mobilefieldnotes",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      },
+      "denied": {
+        "paused": 1,
+        "unrelatedActivityHandled": false,
+        "browsingActivityHandled": false,
+        "generation": 1,
+        "restorationCalls": 0,
+        "hostClosed": false,
+        "stopped": 0,
+        "retireOnPause": false,
+        "resumed": 2,
+        "urlCallbacksRestored": false,
+        "view": {
+          "originalParent": true,
+          "parent": "TaoUIView0",
+          "documentOrigin": 1789060523481,
+          "frame": "{{0, 0}, {393, 852}}",
+          "documentToken": "6452D153-A187-4A8E-8AA8-36A4BFE5AE3B",
+          "parentBounds": "{{0, 0}, {393, 852}}",
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "documentOrigin": 1789060523481,
+              "documentToken": "6452D153-A187-4A8E-8AA8-36A4BFE5AE3B",
+              "error": "",
+              "parent": "TaoUIView0"
+            }
+          ],
+          "navigationDelegateUnchanged": true,
+          "parentFrame": "{{0, 0}, {393, 852}}"
+        },
+        "delegateUnchanged": true,
+        "listeners": 1,
+        "permissionRetirement": null,
+        "reactThreads": [
+          "com.facebook.react.runtime.JavaScript"
+        ],
+        "launchURL": null,
+        "pid": 30971,
+        "listenersAfterRelease": -1,
+        "appDelegate": "AppDelegate"
+      },
+      "permissionRetired": {
+        "paused": 1,
+        "unrelatedActivityHandled": false,
+        "browsingActivityHandled": false,
+        "generation": 2,
+        "restorationCalls": 0,
+        "hostClosed": false,
+        "stopped": 0,
+        "retireOnPause": false,
+        "resumed": 1,
+        "urlCallbacksRestored": false,
+        "view": {
+          "originalParent": true,
+          "parent": "TaoUIView0",
+          "documentOrigin": 1789060550345,
+          "frame": "{{0, 0}, {393, 852}}",
+          "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+          "parentBounds": "{{0, 0}, {393, 852}}",
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "documentOrigin": 1789060550345,
+              "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+              "error": "",
+              "parent": "TaoUIView0"
+            }
+          ],
+          "navigationDelegateUnchanged": true,
+          "parentFrame": "{{0, 0}, {393, 852}}"
+        },
+        "delegateUnchanged": true,
+        "listeners": 1,
+        "permissionRetirement": {
+          "listeners": 0,
+          "generation": 2,
+          "runtimeStatus": "ready",
+          "paused": 1,
+          "pid": 31250
+        },
+        "reactThreads": [
+          "com.facebook.react.runtime.JavaScript"
+        ],
+        "launchURL": null,
+        "pid": 31250,
+        "listenersAfterRelease": 0,
+        "appDelegate": "AppDelegate"
+      },
+      "saved": {
+        "paused": 1,
+        "unrelatedActivityHandled": false,
+        "browsingActivityHandled": false,
+        "generation": 2,
+        "restorationCalls": 0,
+        "hostClosed": false,
+        "stopped": 0,
+        "retireOnPause": false,
+        "resumed": 2,
+        "urlCallbacksRestored": false,
+        "view": {
+          "originalParent": true,
+          "parent": "TaoUIView0",
+          "documentOrigin": 1789060550345,
+          "frame": "{{0, 0}, {393, 852}}",
+          "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+          "parentBounds": "{{0, 0}, {393, 852}}",
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "documentOrigin": 1789060550345,
+              "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+              "error": "",
+              "parent": "TaoUIView0"
+            }
+          ],
+          "navigationDelegateUnchanged": true,
+          "parentFrame": "{{0, 0}, {393, 852}}"
+        },
+        "delegateUnchanged": true,
+        "listeners": 1,
+        "permissionRetirement": {
+          "listeners": 0,
+          "generation": 2,
+          "runtimeStatus": "ready",
+          "paused": 1,
+          "pid": 31250
+        },
+        "reactThreads": [
+          "com.facebook.react.runtime.JavaScript"
+        ],
+        "launchURL": null,
+        "pid": 31250,
+        "listenersAfterRelease": 0,
+        "appDelegate": "AppDelegate"
+      },
+      "remounted": {
+        "paused": 2,
+        "unrelatedActivityHandled": false,
+        "browsingActivityHandled": false,
+        "generation": 3,
+        "restorationCalls": 0,
+        "hostClosed": false,
+        "stopped": 1,
+        "retireOnPause": false,
+        "resumed": 3,
+        "urlCallbacksRestored": false,
+        "view": {
+          "originalParent": true,
+          "parent": "TaoUIView0",
+          "documentOrigin": 1789060550345,
+          "frame": "{{0, 0}, {393, 852}}",
+          "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+          "parentBounds": "{{0, 0}, {393, 852}}",
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "documentOrigin": 1789060550345,
+              "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+              "error": "",
+              "parent": "TaoUIView0"
+            }
+          ],
+          "navigationDelegateUnchanged": true,
+          "parentFrame": "{{0, 0}, {393, 852}}"
+        },
+        "delegateUnchanged": true,
+        "listeners": 1,
+        "permissionRetirement": {
+          "listeners": 0,
+          "generation": 2,
+          "runtimeStatus": "ready",
+          "paused": 1,
+          "pid": 31250
+        },
+        "reactThreads": [
+          "com.facebook.react.runtime.JavaScript"
+        ],
+        "launchURL": null,
+        "pid": 31250,
+        "listenersAfterRelease": 0,
+        "appDelegate": "AppDelegate"
+      },
+      "viewIntegration": {
+        "attached": {
+          "paused": 2,
+          "unrelatedActivityHandled": false,
+          "browsingActivityHandled": true,
+          "generation": 3,
+          "restorationCalls": 0,
+          "hostClosed": false,
+          "stopped": 1,
+          "retireOnPause": false,
+          "resumed": 3,
+          "urlCallbacksRestored": false,
+          "view": {
+            "originalParent": false,
+            "parent": "TNReactDocumentContainer",
+            "documentOrigin": 1789060550345,
+            "frame": "{{0, 0}, {393, 287}}",
+            "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+            "parentBounds": "{{0, 0}, {393, 287}}",
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "documentOrigin": 1789060550345,
+                "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+                "error": "",
+                "parent": "TaoUIView0"
+              },
+              {
+                "documentOrigin": 1789060550346,
+                "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+                "error": "",
+                "parent": "TNReactDocumentContainer"
+              }
+            ],
+            "navigationDelegateUnchanged": true,
+            "parentFrame": "{{0, 0}, {393, 287}}"
+          },
+          "delegateUnchanged": true,
+          "listeners": 1,
+          "permissionRetirement": {
+            "listeners": 0,
+            "generation": 2,
+            "runtimeStatus": "ready",
+            "paused": 1,
+            "pid": 31250
+          },
+          "reactThreads": [
+            "com.facebook.react.runtime.JavaScript"
+          ],
+          "launchURL": null,
+          "pid": 31250,
+          "listenersAfterRelease": 0,
+          "appDelegate": "AppDelegate"
+        },
+        "contended": {
+          "paused": 2,
+          "unrelatedActivityHandled": false,
+          "browsingActivityHandled": true,
+          "generation": 3,
+          "restorationCalls": 0,
+          "hostClosed": false,
+          "stopped": 1,
+          "retireOnPause": false,
+          "resumed": 3,
+          "urlCallbacksRestored": false,
+          "view": {
+            "originalParent": false,
+            "parent": "TNReactDocumentContainer",
+            "documentOrigin": 1789060550345,
+            "frame": "{{0, 0}, {393, 287}}",
+            "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+            "parentBounds": "{{0, 0}, {393, 287}}",
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "documentOrigin": 1789060550345,
+                "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+                "error": "",
+                "parent": "TaoUIView0"
+              },
+              {
+                "documentOrigin": 1789060550346,
+                "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+                "error": "",
+                "parent": "TNReactDocumentContainer"
+              }
+            ],
+            "navigationDelegateUnchanged": true,
+            "parentFrame": "{{0, 0}, {393, 287}}"
+          },
+          "delegateUnchanged": true,
+          "listeners": 1,
+          "permissionRetirement": {
+            "listeners": 0,
+            "generation": 2,
+            "runtimeStatus": "ready",
+            "paused": 1,
+            "pid": 31250
+          },
+          "reactThreads": [
+            "com.facebook.react.runtime.JavaScript"
+          ],
+          "launchURL": null,
+          "pid": 31250,
+          "listenersAfterRelease": 0,
+          "appDelegate": "AppDelegate"
+        },
+        "detached": {
+          "paused": 2,
+          "unrelatedActivityHandled": false,
+          "browsingActivityHandled": true,
+          "generation": 3,
+          "restorationCalls": 0,
+          "hostClosed": false,
+          "stopped": 1,
+          "retireOnPause": false,
+          "resumed": 3,
+          "urlCallbacksRestored": false,
+          "view": {
+            "originalParent": true,
+            "parent": "TaoUIView0",
+            "documentOrigin": 1789060550345,
+            "frame": "{{0, 0}, {393, 852}}",
+            "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+            "parentBounds": "{{0, 0}, {393, 852}}",
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "documentOrigin": 1789060550345,
+                "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+                "error": "",
+                "parent": "TaoUIView0"
+              },
+              {
+                "documentOrigin": 1789060550346,
+                "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+                "error": "",
+                "parent": "TNReactDocumentContainer"
+              },
+              {
+                "documentOrigin": 1789060550346,
+                "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+                "error": "",
+                "parent": "TaoUIView0"
+              }
+            ],
+            "navigationDelegateUnchanged": true,
+            "parentFrame": "{{0, 0}, {393, 852}}"
+          },
+          "delegateUnchanged": true,
+          "listeners": 1,
+          "permissionRetirement": {
+            "listeners": 0,
+            "generation": 2,
+            "runtimeStatus": "ready",
+            "paused": 1,
+            "pid": 31250
+          },
+          "reactThreads": [
+            "com.facebook.react.runtime.JavaScript"
+          ],
+          "launchURL": null,
+          "pid": 31250,
+          "listenersAfterRelease": 0,
+          "appDelegate": "AppDelegate"
+        },
+        "remounted": {
+          "paused": 2,
+          "unrelatedActivityHandled": false,
+          "browsingActivityHandled": true,
+          "generation": 3,
+          "restorationCalls": 0,
+          "hostClosed": false,
+          "stopped": 1,
+          "retireOnPause": false,
+          "resumed": 3,
+          "urlCallbacksRestored": false,
+          "view": {
+            "originalParent": false,
+            "parent": "TNReactDocumentContainer",
+            "documentOrigin": 1789060550345,
+            "frame": "{{0, 0}, {393, 287}}",
+            "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+            "parentBounds": "{{0, 0}, {393, 287}}",
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "documentOrigin": 1789060550345,
+                "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+                "error": "",
+                "parent": "TaoUIView0"
+              },
+              {
+                "documentOrigin": 1789060550346,
+                "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+                "error": "",
+                "parent": "TNReactDocumentContainer"
+              },
+              {
+                "documentOrigin": 1789060550346,
+                "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+                "error": "",
+                "parent": "TaoUIView0"
+              },
+              {
+                "documentOrigin": 1789060550346,
+                "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+                "error": "",
+                "parent": "TNReactDocumentContainer"
+              }
+            ],
+            "navigationDelegateUnchanged": true,
+            "parentFrame": "{{0, 0}, {393, 287}}"
+          },
+          "delegateUnchanged": true,
+          "listeners": 1,
+          "permissionRetirement": {
+            "listeners": 0,
+            "generation": 2,
+            "runtimeStatus": "ready",
+            "paused": 1,
+            "pid": 31250
+          },
+          "reactThreads": [
+            "com.facebook.react.runtime.JavaScript"
+          ],
+          "launchURL": null,
+          "pid": 31250,
+          "listenersAfterRelease": 0,
+          "appDelegate": "AppDelegate"
+        },
+        "replaced": {
+          "paused": 2,
+          "unrelatedActivityHandled": false,
+          "browsingActivityHandled": true,
+          "generation": 4,
+          "restorationCalls": 0,
+          "hostClosed": false,
+          "stopped": 1,
+          "retireOnPause": false,
+          "resumed": 3,
+          "urlCallbacksRestored": false,
+          "view": {
+            "originalParent": true,
+            "parent": "TaoUIView0",
+            "documentOrigin": 1789060550345,
+            "frame": "{{0, 0}, {393, 852}}",
+            "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+            "parentBounds": "{{0, 0}, {393, 852}}",
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "documentOrigin": 1789060550345,
+                "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+                "error": "",
+                "parent": "TaoUIView0"
+              },
+              {
+                "documentOrigin": 1789060550346,
+                "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+                "error": "",
+                "parent": "TNReactDocumentContainer"
+              },
+              {
+                "documentOrigin": 1789060550346,
+                "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+                "error": "",
+                "parent": "TaoUIView0"
+              },
+              {
+                "documentOrigin": 1789060550346,
+                "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+                "error": "",
+                "parent": "TNReactDocumentContainer"
+              },
+              {
+                "documentOrigin": 1789060550346,
+                "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+                "error": "",
+                "parent": "TaoUIView0"
+              }
+            ],
+            "navigationDelegateUnchanged": true,
+            "parentFrame": "{{0, 0}, {393, 852}}"
+          },
+          "delegateUnchanged": true,
+          "listeners": 1,
+          "permissionRetirement": {
+            "listeners": 0,
+            "generation": 2,
+            "runtimeStatus": "ready",
+            "paused": 1,
+            "pid": 31250
+          },
+          "reactThreads": [
+            "com.facebook.react.runtime.JavaScript"
+          ],
+          "launchURL": null,
+          "pid": 31250,
+          "listenersAfterRelease": 0,
+          "appDelegate": "AppDelegate"
+        }
+      },
+      "closed": {
+        "paused": 2,
+        "unrelatedActivityHandled": false,
+        "browsingActivityHandled": true,
+        "generation": 4,
+        "restorationCalls": 0,
+        "hostClosed": true,
+        "stopped": 1,
+        "retireOnPause": false,
+        "resumed": 3,
+        "urlCallbacksRestored": true,
+        "view": {
+          "originalParent": true,
+          "parent": "TaoUIView0",
+          "documentOrigin": 1789060550345,
+          "frame": "{{0, 0}, {393, 852}}",
+          "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+          "parentBounds": "{{0, 0}, {393, 852}}",
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "documentOrigin": 1789060550345,
+              "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+              "error": "",
+              "parent": "TaoUIView0"
+            },
+            {
+              "documentOrigin": 1789060550346,
+              "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+              "error": "",
+              "parent": "TNReactDocumentContainer"
+            },
+            {
+              "documentOrigin": 1789060550346,
+              "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+              "error": "",
+              "parent": "TaoUIView0"
+            },
+            {
+              "documentOrigin": 1789060550346,
+              "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+              "error": "",
+              "parent": "TNReactDocumentContainer"
+            },
+            {
+              "documentOrigin": 1789060550346,
+              "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+              "error": "",
+              "parent": "TaoUIView0"
+            },
+            {
+              "documentOrigin": 1789060550346,
+              "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+              "error": "",
+              "parent": "TNReactDocumentContainer"
+            },
+            {
+              "documentOrigin": 1789060550346,
+              "documentToken": "A90FA58D-4D20-4097-BF04-0A058D60603C",
+              "error": "",
+              "parent": "TaoUIView0"
+            }
+          ],
+          "navigationDelegateUnchanged": true,
+          "parentFrame": "{{0, 0}, {393, 852}}"
+        },
+        "delegateUnchanged": true,
+        "listeners": 0,
+        "permissionRetirement": {
+          "listeners": 0,
+          "generation": 2,
+          "runtimeStatus": "ready",
+          "paused": 1,
+          "pid": 31250
+        },
+        "reactThreads": [],
+        "launchURL": null,
+        "pid": 31250,
+        "listenersAfterRelease": 0,
+        "appDelegate": "AppDelegate"
+      },
+      "notes": [
+        {
+          "id": 1,
+          "text": "A RN place to remember",
+          "latitude": 37.5665,
+          "longitude": 126.978
+        },
+        {
+          "id": 2,
+          "text": "A place to remember",
+          "latitude": 37.5665,
+          "longitude": 126.978
+        }
+      ],
+      "uiScenarios": [
+        "original Tauri document embedded without replacement or reload",
+        "original frontend and RN share real notes/events/ACL",
+        "competing view rejected without detaching the first",
+        "component remount and engine replacement restore the original WebView and native clients",
+        "shared original state/setup",
+        "Tauri ACL and native caller denial",
+        "OS permission denial/grant",
+        "renderer retirement during pending OS permission prevents the old continuation save",
+        "undeclared session preserves original caller_denied code/message",
+        "save and event",
+        "background deep link and event",
+        "RN Linking exact URL once per invocation including repeated identical URLs",
+        "URL during delayed renderer startup stays an event and does not become the initial URL",
+        "injected native browsing/unrelated activity preserves Tauri return values and does not duplicate restoration callbacks",
+        "cold URL reaches getInitialURL across renderer replacement and a later foreground URL event",
+        "original AppDelegate URL callbacks restored after RN removal",
+        "renderer replacement retires native subscriptions",
+        "fresh renderer receives only fresh events",
+        "removing RN terminates its JS thread and preserves the independent original Tauri frontend"
+      ],
+      "testOnlyIntegration": "Acceptance subclass supplies layout, baseline readiness and telemetry; the packed composer/SDK own startup, notification observation, readiness and attachment. A second Release app executes the unmodified generated startup/default layout with no acceptance subclass. Original Tauri UIApplication delegate preserved. Expo, third-party autolinking and OS universal-link association remain open. Cold-start URL proof also uses the default generated app without a launchApp step.",
+      "compositionSummary": {
+        "generatedFiles": 38,
+        "receiptSha256": "37ab32fc057ada6f6e0b1788bda71288d89ae04df08afc0e5fdab3b19ff42a21"
+      },
+      "nativeJUnitFlows": 25,
+      "reportSha256": "4dd53181d784b777a27103e471f7b75837890c5720640b8a7d56666cd8dcb44a",
+      "junitSha256": {
+        "activity-routing": "3b50c8c12570c94e848114e5029738b57b1a8e9a285f87943133e89c13e1eed7",
+        "attach-before-close": "cd5337e9aa9419d1fe7067e437e3d14f346413e64d26f22cfe65535f8f777284",
+        "background": "2d44e4dd508e6fb0a63315a5161cb00a8c6019c39dceed23bbcb2a80b6a0af2b",
+        "closed-link": "0e1572b713602208c734c63930994adfcf33ce3fa9e41957705a201088996145",
+        "cold-initial": "52a7fd5d845b8eb8bdbedec309b94845edabc38ede091d4328da207819c7586b",
+        "cold-next-link": "70cd93deb2b31738b6bfbfab45d9a2677f0c1de27a8e843f9ff74c336fa0b8d6",
+        "cold-remount": "2629cf77259de927ee8a5f4a81469385802157512525aafd7fbb82cfacadb418",
+        "competing-view": "15ab82d69453ccf401702ed4435cbc4a256e246321762a130c08bdcad4d556f9",
+        "default-integration": "7f8e1d91c8b903e071098dcf7d6f2c149f776f7e274a41c59799f3958bdabd9a",
+        "default-link": "11b83cfb06c395e2790bc20b35e43fb0fd623477d9d6040ce452698dec2bdd0f",
+        "default-view": "2958c0f63a5d407025d0fb354fa24b21ddc6746353e84ad7ab9878fed9b99c25",
+        "delayed-original-link": "55a8094417c978770a2712bbc647688657ebe88cc5cdde28dceed1be29cc6d7c",
+        "delayed-renderer-link": "fedeaff7340608125b5c567aa3b8433624e9944fbbc3ebb36749c5fb040cfb07",
+        "deny-permission": "c2a954510f66ca8f3b3d7c773d10ebb22c3128291e04e7fcbf9003b19ae3e86f",
+        "detach-view": "46f5afa9b85065bd02fe80cdcae0ea606ee031bd1a4969c8e1d79e7557af47d6",
+        "embedded-frontend": "ec56f79cfe236dca125802c4a02f6de3b8a3ce3236a41d65577a708aa680b610",
+        "fresh-events": "315b13e50de1c448fb35815c72484c8b5ccc6681e446f7d43f318d033214a38f",
+        "grant-permission": "64a86ebf379730e9f5ce312690af21b0631aa13104a7da997ebed2c41c30309a",
+        "initial": "7bd268cd5b47c184f973e04183f0e11e6c42ed1a211620cf178995b9713ac480",
+        "remount-view": "4703758a13868c26b0d350d17a7fba1a1a944c97055cba64252eece39e53e8c1",
+        "remove-renderer": "5577015b402fa9adf7de501b4f802dbb63115c5a008f59cbffbb4e4e497945a3",
+        "repeated-link": "191afe66905770771f8acf68131103f2dd4738beb3b83ba88b5b00de53467331",
+        "replace-renderer-with-view": "578f2db346fad802365e6df25b21d00857447c30f0fc6bc7923abfed949fd7df",
+        "resume": "e57f91cc8ecb287703cf1fb1fbbad95ca3a2d1c7317e3cc6c8edfc1e4b712400",
+        "retire-permission": "711043bd4dcc92f31b8362c4ed0ef1c88dccf3b95e95a53841562e17410c0aba"
+      },
+      "packageVerification": {
+        "files": 116,
+        "allPackedFilesUsedByThisPlatformMatchCurrentSdk": true,
+        "otherPlatformChangesAfterPacking": [
+          {
+            "path": "android/retained/src/main/jni/CMakeLists.txt",
+            "reason": "Android-only Folly flags were added after iOS execution; no iOS native, JS or composer file changed."
+          }
+        ]
+      },
+      "buildLogSha256": {
+        "source-free-build": "c796a258b95ce874ff6264927489da0631b29998f18a2e555d20383e0e7de578",
+        "default-source-free-build": "f51a2e6b31d06a26d4b242e732d452eb168af42acc64d9d164efdbb5a38498f5"
+      }
+    },
+    {
+      "passed": true,
+      "platform": "android",
+      "profile": "release",
+      "formatVersion": 2,
+      "abiVersion": 3,
+      "renderer": "React Native 0.86.3 / Hermes 250829098.0.17 / generated TurboModule and Fabric",
+      "sourceFree": true,
+      "sourceFreeBuild": "PATH=/usr/bin:/bin:/usr/sbin:/sbin ./gradlew --no-daemon assembleRelease",
+      "nonDebuggable": true,
+      "libraries": [
+        "lib/arm64-v8a/libappmodules.so",
+        "lib/arm64-v8a/libc++_shared.so",
+        "lib/arm64-v8a/libfbjni.so",
+        "lib/arm64-v8a/libhermestooling.so",
+        "lib/arm64-v8a/libhermesvm.so",
+        "lib/arm64-v8a/libimagepipeline.so",
+        "lib/arm64-v8a/libjsi.so",
+        "lib/arm64-v8a/libnative-filters.so",
+        "lib/arm64-v8a/libnative-imagetranscoder.so",
+        "lib/arm64-v8a/libordinary_tauri_mobile_fieldnotes_lib.so",
+        "lib/arm64-v8a/libreactnative.so"
+      ],
+      "elfAlignment": "All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed",
+      "packageSha256": "62ac23d3f37cf2b1e109eca850d9c823562c4c38fccbe2da5f9c8b9d791a7b1c",
+      "artifactSha256": "fb5f29d07ace2c715df7b4b4121fc57f2fa8df5b4cf4cf32d298dac7dc4595d5",
+      "apkSha256": "d626a0e3d1ae212713507a03fb7ffcbe42ad2f12244a7405cc0e69e86e143226",
+      "defaultActivity": {
+        "activity": "dev.taurinative.mobilefieldnotes.TauriNativeActivity",
+        "pid": "6964",
+        "apkSha256": "8810fe478766f3097473e05dab484c3862ca4c21853d791128e87c99864b4fba",
+        "overriddenHooks": false
+      },
+      "bundleSha256": "53346713a86333bb73758fe7ffb12b07842092cb96685ecb8ee93a983f8bd41c",
+      "baseline": {
+        "directory": "/data/user/0/dev.taurinative.mobilefieldnotes",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      },
+      "initial": {
+        "generation": 1,
+        "resumed": 1,
+        "paused": 0,
+        "stopped": 0,
+        "hostClosed": false,
+        "retireOnPause": false,
+        "permissionRetirement": null,
+        "hostDestroyed": false,
+        "receivedIntents": [],
+        "listeners": 1,
+        "listenersAfterRelease": -1,
+        "pid": 4181,
+        "view": {
+          "originalParent": true,
+          "parent": "android.widget.LinearLayout",
+          "documentOrigin": "1.7890612278542e+12",
+          "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa",
+          "navigationDelegateUnchanged": true,
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.7890612278542E12",
+              "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+            }
+          ]
+        },
+        "notes": []
+      },
+      "permissionRetired": {
+        "generation": 2,
+        "resumed": 2,
+        "paused": 2,
+        "stopped": 0,
+        "hostClosed": false,
+        "retireOnPause": false,
+        "permissionRetirement": {
+          "generation": 2,
+          "listeners": 0,
+          "paused": 2,
+          "runtimeStatus": "ready",
+          "pid": 4181
+        },
+        "hostDestroyed": false,
+        "receivedIntents": [],
+        "listeners": 1,
+        "listenersAfterRelease": 0,
+        "pid": 4181,
+        "view": {
+          "originalParent": true,
+          "parent": "android.widget.LinearLayout",
+          "documentOrigin": "1.7890612278542e+12",
+          "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa",
+          "navigationDelegateUnchanged": true,
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.7890612278542E12",
+              "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+            }
+          ]
+        },
+        "notes": []
+      },
+      "remounted": {
+        "generation": 3,
+        "resumed": 4,
+        "paused": 3,
+        "stopped": 1,
+        "hostClosed": false,
+        "retireOnPause": false,
+        "permissionRetirement": {
+          "generation": 2,
+          "listeners": 0,
+          "paused": 2,
+          "runtimeStatus": "ready",
+          "pid": 4181
+        },
+        "hostDestroyed": false,
+        "receivedIntents": [
+          "tauri-fieldnotes://notes/1"
+        ],
+        "listeners": 1,
+        "listenersAfterRelease": 0,
+        "pid": 4181,
+        "view": {
+          "originalParent": true,
+          "parent": "android.widget.LinearLayout",
+          "documentOrigin": "1.7890612278542e+12",
+          "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa",
+          "navigationDelegateUnchanged": true,
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.7890612278542E12",
+              "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+            }
+          ]
+        },
+        "notes": [
+          {
+            "id": 1,
+            "text": "A RN place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          }
+        ]
+      },
+      "viewIntegration": {
+        "attached": {
+          "generation": 3,
+          "resumed": 5,
+          "paused": 4,
+          "stopped": 1,
+          "hostClosed": false,
+          "retireOnPause": false,
+          "permissionRetirement": {
+            "generation": 2,
+            "listeners": 0,
+            "paused": 2,
+            "runtimeStatus": "ready",
+            "pid": 4181
+          },
+          "hostDestroyed": false,
+          "receivedIntents": [
+            "tauri-fieldnotes://notes/1",
+            "tauri-fieldnotes://notes/1?remounted=1"
+          ],
+          "listeners": 1,
+          "listenersAfterRelease": 0,
+          "pid": 4181,
+          "view": {
+            "originalParent": false,
+            "parent": "I4.b",
+            "documentOrigin": "1.7890612278542e+12",
+            "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa",
+            "navigationDelegateUnchanged": true,
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.7890612278542E12",
+                "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+              },
+              {
+                "parent": "I4.b",
+                "documentOrigin": "1.7890612278542E12",
+                "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+              }
+            ]
+          },
+          "notes": [
+            {
+              "id": 1,
+              "text": "A RN place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            },
+            {
+              "id": 2,
+              "text": "A place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            }
+          ]
+        },
+        "contended": {
+          "generation": 3,
+          "resumed": 5,
+          "paused": 4,
+          "stopped": 1,
+          "hostClosed": false,
+          "retireOnPause": false,
+          "permissionRetirement": {
+            "generation": 2,
+            "listeners": 0,
+            "paused": 2,
+            "runtimeStatus": "ready",
+            "pid": 4181
+          },
+          "hostDestroyed": false,
+          "receivedIntents": [
+            "tauri-fieldnotes://notes/1",
+            "tauri-fieldnotes://notes/1?remounted=1"
+          ],
+          "listeners": 1,
+          "listenersAfterRelease": 0,
+          "pid": 4181,
+          "view": {
+            "originalParent": false,
+            "parent": "I4.b",
+            "documentOrigin": "1.7890612278542e+12",
+            "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa",
+            "navigationDelegateUnchanged": true,
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.7890612278542E12",
+                "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+              },
+              {
+                "parent": "I4.b",
+                "documentOrigin": "1.7890612278542E12",
+                "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+              }
+            ]
+          },
+          "notes": [
+            {
+              "id": 1,
+              "text": "A RN place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            },
+            {
+              "id": 2,
+              "text": "A place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            }
+          ]
+        },
+        "detached": {
+          "generation": 3,
+          "resumed": 5,
+          "paused": 4,
+          "stopped": 1,
+          "hostClosed": false,
+          "retireOnPause": false,
+          "permissionRetirement": {
+            "generation": 2,
+            "listeners": 0,
+            "paused": 2,
+            "runtimeStatus": "ready",
+            "pid": 4181
+          },
+          "hostDestroyed": false,
+          "receivedIntents": [
+            "tauri-fieldnotes://notes/1",
+            "tauri-fieldnotes://notes/1?remounted=1"
+          ],
+          "listeners": 1,
+          "listenersAfterRelease": 0,
+          "pid": 4181,
+          "view": {
+            "originalParent": true,
+            "parent": "android.widget.LinearLayout",
+            "documentOrigin": "1.7890612278542e+12",
+            "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa",
+            "navigationDelegateUnchanged": true,
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.7890612278542E12",
+                "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+              },
+              {
+                "parent": "I4.b",
+                "documentOrigin": "1.7890612278542E12",
+                "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+              },
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.7890612278542E12",
+                "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+              }
+            ]
+          },
+          "notes": [
+            {
+              "id": 1,
+              "text": "A RN place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            },
+            {
+              "id": 2,
+              "text": "A place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            }
+          ]
+        },
+        "remounted": {
+          "generation": 3,
+          "resumed": 5,
+          "paused": 4,
+          "stopped": 1,
+          "hostClosed": false,
+          "retireOnPause": false,
+          "permissionRetirement": {
+            "generation": 2,
+            "listeners": 0,
+            "paused": 2,
+            "runtimeStatus": "ready",
+            "pid": 4181
+          },
+          "hostDestroyed": false,
+          "receivedIntents": [
+            "tauri-fieldnotes://notes/1",
+            "tauri-fieldnotes://notes/1?remounted=1"
+          ],
+          "listeners": 1,
+          "listenersAfterRelease": 0,
+          "pid": 4181,
+          "view": {
+            "originalParent": false,
+            "parent": "I4.b",
+            "documentOrigin": "1.7890612278542e+12",
+            "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa",
+            "navigationDelegateUnchanged": true,
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.7890612278542E12",
+                "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+              },
+              {
+                "parent": "I4.b",
+                "documentOrigin": "1.7890612278542E12",
+                "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+              },
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.7890612278542E12",
+                "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+              },
+              {
+                "parent": "I4.b",
+                "documentOrigin": "1.7890612278542E12",
+                "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+              }
+            ]
+          },
+          "notes": [
+            {
+              "id": 1,
+              "text": "A RN place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            },
+            {
+              "id": 2,
+              "text": "A place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            }
+          ]
+        },
+        "replaced": {
+          "generation": 4,
+          "resumed": 5,
+          "paused": 4,
+          "stopped": 1,
+          "hostClosed": false,
+          "retireOnPause": false,
+          "permissionRetirement": {
+            "generation": 2,
+            "listeners": 0,
+            "paused": 2,
+            "runtimeStatus": "ready",
+            "pid": 4181
+          },
+          "hostDestroyed": false,
+          "receivedIntents": [
+            "tauri-fieldnotes://notes/1",
+            "tauri-fieldnotes://notes/1?remounted=1"
+          ],
+          "listeners": 1,
+          "listenersAfterRelease": 0,
+          "pid": 4181,
+          "view": {
+            "originalParent": true,
+            "parent": "android.widget.LinearLayout",
+            "documentOrigin": "1.7890612278542e+12",
+            "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa",
+            "navigationDelegateUnchanged": true,
+            "uiDelegateUnchanged": true,
+            "transitions": [
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.7890612278542E12",
+                "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+              },
+              {
+                "parent": "I4.b",
+                "documentOrigin": "1.7890612278542E12",
+                "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+              },
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.7890612278542E12",
+                "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+              },
+              {
+                "parent": "I4.b",
+                "documentOrigin": "1.7890612278542E12",
+                "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+              },
+              {
+                "parent": "android.widget.LinearLayout",
+                "documentOrigin": "1.7890612278542E12",
+                "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+              }
+            ]
+          },
+          "notes": [
+            {
+              "id": 1,
+              "text": "A RN place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            },
+            {
+              "id": 2,
+              "text": "A place to remember",
+              "latitude": 37.5664983,
+              "longitude": 126.9779983
+            }
+          ]
+        }
+      },
+      "closed": {
+        "generation": 4,
+        "resumed": 5,
+        "paused": 4,
+        "stopped": 1,
+        "hostClosed": true,
+        "retireOnPause": false,
+        "permissionRetirement": {
+          "generation": 2,
+          "listeners": 0,
+          "paused": 2,
+          "runtimeStatus": "ready",
+          "pid": 4181
+        },
+        "hostDestroyed": true,
+        "receivedIntents": [
+          "tauri-fieldnotes://notes/1",
+          "tauri-fieldnotes://notes/1?remounted=1"
+        ],
+        "listeners": 0,
+        "listenersAfterRelease": 0,
+        "pid": 4181,
+        "view": {
+          "originalParent": true,
+          "parent": "android.widget.LinearLayout",
+          "documentOrigin": "1.7890612278542e+12",
+          "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa",
+          "navigationDelegateUnchanged": true,
+          "uiDelegateUnchanged": true,
+          "transitions": [
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.7890612278542E12",
+              "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+            },
+            {
+              "parent": "I4.b",
+              "documentOrigin": "1.7890612278542E12",
+              "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+            },
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.7890612278542E12",
+              "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+            },
+            {
+              "parent": "I4.b",
+              "documentOrigin": "1.7890612278542E12",
+              "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+            },
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.7890612278542E12",
+              "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+            },
+            {
+              "parent": "I4.b",
+              "documentOrigin": "1.7890612278542E12",
+              "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+            },
+            {
+              "parent": "android.widget.LinearLayout",
+              "documentOrigin": "1.7890612278542E12",
+              "documentToken": "b54cd630-2670-4c95-ba47-5a5d8384bbfa"
+            }
+          ]
+        },
+        "notes": [
+          {
+            "id": 1,
+            "text": "A RN place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          },
+          {
+            "id": 2,
+            "text": "A place to remember",
+            "latitude": 37.5664983,
+            "longitude": 126.9779983
+          }
+        ]
+      },
+      "notes": [
+        {
+          "id": 1,
+          "text": "A RN place to remember",
+          "latitude": 37.5664983,
+          "longitude": 126.9779983
+        },
+        {
+          "id": 2,
+          "text": "A place to remember",
+          "latitude": 37.5664983,
+          "longitude": 126.9779983
+        }
+      ],
+      "uiScenarios": [
+        "original Tauri document embedded without replacement or reload",
+        "original frontend and RN share real notes/events/ACL",
+        "competing view rejected without detaching the first",
+        "component remount and engine replacement restore the original WebView and native clients",
+        "shared original state/setup",
+        "Tauri ACL and native caller denial",
+        "OS permission denial/grant",
+        "renderer retirement during pending OS permission prevents the old continuation save",
+        "undeclared session preserves original caller_denied code/message",
+        "save and event",
+        "background deep link and event",
+        "renderer replacement retires native subscriptions",
+        "fresh renderer receives only fresh events",
+        "RN BackHandler and Linking routing",
+        "remove RN and keep original Tauri frontend"
+      ],
+      "testOnlyIntegration": "Acceptance subclass supplies layout, baseline readiness and telemetry; packed composeAndroid generates Tauri/RN attachment, startup and lifecycle forwarding. A second Release APK runs the unmodified generated Activity/default layout without that subclass. The original MainActivity and TauriActivity remain in the inheritance chain. Expo and broader source-form coverage remain open.",
+      "testOnlySigning": "Non-debuggable Release with R8 optimization and a debug test signing key; process-scoped logcat telemetry",
+      "compositionSummary": {
+        "generatedFiles": 98,
+        "receiptSha256": "733d5b236793b0dc07db181c48ab8b7db68d30168cf642889a40887984267f77"
+      },
+      "nativeJUnitFlows": 18,
+      "reportSha256": "f3dfa67bbbe777724a889cdf81fe9258d2de87cdd695b77ee2ad19414b95d446",
+      "junitSha256": {
+        "attach-before-close": "3a41b13b70e1b8ae8196fca108a3425af9348225571178ce7cf89f6f03235e18",
+        "back": "c21cc25bacdc840ac8efd2874fa8df4fe2d66b053f3f93729f214b3074ccefa3",
+        "background": "ba73286a7bfbfa1940d7f887add532e8aeca457d14841a97545199d98f6e616f",
+        "competing-view": "bc45f9a43f8f16df8033bc9b07929e144b37ba077b14c5d5f82749500ec8c2e9",
+        "default-integration": "900a6166fc36f43eaac9c238e884a37252ce301e53b53fcb7b79ee525aaf514a",
+        "default-link": "deaf88341588c4bd07f67c75e0c21940be52afdb9c9f5bd81d37fd834d486995",
+        "default-view": "0ad60de972993be601e5c4b045e7b3a3b77eae11c62bd333ebad33f5f2f42d9c",
+        "deny-permission": "53918c609efe945be49ff34ba6260273507c547bf5b4d4d5d42654dd8a5baaa5",
+        "detach-view": "f038d89b9b272d9ee3aa4f44228d85296476103dd2d6375f726f3a5a129442b0",
+        "embedded-frontend": "39d17a76f98bf591e1d56612925fd7c6551e5826a7a83f026e94d3f835d071a9",
+        "fresh-events": "99ba78435c4495fc19500e55c6fe298da633c9edf3963ced62f60881765cbf0a",
+        "grant-permission": "c09e7bb44aaeab533cedf1990301d35421c1cd8b0a868b5491ceffdea645edcc",
+        "initial": "ded184ae894762d7e6a5dd756a819e04160f36637c42db27ced255bcae5c1bee",
+        "remount-view": "7224190a9f8d919e032ffcc02caa75ee6976017cbeb146f81c1117c9687806a4",
+        "remove-renderer": "111a4383deca631400b23f15b232afb5b1f0e912cbe1cbde265c2f5f0b1a3fdd",
+        "replace-renderer-with-view": "9d125864dcd5dfa08f6facc2709e53803615721cde94773a256a1e29b8a2b172",
+        "resume": "40a72cae457c43fe6056710140711b2804e56799bd0cef4f88fe324308644d61",
+        "retire-permission": "aeb030e1db4227842e0c6b52a0d2143c4afe022c82fc30e0c111b298370fcf6f"
+      },
+      "packageVerification": {
+        "files": 116,
+        "allPackedFilesUsedByThisPlatformMatchCurrentSdk": true,
+        "otherPlatformChangesAfterPacking": []
+      },
+      "buildLogSha256": {
+        "source-free-build": "f3e24ef0786415e8b020cfedae873d55a01d6ae53e6f3957bb7ac36728ca1988",
+        "default-source-free-build": "8372704029c9ebac4a7c643d4d0417da96b2f1abbc9c5f658e7f4fc9d6178864"
+      }
+    }
+  ],
+  "references": [
+    {
+      "url": "https://docs.maestro.dev/reference/commands-available/scrolluntilvisible",
+      "purpose": "The default scroll begins at screen center and misses a lower embedded WebView. The acceptance uses a swipe within that view before asserting content below its fold."
+    }
+  ],
+  "previousAttempts": {
+    "androidFollyFailure": {
+      "gate": "target/react-retained-android-view-folly-failure",
+      "logSha256": "3b1623b4322e9fa08647900922d418e2b25c977c62cb283d63394bf4b3276c22",
+      "crashSha256": "901703eacdcdf8b1fbd46ea37b2477ea6fe1c4d680ed29716a797b38ebbf5e39",
+      "scope": "Original Tauri baseline completed. The first Fabric component descriptor aborted in folly::dynamic destruction during RawPropsParser::prepare. Generated components/OnLoad lacked the standard RN Folly compile options. The final Android CMake imports the pinned upstream folly-flags.cmake and propagates those options to both. The original failure APK, process/crash logs and Maestro screenshot are preserved."
+    },
+    "iosHeaderFailure": {
+      "gate": "target/react-retained-ios-view-header-failure",
+      "logSha256": "02d9ad0888067265f9f44088ff5e448bf4b605ddf898fad33f6f061adcd621d6",
+      "scope": "New Fabric generated includes needed the generated iOS root in the SDK pod header search path. No native acceptance ran in this failed build."
+    },
+    "iosScrollFailure": {
+      "gate": "target/react-retained-ios-view-scroll-failure",
+      "logSha256": "01536f3c147f8359909e211db94567aee3c035ba1375377c06ad6558b2414449",
+      "scope": "Initial embedded save/event/ACL, competing view and detach passed. Remount attached the original document, but Links received 4 was below the 287-point WebView viewport. Maestro screenshot/hierarchy and acceptance Release binary are preserved. The final scenario scrolls within the WebView before asserting; no production code or assertion was removed."
+    }
+  },
+  "remaining": [
+    "broader navigation/history/back and rotation acceptance",
+    "multiple WebViews/custom layout owners",
+    "Expo CNG and third-party autolinking",
+    "full parity/CI/migration and source forms",
+    "physical devices and independent adopters"
+  ]
+}

@@ -92,7 +92,7 @@ static NSURL *initialURL(NSDictionary *options) {
     if (initial && [initial isEqual:first]) [_pendingURLs removeObjectAtIndex:0];
   }
   _container = [self createReactContainer:webview];
-  _host = [[TNReactHost alloc] initWithContainer:_container module:_module bundle:_bundle launchOptions:_launchOptions];
+  _host = [[TNReactHost alloc] initWithContainer:_container webView:webview module:_module bundle:_bundle launchOptions:_launchOptions];
   for (NSURL *url in _pendingURLs) [_host handleOpenURL:url];
   [_pendingURLs removeAllObjects];
   [self reactHostDidAttach];

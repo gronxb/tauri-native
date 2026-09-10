@@ -16,6 +16,13 @@
 @property(nonatomic) NSInteger generation, resumed, paused, stopped, listenersAfterRelease;
 @property(nonatomic) BOOL hostClosed, retireOnPause;
 @property(nonatomic) NSDictionary *permissionRetirement;
+@property(nonatomic) WKWebView *originalWebview;
+@property(nonatomic, weak) UIView *originalParent, *lastParent;
+@property(nonatomic, weak) id originalNavigationDelegate, originalUIDelegate;
+@property(nonatomic) NSNumber *documentOrigin;
+@property(nonatomic) NSString *documentToken;
+@property(nonatomic) NSMutableArray *viewTransitions;
+
 @property(nonatomic) IMP originalOpenURL, originalUserActivity;
 @property(nonatomic, weak) id<UIApplicationDelegate> originalDelegate;
 @property(nonatomic) NSString *launchURL;
@@ -63,6 +70,14 @@
 }
 - (void)record {
   if (!self.generation) return;
+  if (self.lastParent != self.originalWebview.superview) {
+    self.lastParent = self.originalWebview.superview;
+    NSString *parent = NSStringFromClass(self.lastParent.class);
+    [self.originalWebview evaluateJavaScript:@"({ timeOrigin: performance.timeOrigin, token: globalThis.__tauriNativeViewAcceptanceDocument ?? null })" completionHandler:^(id document, NSError *error) {
+      [self.viewTransitions addObject:@{@"parent": parent, @"documentOrigin": document[@"timeOrigin"] ?: NSNull.null,
+        @"documentToken": document[@"token"] ?: NSNull.null, @"error": error.description ?: @""}];
+    }];
+  }
   Class delegate = object_getClass(UIApplication.sharedApplication.delegate);
   BOOL callbacksRestored = class_getMethodImplementation(delegate, @selector(application:openURL:options:)) == self.originalOpenURL &&
     class_getMethodImplementation(delegate, @selector(application:continueUserActivity:restorationHandler:)) == self.originalUserActivity;
@@ -72,6 +87,13 @@
     @"delegateUnchanged": @(self.originalDelegate == UIApplication.sharedApplication.delegate), @"urlCallbacksRestored": @(callbacksRestored),
     @"launchURL": self.launchURL ?: NSNull.null, @"unrelatedActivityHandled": @(self.unrelatedActivityHandled),
     @"browsingActivityHandled": @(self.browsingActivityHandled), @"restorationCalls": @(self.restorationCalls),
+    @"view": @{@"originalParent": @(self.originalWebview.superview == self.originalParent),
+      @"parent": NSStringFromClass(self.originalWebview.superview.class), @"documentOrigin": self.documentOrigin ?: NSNull.null,
+      @"documentToken": self.documentToken ?: NSNull.null,
+      @"frame": NSStringFromCGRect(self.originalWebview.frame), @"parentFrame": NSStringFromCGRect(self.originalWebview.superview.frame),
+      @"parentBounds": NSStringFromCGRect(self.originalWebview.superview.bounds),
+      @"navigationDelegateUnchanged": @(self.originalWebview.navigationDelegate == self.originalNavigationDelegate),
+      @"uiDelegateUnchanged": @(self.originalWebview.UIDelegate == self.originalUIDelegate), @"transitions": self.viewTransitions},
     @"pid": @(NSProcessInfo.processInfo.processIdentifier), @"appDelegate": NSStringFromClass(UIApplication.sharedApplication.delegate.class)};
   NSData *data = [NSJSONSerialization dataWithJSONObject:report options:0 error:nil];
   if (![data writeToFile:[self.directory stringByAppendingPathComponent:@"react-lifecycle.json"] atomically:YES])
@@ -97,6 +119,14 @@
 }
 - (UIView *)createReactContainer:(WKWebView *)webview {
   UIView *parent = webview.superview;
+  self.originalWebview = webview; self.originalParent = parent;
+  self.originalNavigationDelegate = webview.navigationDelegate; self.originalUIDelegate = webview.UIDelegate;
+  self.viewTransitions = [NSMutableArray new];
+  NSString *marker = [NSString stringWithFormat:@"Object.defineProperty(globalThis, '__tauriNativeViewAcceptanceDocument', { value: '%@' }); ({ timeOrigin: performance.timeOrigin, token: globalThis.__tauriNativeViewAcceptanceDocument })", NSUUID.UUID.UUIDString];
+  [webview evaluateJavaScript:marker completionHandler:^(id document, NSError *error) {
+    if (error || ![document[@"token"] isKindOfClass:NSString.class]) [NSException raise:@"AcceptanceFailure" format:@"Missing document token: %@", error];
+    self.documentOrigin = document[@"timeOrigin"]; self.documentToken = document[@"token"];
+  }];
   CGRect bounds = parent.bounds;
   self.panel = [[UIView alloc] initWithFrame:CGRectMake(0, bounds.size.height / 3, bounds.size.width, bounds.size.height * 2 / 3)];
   self.panel.backgroundColor = UIColor.whiteColor;

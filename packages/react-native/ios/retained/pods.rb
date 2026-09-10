@@ -22,7 +22,7 @@ module TauriNativeReactRetained
     FileUtils.mkdir_p(generated)
     schema = File.join(generated, 'schema.json')
     run(node, File.join(codegen, 'lib/cli/combine/combine-js-to-schema-cli.js'), '--platform', 'ios', schema, File.expand_path('../../retained/specs', __dir__))
-    run(node, File.join(rn, 'scripts/generate-specs-cli.js'), '--platform', 'ios', '--schemaPath', schema, '--outputDir', File.join(generated, 'ios'), '--libraryName', 'TauriNativeRetainedSpec', '--libraryType', 'modules')
+    run(node, File.join(rn, 'scripts/generate-specs-cli.js'), '--platform', 'ios', '--schemaPath', schema, '--outputDir', File.join(generated, 'ios'), '--libraryName', 'TauriNativeRetainedSpec', '--libraryType', 'all')
   end
 
   # RN's prebuilt frameworks are dynamic. Load its three static libraries

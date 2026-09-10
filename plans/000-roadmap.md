@@ -223,3 +223,18 @@ state and single setup. The original producer and runtime artifacts are unchange
 See [#46](https://github.com/gronxb/tauri-native/issues/46) for the precise single-view
 scope. RN TauriView, broader navigation/lifecycle and Expo/autolinking/parity/CI/
 migration/device/adopter acceptance remain open. No release or roadmap gate is closed.
+
+## Retained RN view progress — 2026-09-11
+
+The retained RN `TauriView` reuses the original Tauri WebView on both platforms.
+[43 source-free Release UI flows](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-rn-view-2026-09-11.json) pass from packed SDKs,
+including unmodified generated startup/default layouts. Original frontend save/
+event/ACL behavior shares real Tauri state with RN. Competing mounts are rejected;
+view/engine remount and close preserve the document and native handlers and
+restore the original parent. Existing RN iOS Linking, Android BackHandler and
+pending-permission retirement gates still pass. All 14 authored producer files
+and both runtime artifacts remain unchanged. See
+[#45](https://github.com/gronxb/tauri-native/issues/45) for the single-view scope.
+Expo/autolinking, broader navigation/lifecycle/source forms and complete parity/
+CI/migration/device/adopter acceptance remain open. No release or roadmap gate
+is closed by this increment.

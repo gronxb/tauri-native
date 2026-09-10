@@ -7,6 +7,7 @@ import { createRequire } from 'node:module';
 import { setTimeout } from 'node:timers/promises';
 import { readRetainedArtifacts } from '../../../scripts/retained-artifacts.ts';
 import { sha256 } from '../../cli/src/artifacts/files.ts';
+import { assertOriginalDocument, verifyRetainedView } from './retained/view-scenarios.ts';
 import { acquireMobileTest } from '../../cli/test/runtime/mobile-lock.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
@@ -155,12 +156,16 @@ try {
   const activityRouting = report();
   assert.equal(activityRouting.unrelatedActivityHandled, false);
   assert.equal(activityRouting.browsingActivityHandled, true); assert.equal(activityRouting.restorationCalls, 0);
-  const notes = report('notes.json'); assert.equal(notes.length, 1);
-  assert.equal(notes[0].text, 'A RN place to remember');
+  const viewIntegration = verifyRetainedView(flow, report, evidence, 4, 3);
+  const notes = report('notes.json'); assert.equal(notes.length, 2);
+  assert.deepEqual(notes.map((note: { text: string }) => note.text), ['A RN place to remember', 'A place to remember']);
+  assert(Math.abs(notes[1].latitude - 37.5665) < 0.01 && Math.abs(notes[1].longitude - 126.978) < 0.01);
   assert(Math.abs(notes[0].latitude - 37.5665) < 0.01 && Math.abs(notes[0].longitude - 126.978) < 0.01);
   flow('remove-renderer', '- tapOn: "Close RN"\n- tapOn: "Refresh notes and links"\n- assertVisible: "Links received 4"');
   await until(() => report().reactThreads.length === 0);
   const closed = report(); assert.equal(closed.hostClosed, true); assert.equal(closed.listeners, 0);
+  writeFileSync(path.join(evidence, 'view-closed.json'), JSON.stringify(closed, null, 2) + '\n');
+  assertOriginalDocument(closed, false);
   assert.equal(closed.pid, saved.pid); assert.equal(closed.appDelegate, saved.appDelegate);
   assert(saved.delegateUnchanged && remounted.delegateUnchanged && closed.delegateUnchanged);
   assert.equal(saved.urlCallbacksRestored, false); assert.equal(remounted.urlCallbacksRestored, false);
@@ -181,11 +186,11 @@ try {
   assert(!existsSync(path.join(dataDirectory, 'react-lifecycle.json')));
   rmSync(hold);
   await until(() => report().pid === pid);
-  flow('delayed-renderer-link', '- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN initial none"\n- assertVisible: "RN links 1 back 0"\n- assertVisible: "RN URL tauri-fieldnotes://notes/during-startup"\n- tapOn: "Check initial URL"\n- assertVisible: "Initial API none"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 1 setup 1 plugins 1"');
+  flow('delayed-renderer-link', '- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN initial none"\n- assertVisible: "RN links 1 back 0"\n- assertVisible: "RN URL tauri-fieldnotes://notes/during-startup"\n- tapOn: "Check initial URL"\n- assertVisible: "Initial API none"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 2 setup 1 plugins 1"');
   const delayedStartup = { pid, baseline: report('runtime-report.json'), lifecycle: report() };
   assert.equal(delayedStartup.lifecycle.launchURL, null); assert(delayedStartup.lifecycle.delegateUnchanged);
   assert.equal(saved.launchURL, null);
-  const coldRemount = launchURL('cold-remount', 'tauri-fieldnotes://notes/cold-remount', '- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN initial tauri-fieldnotes://notes/cold-remount"\n- assertVisible: "RN links 0 back 0"\n- tapOn: "Reload RN"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN initial tauri-fieldnotes://notes/cold-remount"\n- assertVisible: "RN links 0 back 0"\n- tapOn: "Check initial URL"\n- assertVisible: "Initial API tauri-fieldnotes://notes/cold-remount"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 1 setup 1 plugins 1"');
+  const coldRemount = launchURL('cold-remount', 'tauri-fieldnotes://notes/cold-remount', '- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN initial tauri-fieldnotes://notes/cold-remount"\n- assertVisible: "RN links 0 back 0"\n- tapOn: "Reload RN"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN initial tauri-fieldnotes://notes/cold-remount"\n- assertVisible: "RN links 0 back 0"\n- tapOn: "Check initial URL"\n- assertVisible: "Initial API tauri-fieldnotes://notes/cold-remount"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 2 setup 1 plugins 1"');
   await until(() => report().generation === 2 && report().reactThreads.length === 1);
   const coldRemounted = report();
   assert.equal(coldRemounted.pid, coldRemount.pid); assert.equal(coldRemounted.listeners, 1);
@@ -205,6 +210,7 @@ try {
   flow('default-integration', '- assertVisible: "RN 86 Hermes"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- assertVisible: "RN initial none"\n- assertVisible: "RN URL none"\n- tapOn: "Reject session"\n- assertVisible: "Session caller_denied"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"');
   run('default-deep-link', 'xcrun', ['simctl', 'openurl', device, 'tauri-fieldnotes://notes/default']);
   flow('default-link', '- tapOn:\n    text: "(Open|열기)"\n    optional: true\n- assertVisible: "RN events 1"\n- assertVisible: "RN links 1 back 0"\n- assertVisible: "RN URL tauri-fieldnotes://notes/default"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 0 setup 1 plugins 1"');
+  flow('default-view', '- tapOn: "Show Tauri view"\n- assertVisible: "View attached"\n- tapOn: "Check denied capability"\n- assertVisible: "Tauri capability denied location watch"\n- tapOn: "Hide Tauri view"\n- assertVisible: "View detached"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 0 setup 1 plugins 1"');
   const defaultIntegration = { pid, overriddenHooks: false, baseline: report('runtime-report.json'), binarySha256: sha256(readFileSync(path.join(app, info.CFBundleExecutable))) };
   assert(!existsSync(path.join(dataDirectory, 'react-lifecycle.json')), 'Pure generated application must not execute acceptance telemetry');
   const coldIntegration = launchURL('cold-initial', 'tauri-fieldnotes://notes/cold', '- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN initial tauri-fieldnotes://notes/cold"\n- assertVisible: "RN links 0 back 0"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 0 setup 1 plugins 1"');
@@ -217,8 +223,8 @@ try {
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform: 'ios', profile: 'release', formatVersion: 2, abiVersion: 3,
     renderer: 'React Native/codegen 0.86.3 / Hermes / generated TurboModule and Fabric', sourceFree: true, sourceFreeBuild: 'PATH=/usr/bin:/bin:/usr/sbin:/sbin xcodebuild -configuration release -sdk iphonesimulator',
     packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-react-native-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
-    binarySha256: acceptanceBinarySha256, composition: receipt, podIntegration, defaultIntegration, coldIntegration, coldRemount, coldRemounted, delayedStartup, activityRouting, bundleSha256: sha256(readFileSync(bundle)), baseline, denied, permissionRetired, saved, remounted, closed, notes,
-    uiScenarios: ['shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'renderer retirement during pending OS permission prevents the old continuation save', 'undeclared session preserves original caller_denied code/message', 'save and event', 'background deep link and event', 'RN Linking exact URL once per invocation including repeated identical URLs', 'URL during delayed renderer startup stays an event and does not become the initial URL', 'injected native browsing/unrelated activity preserves Tauri return values and does not duplicate restoration callbacks', 'cold URL reaches getInitialURL across renderer replacement and a later foreground URL event', 'original AppDelegate URL callbacks restored after RN removal', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'removing RN terminates its JS thread and preserves the independent original Tauri frontend'],
+    binarySha256: acceptanceBinarySha256, composition: receipt, podIntegration, defaultIntegration, coldIntegration, coldRemount, coldRemounted, delayedStartup, activityRouting, bundleSha256: sha256(readFileSync(bundle)), baseline, denied, permissionRetired, saved, remounted, viewIntegration, closed, notes,
+    uiScenarios: ['original Tauri document embedded without replacement or reload', 'original frontend and RN share real notes/events/ACL', 'competing view rejected without detaching the first', 'component remount and engine replacement restore the original WebView and native clients', 'shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'renderer retirement during pending OS permission prevents the old continuation save', 'undeclared session preserves original caller_denied code/message', 'save and event', 'background deep link and event', 'RN Linking exact URL once per invocation including repeated identical URLs', 'URL during delayed renderer startup stays an event and does not become the initial URL', 'injected native browsing/unrelated activity preserves Tauri return values and does not duplicate restoration callbacks', 'cold URL reaches getInitialURL across renderer replacement and a later foreground URL event', 'original AppDelegate URL callbacks restored after RN removal', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'removing RN terminates its JS thread and preserves the independent original Tauri frontend'],
     testOnlyIntegration: 'Acceptance subclass supplies layout, baseline readiness and telemetry; the packed composer/SDK own startup, notification observation, readiness and attachment. A second Release app executes the unmodified generated startup/default layout with no acceptance subclass. Original Tauri UIApplication delegate preserved. Expo, third-party autolinking and OS universal-link association remain open. Cold-start URL proof also uses the default generated app without a launchApp step.',
   }, null, 2) + '\n');
   console.log(`PASS: packed RN retained iOS SDK native acceptance. ${evidence}/report.json`);

@@ -3,6 +3,7 @@ import type { Spec } from '../retained/specs/NativeTauriRuntime';
 import { openSession, type RuntimeTransport } from './retained-client';
 export type { RuntimeSession, RuntimeEvent, RuntimeFailure, InvokeResponse, InvokeRequest } from './retained-client';
 export type { InvokeOptions } from './async-client';
+export { TauriView, type TauriViewProps } from './RetainedTauriView';
 
 const transport: RuntimeTransport = (operation, callback) => {
   const module = TurboModuleRegistry.getEnforcing<Spec>('TauriNativeRuntime');

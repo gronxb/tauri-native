@@ -64,8 +64,8 @@
     "compose.d.ts"
   ],
   "scripts": {
-    "build": "node --experimental-strip-types ../../scripts/sync-host-files.ts react-native && bob build",
-    "prepack": "node --experimental-strip-types ../../scripts/sync-host-files.ts react-native && bob build",
+    "build": "node --experimental-strip-types ../../scripts/sync-host-files.ts react-native && bob build && node retained/copy-component.cjs",
+    "prepack": "node --experimental-strip-types ../../scripts/sync-host-files.ts react-native && bob build && node retained/copy-component.cjs",
     "test": "node --experimental-strip-types ../../scripts/sync-host-files.ts react-native --check && node --experimental-strip-types --test test/*.test.ts && nub run test:package",
     "test:package": "node --experimental-strip-types ../../scripts/verify-package.ts",
     "typecheck": "tsc --noEmit"

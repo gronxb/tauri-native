@@ -7,6 +7,7 @@ import { createRequire } from 'node:module';
 import { setTimeout } from 'node:timers/promises';
 import { readRetainedArtifacts } from '../../../scripts/retained-artifacts.ts';
 import { sha256 } from '../../cli/src/artifacts/files.ts';
+import { assertOriginalDocument, verifyRetainedView } from './retained/view-scenarios.ts';
 import { acquireMobileTest } from '../../cli/test/runtime/mobile-lock.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
@@ -138,12 +139,16 @@ try {
   run('remounted-deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', 'tauri-fieldnotes://notes/1?remounted=1', '-p', appId]);
   flow('fresh-events', '- assertVisible: "RN links 1 back 0"\n- assertVisible: "RN events 1"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 2 notes 1 setup 1 plugins 1"');
   assert.deepEqual(report().receivedIntents, ['tauri-fieldnotes://notes/1', 'tauri-fieldnotes://notes/1?remounted=1']);
-  const notes = report().notes; assert.equal(notes.length, 1);
-  assert.equal(notes[0].text, 'A RN place to remember');
+  const viewIntegration = verifyRetainedView(flow, report, evidence, 2, 1);
+  const notes = report().notes; assert.equal(notes.length, 2);
+  assert.deepEqual(notes.map((note: { text: string }) => note.text), ['A RN place to remember', 'A place to remember']);
+  assert(Math.abs(notes[1].latitude - 37.5665) < 0.01 && Math.abs(notes[1].longitude - 126.978) < 0.01);
   assert(Math.abs(notes[0].latitude - 37.5665) < 0.01 && Math.abs(notes[0].longitude - 126.978) < 0.01);
   flow('remove-renderer', '- tapOn: "Close RN"\n- tapOn: "Refresh notes and links"\n- assertVisible: "Links received 2"');
   await until(() => report().hostDestroyed === true);
   const closed = report(); assert.equal(closed.listeners, 0); assert.equal(closed.hostClosed, true);
+  writeFileSync(path.join(evidence, 'view-closed.json'), JSON.stringify(closed, null, 2) + '\n');
+  assertOriginalDocument(closed, false);
   assert.equal(closed.pid, initial.pid);
   assert.equal(run('final-pid', 'adb', ['-s', device, 'shell', 'pidof', appId]), pid);
   const acceptanceApk = path.join(evidence, 'acceptance-release.apk'); cpSync(apk, acceptanceApk);
@@ -159,6 +164,7 @@ try {
   flow('default-integration', '- assertVisible: "RN 86 Hermes"\n- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "RN events 0"\n- pressKey: Back\n- assertVisible: "RN links 0 back 1"\n- tapOn: "Reject session"\n- assertVisible: "Session caller_denied"\n- tapOn: "Deny capability"\n- assertVisible: "Tauri capability denied"\n- tapOn: "Deny native caller"\n- assertVisible: "Native caller denied"');
   run('default-deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', 'tauri-fieldnotes://notes/default', '-p', appId]);
   flow('default-link', '- assertVisible: "RN links 1 back 1"\n- assertVisible: "RN events 1"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 0 setup 1 plugins 1"');
+  flow('default-view', '- tapOn: "Show Tauri view"\n- assertVisible: "View attached"\n- tapOn: "Check denied capability"\n- assertVisible: "Tauri capability denied location watch"\n- tapOn: "Hide Tauri view"\n- assertVisible: "View detached"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 0 setup 1 plugins 1"');
   assert.equal(run('default-final-pid', 'adb', ['-s', device, 'shell', 'pidof', appId]), pid);
   assert.deepEqual(readRetainedArtifacts(artifact), manifest);
   assert.deepEqual(packedReader(copied), manifest);
@@ -168,8 +174,8 @@ try {
     nonDebuggable: true, libraries, elfAlignment: 'All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed',
     packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-react-native-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
     apkSha256: sha256(readFileSync(acceptanceApk)), defaultActivity: { activity: composition.activity, pid, apkSha256: sha256(readFileSync(apk)), overriddenHooks: false },
-    bundleSha256: sha256(readFileSync(bundle)), baseline, initial, permissionRetired, remounted, closed, notes,
-    uiScenarios: ['shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'renderer retirement during pending OS permission prevents the old continuation save', 'undeclared session preserves original caller_denied code/message', 'save and event', 'background deep link and event', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'RN BackHandler and Linking routing', 'remove RN and keep original Tauri frontend'],
+    bundleSha256: sha256(readFileSync(bundle)), baseline, initial, permissionRetired, remounted, viewIntegration, closed, notes,
+    uiScenarios: ['original Tauri document embedded without replacement or reload', 'original frontend and RN share real notes/events/ACL', 'competing view rejected without detaching the first', 'component remount and engine replacement restore the original WebView and native clients', 'shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'renderer retirement during pending OS permission prevents the old continuation save', 'undeclared session preserves original caller_denied code/message', 'save and event', 'background deep link and event', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'RN BackHandler and Linking routing', 'remove RN and keep original Tauri frontend'],
     composition: receipt,
     testOnlyIntegration: 'Acceptance subclass supplies layout, baseline readiness and telemetry; packed composeAndroid generates Tauri/RN attachment, startup and lifecycle forwarding. A second Release APK runs the unmodified generated Activity/default layout without that subclass. The original MainActivity and TauriActivity remain in the inheritance chain. Expo and broader source-form coverage remain open.',
     testOnlySigning: 'Non-debuggable Release with R8 optimization and a debug test signing key; process-scoped logcat telemetry',
