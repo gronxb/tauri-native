@@ -9,6 +9,7 @@ import { readRetainedArtifacts } from '../../../../scripts/retained-artifacts.ts
 import { sha256 } from '../../src/artifacts/files.ts';
 import { snapshot } from '../native-export/source-integrity.ts';
 import { acquireMobileTest } from './mobile-lock.ts';
+import { prepareRendererPermissions, rendererPermissionActivity } from './renderer-permission-recreation.ts';
 import { prepareRetainedPackage, retainedDependencies, retainedEvidence } from '../../../../scripts/retained-test-inputs.ts';
 
 const root = fileURLToPath(new URL('../../../..', import.meta.url));
@@ -18,16 +19,18 @@ const expo = mode === 'expo';
 const react = mode === 'react' || expo;
 const options = process.argv.slice(3);
 assert(options.filter(option => !option.startsWith('--')).length <= 1 &&
-  options.every(option => !option.startsWith('--') || ['--fresh-permission', '--pending-permission'].includes(option)), 'Use [artifact] [--fresh-permission | --pending-permission]');
+  options.every(option => !option.startsWith('--') || ['--fresh-permission', '--pending-permission', '--rn-permission', '--expo-permission'].includes(option)), 'Use [artifact] [--fresh-permission | --pending-permission | --rn-permission | --expo-permission]');
 const freshPermission = options.includes('--fresh-permission');
-const pendingPermission = options.includes('--pending-permission');
+const rendererOwner = options.includes('--rn-permission') ? 'rn' : options.includes('--expo-permission') ? 'expo' : undefined;
+assert(!rendererOwner || (expo && !options.includes('--pending-permission') && !(options.includes('--rn-permission') && options.includes('--expo-permission'))), 'Renderer permission scenarios require expo mode and exactly one owner flag');
+const pendingPermission = options.includes('--pending-permission') || !!rendererOwner;
 assert(!(freshPermission && pendingPermission), 'Run fresh and pending permission scenarios separately');
 const composed = mode !== 'standalone';
 assert(!pendingPermission || composed, 'Pending renderer continuation checks require react, expo or lynx');
 const initiallyUnpermitted = freshPermission || pendingPermission;
 const name = react ? 'RN' : 'Lynx';
 const device = process.env.ANDROID_SERIAL; assert(device, 'Select an ANDROID_SERIAL emulator matching the exported slices');
-const evidence = path.join(retainedEvidence(root, 'retained-activity-recreation'), ...(pendingPermission ? ['pending-permission'] : freshPermission ? ['fresh-permission'] : []), mode);
+const evidence = path.join(retainedEvidence(root, 'retained-activity-recreation'), ...(rendererOwner ? [`${rendererOwner}-permission`] : pendingPermission ? ['pending-permission'] : freshPermission ? ['fresh-permission'] : []), mode);
 const producer = path.join(evidence, 'ordinary producer');
 const consumer = path.join(evidence, 'source free consumer');
 const artifact = path.resolve(options.find(option => !option.startsWith('--')) ?? path.join(root, 'target/retained-portability/exported-runtime'));
@@ -62,7 +65,8 @@ function observations(): any[] {
   return readFileSync(lifecycleLog, 'utf8').split('\n').filter(line => line.startsWith('{') && line.endsWith('}'))
     .map(line => JSON.parse(line)).filter(row => row.pid === Number(pid));
 }
-function events(): any[] { return observations().filter(row => row.kind !== 'permission-result'); }
+function events(): any[] { return observations().filter(row => row.stage); }
+function rendererResults(kind: string): any[] { return observations().filter(row => row.kind === `renderer-${kind}`); }
 function permissionResults(): any[] { return observations().filter(row => row.kind === 'permission-result'); }
 async function until(check: () => boolean) {
   const deadline = Date.now() + 60000;
@@ -81,7 +85,7 @@ function expoModules(index: number) {
   const scroll = (text: string, direction: string) => `- scrollUntilVisible:\n    element:\n      text: ${JSON.stringify(text)}\n    direction: ${direction}`;
   flow(`expo-modules-${index}`, [
     scroll('Expo native modules', 'DOWN'), '- tapOn: "Expo native modules"',
-    scroll(`Expo native active 1 created ${index + 1} destroyed ${index} callbacks 0 activities ${index + 1}`, 'UP'),
+    scroll(`Expo native active 1 created ${index + 1} destroyed ${index} callbacks ${rendererOwner === 'expo' ? index : 0} activities ${index + 1}`, 'UP'),
     scroll(index === 0 ? 'Expo write file' : 'Expo read file', 'DOWN'),
     `- tapOn: "${index === 0 ? 'Expo write file' : 'Expo read file'}"`,
     scroll(index === 0 ? 'Expo file saved' : 'Expo file preserved', 'UP'),
@@ -92,7 +96,7 @@ function assertExpo(row: any, index: number) {
   assert.equal(row.expo.applicationCreates, 1);
   assert.equal(row.expo.activityCreates, index + 1);
   assert.equal(row.expo.created, index + 1); assert.equal(row.expo.destroyed, index);
-  assert.equal(row.expo.callbacks, 0, 'Tauri permission callbacks must not reach Expo');
+  assert.equal(row.expo.callbacks, rendererOwner === 'expo' ? index : 0, 'Only current Expo-owned camera requests may reach Expo callbacks');
   assert.equal(row.expo.backs, index + 1);
   assert.equal(row.expoApplicationHasHost, true);
 }
@@ -146,11 +150,11 @@ function addProbe(android: string, activity: string) {
     .replace('__BASE_ACTIVITY__', composed ? 'TauriNativeActivity' : 'MainActivity')
     .replace('__RUNTIME_TELEMETRY__', (composed ? 'report.put("runtime", dev.taurinative.runtime.RuntimeSession.status())' : '') +
       (expo ? '\n    report.put("expo", JSONObject(dev.taurinative.expoprobe.ProbeState.snapshot()))\n    report.put("expoApplicationHasHost", (application as TauriNativeApplication).reactHost != null)' : ''))
-    .replace('__HOST_LAYOUT__', layout);
+    .replace('__HOST_LAYOUT__', layout + (rendererOwner ? rendererPermissionActivity : ''));
   writeFileSync(path.join(android, 'app/src/main/java/dev/taurinative/mobilefieldnotes/RecreationActivity.kt'), probe);
   const file = path.join(android, 'app/src/main/AndroidManifest.xml');
   const text = readFileSync(file, 'utf8'); assert(text.includes(`android:name="${activity}"`));
-  writeFileSync(file, text.replace(`android:name="${activity}"`, 'android:name=".RecreationActivity"'));
+  writeFileSync(file, text.replace(`android:name="${activity}"`, 'android:name=".RecreationActivity"').replace('<application', `${rendererOwner ? '<uses-permission android:name="android.permission.CAMERA" />\n    ' : ''}<application`));
 }
 
 try {
@@ -210,6 +214,7 @@ try {
         cpSync(path.join(root, 'packages/react-native/test/retained/expo-probe'), path.join(renderer, 'modules/retained-expo-probe'), { recursive: true });
         writeFileSync(path.join(renderer, 'app.json'), JSON.stringify({ expo: { name: 'Retained Expo Fieldnotes', slug: 'retained-expo-fieldnotes', android: { package: appId } } }));
       }
+      if (rendererOwner) prepareRendererPermissions(renderer, sdk, rendererOwner);
       cpSync(path.join(root, 'packages/react-native/test/retained/build.cjs.fixture'), path.join(renderer, 'build.cjs'));
       writeFileSync(path.join(renderer, 'babel.config.json'), '{"presets":["babel-preset-expo"]}\n');
       run('renderer-build', process.execPath, ['build.cjs', 'android'], renderer, { ...env, PROOF_REPOSITORY: root, RETAINED_DEPENDENCIES: dependenciesRoot, RETAINED_SDK_DIR: sdk });
@@ -265,27 +270,53 @@ try {
   assert.equal(initial.result.permission.location, initiallyUnpermitted ? 'prompt' : 'granted');
   if (composed) assert.equal(initial.runtime.listeners, 1);
   for (let index = 1; index <= 2; index++) {
-    const permission = pendingPermission ? index === 1 ? 'prompt-with-rationale' : 'granted'
+    // Tauri caches rationale only for its own requests. A renderer-owned denial
+    // leaves that cache untouched; an OS grant is visible to every owner.
+    const permission = pendingPermission ? index === 1 ? rendererOwner ? 'prompt' : 'prompt-with-rationale' : 'granted'
       : freshPermission ? index === 1 ? 'prompt' : 'prompt-with-rationale' : 'granted';
     if (pendingPermission) {
-      flow(`pending-dialog-${index}`, '- tapOn: "Request then save"\n- assertVisible: "(?i)While using the app"');
-      assert.equal(permissionResults().length, index - 1, 'The real OS result is still pending');
+      flow(`pending-dialog-${index}`, (rendererOwner === 'rn' ? '- tapOn: "RN permissions"\n- tapOn: "RN request then save"' : rendererOwner === 'expo' ? '- scrollUntilVisible:\n    element:\n      text: "Expo request then save"\n    direction: DOWN\n- tapOn: "Expo request then save"' : '- tapOn: "Request then save"') + '\n- assertVisible: "(?i)While using the app"');
+      if (rendererOwner) assert.equal(rendererResults('os-result').length, 2 * (index - 1));
+      else assert.equal(permissionResults().length, index - 1, 'The real OS result is still pending');
       run(`pending-recreate-${index}`, 'adb', ['-s', device, 'shell', 'am', 'broadcast', '-a', `${appId}.RECREATE`, '-p', appId]);
       await until(() => events().filter(row => row.stage === 'create').length === index + 1 &&
         events().filter(row => row.stage === 'destroy-after').length === index);
       const recreated = events().filter(row => row.stage === 'create').at(-1)!;
-      assert.equal(permissionResults().length, index - 1, 'Recreation must not synthesize or settle the OS result');
+      if (rendererOwner) assert.equal(rendererResults('os-result').length, 2 * (index - 1), 'Recreation must not synthesize or settle the OS result');
+      else assert.equal(permissionResults().length, index - 1, 'Recreation must not synthesize or settle the OS result');
       assert.equal(events().filter(row => row.stage === 'broadcast-recreate').at(-1)!.focused, false);
       flow(`pending-result-${index}`, `- assertVisible: "(?i)While using the app"\n- tapOn: "${index === 1 ? '(?i)Don.t allow' : '(?i)While using the app'}"`);
-      await until(() => permissionResults().length === index);
-      const result = permissionResults().at(-1)!;
-      assert.equal(result.activity, recreated.activity, 'The original Tauri callback executes for the replacement Activity');
-      assert.deepEqual(Object.keys(result.grants).sort(), ['android.permission.ACCESS_COARSE_LOCATION', 'android.permission.ACCESS_FINE_LOCATION']);
-      assert(Object.values(result.grants).every(granted => granted === (index === 2)));
+      if (rendererOwner) {
+        await until(() => rendererResults('os-result').length === 2 * index - 1);
+        assert.equal(rendererResults('listener-result').length, index - 1, 'The retired renderer must not receive the old OS result');
+        const old = rendererResults('os-result').at(-1)!;
+        assert.equal(old.activity, recreated.activity);
+        // RN mount effects run after resume; observe the real next request instead
+        // of forcing a resumed lifecycle while the prior OS dialog is still open.
+        await until(() => rendererResults('request').filter(row => row.permissions.includes('android.permission.CAMERA')).length === index);
+        const nextRequest = rendererResults('request').at(-1)!;
+        assert.equal(nextRequest.activity, recreated.activity);
+        assert.deepEqual(nextRequest.permissions, ['android.permission.CAMERA']);
+        assert.deepEqual(Object.keys(old.grants).sort(), ['android.permission.ACCESS_COARSE_LOCATION', 'android.permission.ACCESS_FINE_LOCATION']);
+        assert(Object.values(old.grants).every(granted => granted === (index === 2)));
+        flow(`replacement-camera-${index}`, `- assertVisible: "(?is).*take pictures.*record video.*"\n- tapOn: "${index === 1 ? '(?i)Don.t allow' : '(?i)While using the app'}"\n- scrollUntilVisible:\n    element:\n      text: "Replacement camera result"\n    direction: DOWN\n- tapOn: "Replacement camera result"\n- scrollUntilVisible:\n    element:\n      text: "Replacement camera ${index === 1 ? 'denied' : 'granted'}"\n    direction: UP`);
+        await until(() => rendererResults('os-result').length === 2 * index && rendererResults('listener-result').length === index);
+        const current = rendererResults('listener-result').at(-1)!;
+        assert.equal(current.activity, recreated.activity);
+        assert.deepEqual(current.permissions, ['android.permission.CAMERA']);
+        assert.deepEqual(current.grants, [index === 1 ? -1 : 0]);
+        assert.deepEqual(rendererResults('os-result').at(-1)!.grants, { 'android.permission.CAMERA': index === 2 });
+      } else {
+        await until(() => permissionResults().length === index);
+        const result = permissionResults().at(-1)!;
+        assert.equal(result.activity, recreated.activity, 'The original Tauri callback executes for the replacement Activity');
+        assert.deepEqual(Object.keys(result.grants).sort(), ['android.permission.ACCESS_COARSE_LOCATION', 'android.permission.ACCESS_FINE_LOCATION']);
+        assert(Object.values(result.grants).every(granted => granted === (index === 2)));
+      }
     } else action('recreate');
     await until(() => events().filter(row => row.stage === 'create').length === index + 1 && events().filter(row => row.stage === 'webview').length === index + 1);
     flow(`recreated-ui-${index}`, composed
-      ? `- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "${name} events 0"\n- tapOn: "Check permission"\n- assertVisible: "Permission ${permission}"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 0 notes ${initiallyUnpermitted ? 0 : 1} setup 1 plugins 1"`
+      ? `${rendererOwner ? '' : '- assertVisible: "Tauri 45 setup 1 plugins 1"\n'}- assertVisible: "${name} events 0"\n- tapOn: "Check permission"\n- assertVisible: "Permission ${permission}"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 0 notes ${initiallyUnpermitted ? 0 : 1} setup 1 plugins 1"`
       : `- tapOn: "Check location permission"\n- assertVisible: "Location permission ${permission}"\n- tapOn: "Refresh notes and links"`);
     if (expo) expoModules(index);
     const after = await inspect(`after-${index}`);
@@ -342,7 +373,7 @@ try {
     assert.deepEqual(expoClosed.result.plugins, final.result.plugins);
   }
   const observed = events();
-  if (pendingPermission) assert.equal(permissionResults().length, 2, 'Each real OS result reaches the original callback exactly once');
+  if (pendingPermission) assert.equal(permissionResults().length, rendererOwner ? 0 : 2, 'Only Tauri-owned OS results reach the original Tauri callback');
   const created = observed.filter(row => row.stage === 'create');
   assert.equal(new Set(created.map(row => row.instance)).size, 3);
   assert.equal(new Set(observed.filter(row => row.stage === 'webview').map(row => row.webView)).size, 3);
@@ -359,10 +390,11 @@ try {
     testSigning: 'Debug test key; composed Release/R8 remains non-debuggable', apkSha256: sha256(readFileSync(apk)),
     ...(composed ? { artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))), packageSha256, packageSource, deviceAbi, pageSize: 16384, bundleSha256, sourceFreeBuild: `PATH=${sourceFreePath}`, artifactUnchanged: true }
       : { sourceHashes: producerBefore, producerUnchanged: true }),
-    baseline: initial.result.baseline, freshPermission, pendingPermission, recreations: 2, nativeUiFlows: (pendingPermission ? 9 : freshPermission ? 7 : 5) + (expo ? 4 : 0), events: observed,
-    ...(expo ? { expo: { initial: initial.expo, final: final.expo, closed: expoClosed.expo, permissionOwner: 'tauri', configuration: 'package-owned composition; Expo CNG is a separate gate' } } : {}),
-    ...(pendingPermission ? { permissionResults: permissionResults(), instrumentation: 'Test-only broadcast receiver triggers real recreation without foregrounding the Activity. Copied PluginManager logs after the unchanged original permission callback returns; no OS result or native routing is substituted.' } : {}),
-    limits: `${pendingPermission ? 'Both recreations occur while actual OS permission dialogs remain pending. Denial and grant each reach the original Tauri callback on the replacement Activity; retired renderer continuations save no sentinel note.' : freshPermission ? 'First permission request after recreation is denied through OS UI; a second recreation preserves the rationale state, and a later OS grant allows location save. Pending OS callbacks are a separate gate.' : 'Location permission granted before recreation; fresh/pending permissions are separate gates.'} Process death is a separate gate. The original fixture startup self-test expects initial State 40; the recreated document keeps State 45, verified directly through original IPC.`,
+    baseline: initial.result.baseline, freshPermission, pendingPermission, recreations: 2, nativeUiFlows: (pendingPermission ? 9 : freshPermission ? 7 : 5) + (expo ? 4 : 0) + (rendererOwner ? 2 : 0), events: observed,
+    ...(expo ? { expo: { initial: initial.expo, final: final.expo, closed: expoClosed.expo, permissionOwner: rendererOwner ?? 'tauri', configuration: 'package-owned composition; Expo CNG is a separate gate' } } : {}),
+    ...(rendererOwner ? { rendererPermissionOwner: rendererOwner, rendererRequests: rendererResults('request'), rendererListenerResults: rendererResults('listener-result'), rendererOsResults: rendererResults('os-result') } : {}),
+    ...(pendingPermission ? { permissionResults: permissionResults(), instrumentation: rendererOwner ? 'Test-only broadcast triggers real recreation. The replacement JS renderer automatically requests camera through the real RN/Expo API after resume. The prior OS location result must not reach the replacement camera listener. The copied SDK logs its unchanged AndroidX callback; the Activity logs before forwarding to the actual module listener. Only the disposable consumer declares camera permission.' : 'Test-only broadcast receiver triggers real recreation without foregrounding the Activity. Copied PluginManager logs after the unchanged original permission callback returns; no OS result or native routing is substituted.' } : {}),
+    limits: `${rendererOwner ? 'RN/Expo location permission remains pending during real recreation. The replacement renderer automatically requests camera when its mount effect runs after resume; only its own camera result may reach its new listener. Retired location continuations must not save. Both requests use actual OS denial/grant dialogs.' : pendingPermission ? 'Both recreations occur while actual OS permission dialogs remain pending. Denial and grant each reach the original Tauri callback on the replacement Activity; retired renderer continuations save no sentinel note.' : freshPermission ? 'First permission request after recreation is denied through OS UI; a second recreation preserves the rationale state, and a later OS grant allows location save. Pending OS callbacks are a separate gate.' : 'Location permission granted before recreation; fresh/pending permissions are separate gates.'} Process death is a separate gate. The original fixture startup self-test expects initial State 40; the recreated document keeps State 45, verified directly through original IPC.`,
   }, null, 2) + '\n');
 } catch (error) {
   if (pid) {
@@ -379,6 +411,7 @@ try {
       const result = spawnSync('adb', ['-s', device, 'logcat', '-d', '--pid', pid], { env, encoding: 'utf8', timeout: 10000 });
       writeFileSync(path.join(evidence, 'native.log'), result.stdout ?? '');
       writeFileSync(path.join(evidence, 'events.json'), JSON.stringify(events(), null, 2) + '\n');
+      if (rendererOwner) writeFileSync(path.join(evidence, 'renderer-permissions.json'), JSON.stringify({ requests: rendererResults('request'), listenerResults: rendererResults('listener-result'), osResults: rendererResults('os-result') }, null, 2) + '\n');
       if (pendingPermission) writeFileSync(path.join(evidence, 'permission-results.json'), JSON.stringify(permissionResults(), null, 2) + '\n');
     }
     if (installed) run('uninstall', 'adb', ['-s', device, 'uninstall', appId]);

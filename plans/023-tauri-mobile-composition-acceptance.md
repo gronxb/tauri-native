@@ -160,10 +160,28 @@ recreation modes and rejects missing module lifecycle/cleanup evidence. Four
 receipt tests and CLI/scripts typechecks pass. The existing hosted run at
 `002ee3a` continues independently and does not certify this new revision.
 
-Expo CNG recreation, RN/Expo-owned pending permissions, process death, broader
+Expo CNG recreation, bare-RN permission recreation, process death, broader
 navigation/channel/source forms, full same-commit hosted validation, physical
 devices and independent project evaluation remain open. The maintainer's device
 and evaluator availability remains unchanged. This increment closes no issue.
+
+## Renderer-owned permissions across recreation — 2026-09-11
+
+[Thirty additional native UI flows](../docs/evidence/retained-renderer-permission-recreation-2026-09-11.json)
+exercise actual RN and Expo permission APIs in package-owned Expo composition.
+Four real recreations retain Tauri State/setup 45/1/1. Previous location requests
+complete at the OS without reaching retired listeners; new camera requests after
+resume receive only their own denial/grant. Expo modules, persistent files,
+back/deep-link forwarding and final cleanup pass. Original producer and input
+artifact/tarball bytes stay unchanged. The copied SDK only adds observation logs.
+
+Failed ANR, paused-effect timing and Tauri permission-cache assumptions are
+preserved; corrected full runs pass without a production runtime change. Both
+owner modes are mandatory in Android CI, with five receipt tests rejecting
+missing modes, duplicate/stale/mixed results and incomplete module cleanup.
+CLI/scripts typechecks pass. These are local API 37 arm64/16 KB runs, separate
+from bare-RN, Expo CNG recreation and the still-running hosted revision.
+Remaining lifecycle, same-commit hosted, device and evaluation gates stay open.
 
 ## Scope and constraints
 

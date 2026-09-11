@@ -120,8 +120,25 @@ there is no production runtime change or fresh Rust export. The first attempt
 failed because the new test layout omitted its Close RN button. That failed
 attempt is preserved; adding the test-only control and rerunning the complete
 scenario produced the passing result. These gates use package-owned Expo
-composition, with Expo CNG recreation and RN/Expo-owned pending permissions still
-separate. Physical devices and hosted Linux/x86_64 execution are not inferred.
+composition; renderer-owned permissions are covered by the later gate below.
+Physical devices and hosted Linux/x86_64 execution are not inferred.
+
+The [renderer-owned permission evidence](evidence/retained-renderer-permission-recreation-2026-09-11.json)
+adds 30 Android Release/R8 UI flows: 15 using actual RN PermissionsAndroid and 15
+using Expo's permission API, both in package-owned Expo composition. Each
+recreates twice with an OS location dialog pending. The retired listener receives
+no result and saves no sentinel. After real resume, the replacement renderer
+requests camera and receives only its own denial/grant. Original Tauri IPC keeps
+State/setup 45/1/1; Expo modules, file persistence, back/deep-link forwarding and
+final removal pass. All producer and input artifact/tarball bytes stay unchanged;
+only the copied SDK receives observation logs. No production fix is claimed.
+
+The failed System UI ANR and two incorrect test assumptions remain recorded.
+Mount effects run after resume, and renderer-owned denial leaves Tauri's own
+rationale cache untouched (`prompt`); the gate preserves those behaviors while
+checking exact OS results. This does not certify bare-RN permission recreation
+or Expo CNG recreation. Android CI now requires both owner modes and rejects
+missing, duplicate or misrouted callbacks and incomplete Expo cleanup.
 
 ## Native ownership and dependencies
 
@@ -164,7 +181,7 @@ conflicting startup owners and edited generated files are rejected. Adding a
 new native plugin requires exporter/dependency support and actual mobile
 execution; editing the allowlist alone is insufficient.
 
-RN/Expo-owned pending permissions across Activity recreation, Expo CNG recreation, full
+Bare-RN permission recreation, Expo CNG recreation, full
 navigation/history/rotation behavior, native channel
 streaming and broader source/owner forms remain open. Expo config plugins are
 supported within the [documented native configuration/resource boundary](../packages/react-native/RETAINED.md#expo-config-plugins-and-native-regeneration).

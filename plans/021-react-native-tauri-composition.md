@@ -519,3 +519,22 @@ This completes the scoped package-owned CNG/config-plugin generation and native
 execution stage. Broader native packages and source/lifecycle owners, app-local
 codegen, full navigation/rotation, complete parity/CI/migration, physical devices
 and independent adopters remain required. #45 and release gates remain open.
+
+## Renderer-owned Android permissions across recreation — 2026-09-11
+
+[Native evidence](../docs/evidence/retained-renderer-permission-recreation-2026-09-11.json)
+adds 30 transferred-SDK Release/R8 UI flows in package-owned Expo composition:
+15 through actual RN PermissionsAndroid and 15 through Expo's permission API.
+Each performs two real Activity recreations with location permission pending,
+then requests camera from the replacement renderer after resume. Exact OS
+denial/grant results reach only the current camera listener; retired location
+continuations save no sentinel and original Tauri callbacks remain independent.
+State/setup 45/1/1, Expo creation/destruction, file persistence, back/deep links
+and complete final renderer removal pass. Producer and input bytes stay unchanged.
+
+The gate adds only test actions and observation logs. Earlier ANR, paused-effect
+timing and foreign permission-cache expectation failures remain separate from
+the corrected full runs. No production permission fix is inferred. Five receipt
+tests and CLI/scripts typechecks pass; CI requires both new owner scenarios.
+Bare-RN and Expo CNG recreation, process death, broader navigation/channel/source
+forms, full hosted parity and device/adopter evidence remain open.

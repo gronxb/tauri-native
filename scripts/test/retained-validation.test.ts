@@ -39,23 +39,36 @@ function native(platform: Platform): RetainedNativeReceipt {
     const extra = sdk === 'expo' ? 4 : 0;
     rows.push([`${sdk}-recreation`, 5 + extra], [`${sdk}-fresh-permission`, 7 + extra], [`${sdk}-pending-permission`, 9 + extra]);
   }
+  if (platform === 'android') rows.push(['expo-rn-permission', 15], ['expo-expo-permission', 15]);
   return { schemaVersion: 1, passed: true, commit: producer.commit, platform, packages: producer.packages,
     producerReceiptSha256: sha(producer), retainedProducerSha256: sha(retained),
     gates: rows.map(([name, count]) => {
       const sdk = name.startsWith('lynx') ? 'lynx' : 'react-native';
+      const owner = name === 'expo-rn-permission' ? 'rn' : name === 'expo-expo-permission' ? 'expo' : undefined;
+      const location = ['android.permission.ACCESS_FINE_LOCATION', 'android.permission.ACCESS_COARSE_LOCATION'];
+      const camera = ['android.permission.CAMERA'];
       const report = { passed: true, platform, profile: 'release', formatVersion: 2, abiVersion: 3,
         artifactSha256: retained.exports[platform].artifactSha256, cliPackageSha256: producer.packages[0]!.sha256,
         packageSource: 'transferred', packageSha256: producer.packages.find(item => item.sdk === sdk)!.sha256,
         sourceFree: true, deviceAbi: 'x86_64', pageSize: 16384, nonDebuggable: true, architectures: ['arm64'],
         expo: name.startsWith('expo-') ? {
-          permissionOwner: 'tauri',
+          permissionOwner: owner ?? 'tauri',
           initial: { applicationCreates: 1, created: 1, destroyed: 0, activityCreates: 1, backs: 1, callbacks: 0 },
-          final: { applicationCreates: 1, created: 3, destroyed: 2, activityCreates: 3, backs: 3, callbacks: 0 },
-          closed: { applicationCreates: 1, created: 3, destroyed: 3, activityCreates: 3, backs: 3, callbacks: 0 },
+          final: { applicationCreates: 1, created: 3, destroyed: 2, activityCreates: 3, backs: 3, callbacks: owner === 'expo' ? 2 : 0 },
+          closed: { applicationCreates: 1, created: 3, destroyed: 3, activityCreates: 3, backs: 3, callbacks: owner === 'expo' ? 2 : 0 },
         } : name === 'expo', cng: name === 'expo' ? { nativeProbe: 'executed' } : false,
         mode: name === 'standalone' ? 'standalone Tauri Mobile' : name.split('-')[0],
         producerDeleted: true, producerUnchanged: true, sourceHashes, transferredBinarySha256: retained.standalone[platform].binarySha256,
-        recreations: 2, nativeUiFlows: count, pendingPermission: name.endsWith('pending-permission'), freshPermission: name.endsWith('fresh-permission'),
+        recreations: 2, nativeUiFlows: count, pendingPermission: !!owner || name.endsWith('pending-permission'), freshPermission: name.endsWith('fresh-permission'),
+        ...(owner ? {
+          rendererPermissionOwner: owner, permissionResults: [],
+          rendererRequests: [0, 1].flatMap(index => [{ activity: index + 1, permissions: location }, { activity: index + 2, permissions: camera }]),
+          rendererListenerResults: [0, 1].map(index => ({ activity: index + 2, permissions: camera, grants: [index === 1 ? 0 : -1] })),
+          rendererOsResults: [0, 1].flatMap(index => [
+            { activity: index + 2, hasCurrentRequest: false, grants: Object.fromEntries(location.map(permission => [permission, index === 1])) },
+            { activity: index + 2, hasCurrentRequest: true, grants: { 'android.permission.CAMERA': index === 1 } },
+          ]),
+        } : {}),
       };
       return { name, report, reportSha256: sha(report), flows: Array.from({ length: count }, (_, index) => ({ name: `flow-${index}`, sha256: sha(`${name}-${index}`) })) };
     }),
@@ -115,6 +128,25 @@ test('Expo recreation certification rejects missing scenarios and incomplete nat
     assert.throws(() => validate(changeReport(native('android'), 'expo-fresh-permission', report => {
       (report.expo as { closed: Record<string, number> }).closed[key] = value;
     })));
+  }
+});
+
+test('renderer permission certification rejects stale listeners, mixed results and missing owner gates', () => {
+  const validate = (input: unknown) => validateRetainedNative(input, 'android', retained, sha(retained));
+  for (const owner of ['rn', 'expo']) {
+    const name = `expo-${owner}-permission`;
+    const missing = native('android'); missing.gates = missing.gates.filter(gate => gate.name !== name);
+    assert.throws(() => validate(missing), /Missing retained native gate/);
+    for (const mutate of [
+      (report: any) => { report.rendererListenerResults[0].activity = 1; },
+      (report: any) => { report.rendererListenerResults.push(report.rendererListenerResults[0]); },
+      (report: any) => { report.rendererOsResults[0].hasCurrentRequest = true; },
+      (report: any) => { report.rendererOsResults[0].grants = {}; },
+      (report: any) => { report.rendererListenerResults[0].permissions = ['android.permission.ACCESS_FINE_LOCATION']; },
+      (report: any) => { report.rendererListenerResults[1].grants = [-1]; },
+      (report: any) => { report.permissionResults = report.rendererOsResults; },
+      (report: any) => { report.expo.closed.callbacks = owner === 'expo' ? 3 : 1; },
+    ]) assert.throws(() => validate(changeReport(native('android'), name, mutate)));
   }
 });
 

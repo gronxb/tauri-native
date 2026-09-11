@@ -4,7 +4,7 @@ import type { Platform, ProducerReceipt, RetainedNativeReceipt, RetainedProducer
 
 const hash = (value: string) => assert.match(value, /^[a-f0-9]{64}$/);
 export const retainedGates = (platform: Platform) => ['standalone', 'native', 'react-native', 'expo', 'lynx',
-  ...(platform === 'android' ? ['react', 'expo', 'lynx'].flatMap(sdk => ['recreation', 'fresh-permission', 'pending-permission'].map(mode => `${sdk}-${mode}`)) : [])];
+  ...(platform === 'android' ? [...['react', 'expo', 'lynx'].flatMap(sdk => ['recreation', 'fresh-permission', 'pending-permission'].map(mode => `${sdk}-${mode}`)), 'expo-rn-permission', 'expo-expo-permission'] : [])];
 
 export function validateRetainedProducer(input: unknown, producer: ProducerReceipt, producerSha256: string) {
   const receipt = input as RetainedProducerReceipt;
@@ -93,22 +93,46 @@ export function validateRetainedNative(input: unknown, platform: Platform, produ
     }
     if (recreation) {
       const expo = gate.name.startsWith('expo-');
+      const owner = gate.name === 'expo-rn-permission' ? 'rn' : gate.name === 'expo-expo-permission' ? 'expo' : undefined;
       assert.equal(report.mode, gate.name.split('-')[0]);
       assert.equal(report.recreations, 2);
       assert.equal(gate.flows.length, report.nativeUiFlows);
-      assert.equal(report.nativeUiFlows, (gate.name.endsWith('pending-permission') ? 9 : gate.name.endsWith('fresh-permission') ? 7 : 5) + (expo ? 4 : 0));
-      assert.equal(report.pendingPermission, gate.name.endsWith('pending-permission'));
+      assert.equal(report.nativeUiFlows, owner ? 15 : (gate.name.endsWith('pending-permission') ? 9 : gate.name.endsWith('fresh-permission') ? 7 : 5) + (expo ? 4 : 0));
+      assert.equal(report.pendingPermission, !!owner || gate.name.endsWith('pending-permission'));
       assert.equal(report.freshPermission, gate.name.endsWith('fresh-permission'));
       if (expo) {
         const modules = report.expo as { initial: Record<string, number>; final: Record<string, number>; closed: Record<string, number>; permissionOwner: string };
         assert(modules && typeof modules === 'object', 'Expo recreation needs native module lifecycle evidence');
-        assert.equal(modules.permissionOwner, 'tauri');
+        assert.equal(modules.permissionOwner, owner ?? 'tauri');
         for (const [phase, created, destroyed, activities, backs] of [['initial', 1, 0, 1, 1], ['final', 3, 2, 3, 3], ['closed', 3, 3, 3, 3]] as const) {
           const state = modules[phase];
           assert.equal(state.applicationCreates, 1);
           assert.equal(state.created, created); assert.equal(state.destroyed, destroyed);
           assert.equal(state.activityCreates, activities); assert.equal(state.backs, backs);
-          assert.equal(state.callbacks, 0, 'Tauri permission results must not reach Expo');
+          assert.equal(state.callbacks, owner === 'expo' && phase !== 'initial' ? 2 : 0, 'Only current Expo requests may reach Expo callbacks');
+        }
+      }
+      if (owner) {
+        assert.equal(report.rendererPermissionOwner, owner);
+        assert.deepEqual(report.permissionResults, [], 'Renderer results must not reach the Tauri permission callback');
+        const { rendererRequests: requests, rendererListenerResults: listeners, rendererOsResults: results } = report;
+        assert(Array.isArray(requests) && Array.isArray(listeners) && Array.isArray(results), 'Renderer permission evidence is missing');
+        assert.equal(requests.length, 4); assert.equal(listeners.length, 2); assert.equal(results.length, 4);
+        const location = ['android.permission.ACCESS_FINE_LOCATION', 'android.permission.ACCESS_COARSE_LOCATION'];
+        const camera = ['android.permission.CAMERA'];
+        for (let index = 0; index < 2; index++) {
+          const previous: Record<string, unknown> = requests[index * 2], current: Record<string, unknown> = requests[index * 2 + 1];
+          assert.notEqual(previous.activity, current.activity, 'Permission owner must recreate');
+          assert.deepEqual(previous.permissions, location); assert.deepEqual(current.permissions, camera);
+          assert.equal(results[index * 2].activity, current.activity);
+          assert.equal(results[index * 2].hasCurrentRequest, false, 'Old result must not settle a new request');
+          assert.deepEqual(results[index * 2].grants, Object.fromEntries(location.map(permission => [permission, index === 1])));
+          assert.equal(results[index * 2 + 1].activity, current.activity);
+          assert.equal(results[index * 2 + 1].hasCurrentRequest, true);
+          assert.deepEqual(results[index * 2 + 1].grants, { 'android.permission.CAMERA': index === 1 });
+          assert.equal(listeners[index].activity, current.activity, 'Retired listener received a result');
+          assert.deepEqual(listeners[index].permissions, camera);
+          assert.deepEqual(listeners[index].grants, [index === 1 ? 0 : -1]);
         }
       }
     }

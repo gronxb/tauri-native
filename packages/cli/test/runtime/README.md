@@ -62,6 +62,9 @@ node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts 
 # Recreate while the actual OS permission dialog remains pending:
 node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts react /path/to/retained-android --pending-permission
 node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts lynx /path/to/retained-android --pending-permission
+# Expo composition, with a pending request owned by RN or Expo respectively:
+node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts expo /path/to/retained-android --rn-permission
+node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts expo /path/to/retained-android --expo-permission
 ```
 
 The standalone runner builds the ordinary fixture with the Tauri CLI. Its probe
@@ -102,12 +105,32 @@ under `target/retained-activity-recreation/pending-permission/{react,lynx}`.
 The [pending-callback evidence](../../../../docs/evidence/retained-pending-recreation-2026-09-11.json)
 also preserves the failure with an artifact predating the registration fix.
 
+Expo mode adds actual native module lifecycle, persistent file, back/deep-link
+and final renderer-removal checks. Its normal/fresh/pending Tauri permission
+scenarios contain 9/11/13 UI flows respectively.
+
+The separate `--rn-permission` and `--expo-permission` modes each require 15 UI
+flows in package-owned Expo composition. They call the real RN PermissionsAndroid
+or Expo permission API, recreate while location permission is pending, and then
+request camera from the replacement renderer's mount effect after resume. Actual
+OS denial and grant must reach only the current camera listener. The retired
+location continuation must never save, and no renderer-owned result may reach
+Tauri's permission callback. The copied SDK receives observation-only logging;
+the disposable consumer adds camera permission. Reports live under
+`target/retained-activity-recreation/{rn-permission,expo-permission}/expo`.
+
+Original Tauri checks show `prompt` after renderer-owned denial: Tauri updates its
+own rationale cache only from its own permission callback. An OS grant is visible
+to Tauri regardless of request owner. These scenarios preserve that behavior and
+verify exact OS results separately. They do not establish bare-RN or Expo CNG
+recreation, nor force JS effects to run while the Activity is paused.
+
 The ordinary fixture's ten startup scenarios run before recreation. Its
 one-time initial-state assertion expects 40 in a fresh JS document; recreated
 documents keep State 45. The gate records that fixture assertion failure and
 checks preserved state and operational plugins directly through original IPC.
-It does not claim that the initial self-test passed again. RN-owned permissions,
-process death and Expo recreation need separate
+It does not claim that the initial self-test passed again. Bare-RN permissions,
+process death and Expo CNG recreation need separate
 gates. See the [scoped evidence](../../../../docs/evidence/retained-activity-recreation-2026-09-11.json),
 including the separately retained unsuccessful attempts.
 

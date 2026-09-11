@@ -235,8 +235,9 @@ argument. Implement `PermissionAwareActivity` and forward its three-argument
 `requestPermissions` overload to the host, as the generated Activity does. This
 overload accepts RN module-queue calls; lifecycle methods still run on main.
 Keep the router for that Activity when replacing a host. The Activity lifecycle
-unregisters its result callback at destruction. Activity recreation remains open;
-scoped Expo native module integration is described below.
+unregisters its result callback at destruction. Scoped Expo-composition recreation
+evidence is described below; manual and bare-RN permission recreation remain
+separate acceptance paths.
 
 OS grants are shared: a grant requested by RN is visible to the Tauri plugin.
 Denial labels retain upstream behavior. Tauri 2.11.5 reads its own
@@ -492,10 +493,19 @@ observe the permission, retain original Tauri state and save through the real pl
 The earlier four-platform packed arm64 Release execution records these scenarios
 on iOS Simulator and Android emulator: [41 native UI flows](https://github.com/gronxb/tauri-native/blob/main/docs/evidence/retained-sdk-permission-retirement-2026-09-11.json).
 
+The later [Android recreation gate](../../docs/evidence/retained-renderer-permission-recreation-2026-09-11.json)
+adds 30 Release/R8 UI flows in package-owned Expo composition, using RN and Expo
+permission APIs separately. It recreates with location permission pending and
+requests camera from the replacement renderer after resume. Only current camera
+listeners receive results; no retired location continuation saves. Native Expo
+modules, file persistence, back/deep links and complete cleanup pass while
+original Tauri IPC retains the same state. Bare-RN and Expo CNG recreation require
+their own evidence.
+
 ## Remaining roadmap
 
-Expo CNG, broader third-party autolinking, OS Universal Link
-association, full navigation/history/back/rotation, Activity recreation,
+Expo CNG recreation, broader third-party autolinking, OS Universal Link
+association, full navigation/history/back/rotation, bare-RN permission recreation,
 device/adopter acceptance and full framework
 parity remain tracked in [#45](https://github.com/gronxb/tauri-native/issues/45)
 and [#47](https://github.com/gronxb/tauri-native/issues/47). The pinned native gates

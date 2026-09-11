@@ -1,0 +1,611 @@
+{
+  "passed": true,
+  "recordedAt": "2026-09-11T04:40:00.804344+00:00",
+  "baseCommit": "7c708f52bdcc27b2b90422d661660aca43ae40f2",
+  "scope": "Actual RN PermissionsAndroid and Expo permission APIs in package-owned Expo Android composition. Pending location requests across real Activity recreation followed by camera requests after resume.",
+  "nativeAcceptanceUiFlows": 30,
+  "skippedFlows": 0,
+  "actualActivityRecreations": 4,
+  "testSourceHashes": {
+    "packages/cli/test/runtime/recreation-android.ts": "de6f494e681f7c8821c7db676b920f545c6fb3d74d0d72a59ca4bdfe24721e2e",
+    "packages/cli/test/runtime/renderer-permission-recreation.ts": "dc647390a7e3cc89d1f29e5a34feec2e419c328670c11fc9a8857ff2ee9ca640"
+  },
+  "originalFixtureHashes": {
+    "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+    "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+  },
+  "originalFixtureUnchanged": true,
+  "artifactReuse": "Existing transferred producer-deleted arm64 Release export and original RN SDK tarball; no fresh Rust export or production runtime change.",
+  "instrumentation": "Only disposable consumers change: camera declaration, request actions, real recreation broadcast and observation-only logs before unchanged AndroidX/actual module callbacks. Original Tauri source, input artifact and SDK tarball are unchanged. The extracted SDK permission class has logging added.",
+  "results": [
+    {
+      "owner": "rn",
+      "nativeUiFlows": 15,
+      "actualRecreations": 2,
+      "profile": "release",
+      "apkSha256": "d9483d1606e822973ee14a8e03a0a27af9dafe068bc2a512e97b0952400418d7",
+      "artifactSha256": "45c1ed75a270485e8b4a0ba478f649263bfe603dfc9b8a0015bfb0e6d6e60691",
+      "packageSha256": "16ffe7509d23158b2d5b30f553a1fcd0d28589edc6480c3fe5c04995a1222d52",
+      "packageSource": "transferred",
+      "bundleSha256": "c5afd31bfde58369fe5cb7e27898a7da8909aea5af05bb494364641a954a0daa",
+      "deviceAbi": "arm64-v8a",
+      "pageSize": 16384,
+      "sourceFreeBuild": "PATH=/Users/gronxb/.local/share/mise/installs/node/24.15.0/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+      "artifactUnchanged": true,
+      "rendererRequests": [
+        {
+          "kind": "renderer-request",
+          "pid": 7092,
+          "activity": 101965891,
+          "code": 0,
+          "focused": true,
+          "permissions": [
+            "android.permission.ACCESS_FINE_LOCATION",
+            "android.permission.ACCESS_COARSE_LOCATION"
+          ],
+          "grants": null
+        },
+        {
+          "kind": "renderer-request",
+          "pid": 7092,
+          "activity": 34309862,
+          "code": 0,
+          "focused": true,
+          "permissions": [
+            "android.permission.CAMERA"
+          ],
+          "grants": null
+        },
+        {
+          "kind": "renderer-request",
+          "pid": 7092,
+          "activity": 34309862,
+          "code": 1,
+          "focused": true,
+          "permissions": [
+            "android.permission.ACCESS_FINE_LOCATION",
+            "android.permission.ACCESS_COARSE_LOCATION"
+          ],
+          "grants": null
+        },
+        {
+          "kind": "renderer-request",
+          "pid": 7092,
+          "activity": 120254167,
+          "code": 0,
+          "focused": true,
+          "permissions": [
+            "android.permission.CAMERA"
+          ],
+          "grants": null
+        }
+      ],
+      "rendererOsResults": [
+        {
+          "kind": "renderer-os-result",
+          "pid": 7092,
+          "activity": 34309862,
+          "grants": {
+            "android.permission.ACCESS_FINE_LOCATION": false,
+            "android.permission.ACCESS_COARSE_LOCATION": false
+          },
+          "hasCurrentRequest": false
+        },
+        {
+          "kind": "renderer-os-result",
+          "pid": 7092,
+          "activity": 34309862,
+          "grants": {
+            "android.permission.CAMERA": false
+          },
+          "hasCurrentRequest": true
+        },
+        {
+          "kind": "renderer-os-result",
+          "pid": 7092,
+          "activity": 120254167,
+          "grants": {
+            "android.permission.ACCESS_FINE_LOCATION": true,
+            "android.permission.ACCESS_COARSE_LOCATION": true
+          },
+          "hasCurrentRequest": false
+        },
+        {
+          "kind": "renderer-os-result",
+          "pid": 7092,
+          "activity": 120254167,
+          "grants": {
+            "android.permission.CAMERA": true
+          },
+          "hasCurrentRequest": true
+        }
+      ],
+      "rendererListenerResults": [
+        {
+          "kind": "renderer-listener-result",
+          "pid": 7092,
+          "activity": 34309862,
+          "code": 0,
+          "focused": false,
+          "permissions": [
+            "android.permission.CAMERA"
+          ],
+          "grants": [
+            -1
+          ]
+        },
+        {
+          "kind": "renderer-listener-result",
+          "pid": 7092,
+          "activity": 120254167,
+          "code": 0,
+          "focused": false,
+          "permissions": [
+            "android.permission.CAMERA"
+          ],
+          "grants": [
+            0
+          ]
+        }
+      ],
+      "permissionResults": [],
+      "expo": {
+        "initial": {
+          "created": 1,
+          "destroyed": 0,
+          "callbacks": 0,
+          "applicationCreates": 1,
+          "activityCreates": 1,
+          "resumes": 2,
+          "pauses": 1,
+          "intents": 1,
+          "backs": 1
+        },
+        "final": {
+          "created": 3,
+          "destroyed": 2,
+          "callbacks": 0,
+          "applicationCreates": 1,
+          "activityCreates": 3,
+          "resumes": 13,
+          "pauses": 12,
+          "intents": 6,
+          "backs": 3
+        },
+        "closed": {
+          "created": 3,
+          "destroyed": 3,
+          "callbacks": 0,
+          "applicationCreates": 1,
+          "activityCreates": 3,
+          "resumes": 14,
+          "pauses": 13,
+          "intents": 7,
+          "backs": 3
+        },
+        "permissionOwner": "rn",
+        "configuration": "package-owned composition; Expo CNG is a separate gate"
+      },
+      "state": {
+        "appIdentifier": "dev.taurinative.mobilefieldnotes",
+        "pluginSetupCount": 1,
+        "setupCount": 1,
+        "value": 45
+      },
+      "oldListeners": [
+        0,
+        0
+      ],
+      "closedListeners": 0,
+      "closedExpoHost": false,
+      "permissionAfterRecreation": [
+        {
+          "coarseLocation": "prompt",
+          "location": "prompt"
+        },
+        {
+          "coarseLocation": "granted",
+          "location": "granted"
+        }
+      ],
+      "savedNotes": [
+        {
+          "id": 1,
+          "latitude": 37.5664983,
+          "longitude": 126.9779983,
+          "text": "A RN place to remember"
+        }
+      ],
+      "deepLinks": [
+        "tauri-fieldnotes://notes/2"
+      ],
+      "copiedSdkChanges": [
+        "package/android/retained/src/main/java/dev/taurinative/react/retained/TauriReactPermissions.kt"
+      ],
+      "report": "target/retained-renderer-permission-recreation/native/retained-activity-recreation/rn-permission/expo/report.json",
+      "reportSha256": "1892ae2e1b61952d62907e08da375a39530cde7abd6a6a3aac8f761f90e4ac7b",
+      "nativeLogSha256": "462c55222b3bb93439fb177383f87cd597e7cf2e80b57cc3e002f009e427d9b3",
+      "flows": [
+        {
+          "name": "expo-close",
+          "sha256": "61b500873fddc0d992194dab7a6b4fea4b41a2c505ecfd239ab35ed7e43f86a4"
+        },
+        {
+          "name": "expo-modules-0",
+          "sha256": "d6d99776318f577c97dbd08238b39d86dc765a908e3ee946be961fcba613c7aa"
+        },
+        {
+          "name": "expo-modules-1",
+          "sha256": "6e085e11e38dc97430b04c39c6c98ad68a2b172cf4d250b15442b129d6632f99"
+        },
+        {
+          "name": "expo-modules-2",
+          "sha256": "3285cb4cfc970598171ff5afef03ad69a977052a2b10188bb8ab3e1f8ebfdadd"
+        },
+        {
+          "name": "initial-permission",
+          "sha256": "4aedc3ed4b0078dab6ea529f9de75b4fbdaca5e5f100c370753929a763e6e752"
+        },
+        {
+          "name": "pending-dialog-1",
+          "sha256": "94b860b456d4af70fbadad39ee352a0e8ad9aa3dccbcac0b1bd9075b187a99a6"
+        },
+        {
+          "name": "pending-dialog-2",
+          "sha256": "a16a07f03d3f0479c2b70c18eee8cef27efa52842a1f326349b4109e0e1d0c4a"
+        },
+        {
+          "name": "pending-result-1",
+          "sha256": "6aae0262d566790a5eb5a3ee1b104443223e4c3adcffc01d7f9a3e7f30ad8ba1"
+        },
+        {
+          "name": "pending-result-2",
+          "sha256": "f4006cc4148db6cf1f14ae56b59f5cc2da4607b54463eb0b19eab2076f0bd28e"
+        },
+        {
+          "name": "post-recreation-link",
+          "sha256": "cf8784901aa150b2c52ca9a20393f6bf036205bc44a661bfb57b109514021f70"
+        },
+        {
+          "name": "post-recreation-save",
+          "sha256": "e99070694b2199d6c7437fb224cac281596d858cde1f737b0b5620c13ec0c911"
+        },
+        {
+          "name": "recreated-ui-1",
+          "sha256": "999e7ac75f9fd678a9455cf7ddc1fe907800d703279da1370f0a59816520dbd3"
+        },
+        {
+          "name": "recreated-ui-2",
+          "sha256": "6d89bafbc1951dddba6bb5e72906560d4993abe4ff4a3aec7c5baa8ef72d5d86"
+        },
+        {
+          "name": "replacement-camera-1",
+          "sha256": "955329d08bc6f5be64a8357a2468aa52c83ee1aea2466e59e67f9d7e935bbaa3"
+        },
+        {
+          "name": "replacement-camera-2",
+          "sha256": "a9f9012c5b8f2ac4a206baedf1fb8c356c27f306330e530fc9f9284dfca7757c"
+        }
+      ]
+    },
+    {
+      "owner": "expo",
+      "nativeUiFlows": 15,
+      "actualRecreations": 2,
+      "profile": "release",
+      "apkSha256": "e53a2aec4a380edc74adf4d3b26e163756a119b02aa1d7a903b8d148b809b27d",
+      "artifactSha256": "45c1ed75a270485e8b4a0ba478f649263bfe603dfc9b8a0015bfb0e6d6e60691",
+      "packageSha256": "16ffe7509d23158b2d5b30f553a1fcd0d28589edc6480c3fe5c04995a1222d52",
+      "packageSource": "transferred",
+      "bundleSha256": "40e7e353b008e85f5095014dc2aaae09157234edca8d3d50029234e9e224c25b",
+      "deviceAbi": "arm64-v8a",
+      "pageSize": 16384,
+      "sourceFreeBuild": "PATH=/Users/gronxb/.local/share/mise/installs/node/24.15.0/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+      "artifactUnchanged": true,
+      "rendererRequests": [
+        {
+          "kind": "renderer-request",
+          "pid": 9807,
+          "activity": 101965891,
+          "code": 13,
+          "focused": true,
+          "permissions": [
+            "android.permission.ACCESS_FINE_LOCATION",
+            "android.permission.ACCESS_COARSE_LOCATION"
+          ],
+          "grants": null
+        },
+        {
+          "kind": "renderer-request",
+          "pid": 9807,
+          "activity": 129363282,
+          "code": 13,
+          "focused": true,
+          "permissions": [
+            "android.permission.CAMERA"
+          ],
+          "grants": null
+        },
+        {
+          "kind": "renderer-request",
+          "pid": 9807,
+          "activity": 129363282,
+          "code": 13,
+          "focused": true,
+          "permissions": [
+            "android.permission.ACCESS_FINE_LOCATION",
+            "android.permission.ACCESS_COARSE_LOCATION"
+          ],
+          "grants": null
+        },
+        {
+          "kind": "renderer-request",
+          "pid": 9807,
+          "activity": 184772677,
+          "code": 13,
+          "focused": true,
+          "permissions": [
+            "android.permission.CAMERA"
+          ],
+          "grants": null
+        }
+      ],
+      "rendererOsResults": [
+        {
+          "kind": "renderer-os-result",
+          "pid": 9807,
+          "activity": 129363282,
+          "grants": {
+            "android.permission.ACCESS_FINE_LOCATION": false,
+            "android.permission.ACCESS_COARSE_LOCATION": false
+          },
+          "hasCurrentRequest": false
+        },
+        {
+          "kind": "renderer-os-result",
+          "pid": 9807,
+          "activity": 129363282,
+          "grants": {
+            "android.permission.CAMERA": false
+          },
+          "hasCurrentRequest": true
+        },
+        {
+          "kind": "renderer-os-result",
+          "pid": 9807,
+          "activity": 184772677,
+          "grants": {
+            "android.permission.ACCESS_FINE_LOCATION": true,
+            "android.permission.ACCESS_COARSE_LOCATION": true
+          },
+          "hasCurrentRequest": false
+        },
+        {
+          "kind": "renderer-os-result",
+          "pid": 9807,
+          "activity": 184772677,
+          "grants": {
+            "android.permission.CAMERA": true
+          },
+          "hasCurrentRequest": true
+        }
+      ],
+      "rendererListenerResults": [
+        {
+          "kind": "renderer-listener-result",
+          "pid": 9807,
+          "activity": 129363282,
+          "code": 13,
+          "focused": false,
+          "permissions": [
+            "android.permission.CAMERA"
+          ],
+          "grants": [
+            -1
+          ]
+        },
+        {
+          "kind": "renderer-listener-result",
+          "pid": 9807,
+          "activity": 184772677,
+          "code": 13,
+          "focused": false,
+          "permissions": [
+            "android.permission.CAMERA"
+          ],
+          "grants": [
+            0
+          ]
+        }
+      ],
+      "permissionResults": [],
+      "expo": {
+        "initial": {
+          "created": 1,
+          "destroyed": 0,
+          "callbacks": 0,
+          "applicationCreates": 1,
+          "activityCreates": 1,
+          "resumes": 2,
+          "pauses": 1,
+          "intents": 1,
+          "backs": 1
+        },
+        "final": {
+          "created": 3,
+          "destroyed": 2,
+          "callbacks": 2,
+          "applicationCreates": 1,
+          "activityCreates": 3,
+          "resumes": 13,
+          "pauses": 12,
+          "intents": 6,
+          "backs": 3
+        },
+        "closed": {
+          "created": 3,
+          "destroyed": 3,
+          "callbacks": 2,
+          "applicationCreates": 1,
+          "activityCreates": 3,
+          "resumes": 14,
+          "pauses": 13,
+          "intents": 7,
+          "backs": 3
+        },
+        "permissionOwner": "expo",
+        "configuration": "package-owned composition; Expo CNG is a separate gate"
+      },
+      "state": {
+        "appIdentifier": "dev.taurinative.mobilefieldnotes",
+        "pluginSetupCount": 1,
+        "setupCount": 1,
+        "value": 45
+      },
+      "oldListeners": [
+        0,
+        0
+      ],
+      "closedListeners": 0,
+      "closedExpoHost": false,
+      "permissionAfterRecreation": [
+        {
+          "coarseLocation": "prompt",
+          "location": "prompt"
+        },
+        {
+          "coarseLocation": "granted",
+          "location": "granted"
+        }
+      ],
+      "savedNotes": [
+        {
+          "id": 1,
+          "latitude": 37.5664983,
+          "longitude": 126.9779983,
+          "text": "A RN place to remember"
+        }
+      ],
+      "deepLinks": [
+        "tauri-fieldnotes://notes/2"
+      ],
+      "copiedSdkChanges": [
+        "package/android/retained/src/main/java/dev/taurinative/react/retained/TauriReactPermissions.kt"
+      ],
+      "report": "target/retained-renderer-permission-recreation/native/retained-activity-recreation/expo-permission/expo/report.json",
+      "reportSha256": "962f7d35a2319537c8d98f5a037a4cc400261195648a847327ecb756036684b8",
+      "nativeLogSha256": "16f0e3f9aebd2c2f07aebca35c323c5ad2f3d30ef20aabd8f3f44074242723ae",
+      "flows": [
+        {
+          "name": "expo-close",
+          "sha256": "75e1872f26456c9b6051b5ae648ffc282f909745b212adf901e5f6b91256341a"
+        },
+        {
+          "name": "expo-modules-0",
+          "sha256": "d6d99776318f577c97dbd08238b39d86dc765a908e3ee946be961fcba613c7aa"
+        },
+        {
+          "name": "expo-modules-1",
+          "sha256": "6e085e11e38dc97430b04c39c6c98ad68a2b172cf4d250b15442b129d6632f99"
+        },
+        {
+          "name": "expo-modules-2",
+          "sha256": "3285cb4cfc970598171ff5afef03ad69a977052a2b10188bb8ab3e1f8ebfdadd"
+        },
+        {
+          "name": "initial-permission",
+          "sha256": "7433326f134626318d071203f853b5c2bcecb2fedc2d42bfb2e2c972e601bb5f"
+        },
+        {
+          "name": "pending-dialog-1",
+          "sha256": "5a6b5cfb1251ff64126cd3b52be67988980b41a96cf94028113ef7b49c97bf70"
+        },
+        {
+          "name": "pending-dialog-2",
+          "sha256": "6e9ba729a0f7f9190bd3ca6470f48dd3777483a701f3eab7e51a8559e0414487"
+        },
+        {
+          "name": "pending-result-1",
+          "sha256": "f3426a69467ed2de60b83028e8e80256debd447b43e894b1b5df5ed1ad3e5d34"
+        },
+        {
+          "name": "pending-result-2",
+          "sha256": "cba886c53711f302eae6c250cc96e5f70b498d338fd23c51c1e4ca0307d9a136"
+        },
+        {
+          "name": "post-recreation-link",
+          "sha256": "cf8784901aa150b2c52ca9a20393f6bf036205bc44a661bfb57b109514021f70"
+        },
+        {
+          "name": "post-recreation-save",
+          "sha256": "e99070694b2199d6c7437fb224cac281596d858cde1f737b0b5620c13ec0c911"
+        },
+        {
+          "name": "recreated-ui-1",
+          "sha256": "e282fe49e2ae2910ce20cea7eb242400ac8a49cfebeb1e2443c2fbd316b1ad98"
+        },
+        {
+          "name": "recreated-ui-2",
+          "sha256": "6d89bafbc1951dddba6bb5e72906560d4993abe4ff4a3aec7c5baa8ef72d5d86"
+        },
+        {
+          "name": "replacement-camera-1",
+          "sha256": "49bfd4936105c579a99af8a345edaca3734578a8f725551596a5a83e0aee2c32"
+        },
+        {
+          "name": "replacement-camera-2",
+          "sha256": "a9f9012c5b8f2ac4a206baedf1fb8c356c27f306330e530fc9f9284dfca7757c"
+        }
+      ]
+    }
+  ],
+  "preservedFailures": [
+    {
+      "directory": "target/retained-renderer-permission-recreation/system-ui-anr-failure/expo",
+      "reason": "System UI ANR covered initial UI; no renderer permission acceptance occurred.",
+      "accepted": false,
+      "nativeLogSha256": "c8e1d153d4c95089d4cf90a2012ed5288445d48d411a5184f527213bc00a90a2",
+      "snapshotSha256": "efab6da87d275b86a57b4c792c7a6aa0847dde1115047e476a475950578f5bd0",
+      "apkSha256": "8ff408b78afb9b7565294c5f21292c679f85a886daa4cf15af312a4214d90ffa"
+    },
+    {
+      "directory": "target/retained-renderer-permission-recreation/paused-effect-assumption-failure/expo",
+      "reason": "The initial test incorrectly waited for a JS mount effect while the Activity was paused under an OS permission dialog. The corrected scenario completes the old dialog before observing the new effect after real resume.",
+      "accepted": false,
+      "nativeLogSha256": "172f740a587ad11a81f30a17f888ed61abc4297724982a4be6cf2fcff898af84",
+      "snapshotSha256": "68ccaf9dfb7b6a9696798f24c69eed113658f0f844cfed8ffd125b4859863a13",
+      "apkSha256": "9296d4b28c7c534ee3077e230c80460634bebc3f86e84161a62b653b73b210bd"
+    },
+    {
+      "directory": "target/retained-renderer-permission-recreation/foreign-permission-cache-assumption-failure/expo",
+      "reason": "The test incorrectly expected RN denial to update original Tauri rationale history. Original Plugin.getPermissionStates returns prompt when its own PluginPermStates cache has no entry; exact native OS denial already passed.",
+      "accepted": false,
+      "nativeLogSha256": "8cc4453d1dcbd3b54891d8214419e4fe724bc7cca412f2d7c69d3da31568faac",
+      "snapshotSha256": "04d21fb27c23c01189e79057c9a91176a62f59433adb1f8a4602d206b0d02bab",
+      "apkSha256": "44c4c9f37977a44625222f7d7be69901ce89f062f506a5ef4ad25ecdb429cfcd"
+    }
+  ],
+  "preflightFailures": [
+    "Initial owned-emulator start rejected insufficient disk; only owned rebuildable caches were removed.",
+    "A boot preflight timed out before native execution. The same emulator finished booting; it was not restarted to convert that failure to success."
+  ],
+  "limits": [
+    "RN API runs inside Expo composition; bare-RN permission recreation and Expo CNG recreation require separate acceptance.",
+    "No JS lifecycle is forced while the Activity is paused. Original Tauri permission-cache behavior is preserved.",
+    "State 45/setup 1/plugin setup 1 is verified directly through original IPC after recreation. The original fixture one-time State 40 startup assertion is not expected to pass again.",
+    "Local API 37 arm64/16 KB emulator execution does not certify hosted Linux/x86_64, physical devices or independent adopters.",
+    "This does not establish process-death, full navigation/channel/source-form or final release parity."
+  ]
+}

@@ -65,7 +65,7 @@ for (const name of ['react-native', 'expo', 'lynx'] as const) {
     path.join(evidence, name === 'expo' ? `react-retained-expo-${platform}-cng` : `${sdk === 'lynx' ? 'lynx' : 'react'}-retained-${platform}`), sdkEnv);
   if (platform === 'android') {
     const renderer = name === 'expo' ? 'expo' : sdk === 'lynx' ? 'lynx' : 'react';
-    for (const mode of ['recreation', 'fresh-permission', 'pending-permission']) {
+    for (const mode of ['recreation', 'fresh-permission', 'pending-permission', ...(name === 'expo' ? ['rn-permission', 'expo-permission'] : [])]) {
       gate(`${renderer}-${mode}`, ['packages/cli/test/runtime/recreation-android.ts', renderer, artifacts, ...(mode === 'recreation' ? [] : [`--${mode}`])],
         path.join(evidence, 'retained-activity-recreation', ...(mode === 'recreation' ? [] : [mode]), renderer), sdkEnv);
     }
