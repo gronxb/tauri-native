@@ -93,6 +93,17 @@ native-only export gate uses test debuggability. These executions preserve all
 fourteen producer files. They do not resolve the separately recorded standalone
 initial permission-response or post-recreation link UI failures.
 
+The [pending permission comparison](evidence/retained-pending-recreation-2026-09-11.json) adds
+eighteen packed RN/Lynx Android UI flows. A test-only broadcast triggers real
+Activity recreation while the OS dialog remains visible. Denial and grant each
+complete the original Tauri callback once on the replacement Activity, observed
+by logging after that unchanged callback returns. Old native listeners reach
+zero, no retired renderer saves its sentinel note, and the new renderer saves a
+location note and receives a deep link. These runs reuse the corrected artifact.
+The previous RN artifact fails the same callback-completion check after OS denial;
+that control is preserved as a failure. This does not count callbacks inside a
+destroyed JS runtime or establish RN-owned permission and Expo recreation support.
+
 ## Native ownership and dependencies
 
 | Layer | Required contract |
@@ -134,8 +145,8 @@ conflicting startup owners and edited generated files are rejected. Adding a
 new native plugin requires exporter/dependency support and actual mobile
 execution; editing the allowlist alone is insufficient.
 
-Pending OS callbacks across Activity recreation,
-Expo recreation, full navigation/history/rotation behavior, native channel
+RN-owned permissions across Activity recreation, Expo recreation, full
+navigation/history/rotation behavior, native channel
 streaming and broader source/owner forms remain open. Expo config plugins are
 supported within the [documented native configuration/resource boundary](../packages/react-native/RETAINED.md#expo-config-plugins-and-native-regeneration).
 Required retained CI, transferred-package parity, physical devices and two

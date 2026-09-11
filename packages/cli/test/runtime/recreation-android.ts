@@ -15,12 +15,16 @@ const mode = process.argv[2];
 assert(mode === 'standalone' || mode === 'react' || mode === 'lynx', 'Select standalone, react or lynx');
 const options = process.argv.slice(3);
 assert(options.filter(option => !option.startsWith('--')).length <= 1 &&
-  options.every(option => !option.startsWith('--') || option === '--fresh-permission'), 'Use [artifact] [--fresh-permission]');
+  options.every(option => !option.startsWith('--') || ['--fresh-permission', '--pending-permission'].includes(option)), 'Use [artifact] [--fresh-permission | --pending-permission]');
 const freshPermission = options.includes('--fresh-permission');
+const pendingPermission = options.includes('--pending-permission');
+assert(!(freshPermission && pendingPermission), 'Run fresh and pending permission scenarios separately');
 const composed = mode !== 'standalone';
+assert(!pendingPermission || composed, 'Pending renderer continuation checks require react or lynx');
+const initiallyUnpermitted = freshPermission || pendingPermission;
 const name = mode === 'react' ? 'RN' : 'Lynx';
 const device = process.env.ANDROID_SERIAL; assert(device, 'Select an arm64 ANDROID_SERIAL emulator');
-const evidence = path.join(root, 'target/retained-activity-recreation', ...(freshPermission ? ['fresh-permission'] : []), mode);
+const evidence = path.join(root, 'target/retained-activity-recreation', ...(pendingPermission ? ['pending-permission'] : freshPermission ? ['fresh-permission'] : []), mode);
 const producer = path.join(evidence, 'ordinary producer');
 const consumer = path.join(evidence, 'source free consumer');
 const artifact = path.resolve(options.find(option => !option.startsWith('--')) ?? path.join(root, 'target/retained-portability/exported-runtime'));
@@ -49,10 +53,12 @@ function run(label: string, command: string, args: string[], cwd = evidence, env
   assert.equal(result.status, 0, `${label}: ${result.error ?? ''}; full output: ${evidence}/${label}.log\n${result.stdout?.slice(-3000)}\n${result.stderr?.slice(-2000)}`);
   return result.stdout.trim();
 }
-function events(): any[] {
+function observations(): any[] {
   return readFileSync(lifecycleLog, 'utf8').split('\n').filter(line => line.startsWith('{') && line.endsWith('}'))
     .map(line => JSON.parse(line)).filter(row => row.pid === Number(pid));
 }
+function events(): any[] { return observations().filter(row => row.kind !== 'permission-result'); }
+function permissionResults(): any[] { return observations().filter(row => row.kind === 'permission-result'); }
 async function until(check: () => boolean) {
   const deadline = Date.now() + 60000;
   for (;;) {
@@ -74,6 +80,19 @@ async function inspect(label: string) {
   return events().find(row => row.stage === label);
 }
 function addProbe(android: string, activity: string) {
+  if (pendingPermission) {
+    // Observe the real original callback after it returns. No result, registration
+    // or routing is substituted; only this disposable test consumer gets telemetry.
+    const manager = path.join(android, 'native-dependencies/tauri-android/src/main/java/app/tauri/plugin/PluginManager.kt');
+    const source = readFileSync(manager, 'utf8');
+    const callback = '          requestPermissionsCallback!!.onResult(result)';
+    assert.equal(source.split(callback).length, 2);
+    writeFileSync(manager, source.replace(callback, `${callback}
+          android.util.Log.i("TauriRecreation", org.json.JSONObject()
+            .put("kind", "permission-result").put("pid", android.os.Process.myPid())
+            .put("activity", System.identityHashCode(activity))
+            .put("grants", org.json.JSONObject(result)).toString())`));
+  }
   if (!composed) {
     // Inherit the ordinary scaffold's onCreate (including edge-to-edge setup).
     // Only the disposable generated class is opened for the telemetry subclass.
@@ -179,7 +198,7 @@ try {
     const result = spawnSync('adb', ['-s', device, 'exec-out', 'run-as', appId, 'cat', 'runtime-report.json'], { env, encoding: 'utf8', timeout: 10000 });
     return result.status === 0 && JSON.parse(result.stdout).passed === true;
   });
-  if (freshPermission) flow('initial-permission', composed
+  if (initiallyUnpermitted) flow('initial-permission', composed
     ? '- assertVisible: "Tauri 45 setup 1 plugins 1"\n- tapOn: "Check permission"\n- assertVisible: "Permission prompt"'
     : '- tapOn: "Check location permission"\n- assertVisible: "Location permission prompt"');
   else flow('initial-plugin', composed
@@ -188,15 +207,31 @@ try {
   const initial = await inspect('before');
   assert.equal(initial.result.baseline.passed, true);
   assert.equal(initial.result.snapshot.value, 45); assert.equal(initial.result.snapshot.setupCount, 1); assert.equal(initial.result.snapshot.pluginSetupCount, 1);
-  assert.equal(initial.result.plugins.notes.length, freshPermission ? 0 : 1);
-  assert.equal(initial.result.permission.location, freshPermission ? 'prompt' : 'granted');
+  assert.equal(initial.result.plugins.notes.length, initiallyUnpermitted ? 0 : 1);
+  assert.equal(initial.result.permission.location, initiallyUnpermitted ? 'prompt' : 'granted');
   if (composed) assert.equal(initial.runtime.listeners, 1);
   for (let index = 1; index <= 2; index++) {
-    const permission = freshPermission ? index === 1 ? 'prompt' : 'prompt-with-rationale' : 'granted';
-    action('recreate');
+    const permission = pendingPermission ? index === 1 ? 'prompt-with-rationale' : 'granted'
+      : freshPermission ? index === 1 ? 'prompt' : 'prompt-with-rationale' : 'granted';
+    if (pendingPermission) {
+      flow(`pending-dialog-${index}`, '- tapOn: "Request then save"\n- assertVisible: "(?i)While using the app"');
+      assert.equal(permissionResults().length, index - 1, 'The real OS result is still pending');
+      run(`pending-recreate-${index}`, 'adb', ['-s', device, 'shell', 'am', 'broadcast', '-a', `${appId}.RECREATE`, '-p', appId]);
+      await until(() => events().filter(row => row.stage === 'create').length === index + 1 &&
+        events().filter(row => row.stage === 'destroy-after').length === index);
+      const recreated = events().filter(row => row.stage === 'create').at(-1)!;
+      assert.equal(permissionResults().length, index - 1, 'Recreation must not synthesize or settle the OS result');
+      assert.equal(events().filter(row => row.stage === 'broadcast-recreate').at(-1)!.focused, false);
+      flow(`pending-result-${index}`, `- assertVisible: "(?i)While using the app"\n- tapOn: "${index === 1 ? '(?i)Don.t allow' : '(?i)While using the app'}"`);
+      await until(() => permissionResults().length === index);
+      const result = permissionResults().at(-1)!;
+      assert.equal(result.activity, recreated.activity, 'The original Tauri callback executes for the replacement Activity');
+      assert.deepEqual(Object.keys(result.grants).sort(), ['android.permission.ACCESS_COARSE_LOCATION', 'android.permission.ACCESS_FINE_LOCATION']);
+      assert(Object.values(result.grants).every(granted => granted === (index === 2)));
+    } else action('recreate');
     await until(() => events().filter(row => row.stage === 'create').length === index + 1 && events().filter(row => row.stage === 'webview').length === index + 1);
     flow(`recreated-ui-${index}`, composed
-      ? `- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "${name} events 0"\n- tapOn: "Check permission"\n- assertVisible: "Permission ${permission}"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 0 notes ${freshPermission ? 0 : 1} setup 1 plugins 1"`
+      ? `- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "${name} events 0"\n- tapOn: "Check permission"\n- assertVisible: "Permission ${permission}"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 0 notes ${initiallyUnpermitted ? 0 : 1} setup 1 plugins 1"`
       : `- tapOn: "Check location permission"\n- assertVisible: "Location permission ${permission}"\n- tapOn: "Refresh notes and links"`);
     const after = await inspect(`after-${index}`);
     assert.equal(after.pid, initial.pid); assert.equal(after.wryActivityId, initial.wryActivityId);
@@ -219,7 +254,7 @@ try {
       assert.equal(result.instance, after.instance);
     }
   }
-  const noteCount = freshPermission ? 1 : 2;
+  const noteCount = initiallyUnpermitted ? 1 : 2;
   flow('post-recreation-save', composed ? `- tapOn: "Save location"\n- assertVisible: "${name} note ${noteCount}"\n- assertVisible: "${name} events 1"`
     : `- tapOn: "Save location note"\n- assertVisible: "Saved location note ${noteCount}"`);
   run('deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', 'tauri-fieldnotes://notes/2', '-p', appId]);
@@ -232,6 +267,7 @@ try {
     assert(Math.abs(note.latitude - 37.5665) < 0.01 && Math.abs(note.longitude - 126.978) < 0.01);
   }
   const observed = events();
+  if (pendingPermission) assert.equal(permissionResults().length, 2, 'Each real OS result reaches the original callback exactly once');
   const created = observed.filter(row => row.stage === 'create');
   assert.equal(new Set(created.map(row => row.instance)).size, 3);
   assert.equal(new Set(observed.filter(row => row.stage === 'webview').map(row => row.webView)).size, 3);
@@ -248,8 +284,9 @@ try {
     testSigning: 'Debug test key; composed Release/R8 remains non-debuggable', apkSha256: sha256(readFileSync(apk)),
     ...(composed ? { artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))), packageSha256, bundleSha256, sourceFreeBuild: 'PATH=/usr/bin:/bin:/usr/sbin:/sbin', artifactUnchanged: true }
       : { sourceHashes: producerBefore, producerUnchanged: true }),
-    baseline: initial.result.baseline, freshPermission, recreations: 2, nativeUiFlows: freshPermission ? 7 : 5, events: observed,
-    limits: `${freshPermission ? 'First permission request after recreation is denied through OS UI; a second recreation preserves the rationale state, and a later OS grant allows location save.' : 'Location permission granted before recreation; fresh permission dialogs are a separate gate.'} Pending OS callbacks and process death are separate gates. The original fixture startup self-test expects initial State 40; the recreated document keeps State 45, verified directly through original IPC.`,
+    baseline: initial.result.baseline, freshPermission, pendingPermission, recreations: 2, nativeUiFlows: pendingPermission ? 9 : freshPermission ? 7 : 5, events: observed,
+    ...(pendingPermission ? { permissionResults: permissionResults(), instrumentation: 'Test-only broadcast receiver triggers real recreation without foregrounding the Activity. Copied PluginManager logs after the unchanged original permission callback returns; no OS result or native routing is substituted.' } : {}),
+    limits: `${pendingPermission ? 'Both recreations occur while actual OS permission dialogs remain pending. Denial and grant each reach the original Tauri callback on the replacement Activity; retired renderer continuations save no sentinel note.' : freshPermission ? 'First permission request after recreation is denied through OS UI; a second recreation preserves the rationale state, and a later OS grant allows location save. Pending OS callbacks are a separate gate.' : 'Location permission granted before recreation; fresh/pending permissions are separate gates.'} Process death is a separate gate. The original fixture startup self-test expects initial State 40; the recreated document keeps State 45, verified directly through original IPC.`,
   }, null, 2) + '\n');
 } catch (error) {
   if (pid) {
@@ -266,6 +303,7 @@ try {
       const result = spawnSync('adb', ['-s', device, 'logcat', '-d', '--pid', pid], { env, encoding: 'utf8', timeout: 10000 });
       writeFileSync(path.join(evidence, 'native.log'), result.stdout ?? '');
       writeFileSync(path.join(evidence, 'events.json'), JSON.stringify(events(), null, 2) + '\n');
+      if (pendingPermission) writeFileSync(path.join(evidence, 'permission-results.json'), JSON.stringify(permissionResults(), null, 2) + '\n');
     }
     if (installed) run('uninstall', 'adb', ['-s', device, 'uninstall', appId]);
   } finally {

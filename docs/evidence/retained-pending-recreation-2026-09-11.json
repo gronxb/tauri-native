@@ -1,0 +1,370 @@
+{
+  "passed": true,
+  "recordedAt": "2026-09-11T01:19:55.152769+00:00",
+  "baseCommit": "e43050f53eb891293e5871da64a60ed2850ebb97",
+  "scope": "Actual Tauri geolocation OS permission dialogs remain pending across Activity recreation in packed RN and Lynx Android apps. Test-only broadcasts trigger real recreation without starting an Activity; telemetry records completion of the original Tauri callback after the actual OS denial/grant.",
+  "nativeAcceptanceUiFlows": 18,
+  "skippedFlows": 0,
+  "pendingRecreations": 4,
+  "artifactSha256": "f036a9cadd93f0e0c7c7be6eebdc76549e244b5c31ec4b43cd5af5034a77fbef",
+  "artifactReuse": "Uses the existing producer-deleted arm64 Release artifact from e43050f acceptance. No fresh Rust export or production runtime/SDK change is claimed by this test-only increment.",
+  "originalFixtureHashes": {
+    "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+    "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+  },
+  "results": [
+    {
+      "mode": "react",
+      "profile": "non-debuggable Release/R8",
+      "nativeUiFlows": 9,
+      "pendingRecreations": 2,
+      "permissionCallbackCompletions": [
+        {
+          "kind": "permission-result",
+          "pid": 7521,
+          "activity": 51366053,
+          "grants": {
+            "android.permission.ACCESS_FINE_LOCATION": false,
+            "android.permission.ACCESS_COARSE_LOCATION": false
+          }
+        },
+        {
+          "kind": "permission-result",
+          "pid": 7521,
+          "activity": 63222507,
+          "grants": {
+            "android.permission.ACCESS_FINE_LOCATION": true,
+            "android.permission.ACCESS_COARSE_LOCATION": true
+          }
+        }
+      ],
+      "sameProcessAndWryWindow": true,
+      "state": {
+        "value": 45,
+        "setupCount": 1,
+        "pluginSetupCount": 1,
+        "appIdentifier": "dev.taurinative.mobilefieldnotes"
+      },
+      "oldListeners": 0,
+      "newListeners": 1,
+      "staleSavedNotes": 0,
+      "savedLocationNotes": 1,
+      "deepLinks": 1,
+      "newRendererEvents": 2,
+      "apkSha256": "4bd21bc41d4ae41e0990a44ded492f281dc8143b842e2add1f33541ff96ecadf",
+      "packageSha256": "16ffe7509d23158b2d5b30f553a1fcd0d28589edc6480c3fe5c04995a1222d52",
+      "bundleSha256": "7cced5feb0b2e7005216ff5f556c03168c5a214d284082277c211873bc0f3d11",
+      "nativeLibraries": {
+        "lib/arm64-v8a/libappmodules.so": {
+          "sha256": "b6fd71d024137aec2a9c42490b630b7a0506345e8382f37ee7fef6db91a0d29c",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/libc++_shared.so": {
+          "sha256": "3e852764502d06e0cf1080d532ae7c608b7649d946a3a9d7e84e3d4b7d683214",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/libfbjni.so": {
+          "sha256": "a9e35ba55d3f956920281f519385f8a72475ee24819799cb08375fdd4cce2b22",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/libhermestooling.so": {
+          "sha256": "1db061bbbb050105fee9b208b861adc0cc02cc359551be6ba9562798a81f6cca",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/libhermesvm.so": {
+          "sha256": "bf38be45bf5d6ad8ba961eaf9deda5fa7e032f3ff7d3929ba2a624567093bffa",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/libimagepipeline.so": {
+          "sha256": "1b377992e4256fa9398ec057722f84a359c7d588e570c8a41f51d930c19ece7d",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/libjsi.so": {
+          "sha256": "5acb80d7eb93b2114a419c9e42b44476969299e806ad7eafe1b293e221b9a682",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/libnative-filters.so": {
+          "sha256": "4294b57460e70a6351ce7ae2733a79c088c907dfa54673a657227ec5bb669594",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/libnative-imagetranscoder.so": {
+          "sha256": "2aed28298a25afd52ac670cf9682398c6c7ba42a57195c01efd565e7ddfe17ca",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/libordinary_tauri_mobile_fieldnotes_lib.so": {
+          "sha256": "20d19609f873aa70a8e7550518e6de45bd3e148730ed7107a955d8be67f4f82c",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/libreactnative.so": {
+          "sha256": "14bb860cebebb0e29eb2c96a52d70da9b73e60253916694af955f6e3ef1e6b64",
+          "minimumLoadAlignment": 16384
+        }
+      },
+      "instrumentedManagerSha256": "b9410a8e6a53997e184b8f4ec2f42540479763550e7aa44b58ce00beb2e829e8",
+      "reportSha256": "cbfed1ced547415c5d86535137e034d3cc050bff0d23eefb4769a14d37da2a32",
+      "lifecycleLogSha256": "2eecffd705f6c439ac583505b70ec1eac623d73aa7743483c1739988646b883a",
+      "junitSha256": {
+        "initial-permission": "7433326f134626318d071203f853b5c2bcecb2fedc2d42bfb2e2c972e601bb5f",
+        "pending-dialog-1": "5a6b5cfb1251ff64126cd3b52be67988980b41a96cf94028113ef7b49c97bf70",
+        "pending-dialog-2": "6e9ba729a0f7f9190bd3ca6470f48dd3777483a701f3eab7e51a8559e0414487",
+        "pending-result-1": "f3426a69467ed2de60b83028e8e80256debd447b43e894b1b5df5ed1ad3e5d34",
+        "pending-result-2": "f4006cc4148db6cf1f14ae56b59f5cc2da4607b54463eb0b19eab2076f0bd28e",
+        "post-recreation-link": "cf8784901aa150b2c52ca9a20393f6bf036205bc44a661bfb57b109514021f70",
+        "post-recreation-save": "e99070694b2199d6c7437fb224cac281596d858cde1f737b0b5620c13ec0c911",
+        "recreated-ui-1": "ed28d06048d9bf0af99e5ca4f034a46c702906972c5c66cb0fb9e581d8eab45a",
+        "recreated-ui-2": "6d89bafbc1951dddba6bb5e72906560d4993abe4ff4a3aec7c5baa8ef72d5d86"
+      }
+    },
+    {
+      "mode": "lynx",
+      "profile": "non-debuggable Release/R8",
+      "nativeUiFlows": 9,
+      "pendingRecreations": 2,
+      "permissionCallbackCompletions": [
+        {
+          "kind": "permission-result",
+          "pid": 9457,
+          "activity": 154624493,
+          "grants": {
+            "android.permission.ACCESS_FINE_LOCATION": false,
+            "android.permission.ACCESS_COARSE_LOCATION": false
+          }
+        },
+        {
+          "kind": "permission-result",
+          "pid": 9457,
+          "activity": 3684740,
+          "grants": {
+            "android.permission.ACCESS_FINE_LOCATION": true,
+            "android.permission.ACCESS_COARSE_LOCATION": true
+          }
+        }
+      ],
+      "sameProcessAndWryWindow": true,
+      "state": {
+        "value": 45,
+        "setupCount": 1,
+        "pluginSetupCount": 1,
+        "appIdentifier": "dev.taurinative.mobilefieldnotes"
+      },
+      "oldListeners": 0,
+      "newListeners": 1,
+      "staleSavedNotes": 0,
+      "savedLocationNotes": 1,
+      "deepLinks": 1,
+      "newRendererEvents": 2,
+      "apkSha256": "4d48070c5003e41f35ee5b36014ec2a66dbd8a15ad808eec35ff04f62220b05c",
+      "packageSha256": "c2a80c66a6397dcdf2632a83d80dfc14c89ef120068ab210904677ab862d8e9e",
+      "bundleSha256": "0fcf980ccee1cdf357f6da172cee8e125c2a1d02dfcc500875baefec09ad349d",
+      "nativeLibraries": {
+        "lib/arm64-v8a/liblynx.so": {
+          "sha256": "142a6f01918ecd31e33559a4edbb1291dd4fc7a06eefe8e75383cf86253f4603",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/liblynx_service_api.so": {
+          "sha256": "762e6565965b45d140826996bcc853126fc04999cd2f950cbca84c92a9ef9abc",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/liblynx_v8_bridge.so": {
+          "sha256": "645e730db77b9615b0b6a842a7ca667fc2d6872796868cd7015d76e21c76d8d7",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/liblynxbase.so": {
+          "sha256": "b93727af09a438df087429594bf4edabdc662d1de6472214618f4b357113ac7d",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/liblynxtrace.so": {
+          "sha256": "be50ceba035e855396ae4048bdb73a51d521d46fe09dc3f0bb6b97701518983a",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/libnapi.so": {
+          "sha256": "7d101fbce19cd6f426d40d22fe42370b2857f5b4de1610399506149078c66733",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/libnapi_adapter.so": {
+          "sha256": "c1481271d079b0317be518c4546653303c8eee0a7fe9510ffd09735dce402ea5",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/libnapi_v8.so": {
+          "sha256": "f62b552ebbade972d6e3391f539d7ff68d1e4618edaba7c558904f604279252c",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/libordinary_tauri_mobile_fieldnotes_lib.so": {
+          "sha256": "20d19609f873aa70a8e7550518e6de45bd3e148730ed7107a955d8be67f4f82c",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/libquick.so": {
+          "sha256": "36f78c92642b8153c4584ec3582c96aed4ab1500dd5136848b3aa230de712317",
+          "minimumLoadAlignment": 16384
+        },
+        "lib/arm64-v8a/libwasm.so": {
+          "sha256": "b1157a76a67412f85aac2e7a09e74da23bc95c711ec938a70b171f6ece7897a7",
+          "minimumLoadAlignment": 16384
+        }
+      },
+      "instrumentedManagerSha256": "b9410a8e6a53997e184b8f4ec2f42540479763550e7aa44b58ce00beb2e829e8",
+      "reportSha256": "49a20a730bcbf23ac6277f89a434cd987fc1cc1d3f2ade7fc0a335058cf4bbed",
+      "lifecycleLogSha256": "58022b5937da68c03adae868fe4cfe4b2fa71723d20e8b5d22170e8399c22aca",
+      "junitSha256": {
+        "initial-permission": "4aedc3ed4b0078dab6ea529f9de75b4fbdaca5e5f100c370753929a763e6e752",
+        "pending-dialog-1": "5a6b5cfb1251ff64126cd3b52be67988980b41a96cf94028113ef7b49c97bf70",
+        "pending-dialog-2": "6e9ba729a0f7f9190bd3ca6470f48dd3777483a701f3eab7e51a8559e0414487",
+        "pending-result-1": "f3426a69467ed2de60b83028e8e80256debd447b43e894b1b5df5ed1ad3e5d34",
+        "pending-result-2": "f4006cc4148db6cf1f14ae56b59f5cc2da4607b54463eb0b19eab2076f0bd28e",
+        "post-recreation-link": "cf8784901aa150b2c52ca9a20393f6bf036205bc44a661bfb57b109514021f70",
+        "post-recreation-save": "e99070694b2199d6c7437fb224cac281596d858cde1f737b0b5620c13ec0c911",
+        "recreated-ui-1": "ed28d06048d9bf0af99e5ca4f034a46c702906972c5c66cb0fb9e581d8eab45a",
+        "recreated-ui-2": "6d89bafbc1951dddba6bb5e72906560d4993abe4ff4a3aec7c5baa8ef72d5d86"
+      }
+    }
+  ],
+  "unpatchedControl": {
+    "passed": false,
+    "expectedFailure": true,
+    "reason": "Activity recreation completed while the actual OS dialog remained visible. After the OS denial, no completion of the original Tauri permission callback was recorded within the 60-second observation window. No completed acceptance report was written.",
+    "apkSha256": "715207150f8d47d4ee7b039d334e8ec0c2d3546778c96055d93149cff15fe249",
+    "artifactSha256": "fb5f29d07ace2c715df7b4b4121fc57f2fa8df5b4cf4cf32d298dac7dc4595d5",
+    "failureSnapshot": {
+      "stage": "failure",
+      "instance": "1ee15fac-376c-4130-96f2-66b8ee63b315",
+      "pid": 6556,
+      "wryActivityId": 48794574,
+      "activity": 12253860,
+      "focused": true,
+      "webView": 53700661,
+      "changingConfigurations": false,
+      "result": {
+        "permission": {
+          "coarseLocation": "prompt",
+          "location": "prompt"
+        },
+        "plugins": {
+          "links": [],
+          "notes": [],
+          "platform": "android",
+          "pluginSetupCount": 1,
+          "setupCount": 1
+        },
+        "snapshot": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        },
+        "timeOrigin": 1789088632625.9,
+        "token": "12fe9c6a-851c-40da-a9ec-0e9fccdbc3ac",
+        "url": "http://tauri.localhost/",
+        "baseline": {
+          "error": "Error: Setup initializes the state",
+          "passed": false
+        }
+      },
+      "runtime": {
+        "error": null,
+        "features": [
+          "commands",
+          "events"
+        ],
+        "listeners": 1,
+        "ok": true,
+        "status": "ready"
+      }
+    },
+    "gateSha256": "26a39efaf4a089fe5e80581b889c39006a025ac88958935bd66edf4c3acfe5ab",
+    "originalTauriCallbackCompletions": 0,
+    "successfulUiFlowsBeforeNativeFailure": 3,
+    "junitSha256": {
+      "initial-permission": "4aedc3ed4b0078dab6ea529f9de75b4fbdaca5e5f100c370753929a763e6e752",
+      "pending-dialog-1": "5a6b5cfb1251ff64126cd3b52be67988980b41a96cf94028113ef7b49c97bf70",
+      "pending-result-1": "74f2c8f77dfcbd9d13f1afe09688716f4afab148a8f46fca9d73da2759501bda"
+    },
+    "instrumentedManagerSha256": "e3a74ae97edc9a6fdf8e26bc3f3f03c5ab3f5774b3deb6b81128e6068cd5d12e",
+    "nativeLibraries": {
+      "lib/arm64-v8a/libappmodules.so": {
+        "sha256": "b6fd71d024137aec2a9c42490b630b7a0506345e8382f37ee7fef6db91a0d29c",
+        "minimumLoadAlignment": 16384
+      },
+      "lib/arm64-v8a/libc++_shared.so": {
+        "sha256": "3e852764502d06e0cf1080d532ae7c608b7649d946a3a9d7e84e3d4b7d683214",
+        "minimumLoadAlignment": 16384
+      },
+      "lib/arm64-v8a/libfbjni.so": {
+        "sha256": "a9e35ba55d3f956920281f519385f8a72475ee24819799cb08375fdd4cce2b22",
+        "minimumLoadAlignment": 16384
+      },
+      "lib/arm64-v8a/libhermestooling.so": {
+        "sha256": "1db061bbbb050105fee9b208b861adc0cc02cc359551be6ba9562798a81f6cca",
+        "minimumLoadAlignment": 16384
+      },
+      "lib/arm64-v8a/libhermesvm.so": {
+        "sha256": "bf38be45bf5d6ad8ba961eaf9deda5fa7e032f3ff7d3929ba2a624567093bffa",
+        "minimumLoadAlignment": 16384
+      },
+      "lib/arm64-v8a/libimagepipeline.so": {
+        "sha256": "1b377992e4256fa9398ec057722f84a359c7d588e570c8a41f51d930c19ece7d",
+        "minimumLoadAlignment": 16384
+      },
+      "lib/arm64-v8a/libjsi.so": {
+        "sha256": "5acb80d7eb93b2114a419c9e42b44476969299e806ad7eafe1b293e221b9a682",
+        "minimumLoadAlignment": 16384
+      },
+      "lib/arm64-v8a/libnative-filters.so": {
+        "sha256": "4294b57460e70a6351ce7ae2733a79c088c907dfa54673a657227ec5bb669594",
+        "minimumLoadAlignment": 16384
+      },
+      "lib/arm64-v8a/libnative-imagetranscoder.so": {
+        "sha256": "2aed28298a25afd52ac670cf9682398c6c7ba42a57195c01efd565e7ddfe17ca",
+        "minimumLoadAlignment": 16384
+      },
+      "lib/arm64-v8a/libordinary_tauri_mobile_fieldnotes_lib.so": {
+        "sha256": "d1b1e689181c8a21fc0c1da8ae916f2c006de5cd3654eff7cc39bc5bb3a35467",
+        "minimumLoadAlignment": 16384
+      },
+      "lib/arm64-v8a/libreactnative.so": {
+        "sha256": "14bb860cebebb0e29eb2c96a52d70da9b73e60253916694af955f6e3ef1e6b64",
+        "minimumLoadAlignment": 16384
+      }
+    },
+    "failureSnapshotSha256": "b20ba6a1eac76191355440499dd4d40c4b114e822fce99269e7c2e468c978494",
+    "logSha256": "b4867a98f801a189c1a31628fe171374ac0c5b768f15004354392cdd3e2258e9"
+  },
+  "commands": [
+    "node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts react target/retained-recreation-permissions/fresh-export/exported-runtime --pending-permission",
+    "node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts lynx target/retained-recreation-permissions/fresh-export/exported-runtime --pending-permission"
+  ],
+  "instrumentation": "A receiver exists only in the native acceptance Activity and unregisters on destruction. The disposable consumer PluginManager adds only logging after its unchanged original permission callback; byte equality with the input plus that log is verified. Results and routing are never substituted.",
+  "verification": {
+    "cliTypecheck": "passed",
+    "typecheckLogSha256": "289abf68d18a98845e24bf54712c23c0fa7783a316daf3e227bf362087489018",
+    "packageAndProductionRegressions": "No production source or package surface changed; current actual packed SDK builds and native gates cover the test changes."
+  },
+  "toolchain": {
+    "node": "24.15.0",
+    "java": "21.0.10",
+    "ndk": "27.1.12297006",
+    "maestro": "2.4.0",
+    "android": "arm64 Pixel 10 Pro XL emulator, API 37, 16 KB pages"
+  },
+  "sourceSha256": {
+    "packages/cli/test/runtime/recreation-android.ts": "26a39efaf4a089fe5e80581b889c39006a025ac88958935bd66edf4c3acfe5ab",
+    "packages/cli/test/runtime/composition/android/RecreationActivity.kt.fixture": "7f9b249a04261e3a867d7ab674d43020ac9d03cacddf979240cacb58f568b5b4"
+  },
+  "limits": [
+    "No stale saved note is observed; this is not a count of callbacks inside a destroyed JS runtime.",
+    "The recreated fixture self-test expects initial State40 and records its known failure; original IPC verifies actual retained State45/setup1/plugin1.",
+    "RN-owned PermissionsAndroid requests, Expo recreation, process death, broader navigation/rotation and native channel transport remain separate acceptance.",
+    "No new standalone/iOS execution, physical device, adopter or full retained CI/parity claim. Earlier standalone permission-response and link UI failures remain unresolved."
+  ]
+}

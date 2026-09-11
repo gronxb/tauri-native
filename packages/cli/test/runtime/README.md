@@ -40,6 +40,9 @@ node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts 
 # First request after recreation, OS denial, another recreation, then OS grant:
 node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts react /path/to/retained-android --fresh-permission
 node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts lynx /path/to/retained-android --fresh-permission
+# Recreate while the actual OS permission dialog remains pending:
+node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts react /path/to/retained-android --pending-permission
+node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts lynx /path/to/retained-android --pending-permission
 ```
 
 The standalone runner builds the ordinary fixture with the Tauri CLI. Its probe
@@ -68,11 +71,23 @@ This requires a new export containing the ActivityResult registration correction
 The original Tauri 2.11.5 launcher fails after recreation; the same correction
 is applied only to the exported dependency copy, preserving the producer.
 
+`--pending-permission` starts each request with the renderer's `Request then save`
+action and recreates through a test-only broadcast while the actual OS dialog
+remains visible. It denies the first request and grants the second, after a
+second recreation. Nine UI flows require completion of the original Tauri
+callback on each replacement Activity, no sentinel note from the retired
+renderer, and a later save/deep link from the new renderer. The disposable
+consumer adds only logging after the unchanged original permission callback;
+it does not substitute OS results or dispatch. Reports and callback logs are
+under `target/retained-activity-recreation/pending-permission/{react,lynx}`.
+The [pending-callback evidence](../../../../docs/evidence/retained-pending-recreation-2026-09-11.json)
+also preserves the failure with an artifact predating the registration fix.
+
 The ordinary fixture's ten startup scenarios run before recreation. Its
 one-time initial-state assertion expects 40 in a fresh JS document; recreated
 documents keep State 45. The gate records that fixture assertion failure and
 checks preserved state and operational plugins directly through original IPC.
-It does not claim that the initial self-test passed again. Pending OS requests,
+It does not claim that the initial self-test passed again. RN-owned permissions,
 process death and Expo recreation need separate
 gates. See the [scoped evidence](../../../../docs/evidence/retained-activity-recreation-2026-09-11.json),
 including the separately retained unsuccessful attempts.

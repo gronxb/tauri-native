@@ -74,6 +74,22 @@ recovery and packaged ELF/APK alignment checks pass. This is scoped Android
 evidence; pending callbacks across recreation, Expo recreation, full retained
 CI/parity and physical-device/adopter acceptance remain open.
 
+## Pending Android permission callbacks — 2026-09-11
+
+[Native evidence](../docs/evidence/retained-pending-recreation-2026-09-11.json) adds eighteen
+packed RN and Lynx Release/R8 UI flows. A test-only broadcast recreates the Activity
+while the actual Tauri geolocation permission dialog remains visible. OS denial
+and grant each complete the original Tauri callback on a replacement Activity;
+retired renderer continuations save no sentinel note. State/setup remain 45/1/1,
+old listeners reach zero, and a new location save/deep link works. The existing
+producer-deleted artifact is reused; no new production runtime change is claimed.
+
+The same gate fails with the previous RN artifact: after real recreation and OS
+denial, no original callback completion is recorded. That failure remains
+separate from successful acceptance. RN-owned permissions, Expo recreation,
+process death, broader navigation/channel behavior, retained CI and device/adopter
+gates remain open; this does not close the issue or establish full release parity.
+
 ## Scope and constraints
 
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.

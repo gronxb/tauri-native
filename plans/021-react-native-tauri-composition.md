@@ -58,6 +58,16 @@ location save and deep link pass. State/setup stay 45/1/1, retired listeners rea
 zero and the producer stays unchanged. Pending OS callbacks across recreation,
 Expo recreation, broader navigation/rotation and retained CI remain open.
 
+## Pending Android permission callbacks — 2026-09-11
+
+[Pending-callback evidence](../docs/evidence/retained-pending-recreation-2026-09-11.json)
+adds nine packed RN Release/R8 UI flows. Two real recreations preserve the
+visible OS dialogs; original Tauri denial/grant callbacks complete once on each
+replacement Activity. Retired renderers save no sentinel note, state/setup remain
+45/1/1, and a new save/deep link works. The existing artifact is reused. This
+covers Tauri geolocation; RN-owned permissions, Expo recreation, process death,
+broader navigation/channel behavior and full retained CI remain separate work.
+
 ## Scope and constraints
 
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.
