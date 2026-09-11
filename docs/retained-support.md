@@ -251,5 +251,10 @@ Android export files, plus the separately prepared ordinary apps. Every listed
 file size/hash and both standalone binary hashes match their receipts. The
 producer checks desktop execution, unchanged fourteen-file source, cache reuse,
 rejected invalid capabilities, preserved previous output and producer deletion.
-Receiving native jobs are running separately; these prepared files do not
-establish their runtime results or certify the later lifecycle gates.
+The [receiving jobs have now failed](evidence/retained-hosted-receiving-failures-2026-09-11.json).
+Both ordinary apps pass six UI flows through permission denial/grant, location
+save and backgrounding, then fail the `Links received 1` assertion. Their later
+retained consumers do not run. The existing iOS changed-Rust RN flow also fails
+its first library assertion after stop/relaunch; its original RN/Expo/Lynx and
+changed Lynx/Expo flows pass. Native delivery versus UI observation, and the RN
+startup failure, still need diagnosis. No full candidate is certified by this run.

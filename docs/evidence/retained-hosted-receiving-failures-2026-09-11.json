@@ -1,0 +1,238 @@
+{
+  "date": "2026-09-11",
+  "status": "failed hosted acceptance; no candidate",
+  "run": {
+    "databaseId": 34557120185,
+    "headSha": "002ee3a3bf051656ba9ec41692b9317242942c65",
+    "status": "completed",
+    "conclusion": "failure",
+    "url": "https://github.com/gronxb/tauri-native/actions/runs/34557120185"
+  },
+  "jobs": [
+    {
+      "name": "producer",
+      "databaseId": 103132023764,
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/gronxb/tauri-native/actions/runs/34557120185/job/103132023764"
+    },
+    {
+      "name": "native-ios",
+      "databaseId": 103140514583,
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/gronxb/tauri-native/actions/runs/34557120185/job/103140514583"
+    },
+    {
+      "name": "native-android",
+      "databaseId": 103140514626,
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/gronxb/tauri-native/actions/runs/34557120185/job/103140514626"
+    },
+    {
+      "name": "retained-producer",
+      "databaseId": 103140514650,
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/gronxb/tauri-native/actions/runs/34557120185/job/103140514650"
+    },
+    {
+      "name": "retained-ios",
+      "databaseId": 103152012251,
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/gronxb/tauri-native/actions/runs/34557120185/job/103152012251"
+    },
+    {
+      "name": "retained-android",
+      "databaseId": 103152012273,
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/gronxb/tauri-native/actions/runs/34557120185/job/103152012273"
+    },
+    {
+      "name": "candidate",
+      "databaseId": 103156290270,
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/gronxb/tauri-native/actions/runs/34557120185/job/103156290270"
+    }
+  ],
+  "standaloneReceiving": {
+    "ios": [
+      {
+        "path": "target/retained-recreation-layouts/hosted-retained-ios/retained-evidence-ios/standalone/background.xml",
+        "sha256": "38d362806a962e36e3779b3579602e868a3b73e787e79bd1429c2e164807a174",
+        "passed": true,
+        "failure": []
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-retained-ios/retained-evidence-ios/standalone/denied-position.xml",
+        "sha256": "2b064354419eddd9f9fc13bddc78179153f5957a3f0140910cc8c74c0fb3e793",
+        "passed": true,
+        "failure": []
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-retained-ios/retained-evidence-ios/standalone/deny-permission.xml",
+        "sha256": "9a479f2a802a782583140dd34a04ba2232def3ef42299a326c738dafc30381b9",
+        "passed": true,
+        "failure": []
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-retained-ios/retained-evidence-ios/standalone/grant-permission.xml",
+        "sha256": "da441451bcb4926eae906826ead57c6a1654e9fb9c38c77976eabc07e11bd531",
+        "passed": true,
+        "failure": []
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-retained-ios/retained-evidence-ios/standalone/initial.xml",
+        "sha256": "ecf853773fe7e5a6c210f2deef97982daf7149bd76bc17f19e52ea8e90bc428b",
+        "passed": true,
+        "failure": []
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-retained-ios/retained-evidence-ios/standalone/link-ui.xml",
+        "sha256": "d24a9e9bd965053d8449bd10649a470ec14ec4c63422a07dcaaf43f39bc6a9e4",
+        "passed": false,
+        "failure": [
+          "Assertion is false: \"Links received 1\" is visible"
+        ]
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-retained-ios/retained-evidence-ios/standalone/save.xml",
+        "sha256": "bcfd52e584bbe4435b9ca4b3874a1d57537ac32fcc59d1e0a2a7b49fc55820ac",
+        "passed": true,
+        "failure": []
+      }
+    ],
+    "android": [
+      {
+        "path": "target/retained-recreation-layouts/hosted-retained-android/retained-evidence-android/standalone/background.xml",
+        "sha256": "0423a61c17878434cc03285a02543ca3b9e07ec4a09a4df65e822b24c44c161e",
+        "passed": true,
+        "failure": []
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-retained-android/retained-evidence-android/standalone/denied-position.xml",
+        "sha256": "7e0770d18e9f8e922bc5cd9f40d91c182de61204dbe33e973f803ceb37d5b2b4",
+        "passed": true,
+        "failure": []
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-retained-android/retained-evidence-android/standalone/deny-permission.xml",
+        "sha256": "1deb669ecea5d373353a395588cbf87a79e866210dcbda7753ee08e880617fa1",
+        "passed": true,
+        "failure": []
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-retained-android/retained-evidence-android/standalone/grant-permission.xml",
+        "sha256": "497080da551dd1828201c641ca371278f1d475d6ca0799b659e609c0572e924a",
+        "passed": true,
+        "failure": []
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-retained-android/retained-evidence-android/standalone/initial.xml",
+        "sha256": "691257a6eec5925383b728ac9af09b2e53e5e38e5c02eebb382c7226ddda1eb4",
+        "passed": true,
+        "failure": []
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-retained-android/retained-evidence-android/standalone/link-ui.xml",
+        "sha256": "89f7bccc5eac478843bd8eebb9bb3b523d289ab8565463afcb9a4d6f64f69b00",
+        "passed": false,
+        "failure": [
+          "Assertion is false: \"Links received 1\" is visible"
+        ]
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-retained-android/retained-evidence-android/standalone/save.xml",
+        "sha256": "662947459b53a90988dfa8ef5d3601124cc089dfb4582f0ca7e7f25d74a9dfa0",
+        "passed": true,
+        "failure": []
+      }
+    ]
+  },
+  "existingIosReceiving": {
+    "document-feature": [
+      {
+        "path": "target/retained-recreation-layouts/hosted-native-ios/document-feature/expo-ios.xml",
+        "sha256": "ae3800eb4986167acb3e93f069a6f7d3fe9776b07a890f5b0ffa92a33a11aeee",
+        "passed": true,
+        "failure": []
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-native-ios/document-feature/lynx-ios.xml",
+        "sha256": "071baf777a48d062886da18361fc4829e2a37f4ec349f6ac6737c5ead78b5b1e",
+        "passed": true,
+        "failure": []
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-native-ios/document-feature/rn-ios.xml",
+        "sha256": "f114e2193e4ad4dda415ba2e4e0cfe285becfcb115944eba0c92d063acddcb47",
+        "passed": true,
+        "failure": []
+      }
+    ],
+    "document-feature-changed": [
+      {
+        "path": "target/retained-recreation-layouts/hosted-native-ios/document-feature-changed/expo-ios-pending.xml",
+        "sha256": "85d893dfa9a6c282f133a24577d5ed0d325a9b29ce1958b41f138e560d483c8e",
+        "passed": true,
+        "failure": []
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-native-ios/document-feature-changed/expo-ios.xml",
+        "sha256": "2250a3a81947c9caf8ecf75b3b4f917112bcb1dd25ccbbb09b63cafe99780a26",
+        "passed": true,
+        "failure": []
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-native-ios/document-feature-changed/lynx-ios-pending.xml",
+        "sha256": "4b1f173bd783afe3f25dbf0413916c819e0822c6d05ea8bfaf31c3250724dfe4",
+        "passed": true,
+        "failure": []
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-native-ios/document-feature-changed/lynx-ios.xml",
+        "sha256": "f9d0334ac7d09fbe7f707ac16af112522fba9b6448072c135d908306229ee5c3",
+        "passed": true,
+        "failure": []
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-native-ios/document-feature-changed/rn-ios.xml",
+        "sha256": "cbae72449205ba38e3a0e6c6b04fe225624caac7e84361ccd5e51ee1890c2d32",
+        "passed": false,
+        "failure": [
+          "App crashed or stopped while executing flow, please check diagnostic logs: ~/Library/Logs/DiagnosticReports directory"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    "Both ordinary Tauri receiving apps passed six UI flows through OS denial/grant, a real location save and backgrounding, then failed the Links received 1 UI assertion. No final receiving receipt exists. Native delivery versus UI observation remains unresolved from these logs.",
+    "The existing iOS path passed original RN/Lynx/Expo and changed-Rust Lynx/Expo (including pending operations). Changed-Rust RN failed its first library assertion after a completed stop/relaunch. The system log records automation-requested termination and subsequent startup; the failure screenshot is black. This is not established as a product crash or a corrected test.",
+    "Retained receiving jobs stop at the ordinary app failure; subsequent retained native/RN/Expo/Lynx gates did not run. The successful retained producer archive remains preparation evidence.",
+    "This run uses 002ee3a and predates later Expo recreation, renderer-owner permissions, CNG recreation and tooling pins. Local later-revision evidence is separate.",
+    "No release candidate, device evidence, adopter evidence, publication or PR is claimed."
+  ],
+  "diagnostics": [
+    {
+      "path": "target/retained-recreation-layouts/hosted-native-ios/document-feature-changed/rn-ios-system.log",
+      "sha256": "43b5d5de302cda1f710f578432aa9f96a95854ebbab187eb241d98c690e4f44c"
+    },
+    {
+      "path": "target/retained-recreation-layouts/hosted-retained-android/logs/retained-android-failure-logcat.log",
+      "sha256": "7b68c0115e63778038c9a5901215f8a069ae7f7e874490976d5a43ef689e64e2"
+    },
+    {
+      "path": "target/retained-recreation-layouts/hosted-failed-jobs.log",
+      "sha256": "be3f183f0a4ef4c3aad192acb7839403e33cb519b03be410e735413d8476e958"
+    }
+  ],
+  "next": [
+    "Preserve original app state reports and Maestro diagnostics before uninstalling failed standalone runs; reproduce the same transferred app without weakening its native/UI assertions.",
+    "Complete bare RN and actual CNG recreation/permission gates locally, then validate the corrected revision in hosted CI.",
+    "Keep physical devices and two independent evaluations open, as confirmed unavailable by the maintainer."
+  ]
+}

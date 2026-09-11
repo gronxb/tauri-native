@@ -190,6 +190,18 @@ CLI/scripts typechecks pass. These are local API 37 arm64/16 KB runs, separate
 from bare-RN, Expo CNG recreation and the still-running hosted revision.
 Remaining lifecycle, same-commit hosted, device and evaluation gates stay open.
 
+## Hosted receiving failures — 2026-09-11
+
+[Completed run evidence](../docs/evidence/retained-hosted-receiving-failures-2026-09-11.json)
+records failure at `002ee3a`, with all 22 downloaded iOS/ordinary receiving UI
+results preserved. Both ordinary Tauri apps pass six flows, then fail the warm
+deep-link UI assertion. Remaining retained consumers do not run. Existing
+changed-Rust RN iOS fails after stop/relaunch; original RN/Expo/Lynx and changed
+Lynx/Expo pass. The package producer, retained producer and existing Android job
+remain successful, but the required candidate fails. These unresolved receiving
+failures must be diagnosed and the corrected revision executed; earlier local
+passes and later local lifecycle work do not replace that gate.
+
 ## Scope and constraints
 
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.
