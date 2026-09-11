@@ -135,6 +135,12 @@ The maintainer confirmed that physical devices and two independent project
 evaluations are not yet prepared. Those final acceptance items remain open;
 implementation and hosted validation continue.
 
+The [existing hosted Android receiving job](../docs/evidence/retained-hosted-legacy-android-2026-09-11.json)
+has since completed at `002ee3a`: thirteen downloaded UI results, original/changed
+feature reports and standalone ABI 2 execution match the producer receipt and
+package hashes. This verifies the existing path on Linux/x86_64/16 KB. Retained
+ABI 3 and later lifecycle gates remain separate; no candidate is certified yet.
+
 ## Expo Activity recreation — 2026-09-11
 
 [Native evidence](../docs/evidence/retained-expo-recreation-2026-09-11.json) records

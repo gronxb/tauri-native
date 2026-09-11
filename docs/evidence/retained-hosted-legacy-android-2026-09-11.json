@@ -1,0 +1,137 @@
+{
+  "passed": true,
+  "recordedAt": "2026-09-11T04:38:00.874710+00:00",
+  "run": 34557120185,
+  "commit": "002ee3a3bf051656ba9ec41692b9317242942c65",
+  "runUrl": "https://github.com/gronxb/tauri-native/actions/runs/34557120185",
+  "jobUrl": "https://github.com/gronxb/tauri-native/actions/runs/34557120185/job/103140514626",
+  "scope": "Completed existing ABI 2 Android receiving job on hosted Ubuntu/API 36 x86_64/16 KB; separate from retained ABI 3 acceptance.",
+  "receiptSha256": "01a00778878ab9cec1968a0e81f40eff3c44f5dec5a1b457d758b70455d97dfa",
+  "producerReceiptSha256": "60238cfd38cc18dfcb5d587313d953cf37cdf6faa3b056811b2a8994cd852739",
+  "jobLogSha256": "38aa1272447856f1d6016f2d71aa45d9d5950e869a7afd614ba9f74e0d140cd8",
+  "packages": [
+    {
+      "sdk": "cli",
+      "name": "@tauri-native/cli",
+      "version": "1.0.0-rc.0",
+      "file": "tauri-native-cli-1.0.0-rc.0.tgz",
+      "sha256": "6363fe5afec7a581bbc48378b0df62a5346dc09618d8028fe4b00d251deb90a0"
+    },
+    {
+      "sdk": "react-native",
+      "name": "@tauri-native/react-native",
+      "version": "1.0.0-rc.0",
+      "file": "tauri-native-react-native-1.0.0-rc.0.tgz",
+      "sha256": "16ffe7509d23158b2d5b30f553a1fcd0d28589edc6480c3fe5c04995a1222d52"
+    },
+    {
+      "sdk": "lynx",
+      "name": "@tauri-native/lynx",
+      "version": "1.0.0-rc.0",
+      "file": "tauri-native-lynx-1.0.0-rc.0.tgz",
+      "sha256": "c2a80c66a6397dcdf2632a83d80dfc14c89ef120068ab210904677ab862d8e9e"
+    }
+  ],
+  "checks": [
+    "feature",
+    "feature-changed",
+    "async-rn",
+    "async-lynx",
+    "view-rn",
+    "view-lynx",
+    "standalone-android"
+  ],
+  "installedVersions": {
+    "rn": {
+      "react-native": "0.86.3"
+    },
+    "lynx": {
+      "@lynx-js/react": "0.125.0",
+      "@lynx-js/lynx-ui": "3.137.0"
+    },
+    "expo": {
+      "react-native": "0.86.3",
+      "expo": "57.0.20"
+    }
+  },
+  "emulator": {
+    "api": "36",
+    "architecture": "x86_64",
+    "pageSize": 16384
+  },
+  "featuresMatchDownloadedReports": true,
+  "standaloneMatchesDownloadedReport": true,
+  "successfulUiFlows": 13,
+  "flows": [
+    {
+      "file": "ci/async-lynx-android.xml",
+      "sha256": "d4a44254fa5277be434b2d3f30515b4afade9ecc009d90217956aba6599a4df7",
+      "testcases": 1
+    },
+    {
+      "file": "ci/async-rn-android.xml",
+      "sha256": "601c804de85946d4b3b6b4cee84d0a3c0eb3cdc8417255cbdea7125cf395f272",
+      "testcases": 1
+    },
+    {
+      "file": "ci/view-lynx-android.xml",
+      "sha256": "082b74ac46059382a4b90ae54d00d257887f979dc1d25ee787e22f9241b24808",
+      "testcases": 1
+    },
+    {
+      "file": "ci/view-rn-android.xml",
+      "sha256": "5a91f16e899ab7b3c1590f4043960835ce5d2fd2d252412b4680dbb9c83bc576",
+      "testcases": 1
+    },
+    {
+      "file": "document-feature/expo-android.xml",
+      "sha256": "7cce29ef6222d03c599bbef70bd57b0094062e08e1790cce4037946be633affa",
+      "testcases": 1
+    },
+    {
+      "file": "document-feature/lynx-android.xml",
+      "sha256": "1cbf9a8408acbfe3886fe13fb3720b03d276c27b792db241c71fbfa20c9d70a1",
+      "testcases": 1
+    },
+    {
+      "file": "document-feature/rn-android.xml",
+      "sha256": "d6af6d06de1302cab9ee98679e6323ac14f488d7fb295d48ddc88b6785fef8fd",
+      "testcases": 1
+    },
+    {
+      "file": "document-feature-changed/expo-android-pending.xml",
+      "sha256": "65f63fd5d093c0b96dda2f4c2593b9d23af466834b204362d88ee6325f685e20",
+      "testcases": 1
+    },
+    {
+      "file": "document-feature-changed/expo-android.xml",
+      "sha256": "7cce29ef6222d03c599bbef70bd57b0094062e08e1790cce4037946be633affa",
+      "testcases": 1
+    },
+    {
+      "file": "document-feature-changed/lynx-android-pending.xml",
+      "sha256": "5dc9c529e7e457c612cfdade8b020db3df24604cb554a7f0725d497d4ffaa6e6",
+      "testcases": 1
+    },
+    {
+      "file": "document-feature-changed/lynx-android.xml",
+      "sha256": "82335266846b16e4c474e0e44b3b99780120afd88c955887a06f02610dd79847",
+      "testcases": 1
+    },
+    {
+      "file": "document-feature-changed/rn-android-pending.xml",
+      "sha256": "33aeea99a98b9b182b9ab1e21792d590eeda1f356dd33377e496d0630aca3b83",
+      "testcases": 1
+    },
+    {
+      "file": "document-feature-changed/rn-android.xml",
+      "sha256": "79820eceff49b1d080b50afd7e9e86ff5aec0e87b7d509ef6dffa068ce597fb8",
+      "testcases": 1
+    }
+  ],
+  "limits": [
+    "Retained producer and receiving jobs are separate required evidence.",
+    "This run predates the later Expo recreation and renderer-owned permission gates.",
+    "No complete candidate, physical-device or independent-adopter acceptance is claimed."
+  ]
+}

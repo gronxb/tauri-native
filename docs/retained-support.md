@@ -219,3 +219,11 @@ SDK bytes match the local transferred inputs. Retained producer and receiving
 platform jobs still need separate success; the full hosted run remains required.
 The earlier ABI 2 candidate does not certify these new retained jobs. Physical
 devices and independent evaluations remain pending, as confirmed by the maintainer.
+
+The [completed existing Android receiving job](evidence/retained-hosted-legacy-android-2026-09-11.json)
+also passes at `002ee3a`. Its downloaded receipt matches the verified producer,
+commit and package hashes. Thirteen successful UI flows cover original/changed
+Fieldnotes in RN/Expo/Lynx and RN/Lynx async/view behavior; the standalone ABI 2
+native result matches its transferred APK on hosted Linux/API 36 x86_64/16 KB.
+This is existing-path regression evidence. Retained ABI 3 jobs, the later Expo
+recreation gates and the complete candidate still require their own success.
