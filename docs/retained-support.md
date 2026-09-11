@@ -104,6 +104,25 @@ The previous RN artifact fails the same callback-completion check after OS denia
 that control is preserved as a failure. This does not count callbacks inside a
 destroyed JS runtime or establish RN-owned permission and Expo recreation support.
 
+The [Expo recreation evidence](evidence/retained-expo-recreation-2026-09-11.json)
+adds 33 transferred-SDK Android Release/R8 UI flows across normal, fresh Tauri
+permission and pending Tauri permission scenarios. Each performs two real
+Activity recreations. Original State/setup remain 45/1/1, and denial/grant during
+recreation each complete the original Tauri callback once. Actual Expo modules
+are created once per Activity and destroyed on retirement; the application
+initializes once. Expo file bytes, back handling and deep links survive. Final
+renderer removal leaves zero native listeners and all three Expo module instances
+destroyed while original Tauri IPC still reads the same state and notes.
+
+All fourteen producer files and transferred artifact/SDK bytes are unchanged.
+This reuses the earlier arm64 Release export and fresh external dependencies;
+there is no production runtime change or fresh Rust export. The first attempt
+failed because the new test layout omitted its Close RN button. That failed
+attempt is preserved; adding the test-only control and rerunning the complete
+scenario produced the passing result. These gates use package-owned Expo
+composition, with Expo CNG recreation and RN/Expo-owned pending permissions still
+separate. Physical devices and hosted Linux/x86_64 execution are not inferred.
+
 ## Native ownership and dependencies
 
 | Layer | Required contract |
@@ -145,7 +164,7 @@ conflicting startup owners and edited generated files are rejected. Adding a
 new native plugin requires exporter/dependency support and actual mobile
 execution; editing the allowlist alone is insufficient.
 
-RN-owned permissions across Activity recreation, Expo recreation, full
+RN/Expo-owned pending permissions across Activity recreation, Expo CNG recreation, full
 navigation/history/rotation behavior, native channel
 streaming and broader source/owner forms remain open. Expo config plugins are
 supported within the [documented native configuration/resource boundary](../packages/react-native/RETAINED.md#expo-config-plugins-and-native-regeneration).
@@ -173,7 +192,7 @@ pass. Three transfer-input scenarios and CLI/script typechecks also pass.
 The [required retained workflow](validation.md) now includes the ordinary apps,
 retained native clients, RN, Expo CNG, Lynx and Android recreation modes. Its
 producer and both native jobs must match the same inputs before aggregation.
-The workflow is wired; a complete hosted run, iOS/Expo transfer runs,
+The workflow is wired; a complete hosted run, remaining iOS/Expo CNG transfer runs,
 Linux/x86_64 execution, broader lifecycle/channel parity, devices and independent
 adopters remain open. Receipt tests do not certify pending native execution.
 See [local workflow evidence](evidence/retained-ci-workflow-android-2026-09-11.json)

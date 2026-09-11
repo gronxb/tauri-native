@@ -1,0 +1,466 @@
+{
+  "passed": true,
+  "recordedAt": "2026-09-11T03:40:52.745786+00:00",
+  "baseCommit": "002ee3a3bf051656ba9ec41692b9317242942c65",
+  "scope": "Packed Expo Android composition with real Activity recreation, native module lifecycle/file persistence/back/deep-link forwarding and Tauri-owned normal/fresh/pending OS permission scenarios.",
+  "nativeAcceptanceUiFlows": 33,
+  "skippedFlows": 0,
+  "actualActivityRecreations": 6,
+  "artifactReuse": "Reuses the transferred arm64 Release runtime from the prior producer-deleted workflow export and the original transferred RN SDK tarball. No fresh Rust export or production runtime/SDK change is claimed.",
+  "originalFixtureHashes": {
+    "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+    "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+  },
+  "originalFixtureUnchanged": true,
+  "results": [
+    {
+      "scenario": "normal",
+      "nativeUiFlows": 9,
+      "actualActivityRecreations": 2,
+      "profile": "release",
+      "testSigning": "Debug test key; composed Release/R8 remains non-debuggable",
+      "apkSha256": "63dc030ff8e469e53f4766d3c5ca7c176726a6401a0e65d10aa0ab6c169ba657",
+      "artifactSha256": "45c1ed75a270485e8b4a0ba478f649263bfe603dfc9b8a0015bfb0e6d6e60691",
+      "packageSha256": "16ffe7509d23158b2d5b30f553a1fcd0d28589edc6480c3fe5c04995a1222d52",
+      "packageSource": "transferred",
+      "bundleSha256": "2e98368747c84c6443cc22bdd8b9c49635350dba5ffe713c51c46fce906d3c0a",
+      "deviceAbi": "arm64-v8a",
+      "pageSize": 16384,
+      "sourceFreeBuild": "PATH=/Users/gronxb/.local/share/mise/installs/node/24.15.0/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+      "artifactUnchanged": true,
+      "state": {
+        "appIdentifier": "dev.taurinative.mobilefieldnotes",
+        "pluginSetupCount": 1,
+        "setupCount": 1,
+        "value": 45
+      },
+      "sameProcessAndWryWindow": true,
+      "oldListeners": [
+        0,
+        0
+      ],
+      "newListeners": 1,
+      "closedListeners": 0,
+      "expoApplicationHasHostAfterClose": false,
+      "expo": {
+        "initial": {
+          "created": 1,
+          "destroyed": 0,
+          "callbacks": 0,
+          "applicationCreates": 1,
+          "activityCreates": 1,
+          "resumes": 3,
+          "pauses": 2,
+          "intents": 1,
+          "backs": 1
+        },
+        "final": {
+          "created": 3,
+          "destroyed": 2,
+          "callbacks": 0,
+          "applicationCreates": 1,
+          "activityCreates": 3,
+          "resumes": 12,
+          "pauses": 11,
+          "intents": 8,
+          "backs": 3
+        },
+        "closed": {
+          "created": 3,
+          "destroyed": 3,
+          "callbacks": 0,
+          "applicationCreates": 1,
+          "activityCreates": 3,
+          "resumes": 13,
+          "pauses": 12,
+          "intents": 9,
+          "backs": 3
+        },
+        "permissionOwner": "tauri",
+        "configuration": "package-owned composition; Expo CNG is a separate gate"
+      },
+      "permissionResults": [],
+      "savedNotes": [
+        {
+          "id": 1,
+          "latitude": 37.5664983,
+          "longitude": 126.9779983,
+          "text": "A RN place to remember"
+        },
+        {
+          "id": 2,
+          "latitude": 37.5664983,
+          "longitude": 126.9779983,
+          "text": "A RN place to remember"
+        }
+      ],
+      "deepLinks": [
+        "tauri-fieldnotes://notes/2"
+      ],
+      "report": "target/retained-expo-recreation/native/retained-activity-recreation/expo/report.json",
+      "reportSha256": "447578890e2856466aaad2472123252d8da5a8a949cf86e47193350b8c4a6784",
+      "nativeLogSha256": "e0fdc1d4fecaa097e8ba03d6a286e4ee4b209e78fceb01908656e12609c6ea46",
+      "flows": [
+        {
+          "name": "expo-close",
+          "sha256": "75e1872f26456c9b6051b5ae648ffc282f909745b212adf901e5f6b91256341a"
+        },
+        {
+          "name": "expo-modules-0",
+          "sha256": "9b25b82e779dcdc4dfdd940ad97d653fb0fd6b28e9eec86140db01a884ea57a2"
+        },
+        {
+          "name": "expo-modules-1",
+          "sha256": "6e085e11e38dc97430b04c39c6c98ad68a2b172cf4d250b15442b129d6632f99"
+        },
+        {
+          "name": "expo-modules-2",
+          "sha256": "3285cb4cfc970598171ff5afef03ad69a977052a2b10188bb8ab3e1f8ebfdadd"
+        },
+        {
+          "name": "initial-plugin",
+          "sha256": "5953ae03aaf51632f81fa57d739c37c6d1148526b95e8ae636eeb402d2ffc95d"
+        },
+        {
+          "name": "post-recreation-link",
+          "sha256": "cf8784901aa150b2c52ca9a20393f6bf036205bc44a661bfb57b109514021f70"
+        },
+        {
+          "name": "post-recreation-save",
+          "sha256": "e99070694b2199d6c7437fb224cac281596d858cde1f737b0b5620c13ec0c911"
+        },
+        {
+          "name": "recreated-ui-1",
+          "sha256": "ed28d06048d9bf0af99e5ca4f034a46c702906972c5c66cb0fb9e581d8eab45a"
+        },
+        {
+          "name": "recreated-ui-2",
+          "sha256": "6d89bafbc1951dddba6bb5e72906560d4993abe4ff4a3aec7c5baa8ef72d5d86"
+        }
+      ]
+    },
+    {
+      "scenario": "fresh",
+      "nativeUiFlows": 11,
+      "actualActivityRecreations": 2,
+      "profile": "release",
+      "testSigning": "Debug test key; composed Release/R8 remains non-debuggable",
+      "apkSha256": "bc21f85f233ac3e858d8a01705039fb9af32b61710c6ca39512ec1fc88119f81",
+      "artifactSha256": "45c1ed75a270485e8b4a0ba478f649263bfe603dfc9b8a0015bfb0e6d6e60691",
+      "packageSha256": "16ffe7509d23158b2d5b30f553a1fcd0d28589edc6480c3fe5c04995a1222d52",
+      "packageSource": "transferred",
+      "bundleSha256": "2e98368747c84c6443cc22bdd8b9c49635350dba5ffe713c51c46fce906d3c0a",
+      "deviceAbi": "arm64-v8a",
+      "pageSize": 16384,
+      "sourceFreeBuild": "PATH=/Users/gronxb/.local/share/mise/installs/node/24.15.0/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+      "artifactUnchanged": true,
+      "state": {
+        "appIdentifier": "dev.taurinative.mobilefieldnotes",
+        "pluginSetupCount": 1,
+        "setupCount": 1,
+        "value": 45
+      },
+      "sameProcessAndWryWindow": true,
+      "oldListeners": [
+        0,
+        0
+      ],
+      "newListeners": 1,
+      "closedListeners": 0,
+      "expoApplicationHasHostAfterClose": false,
+      "expo": {
+        "initial": {
+          "created": 1,
+          "destroyed": 0,
+          "callbacks": 0,
+          "applicationCreates": 1,
+          "activityCreates": 1,
+          "resumes": 2,
+          "pauses": 1,
+          "intents": 1,
+          "backs": 1
+        },
+        "final": {
+          "created": 3,
+          "destroyed": 2,
+          "callbacks": 0,
+          "applicationCreates": 1,
+          "activityCreates": 3,
+          "resumes": 15,
+          "pauses": 14,
+          "intents": 10,
+          "backs": 3
+        },
+        "closed": {
+          "created": 3,
+          "destroyed": 3,
+          "callbacks": 0,
+          "applicationCreates": 1,
+          "activityCreates": 3,
+          "resumes": 16,
+          "pauses": 15,
+          "intents": 11,
+          "backs": 3
+        },
+        "permissionOwner": "tauri",
+        "configuration": "package-owned composition; Expo CNG is a separate gate"
+      },
+      "permissionResults": [],
+      "savedNotes": [
+        {
+          "id": 1,
+          "latitude": 37.5664983,
+          "longitude": 126.9779983,
+          "text": "A RN place to remember"
+        }
+      ],
+      "deepLinks": [
+        "tauri-fieldnotes://notes/2"
+      ],
+      "report": "target/retained-expo-recreation/native/retained-activity-recreation/fresh-permission/expo/report.json",
+      "reportSha256": "c791d3404a987a9a690b8933802eb434ed6432b98517587794266bbb4d8b4d2f",
+      "nativeLogSha256": "a8786b185c720f536624f72f645e2b7d5918db0cb97fe47f60c9676aa94ec085",
+      "flows": [
+        {
+          "name": "expo-close",
+          "sha256": "61b500873fddc0d992194dab7a6b4fea4b41a2c505ecfd239ab35ed7e43f86a4"
+        },
+        {
+          "name": "expo-modules-0",
+          "sha256": "9b25b82e779dcdc4dfdd940ad97d653fb0fd6b28e9eec86140db01a884ea57a2"
+        },
+        {
+          "name": "expo-modules-1",
+          "sha256": "6e085e11e38dc97430b04c39c6c98ad68a2b172cf4d250b15442b129d6632f99"
+        },
+        {
+          "name": "expo-modules-2",
+          "sha256": "3285cb4cfc970598171ff5afef03ad69a977052a2b10188bb8ab3e1f8ebfdadd"
+        },
+        {
+          "name": "initial-permission",
+          "sha256": "4aedc3ed4b0078dab6ea529f9de75b4fbdaca5e5f100c370753929a763e6e752"
+        },
+        {
+          "name": "permission-deny",
+          "sha256": "1f796239476f80d4879f5be5ec4b171dd24d80b1a8b5cbacbf4a0b00e2accfd8"
+        },
+        {
+          "name": "permission-grant",
+          "sha256": "ea2c66436b73f590a5d62b122ca29d34d24ca050e8c4c3461f3d2a8916440287"
+        },
+        {
+          "name": "post-recreation-link",
+          "sha256": "cf8784901aa150b2c52ca9a20393f6bf036205bc44a661bfb57b109514021f70"
+        },
+        {
+          "name": "post-recreation-save",
+          "sha256": "cb42b9e9d4248d120b8c8931fa890bdec869f72ddb38331852e12598ec1578a1"
+        },
+        {
+          "name": "recreated-ui-1",
+          "sha256": "ed28d06048d9bf0af99e5ca4f034a46c702906972c5c66cb0fb9e581d8eab45a"
+        },
+        {
+          "name": "recreated-ui-2",
+          "sha256": "6d89bafbc1951dddba6bb5e72906560d4993abe4ff4a3aec7c5baa8ef72d5d86"
+        }
+      ]
+    },
+    {
+      "scenario": "pending",
+      "nativeUiFlows": 13,
+      "actualActivityRecreations": 2,
+      "profile": "release",
+      "testSigning": "Debug test key; composed Release/R8 remains non-debuggable",
+      "apkSha256": "65cfacadec4ddb4c7d9d70727d30227ac1ad2bed9cd8c7a4637dac7abd6d2a29",
+      "artifactSha256": "45c1ed75a270485e8b4a0ba478f649263bfe603dfc9b8a0015bfb0e6d6e60691",
+      "packageSha256": "16ffe7509d23158b2d5b30f553a1fcd0d28589edc6480c3fe5c04995a1222d52",
+      "packageSource": "transferred",
+      "bundleSha256": "2e98368747c84c6443cc22bdd8b9c49635350dba5ffe713c51c46fce906d3c0a",
+      "deviceAbi": "arm64-v8a",
+      "pageSize": 16384,
+      "sourceFreeBuild": "PATH=/Users/gronxb/.local/share/mise/installs/node/24.15.0/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+      "artifactUnchanged": true,
+      "state": {
+        "appIdentifier": "dev.taurinative.mobilefieldnotes",
+        "pluginSetupCount": 1,
+        "setupCount": 1,
+        "value": 45
+      },
+      "sameProcessAndWryWindow": true,
+      "oldListeners": [
+        0,
+        0
+      ],
+      "newListeners": 1,
+      "closedListeners": 0,
+      "expoApplicationHasHostAfterClose": false,
+      "expo": {
+        "initial": {
+          "created": 1,
+          "destroyed": 0,
+          "callbacks": 0,
+          "applicationCreates": 1,
+          "activityCreates": 1,
+          "resumes": 2,
+          "pauses": 1,
+          "intents": 1,
+          "backs": 1
+        },
+        "final": {
+          "created": 3,
+          "destroyed": 2,
+          "callbacks": 0,
+          "applicationCreates": 1,
+          "activityCreates": 3,
+          "resumes": 11,
+          "pauses": 10,
+          "intents": 6,
+          "backs": 3
+        },
+        "closed": {
+          "created": 3,
+          "destroyed": 3,
+          "callbacks": 0,
+          "applicationCreates": 1,
+          "activityCreates": 3,
+          "resumes": 12,
+          "pauses": 11,
+          "intents": 7,
+          "backs": 3
+        },
+        "permissionOwner": "tauri",
+        "configuration": "package-owned composition; Expo CNG is a separate gate"
+      },
+      "permissionResults": [
+        {
+          "kind": "permission-result",
+          "pid": 9483,
+          "activity": 164914673,
+          "grants": {
+            "android.permission.ACCESS_FINE_LOCATION": false,
+            "android.permission.ACCESS_COARSE_LOCATION": false
+          }
+        },
+        {
+          "kind": "permission-result",
+          "pid": 9483,
+          "activity": 12251722,
+          "grants": {
+            "android.permission.ACCESS_FINE_LOCATION": true,
+            "android.permission.ACCESS_COARSE_LOCATION": true
+          }
+        }
+      ],
+      "savedNotes": [
+        {
+          "id": 1,
+          "latitude": 37.5664983,
+          "longitude": 126.9779983,
+          "text": "A RN place to remember"
+        }
+      ],
+      "deepLinks": [
+        "tauri-fieldnotes://notes/2"
+      ],
+      "report": "target/retained-expo-recreation/native/retained-activity-recreation/pending-permission/expo/report.json",
+      "reportSha256": "5717e0bdc1746e9d5c796dc95a92e1a482d261a4420a7cee7dc498404e476587",
+      "nativeLogSha256": "0b27b6953326a06e619e255107093abb26083de754abed1f4a17d4d7087f6ca3",
+      "flows": [
+        {
+          "name": "expo-close",
+          "sha256": "61b500873fddc0d992194dab7a6b4fea4b41a2c505ecfd239ab35ed7e43f86a4"
+        },
+        {
+          "name": "expo-modules-0",
+          "sha256": "9b25b82e779dcdc4dfdd940ad97d653fb0fd6b28e9eec86140db01a884ea57a2"
+        },
+        {
+          "name": "expo-modules-1",
+          "sha256": "6e085e11e38dc97430b04c39c6c98ad68a2b172cf4d250b15442b129d6632f99"
+        },
+        {
+          "name": "expo-modules-2",
+          "sha256": "3285cb4cfc970598171ff5afef03ad69a977052a2b10188bb8ab3e1f8ebfdadd"
+        },
+        {
+          "name": "initial-permission",
+          "sha256": "4aedc3ed4b0078dab6ea529f9de75b4fbdaca5e5f100c370753929a763e6e752"
+        },
+        {
+          "name": "pending-dialog-1",
+          "sha256": "5a6b5cfb1251ff64126cd3b52be67988980b41a96cf94028113ef7b49c97bf70"
+        },
+        {
+          "name": "pending-dialog-2",
+          "sha256": "6e9ba729a0f7f9190bd3ca6470f48dd3777483a701f3eab7e51a8559e0414487"
+        },
+        {
+          "name": "pending-result-1",
+          "sha256": "f3426a69467ed2de60b83028e8e80256debd447b43e894b1b5df5ed1ad3e5d34"
+        },
+        {
+          "name": "pending-result-2",
+          "sha256": "f4006cc4148db6cf1f14ae56b59f5cc2da4607b54463eb0b19eab2076f0bd28e"
+        },
+        {
+          "name": "post-recreation-link",
+          "sha256": "cf8784901aa150b2c52ca9a20393f6bf036205bc44a661bfb57b109514021f70"
+        },
+        {
+          "name": "post-recreation-save",
+          "sha256": "cb42b9e9d4248d120b8c8931fa890bdec869f72ddb38331852e12598ec1578a1"
+        },
+        {
+          "name": "recreated-ui-1",
+          "sha256": "ed28d06048d9bf0af99e5ca4f034a46c702906972c5c66cb0fb9e581d8eab45a"
+        },
+        {
+          "name": "recreated-ui-2",
+          "sha256": "6d89bafbc1951dddba6bb5e72906560d4993abe4ff4a3aec7c5baa8ef72d5d86"
+        }
+      ]
+    }
+  ],
+  "separateFailedAttempt": {
+    "stage": "expo-close",
+    "reason": "The new test layout omitted the native Close RN button. Eight prior flows passed, but the complete attempt failed. The test-only control was added and the full normal scenario rerun. No production fix is claimed.",
+    "log": "target/retained-expo-recreation/missing-close-control-failure/expo/expo-close.log",
+    "logSha256": "7d193c06a1894dad291e2246bd3c2889030712bf47fe9521e364a51d21e3d57c",
+    "snapshotSha256": "b09fa314e3d82ef58278f48f399f6eb5a5cd567d8fcdaded6c9c1cfb372902a0",
+    "failedFlowSha256": "553146e2413c41e9286e1a02fdadc819449657ff2288073ba5d700c49349abb1"
+  },
+  "limits": [
+    "All successful executions are local macOS/arm64/API 37/16 KB emulator acceptance, not physical-device or hosted Linux/x86_64 evidence.",
+    "Expo uses the package-owned composition entry point. Expo CNG recreation is separate from the previously recorded normal CNG flows.",
+    "The pending OS permission requests belong to the original Tauri geolocation plugin. RN/Expo-owned pending requests across Activity recreation remain open.",
+    "The recreated original document self-test expects fresh State 40 and reports its existing initial-state assertion failure; direct original IPC verifies preserved State 45 and setup/plugin counts of one.",
+    "Previously recorded standalone permission/deep-link and guest-reboot failures remain unresolved; these passing Expo flows do not certify a fix.",
+    "Full same-commit hosted validation, remaining lifecycle/channel/source-form parity, physical devices and two independent project evaluations remain open."
+  ],
+  "gateSourceSha256": "3df52af9a382671fbeb6952d3ab5a5fc6df4bf3c6aa0c43b916dd3c309d6104e",
+  "rendererDependencyVersions": {
+    "expo": "57.0.19",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-safe-area-context": "5.7.0",
+    "expo-file-system": "57.0.6",
+    "expo-constants": "57.0.17",
+    "expo-modules-core": "57.0.15",
+    "expo-location": "57.0.15",
+    "babel-preset-expo": "57.0.10"
+  }
+}

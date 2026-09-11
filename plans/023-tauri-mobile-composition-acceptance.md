@@ -133,6 +133,30 @@ The maintainer confirmed that physical devices and two independent project
 evaluations are not yet prepared. Those final acceptance items remain open;
 implementation and hosted validation continue.
 
+## Expo Activity recreation — 2026-09-11
+
+[Native evidence](../docs/evidence/retained-expo-recreation-2026-09-11.json) records
+33 transferred-SDK Expo Android Release/R8 UI flows: normal 9, fresh Tauri
+permissions 11 and pending Tauri permissions 13. Each executes two actual
+Activity recreations. Tauri State/setup remain 45/1/1; OS denial and grant each
+complete the original callback once, and retired renderers save no sentinel.
+The real Expo application initializes once, native modules follow all three
+Activities and are completely destroyed at final removal. File persistence,
+back/deep-link forwarding and original Tauri IPC after removal pass. All fourteen
+producer files and input bytes remain unchanged; the previous export is reused.
+
+The first normal attempt failed at a missing test-only Close RN control, after
+its earlier eight flows passed. The corrected complete run is recorded separately;
+no production runtime fix is claimed. Android CI now requires all three Expo
+recreation modes and rejects missing module lifecycle/cleanup evidence. Four
+receipt tests and CLI/scripts typechecks pass. The existing hosted run at
+`002ee3a` continues independently and does not certify this new revision.
+
+Expo CNG recreation, RN/Expo-owned pending permissions, process death, broader
+navigation/channel/source forms, full same-commit hosted validation, physical
+devices and independent project evaluation remain open. The maintainer's device
+and evaluator availability remains unchanged. This increment closes no issue.
+
 ## Scope and constraints
 
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.

@@ -4,7 +4,7 @@ import type { Platform, ProducerReceipt, RetainedNativeReceipt, RetainedProducer
 
 const hash = (value: string) => assert.match(value, /^[a-f0-9]{64}$/);
 export const retainedGates = (platform: Platform) => ['standalone', 'native', 'react-native', 'expo', 'lynx',
-  ...(platform === 'android' ? ['react', 'lynx'].flatMap(sdk => ['recreation', 'fresh-permission', 'pending-permission'].map(mode => `${sdk}-${mode}`)) : [])];
+  ...(platform === 'android' ? ['react', 'expo', 'lynx'].flatMap(sdk => ['recreation', 'fresh-permission', 'pending-permission'].map(mode => `${sdk}-${mode}`)) : [])];
 
 export function validateRetainedProducer(input: unknown, producer: ProducerReceipt, producerSha256: string) {
   const receipt = input as RetainedProducerReceipt;
@@ -92,12 +92,25 @@ export function validateRetainedNative(input: unknown, platform: Platform, produ
       assert.equal(report.expo, true); assert(report.cng && typeof report.cng === 'object', 'Expo CNG must execute');
     }
     if (recreation) {
-      assert.equal(report.mode, gate.name.startsWith('react-') ? 'react' : 'lynx');
+      const expo = gate.name.startsWith('expo-');
+      assert.equal(report.mode, gate.name.split('-')[0]);
       assert.equal(report.recreations, 2);
       assert.equal(gate.flows.length, report.nativeUiFlows);
-      assert.equal(report.nativeUiFlows, gate.name.endsWith('pending-permission') ? 9 : gate.name.endsWith('fresh-permission') ? 7 : 5);
+      assert.equal(report.nativeUiFlows, (gate.name.endsWith('pending-permission') ? 9 : gate.name.endsWith('fresh-permission') ? 7 : 5) + (expo ? 4 : 0));
       assert.equal(report.pendingPermission, gate.name.endsWith('pending-permission'));
       assert.equal(report.freshPermission, gate.name.endsWith('fresh-permission'));
+      if (expo) {
+        const modules = report.expo as { initial: Record<string, number>; final: Record<string, number>; closed: Record<string, number>; permissionOwner: string };
+        assert(modules && typeof modules === 'object', 'Expo recreation needs native module lifecycle evidence');
+        assert.equal(modules.permissionOwner, 'tauri');
+        for (const [phase, created, destroyed, activities, backs] of [['initial', 1, 0, 1, 1], ['final', 3, 2, 3, 3], ['closed', 3, 3, 3, 3]] as const) {
+          const state = modules[phase];
+          assert.equal(state.applicationCreates, 1);
+          assert.equal(state.created, created); assert.equal(state.destroyed, destroyed);
+          assert.equal(state.activityCreates, activities); assert.equal(state.backs, backs);
+          assert.equal(state.callbacks, 0, 'Tauri permission results must not reach Expo');
+        }
+      }
     }
   }
   return receipt;

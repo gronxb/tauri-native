@@ -35,7 +35,10 @@ const retained: RetainedProducerReceipt = {
 
 function native(platform: Platform): RetainedNativeReceipt {
   const rows: [string, number][] = [['standalone', 8], ['native', 12], ['react-native', platform === 'ios' ? 25 : 24], ['expo', platform === 'ios' ? 34 : 32], ['lynx', 17]];
-  if (platform === 'android') for (const sdk of ['react', 'lynx']) rows.push([`${sdk}-recreation`, 5], [`${sdk}-fresh-permission`, 7], [`${sdk}-pending-permission`, 9]);
+  if (platform === 'android') for (const sdk of ['react', 'expo', 'lynx']) {
+    const extra = sdk === 'expo' ? 4 : 0;
+    rows.push([`${sdk}-recreation`, 5 + extra], [`${sdk}-fresh-permission`, 7 + extra], [`${sdk}-pending-permission`, 9 + extra]);
+  }
   return { schemaVersion: 1, passed: true, commit: producer.commit, platform, packages: producer.packages,
     producerReceiptSha256: sha(producer), retainedProducerSha256: sha(retained),
     gates: rows.map(([name, count]) => {
@@ -44,8 +47,13 @@ function native(platform: Platform): RetainedNativeReceipt {
         artifactSha256: retained.exports[platform].artifactSha256, cliPackageSha256: producer.packages[0]!.sha256,
         packageSource: 'transferred', packageSha256: producer.packages.find(item => item.sdk === sdk)!.sha256,
         sourceFree: true, deviceAbi: 'x86_64', pageSize: 16384, nonDebuggable: true, architectures: ['arm64'],
-        expo: name === 'expo', cng: name === 'expo' ? { nativeProbe: 'executed' } : false,
-        mode: name === 'standalone' ? 'standalone Tauri Mobile' : name.startsWith('react-') ? 'react' : 'lynx',
+        expo: name.startsWith('expo-') ? {
+          permissionOwner: 'tauri',
+          initial: { applicationCreates: 1, created: 1, destroyed: 0, activityCreates: 1, backs: 1, callbacks: 0 },
+          final: { applicationCreates: 1, created: 3, destroyed: 2, activityCreates: 3, backs: 3, callbacks: 0 },
+          closed: { applicationCreates: 1, created: 3, destroyed: 3, activityCreates: 3, backs: 3, callbacks: 0 },
+        } : name === 'expo', cng: name === 'expo' ? { nativeProbe: 'executed' } : false,
+        mode: name === 'standalone' ? 'standalone Tauri Mobile' : name.split('-')[0],
         producerDeleted: true, producerUnchanged: true, sourceHashes, transferredBinarySha256: retained.standalone[platform].binarySha256,
         recreations: 2, nativeUiFlows: count, pendingPermission: name.endsWith('pending-permission'), freshPermission: name.endsWith('fresh-permission'),
       };
@@ -96,6 +104,18 @@ test('successful native jobs cannot certify missing hosts, stale exports or unex
   }
   assert.throws(() => validateRetainedNative(changeReport(native('android'), 'react-native', report => { report.deviceAbi = 'arm64-v8a'; }), 'android', retained, sha(retained)));
   assert.throws(() => validateRetainedNative(changeReport(native('android'), 'react-pending-permission', report => { report.pendingPermission = false; }), 'android', retained, sha(retained)));
+});
+
+test('Expo recreation certification rejects missing scenarios and incomplete native teardown', () => {
+  const validate = (input: unknown) => validateRetainedNative(input, 'android', retained, sha(retained));
+  const missing = native('android'); missing.gates = missing.gates.filter(gate => gate.name !== 'expo-pending-permission');
+  assert.throws(() => validate(missing), /Missing retained native gate/);
+  assert.throws(() => validate(changeReport(native('android'), 'expo-recreation', report => { report.expo = true; })), /native module lifecycle evidence/);
+  for (const [key, value] of [['destroyed', 2], ['applicationCreates', 3], ['callbacks', 1]] as const) {
+    assert.throws(() => validate(changeReport(native('android'), 'expo-fresh-permission', report => {
+      (report.expo as { closed: Record<string, number> }).closed[key] = value;
+    })));
+  }
 });
 
 test('the workflow makes both retained platforms and their producer mandatory for the candidate', () => {

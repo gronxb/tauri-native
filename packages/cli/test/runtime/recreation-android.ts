@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { closeSync, cpSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { closeSync, cpSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -13,7 +13,9 @@ import { prepareRetainedPackage, retainedDependencies, retainedEvidence } from '
 
 const root = fileURLToPath(new URL('../../../..', import.meta.url));
 const mode = process.argv[2];
-assert(mode === 'standalone' || mode === 'react' || mode === 'lynx', 'Select standalone, react or lynx');
+assert(mode === 'standalone' || mode === 'react' || mode === 'expo' || mode === 'lynx', 'Select standalone, react, expo or lynx');
+const expo = mode === 'expo';
+const react = mode === 'react' || expo;
 const options = process.argv.slice(3);
 assert(options.filter(option => !option.startsWith('--')).length <= 1 &&
   options.every(option => !option.startsWith('--') || ['--fresh-permission', '--pending-permission'].includes(option)), 'Use [artifact] [--fresh-permission | --pending-permission]');
@@ -21,9 +23,9 @@ const freshPermission = options.includes('--fresh-permission');
 const pendingPermission = options.includes('--pending-permission');
 assert(!(freshPermission && pendingPermission), 'Run fresh and pending permission scenarios separately');
 const composed = mode !== 'standalone';
-assert(!pendingPermission || composed, 'Pending renderer continuation checks require react or lynx');
+assert(!pendingPermission || composed, 'Pending renderer continuation checks require react, expo or lynx');
 const initiallyUnpermitted = freshPermission || pendingPermission;
-const name = mode === 'react' ? 'RN' : 'Lynx';
+const name = react ? 'RN' : 'Lynx';
 const device = process.env.ANDROID_SERIAL; assert(device, 'Select an ANDROID_SERIAL emulator matching the exported slices');
 const evidence = path.join(retainedEvidence(root, 'retained-activity-recreation'), ...(pendingPermission ? ['pending-permission'] : freshPermission ? ['fresh-permission'] : []), mode);
 const producer = path.join(evidence, 'ordinary producer');
@@ -32,8 +34,9 @@ const artifact = path.resolve(options.find(option => !option.startsWith('--')) ?
 const fixture = path.join(root, 'packages/cli/test/fixtures/mobile-plugin-tauri');
 const original = snapshot(fixture);
 const appId = 'dev.taurinative.mobilefieldnotes';
-const env: NodeJS.ProcessEnv = { ...process.env, NODE_OPTIONS: '', CARGO_TARGET_DIR: path.join(root, 'target'),
+const env: NodeJS.ProcessEnv = { ...process.env, NODE_OPTIONS: '', ...(expo ? { NODE_ENV: 'production' } : {}), CARGO_TARGET_DIR: path.join(root, 'target'),
   ...(!composed ? { RUSTFLAGS: '-C link-arg=-landroid -C link-arg=-llog -C link-arg=-lOpenSLES -C link-arg=-Wl,-z,max-page-size=16384 -C link-arg=-Wl,-z,common-page-size=16384' } : {}) };
+const sourceFreePath = `${expo ? path.dirname(process.execPath) + ':' : ''}/usr/bin:/bin:/usr/sbin:/sbin`;
 const release = acquireMobileTest(root);
 mkdirSync(evidence, { recursive: true });
 rmSync(path.join(evidence, 'report.json'), { force: true });
@@ -74,6 +77,25 @@ function flow(label: string, steps: string) {
   writeFileSync(yaml, `appId: ${appId}\n---\n${steps}\n`);
   run(label, 'maestro', ['--udid', device!, 'test', '--format', 'junit', '--output', path.join(evidence, `${label}.xml`), yaml]);
 }
+function expoModules(index: number) {
+  const scroll = (text: string, direction: string) => `- scrollUntilVisible:\n    element:\n      text: ${JSON.stringify(text)}\n    direction: ${direction}`;
+  flow(`expo-modules-${index}`, [
+    scroll('Expo native modules', 'DOWN'), '- tapOn: "Expo native modules"',
+    scroll(`Expo native active 1 created ${index + 1} destroyed ${index} callbacks 0 activities ${index + 1}`, 'UP'),
+    scroll(index === 0 ? 'Expo write file' : 'Expo read file', 'DOWN'),
+    `- tapOn: "${index === 0 ? 'Expo write file' : 'Expo read file'}"`,
+    scroll(index === 0 ? 'Expo file saved' : 'Expo file preserved', 'UP'),
+    '- pressKey: Back', '- assertVisible: "RN links 0 back 1"',
+  ].join('\n'));
+}
+function assertExpo(row: any, index: number) {
+  assert.equal(row.expo.applicationCreates, 1);
+  assert.equal(row.expo.activityCreates, index + 1);
+  assert.equal(row.expo.created, index + 1); assert.equal(row.expo.destroyed, index);
+  assert.equal(row.expo.callbacks, 0, 'Tauri permission callbacks must not reach Expo');
+  assert.equal(row.expo.backs, index + 1);
+  assert.equal(row.expoApplicationHasHost, true);
+}
 function action(label: string) {
   run(label, 'adb', ['-s', device!, 'shell', 'am', 'start', '-W', '-n', `${appId}/.RecreationActivity`, '--es', 'tauri.recreation.probe', label]);
 }
@@ -102,13 +124,18 @@ function addProbe(android: string, activity: string) {
     const source = readFileSync(main, 'utf8'); assert(source.includes('class MainActivity : TauriActivity()'));
     writeFileSync(main, source.replace('class MainActivity : TauriActivity()', 'open class MainActivity : TauriActivity()'));
   }
-  const host = mode === 'react' ? 'React' : 'Lynx';
+  const host = react ? 'React' : 'Lynx';
   const layout = composed ? `
   override fun create${host}Container(webView: WebView): android.view.ViewGroup {
     (webView.parent as? android.view.ViewGroup)?.removeView(webView)
     val layout = android.widget.LinearLayout(this).apply { orientation = android.widget.LinearLayout.VERTICAL; setPadding(0, 80, 0, 60) }
     layout.addView(webView, android.widget.LinearLayout.LayoutParams(-1, 0, 1f))
     val container = android.widget.FrameLayout(this)
+    ${expo ? `val close = android.widget.Button(this).apply {
+      text = "Close RN"
+      setOnClickListener { tauriReactHost!!.close(); layout.removeView(container); layout.removeView(this) }
+    }
+    layout.addView(close)` : ''}
     layout.addView(container, android.widget.LinearLayout.LayoutParams(-1, 0, 2f))
     setContentView(layout)
     return container
@@ -117,7 +144,8 @@ function addProbe(android: string, activity: string) {
 ` : '';
   const probe = readFileSync(new URL('./composition/android/RecreationActivity.kt.fixture', import.meta.url), 'utf8')
     .replace('__BASE_ACTIVITY__', composed ? 'TauriNativeActivity' : 'MainActivity')
-    .replace('__RUNTIME_TELEMETRY__', composed ? 'report.put("runtime", dev.taurinative.runtime.RuntimeSession.status())' : '')
+    .replace('__RUNTIME_TELEMETRY__', (composed ? 'report.put("runtime", dev.taurinative.runtime.RuntimeSession.status())' : '') +
+      (expo ? '\n    report.put("expo", JSONObject(dev.taurinative.expoprobe.ProbeState.snapshot()))\n    report.put("expoApplicationHasHost", (application as TauriNativeApplication).reactHost != null)' : ''))
     .replace('__HOST_LAYOUT__', layout);
   writeFileSync(path.join(android, 'app/src/main/java/dev/taurinative/mobilefieldnotes/RecreationActivity.kt'), probe);
   const file = path.join(android, 'app/src/main/AndroidManifest.xml');
@@ -151,17 +179,37 @@ try {
     assert(inputReceipt.native.some(slice => slice.abi === deviceAbi), `Export has no slice for emulator ABI ${deviceAbi}`);
     rmSync(consumer, { recursive: true, force: true }); mkdirSync(consumer, { recursive: true });
     const copied = path.join(consumer, 'copied runtime'); cpSync(artifact, copied, { recursive: true });
-    const packageName = mode === 'react' ? 'react-native' : 'lynx';
+    const packageName = react ? 'react-native' : 'lynx';
     const packed = prepareRetainedPackage(root, packageName, consumer, run);
     packageSha256 = packed.sha256; packageSource = packed.source;
     const sdk = packed.directory;
     const renderer = path.join(consumer, 'renderer'); mkdirSync(renderer);
     const dependenciesRoot = retainedDependencies(root, packageName);
-    symlinkSync(path.join(dependenciesRoot, 'node_modules'), path.join(renderer, 'node_modules'), 'dir');
-    writeFileSync(path.join(renderer, 'package.json'), '{"name":"retained-recreation-consumer","private":true,"type":"module"}\n');
+    const expoDependencies = { '@tauri-native/react-native': '1.0.0-rc.0', expo: '57.0.19', react: '19.2.3', 'react-native': '0.86.3', 'react-native-safe-area-context': '5.7.0', 'expo-file-system': '57.0.6', 'expo-constants': '57.0.17', 'expo-modules-core': '57.0.15' };
+    if (expo) {
+      const exampleRequire = createRequire(path.join(dependenciesRoot, 'package.json'));
+      const expoRequire = createRequire(realpathSync(exampleRequire.resolve('expo/package.json')));
+      for (const name of [...Object.keys(expoDependencies), 'babel-preset-expo']) {
+        const file = path.join(renderer, 'node_modules', name);
+        mkdirSync(path.dirname(file), { recursive: true });
+        const directory = name === '@tauri-native/react-native' ? sdk : path.dirname(realpathSync((name.startsWith('expo-') ? expoRequire : exampleRequire).resolve(`${name}/package.json`)));
+        symlinkSync(directory, file, 'dir');
+      }
+    } else symlinkSync(path.join(dependenciesRoot, 'node_modules'), path.join(renderer, 'node_modules'), 'dir');
+    writeFileSync(path.join(renderer, 'package.json'), JSON.stringify({ name: 'retained-recreation-consumer', private: true, ...(expo ? { dependencies: expoDependencies } : { type: 'module' }) }));
     let bundle: string;
-    if (mode === 'react') {
+    if (react) {
       cpSync(path.join(root, 'packages/react-native/test/retained/index.tsx.fixture'), path.join(renderer, 'index.tsx'));
+      if (expo) {
+        cpSync(path.join(renderer, 'index.tsx'), path.join(renderer, 'fieldnotes.tsx'));
+        const entry = readFileSync(path.join(root, 'packages/react-native/test/retained/expo-index.tsx.fixture'), 'utf8');
+        assert(entry.includes('state.activityCreates !== 1'));
+        // This scenario creates one Expo host per Activity, without JS-only reloads.
+        writeFileSync(path.join(renderer, 'index.tsx'), entry.replace('state.activityCreates !== 1', 'state.activityCreates !== state.created')
+          .replace('links ${state.intents} back ${state.backs}', 'activities ${state.activityCreates}'));
+        cpSync(path.join(root, 'packages/react-native/test/retained/expo-probe'), path.join(renderer, 'modules/retained-expo-probe'), { recursive: true });
+        writeFileSync(path.join(renderer, 'app.json'), JSON.stringify({ expo: { name: 'Retained Expo Fieldnotes', slug: 'retained-expo-fieldnotes', android: { package: appId } } }));
+      }
       cpSync(path.join(root, 'packages/react-native/test/retained/build.cjs.fixture'), path.join(renderer, 'build.cjs'));
       writeFileSync(path.join(renderer, 'babel.config.json'), '{"presets":["babel-preset-expo"]}\n');
       run('renderer-build', process.execPath, ['build.cjs', 'android'], renderer, { ...env, PROOF_REPOSITORY: root, RETAINED_DEPENDENCIES: dependenciesRoot, RETAINED_SDK_DIR: sdk });
@@ -176,15 +224,15 @@ try {
       bundle = path.join(renderer, 'dist/main.lynx.bundle');
     }
     bundleSha256 = sha256(readFileSync(bundle));
-    const generated = path.join(consumer, 'composed application');
+    const generated = path.join(expo ? renderer : consumer, 'composed application');
     const android = path.join(generated, 'android');
-    const { composeAndroid } = createRequire(import.meta.url)(path.join(sdk, mode === 'react' ? 'compose.js' : 'compose.cjs'));
+    const { composeAndroid } = createRequire(import.meta.url)(path.join(sdk, react ? 'compose.js' : 'compose.cjs'));
     const composition = composeAndroid({ artifactsDir: copied, outputDir: generated, bundleFile: bundle,
-      ...(mode === 'react' ? { rendererDir: renderer, moduleName: 'RetainedFieldnotes' } : {}) });
+      ...(react ? { rendererDir: renderer, moduleName: expo ? 'main' : 'RetainedFieldnotes', expo } : {}) });
     addProbe(android, composition.activity);
     const gradle = path.join(android, 'app/build.gradle.kts');
     writeFileSync(gradle, readFileSync(gradle, 'utf8').replace('getByName("release") {', 'getByName("release") {\n            signingConfig = signingConfigs.getByName("debug")'));
-    run('source-free-build', './gradlew', ['--no-daemon', 'assembleRelease'], android, { ...env, PATH: '/usr/bin:/bin:/usr/sbin:/sbin' });
+    run('source-free-build', './gradlew', ['--no-daemon', 'assembleRelease'], android, { ...env, PATH: sourceFreePath });
     apk = path.join(android, 'app/build/outputs/apk/release/app-release.apk');
     assert(!run('apk-metadata', path.join(process.env.ANDROID_HOME!, 'build-tools/36.0.0/aapt'), ['dump', 'badging', apk]).includes('application-debuggable'));
   }
@@ -208,7 +256,9 @@ try {
   else flow('initial-plugin', composed
     ? `- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "${name} events 0"\n- tapOn: "Request permission"\n- tapOn: "(?i)While using the app"\n- assertVisible: "Permission granted"\n- tapOn: "Save location"\n- assertVisible: "${name} note 1"\n- assertVisible: "${name} events 1"`
     : '- tapOn: "Request location permission"\n- tapOn: "(?i)While using the app"\n- assertVisible: "Location permission granted"\n- tapOn: "Save location note"\n- assertVisible: "Saved location note 1"');
+  if (expo) expoModules(0);
   const initial = await inspect('before');
+  if (expo) assertExpo(initial, 0);
   assert.equal(initial.result.baseline.passed, true);
   assert.equal(initial.result.snapshot.value, 45); assert.equal(initial.result.snapshot.setupCount, 1); assert.equal(initial.result.snapshot.pluginSetupCount, 1);
   assert.equal(initial.result.plugins.notes.length, initiallyUnpermitted ? 0 : 1);
@@ -237,7 +287,12 @@ try {
     flow(`recreated-ui-${index}`, composed
       ? `- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "${name} events 0"\n- tapOn: "Check permission"\n- assertVisible: "Permission ${permission}"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 0 notes ${initiallyUnpermitted ? 0 : 1} setup 1 plugins 1"`
       : `- tapOn: "Check location permission"\n- assertVisible: "Location permission ${permission}"\n- tapOn: "Refresh notes and links"`);
+    if (expo) expoModules(index);
     const after = await inspect(`after-${index}`);
+    if (expo) {
+      assertExpo(after, index);
+      assert(after.expo.resumes > initial.expo.resumes && after.expo.pauses > initial.expo.pauses);
+    }
     assert.equal(after.pid, initial.pid); assert.equal(after.wryActivityId, initial.wryActivityId);
     assert.notEqual(after.result.timeOrigin, initial.result.timeOrigin);
     assert.deepEqual(after.result.snapshot, initial.result.snapshot);
@@ -261,6 +316,7 @@ try {
   const noteCount = initiallyUnpermitted ? 1 : 2;
   flow('post-recreation-save', composed ? `- tapOn: "Save location"\n- assertVisible: "${name} note ${noteCount}"\n- assertVisible: "${name} events 1"`
     : `- tapOn: "Save location note"\n- assertVisible: "Saved location note ${noteCount}"`);
+  const beforeLink = expo ? await inspect('before-link') : undefined;
   run('deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', 'tauri-fieldnotes://notes/2', '-p', appId]);
   flow('post-recreation-link', composed ? `- assertVisible: "${name} events 2"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes ${noteCount} setup 1 plugins 1"`
     : '- assertVisible: "Links received 1"\n- tapOn: "Refresh notes and links"');
@@ -269,6 +325,21 @@ try {
   for (const note of final.result.plugins.notes) {
     assert.equal(note.text, composed ? `A ${name} place to remember` : 'A place to remember');
     assert(Math.abs(note.latitude - 37.5665) < 0.01 && Math.abs(note.longitude - 126.978) < 0.01);
+  }
+  let expoClosed: any;
+  if (expo) {
+    assertExpo(final, 2);
+    // Each telemetry inspect also passes through the original onNewIntent.
+    assert.equal(final.expo.intents - beforeLink.expo.intents, 2, 'One deep link plus the final inspect reach Expo exactly once');
+    flow('expo-close', '- tapOn: "Close RN"\n- tapOn: "Refresh notes and links"\n- assertVisible: "Links received 1"');
+    await until(() => {
+      action('expo-closed');
+      expoClosed = events().filter(row => row.stage === 'expo-closed').at(-1);
+      return expoClosed?.expo.created === 3 && expoClosed.expo.destroyed === 3 && expoClosed.expoApplicationHasHost === false;
+    });
+    assert.equal(expoClosed.runtime.listeners, 0);
+    assert.deepEqual(expoClosed.result.snapshot, initial.result.snapshot);
+    assert.deepEqual(expoClosed.result.plugins, final.result.plugins);
   }
   const observed = events();
   if (pendingPermission) assert.equal(permissionResults().length, 2, 'Each real OS result reaches the original callback exactly once');
@@ -286,9 +357,10 @@ try {
   }
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, mode, profile: composed ? 'release' : 'debug',
     testSigning: 'Debug test key; composed Release/R8 remains non-debuggable', apkSha256: sha256(readFileSync(apk)),
-    ...(composed ? { artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))), packageSha256, packageSource, deviceAbi, pageSize: 16384, bundleSha256, sourceFreeBuild: 'PATH=/usr/bin:/bin:/usr/sbin:/sbin', artifactUnchanged: true }
+    ...(composed ? { artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))), packageSha256, packageSource, deviceAbi, pageSize: 16384, bundleSha256, sourceFreeBuild: `PATH=${sourceFreePath}`, artifactUnchanged: true }
       : { sourceHashes: producerBefore, producerUnchanged: true }),
-    baseline: initial.result.baseline, freshPermission, pendingPermission, recreations: 2, nativeUiFlows: pendingPermission ? 9 : freshPermission ? 7 : 5, events: observed,
+    baseline: initial.result.baseline, freshPermission, pendingPermission, recreations: 2, nativeUiFlows: (pendingPermission ? 9 : freshPermission ? 7 : 5) + (expo ? 4 : 0), events: observed,
+    ...(expo ? { expo: { initial: initial.expo, final: final.expo, closed: expoClosed.expo, permissionOwner: 'tauri', configuration: 'package-owned composition; Expo CNG is a separate gate' } } : {}),
     ...(pendingPermission ? { permissionResults: permissionResults(), instrumentation: 'Test-only broadcast receiver triggers real recreation without foregrounding the Activity. Copied PluginManager logs after the unchanged original permission callback returns; no OS result or native routing is substituted.' } : {}),
     limits: `${pendingPermission ? 'Both recreations occur while actual OS permission dialogs remain pending. Denial and grant each reach the original Tauri callback on the replacement Activity; retired renderer continuations save no sentinel note.' : freshPermission ? 'First permission request after recreation is denied through OS UI; a second recreation preserves the rationale state, and a later OS grant allows location save. Pending OS callbacks are a separate gate.' : 'Location permission granted before recreation; fresh/pending permissions are separate gates.'} Process death is a separate gate. The original fixture startup self-test expects initial State 40; the recreated document keeps State 45, verified directly through original IPC.`,
   }, null, 2) + '\n');
