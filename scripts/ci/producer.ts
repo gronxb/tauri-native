@@ -18,6 +18,7 @@ for (const sdk of ['cli', 'react-native', 'lynx']) {
 run('release-receipt-tests', process.execPath, ['--test', 'scripts/test/release-candidate.test.ts']);
 run('ci-command-tests', process.execPath, ['--test', 'scripts/test/ci-command.test.ts']);
 run('retained-input-tests', process.execPath, ['--test', 'scripts/test/retained-inputs.test.ts']);
+run('retained-receipt-tests', process.execPath, ['--test', 'scripts/test/retained-validation.test.ts']);
 for (const check of ['test:export:contract', 'test:types', 'test:events', 'test:watch']) {
   run(check.replaceAll(':', '-'), 'nub', ['--cwd', 'packages/cli', 'run', check]);
 }

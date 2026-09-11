@@ -170,7 +170,11 @@ path-alias and Lynx missing-TypeScript failures occurred before native build
 and remain separate from acceptance. Their corrected external dependency runs
 pass. Three transfer-input scenarios and CLI/script typechecks also pass.
 
-Required retained producer/native/aggregate CI wiring, iOS/Expo transfer runs,
+The [required retained workflow](validation.md) now includes the ordinary apps,
+retained native clients, RN, Expo CNG, Lynx and Android recreation modes. Its
+producer and both native jobs must match the same inputs before aggregation.
+The workflow is wired; a complete hosted run, iOS/Expo transfer runs,
 Linux/x86_64 execution, broader lifecycle/channel parity, devices and independent
-adopters remain open. The CI producer now runs the input rejection tests; that
-does not certify the pending retained native jobs.
+adopters remain open. Receipt tests do not certify pending native execution.
+See [local workflow evidence](evidence/retained-ci-workflow-android-2026-09-11.json)
+for the fresh Android preparation and receiving-device checks.

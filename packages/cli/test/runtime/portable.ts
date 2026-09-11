@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout } from 'node:timers/promises';
 import { readRetainedArtifacts } from '../../../../scripts/retained-artifacts.ts';
+import { retainedEvidence } from '../../../../scripts/retained-test-inputs.ts';
 import { sha256 } from '../../src/artifacts/files.ts';
 import { snapshot } from '../native-export/source-integrity.ts';
 import { acquireMobileTest } from './mobile-lock.ts';
@@ -14,22 +15,26 @@ import { discoverProject } from '../../src/discovery/project.ts';
 import { prepareDependencySelection } from './dependency-selection.ts';
 
 const root = fileURLToPath(new URL('../../../..', import.meta.url));
-const platform = process.argv[2];
-assert(platform === 'android' || platform === 'ios', 'Select ios or android');
+const requestedPlatform = process.argv[2];
+assert(requestedPlatform === 'android' || requestedPlatform === 'ios', 'Select ios or android');
+const platform: 'ios' | 'android' = requestedPlatform;
 const flags = new Set(process.argv.slice(3));
-assert([...flags].every(flag => ['--consume', '--release', '--native-config', '--dependency-selection'].includes(flag)), 'Use --consume, --release, --native-config or --dependency-selection');
+assert([...flags].every(flag => ['--consume', '--export-only', '--release', '--native-config', '--dependency-selection'].includes(flag)), 'Use --consume, --export-only, --release, --native-config or --dependency-selection');
 const nativeConfiguration = flags.has('--native-config');
 const dependencySelection = flags.has('--dependency-selection');
 assert(!(nativeConfiguration && dependencySelection), 'Run native configuration and dependency selection variants separately');
-const evidence = path.join(root, dependencySelection ? `target/retained-dependency-selection-${platform}` : nativeConfiguration ? `target/retained-native-config-${platform}` : platform === 'android' ? 'target/retained-portability' : 'target/retained-ios-portability');
+const evidence = retainedEvidence(root, dependencySelection ? `retained-dependency-selection-${platform}` : nativeConfiguration ? `retained-native-config-${platform}` : platform === 'android' ? 'retained-portability' : 'retained-ios-portability');
 const fixture = path.join(root, 'packages/cli/test/fixtures/mobile-plugin-tauri');
 const producer = path.join(evidence, 'ordinary producer');
-const exported = path.join(evidence, 'exported-runtime');
+const exported = path.resolve(process.env.RETAINED_ARTIFACTS ?? path.join(evidence, 'exported-runtime'));
 const consumer = path.join(evidence, 'ABI 3 consumer with spaces');
 const android = path.join(consumer, 'android');
 const device = platform === 'android' ? process.env.ANDROID_SERIAL : process.env.IOS_SIMULATOR_UDID;
-assert(device, 'Select ANDROID_SERIAL or IOS_SIMULATOR_UDID for an arm64 virtual device');
 const consume = flags.has('--consume');
+const exportOnly = flags.has('--export-only');
+assert(!(consume && exportOnly), 'Export and consumption are separate stages');
+assert(!process.env.RETAINED_ARTIFACTS || consume, 'An external artifact is only accepted with --consume');
+const targets = process.env.RETAINED_EXPORT_TARGETS ?? (platform === 'android' ? 'aarch64' : 'aarch64-sim');
 const profile = flags.has('--release') ? 'release' : 'debug';
 const appId = 'dev.taurinative.mobilefieldnotes';
 const original = snapshot(fixture);
@@ -37,12 +42,15 @@ const env = { ...process.env, CARGO_TARGET_DIR: path.join(root, 'target'), NODE_
 const release = acquireMobileTest(root);
 mkdirSync(evidence, { recursive: true });
 rmSync(path.join(evidence, 'report.json'), { force: true });
+if (!consume) rmSync(path.join(evidence, 'export-report.json'), { force: true });
 let installed = false;
 let dataDirectory: string;
 let binary: string;
 let iosPid: number;
 let incrementalAcceptance: { unchangedHit: true; invalidCapabilityRejected: true; previousArtifactPreserved: true } | undefined;
 let nativeInputsSha256: string | undefined;
+let cliEntry = path.join(root, 'packages/cli/dist/index.mjs');
+let cliPackageSha256: string | undefined;
 let producerHashes = dependencySelection && consume
   ? JSON.parse(readFileSync(path.join(evidence, 'producer-source-hashes.json'), 'utf8')) as Record<string, string>
   : original;
@@ -92,72 +100,18 @@ function launch() {
   else run('launch', 'adb', ['-s', device!, 'shell', 'am', 'start', '-W', '-n', `${appId}/.MainActivity`]);
 }
 
-try {
-  if (platform === 'android') {
+async function acceptRuntime(manifest: ReturnType<typeof readRetainedArtifacts>) {
+  assert(device, 'Select ANDROID_SERIAL or IOS_SIMULATOR_UDID for native acceptance');
+  let deviceAbi: string | undefined;
+  if (manifest.platform === 'android') {
     assert.equal(run('emulator', 'adb', ['-s', device, 'shell', 'getprop', 'ro.kernel.qemu']), '1');
-    assert.equal(run('abi', 'adb', ['-s', device, 'shell', 'getprop', 'ro.product.cpu.abi']), 'arm64-v8a');
+    deviceAbi = run('abi', 'adb', ['-s', device, 'shell', 'getprop', 'ro.product.cpu.abi']);
+    assert(manifest.native.some(slice => slice.abi === deviceAbi), `Export has no slice for emulator ABI ${deviceAbi}`);
+    assert.equal(run('page-size', 'adb', ['-s', device, 'shell', 'getconf', 'PAGE_SIZE']), '16384');
   }
-  if (!consume) {
-    rmSync(producer, { recursive: true, force: true }); cpSync(fixture, producer, { recursive: true });
-    run('dependencies', 'npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], producer);
-    if (nativeConfiguration) prepareNativeConfiguration(platform, producer, run);
-    if (dependencySelection) prepareDependencySelection(producer, run);
-    const before = snapshot(producer);
-    if (dependencySelection) {
-      producerHashes = before;
-      writeFileSync(path.join(evidence, 'producer-source-hashes.json'), JSON.stringify(before, null, 2) + '\n');
-    }
-    const inputs = () => retainedInputs(discoverProject(path.join(producer, 'src-tauri'), producer, false, 'retained'), exported).files;
-    if (nativeConfiguration) nativeInputsSha256 = sha256(JSON.stringify(inputs()));
-    cpSync(new URL('./composition/fieldnotes-callers.json', import.meta.url), path.join(evidence, 'callers.json'));
-    const exportArguments = [path.join(root, 'packages/cli/dist/index.mjs'), 'export', platform, '--runtime', 'retained',
-      '--tauri-dir', path.join(producer, 'src-tauri'), '--caller-policy', path.join(evidence, 'callers.json'), '--targets', platform === 'android' ? 'aarch64' : 'aarch64-sim', ...(profile === 'debug' ? ['--debug'] : []), '--output-dir', exported, '--incremental'];
-    run('export', process.execPath, exportArguments);
-    if (dependencySelection) {
-      const artifact = readRetainedArtifacts(exported);
-      assert.deepEqual(artifact.plugins, { 'tauri-plugin-deep-link': '2.4.10', 'tauri-plugin-geolocation': '2.3.3' });
-      const build = JSON.parse(readFileSync(path.join(exported, 'build.json'), 'utf8'));
-      assert.deepEqual(build.cargoSelection.features, ['native-location', 'tauri/custom-protocol']);
-      assert(build.cargo.some((pkg: { name: string }) => pkg.name === 'tauri-plugin-geolocation'));
-      assert(build.cargo.some((pkg: { name: string }) => pkg.name === 'tauri-plugin-opener'), 'Cache fingerprints still cover host build inputs; native receipt selection is separate');
-    }
-    if (nativeConfiguration && platform === 'ios') {
-      const artifact = readRetainedArtifacts(exported);
-      assert.equal(artifact.platform, 'ios');
-      assert.equal(artifact.bootstrap.minimumOsVersion, '15.0', 'Reinitialization must not erase authored Xcode settings');
-    }
-    const receipt = readFileSync(path.join(exported, 'manifest.json'), 'utf8');
-    assert.match(run('incremental-hit', process.execPath, exportArguments), /Reused validated retained/);
-    assert.equal(readFileSync(path.join(exported, 'manifest.json'), 'utf8'), receipt);
-    const capability = path.join(producer, 'src-tauri/capabilities/main.json');
-    const capabilityBytes = readFileSync(capability);
-    try {
-      const invalid = JSON.parse(capabilityBytes.toString('utf8'));
-      invalid.permissions.push('core:nonexistent-retained-cache-proof');
-      writeFileSync(capability, JSON.stringify(invalid, null, 2) + '\n');
-      console.log(`> portable-${platform}: capability-cache-invalidation`);
-      const rejected = spawnSync(process.execPath, exportArguments, { cwd: evidence, env, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 600000 });
-      const log = `${rejected.stdout ?? ''}\n${rejected.stderr ?? ''}`;
-      writeFileSync(path.join(evidence, 'capability-cache-invalidation.log'), log);
-      assert.equal(rejected.error, undefined, 'Capability rejection must finish, not time out');
-      assert.notEqual(rejected.status, 0, 'Changed invalid capabilities must not reuse the cached app');
-      assert.match(log, /Permission core:nonexistent-retained-cache-proof not found/);
-      assert.equal(readFileSync(path.join(exported, 'manifest.json'), 'utf8'), receipt, 'Failed native build preserves the previously validated artifact');
-      readRetainedArtifacts(exported);
-    } finally { writeFileSync(capability, capabilityBytes); }
-    incrementalAcceptance = { unchangedHit: true, invalidCapabilityRejected: true, previousArtifactPreserved: true };
-    assert.deepEqual(snapshot(producer), before);
-    if (nativeConfiguration) assert.equal(sha256(JSON.stringify(inputs())), nativeInputsSha256, 'Authored native inputs survive export success and failure');
-    rmSync(producer, { recursive: true });
-  }
-  assert(!existsSync(producer), 'Delete the disposable producer before source-free consumer acceptance');
-  const manifest = readRetainedArtifacts(exported);
-  assert.equal(manifest.platform, platform);
-  assert.equal(manifest.bootstrap.applicationId, appId);
-  assert.equal(manifest.profile, profile);
   rmSync(consumer, { recursive: true, force: true }); cpSync(exported, consumer, { recursive: true });
   assert.deepEqual(readRetainedArtifacts(consumer), manifest, 'Relocation preserves the complete receipt');
-  const diagnosis = JSON.parse(run('source-free-doctor', process.execPath, [path.join(root, 'packages/cli/dist/index.mjs'), 'doctor', '--artifacts', consumer, '--platform', platform, '--json'], evidence,
+  const diagnosis = JSON.parse(run('source-free-doctor', process.execPath, [cliEntry, 'doctor', '--artifacts', consumer, '--platform', platform, '--json'], evidence,
     { ...env, PATH: '/usr/bin:/bin:/usr/sbin:/sbin' }));
   assert.equal(diagnosis.ok, true);
   if (manifest.platform === 'android') {
@@ -273,7 +227,7 @@ try {
   assert.deepEqual(readRetainedArtifacts(exported), manifest, 'Consumer integration preserves the original published artifact');
   assert(!existsSync(producer));
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform, formatVersion: 2, abiVersion: 3,
-    profile, target: platform === 'android' ? 'arm64 16 KB emulator' : 'arm64 simulator', producerDeleted: true, producerUnchanged: true, sourceHashes: producerHashes,
+    profile, target: platform === 'android' ? `${deviceAbi} 16 KB emulator` : 'arm64 simulator', deviceAbi, pageSize: platform === 'android' ? 16384 : undefined, cliPackageSha256, producerDeleted: true, producerUnchanged: true, sourceHashes: producerHashes,
     ...(dependencySelection ? { dependencySelection: true, originalFixtureHashes: original } : {}),
     sourceFreeBuild: `${platform === 'android' ? `./gradlew --no-daemon assemble${profile === 'debug' ? 'Debug' : 'Release'}` : `xcodebuild -configuration ${profile} -sdk iphonesimulator`}; PATH=/usr/bin:/bin:/usr/sbin:/sbin; relocated path has spaces`,
     ...(platform === 'android' && profile === 'release' ? { testOnlySigning: 'Release/R8 with debug test key and android:debuggable for run-as telemetry; exported project unchanged' } : {}),
@@ -284,10 +238,93 @@ try {
     ...(nativeConfiguration ? { nativeConfiguration: { passed: true, nativeInputsSha256, scenario: 'Authored native declarations/resources preserved in the compiled app and ordinary producer' } } : {}),
   }, null, 2) + '\n');
   console.log(`PASS: source-free ABI 3 ${platform} bootstrap, native plugins, permission callback retirement, deep link and persistence`);
+}
+
+try {
+  const cliTarball = process.env.TAURI_NATIVE_CLI_TARBALL;
+  if (cliTarball) {
+    cliPackageSha256 = sha256(readFileSync(cliTarball));
+    if (process.env.GITHUB_ACTIONS === 'true' || process.env.TAURI_NATIVE_CLI_SHA256) {
+      assert.equal(cliPackageSha256, process.env.TAURI_NATIVE_CLI_SHA256, 'CLI transfer differs from the producer receipt');
+    }
+    const cli = path.join(evidence, 'packed cli');
+    rmSync(cli, { recursive: true, force: true }); mkdirSync(cli);
+    writeFileSync(path.join(cli, 'package.json'), '{"private":true}');
+    run('install-cli', 'npm', ['install', '--prefix', cli, '--ignore-scripts', '--no-audit', '--no-fund', path.resolve(cliTarball)]);
+    cliEntry = path.join(cli, 'node_modules/@tauri-native/cli/dist/index.mjs');
+  } else assert.notEqual(process.env.GITHUB_ACTIONS, 'true', 'CI requires a transferred CLI');
+  if (!consume) {
+    rmSync(producer, { recursive: true, force: true }); cpSync(fixture, producer, { recursive: true });
+    run('dependencies', 'npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], producer);
+    if (nativeConfiguration) prepareNativeConfiguration(platform, producer, run);
+    if (dependencySelection) prepareDependencySelection(producer, run);
+    const before = snapshot(producer);
+    if (dependencySelection) {
+      producerHashes = before;
+      writeFileSync(path.join(evidence, 'producer-source-hashes.json'), JSON.stringify(before, null, 2) + '\n');
+    }
+    const inputs = () => retainedInputs(discoverProject(path.join(producer, 'src-tauri'), producer, false, 'retained'), exported).files;
+    if (nativeConfiguration) nativeInputsSha256 = sha256(JSON.stringify(inputs()));
+    cpSync(new URL('./composition/fieldnotes-callers.json', import.meta.url), path.join(evidence, 'callers.json'));
+    const exportArguments = [cliEntry, 'export', platform, '--runtime', 'retained',
+      '--tauri-dir', path.join(producer, 'src-tauri'), '--caller-policy', path.join(evidence, 'callers.json'), '--targets', targets, ...(profile === 'debug' ? ['--debug'] : []), '--output-dir', exported, '--incremental'];
+    run('export', process.execPath, exportArguments);
+    if (dependencySelection) {
+      const artifact = readRetainedArtifacts(exported);
+      assert.deepEqual(artifact.plugins, { 'tauri-plugin-deep-link': '2.4.10', 'tauri-plugin-geolocation': '2.3.3' });
+      const build = JSON.parse(readFileSync(path.join(exported, 'build.json'), 'utf8'));
+      assert.deepEqual(build.cargoSelection.features, ['native-location', 'tauri/custom-protocol']);
+      assert(build.cargo.some((pkg: { name: string }) => pkg.name === 'tauri-plugin-geolocation'));
+      assert(build.cargo.some((pkg: { name: string }) => pkg.name === 'tauri-plugin-opener'), 'Cache fingerprints still cover host build inputs; native receipt selection is separate');
+    }
+    if (nativeConfiguration && platform === 'ios') {
+      const artifact = readRetainedArtifacts(exported);
+      assert.equal(artifact.platform, 'ios');
+      assert.equal(artifact.bootstrap.minimumOsVersion, '15.0', 'Reinitialization must not erase authored Xcode settings');
+    }
+    const receipt = readFileSync(path.join(exported, 'manifest.json'), 'utf8');
+    assert.match(run('incremental-hit', process.execPath, exportArguments), /Reused validated retained/);
+    assert.equal(readFileSync(path.join(exported, 'manifest.json'), 'utf8'), receipt);
+    const capability = path.join(producer, 'src-tauri/capabilities/main.json');
+    const capabilityBytes = readFileSync(capability);
+    try {
+      const invalid = JSON.parse(capabilityBytes.toString('utf8'));
+      invalid.permissions.push('core:nonexistent-retained-cache-proof');
+      writeFileSync(capability, JSON.stringify(invalid, null, 2) + '\n');
+      console.log(`> portable-${platform}: capability-cache-invalidation`);
+      const rejected = spawnSync(process.execPath, exportArguments, { cwd: evidence, env, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 600000 });
+      const log = `${rejected.stdout ?? ''}\n${rejected.stderr ?? ''}`;
+      writeFileSync(path.join(evidence, 'capability-cache-invalidation.log'), log);
+      assert.equal(rejected.error, undefined, 'Capability rejection must finish, not time out');
+      assert.notEqual(rejected.status, 0, 'Changed invalid capabilities must not reuse the cached app');
+      assert.match(log, /Permission core:nonexistent-retained-cache-proof not found/);
+      assert.equal(readFileSync(path.join(exported, 'manifest.json'), 'utf8'), receipt, 'Failed native build preserves the previously validated artifact');
+      readRetainedArtifacts(exported);
+    } finally { writeFileSync(capability, capabilityBytes); }
+    incrementalAcceptance = { unchangedHit: true, invalidCapabilityRejected: true, previousArtifactPreserved: true };
+    assert.deepEqual(snapshot(producer), before);
+    if (nativeConfiguration) assert.equal(sha256(JSON.stringify(inputs())), nativeInputsSha256, 'Authored native inputs survive export success and failure');
+    producerHashes = before;
+    rmSync(producer, { recursive: true });
+    const manifest = readRetainedArtifacts(exported);
+    writeFileSync(path.join(evidence, 'export-report.json'), JSON.stringify({
+      schemaVersion: 1, passed: true, platform, profile, targets, cliPackageSha256,
+      producerDeleted: !existsSync(producer), producerUnchanged: true, sourceHashes: producerHashes,
+      originalFixtureHashes: original, artifactSha256: sha256(readFileSync(path.join(exported, 'manifest.json'))),
+      formatVersion: manifest.formatVersion, abiVersion: manifest.abiVersion, native: manifest.native, incrementalAcceptance,
+    }, null, 2) + '\n');
+  }
+  assert(!existsSync(producer), 'Delete the disposable producer before source-free consumer acceptance');
+  const manifest = readRetainedArtifacts(exported);
+  assert.equal(manifest.platform, platform);
+  assert.equal(manifest.bootstrap.applicationId, appId);
+  assert.equal(manifest.profile, profile);
+  if (!exportOnly) await acceptRuntime(manifest);
+  else console.log(`PASS: producer-deleted ${platform} export; native consumption remains a separate gate`);
 } finally {
   try { if (installed) {
-    if (platform === 'ios') run('uninstall', 'xcrun', ['simctl', 'uninstall', device, appId]);
-    else run('uninstall', 'adb', ['-s', device, 'uninstall', appId]);
+    if (platform === 'ios') run('uninstall', 'xcrun', ['simctl', 'uninstall', device!, appId]);
+    else run('uninstall', 'adb', ['-s', device!, 'uninstall', appId]);
   } }
   finally { release(); assert.deepEqual(snapshot(fixture), original, 'The ordinary checked-in Tauri producer stays unchanged'); }
 }

@@ -4,6 +4,12 @@ The `Validate` workflow runs on pull requests and manual dispatch. The main-bran
 
 **Implementation status:** [PR #36](https://github.com/gronxb/tauri-native/pull/36) is merged. The [complete hosted run at `fb4000f`](https://github.com/gronxb/tauri-native/actions/runs/34111195208) passed the producer, both native platforms and candidate aggregation. Downloaded evidence verifies all 13 required JUnit scenarios per platform with no failures, errors or skips, matching native/producer receipts, and the exact candidate package hashes and embedded manifests. Main publication requires validation of its own merge commit; this implementation result does not certify a later revision or physical devices.
 
+The retained Tauri Mobile path now adds mandatory `retained-producer`,
+`retained-ios` and `retained-android` jobs. The historical runs above certify the
+older path only. The new jobs need their own complete hosted run before retained
+composition can be certified; local evidence is tracked in
+[plan 023](../plans/023-tauri-mobile-composition-acceptance.md).
+
 ## Bounded matrix
 
 | Producer or consumer | Pinned baseline | Required execution |
@@ -24,8 +30,10 @@ The Lynx example enables full Release R8 and declares the input behavior and Gso
 1. `producer` runs Rust/package/type/source-contract, Tauri protocol, type-parity and watch checks on macOS. It packs the CLI and SDKs, then installs that exact CLI tarball for standalone, async, event, ordinary document and changed-Rust exports. Each disposable producer is deleted before consumption. Export hashes and desktop results remain in the report.
 2. The job archives portable exports and a standalone Android APK, alongside the three npm tarballs and their hashes. A receipt binds these files to the checkout commit. The Android APK is built on macOS because the current CLI's atomic publication uses the supported macOS implementation; the Linux job only consumes it.
 3. `native-ios` and `native-android` verify the transferred receipt and archive hashes. Each creates fresh RN, Expo and Lynx scaffolds outside the checkout, installs the received SDK tarballs with npm and builds with `cargo` and `rustc` absent from PATH. Both jobs run Fieldnotes with its original Rust commands and with the disposable Rust-only edit. Bare RN/Lynx then run the async and scoped-view flows.
-4. `candidate` requires all three jobs to succeed. It also checks that receipts include every required host/flow, reference the same inputs and contain successful pending-navigation evidence. It copies the already-tested tarballs into `release-candidate`.
-5. `scripts/release.ts` checks the candidate commit, all required results, tarball hashes, embedded package names/versions and publish settings before checking npm. It publishes the received tarballs without rebuilding them, passing the validated registry, channel and access settings explicitly to npm. A tarball's embedded `publishConfig` alone does not select its experimental channel. The release regression test exercises real npm through a mandatory dry-run wrapper and verifies the selected channel. Package versions already on npm remain unchanged.
+4. `retained-producer` receives the same CLI/SDK tarballs at the same commit. It executes the ordinary macOS frontend and retained dispatch/setup-failure contract, builds ordinary Tauri iOS/Android apps, and exports retained Release artifacts with cache-hit and failed-capability recovery checks. The ordinary apps and retained exports have separate preparation receipts; their disposable producer source is deleted before transfer.
+5. `retained-ios` and `retained-android` receive that archive and the original tarballs. They execute the ordinary Tauri app, a retained native client, RN, Expo CNG and Lynx with fresh external renderer dependencies and no Rust on PATH. Android also runs RN/Lynx Activity recreation, fresh permission requests and callbacks pending during recreation. Each gate requires successful native assertions and all generated Maestro results. Retained targets are arm64 iOS Simulator and x86_64/16 KB Android; the retained Expo dependency baseline is 57.0.19.
+6. `candidate` requires all six producer/native jobs to succeed. It also checks that receipts include every required host/flow, reference the same inputs and contain successful pending-navigation evidence. Retained receipts must also match the ordinary source hashes, retained export, package producer and exact CLI/SDK hashes; missing host or lifecycle modes are rejected. It copies the already-tested tarballs into `release-candidate`.
+7. `scripts/release.ts` checks the candidate commit, all required results, tarball hashes, embedded package names/versions and publish settings before checking npm. It publishes the received tarballs without rebuilding them, passing the validated registry, channel and access settings explicitly to npm. A tarball's embedded `publishConfig` alone does not select its experimental channel. The release regression test exercises real npm through a mandatory dry-run wrapper and verifies the selected channel. Package versions already on npm remain unchanged.
 
 Native automation uses Maestro 2.4.0. Disposable Android applications enable WebView debugging so Maestro can inspect recreated WebViews through CDP. The SDK packages and producer artifacts do not enable debugging. Timing reports include automation overhead and warm build caches; they are not first-frame or incremental SDK size benchmarks.
 
@@ -49,6 +57,26 @@ node scripts/ci/prepare-hosts.ts
 node --experimental-strip-types scripts/ci/native.ts ios
 node --experimental-strip-types scripts/ci/native.ts android
 ```
+
+For retained Tauri Mobile, run the additional producer after the package producer.
+Transfer both `target/ci/input` and `target/ci/retained-input` to each receiving
+machine at that same commit:
+
+```sh
+# macOS producer; builds the ordinary apps and retained exports:
+node scripts/ci/retained-producer.ts
+
+# Receiving machine; installs fresh renderer dependencies and unpacks artifacts:
+node scripts/ci/prepare-retained-hosts.ts
+# Select the job-owned simulator/emulator, then run its platform serially:
+node scripts/ci/retained-native.ts ios
+node scripts/ci/retained-native.ts android
+```
+
+These native jobs write `retained-ios.json` / `retained-android.json` only after
+all required gates pass. Their per-gate JSON, logs, YAML and JUnit files are
+copied into `target/ci/retained-evidence-<platform>` even when a gate fails.
+Building or transferring an app alone produces no native acceptance receipt.
 
 The setup writes `target/ci/hosts.json`, and the native runner reads it directly. On Actions it also exposes the host paths to later steps through `GITHUB_ENV`. The setup uses existing native tools locally; `.github/actions/native-tools` is intended for disposable hosted runners. Never select a device belonging to another task.
 

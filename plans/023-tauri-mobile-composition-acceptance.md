@@ -8,7 +8,7 @@ Product requirement: preserve an ordinary independently runnable Tauri desktop/i
 
 ## Status and dependencies
 
-- Status: IN PROGRESS — recorded six-mobile/desktop feature evidence and package-only consumers are audited; retained CI and full lifecycle/device/adoption gates remain open.
+- Status: IN PROGRESS — required retained CI jobs are wired; their hosted execution and full lifecycle/device/adoption gates remain open.
 - Priority: P1 · Effort: L
 - Planned: 2026-09-09 against `7c055a4`
 - Depends on: [#43](https://github.com/gronxb/tauri-native/issues/43) (plan 019), [#45](https://github.com/gronxb/tauri-native/issues/45) (plan 021), [#46](https://github.com/gronxb/tauri-native/issues/46) (plan 022)
@@ -96,6 +96,26 @@ gates remain open; this does not close the issue or establish full release parit
 Forty-one Android Release UI flows (RN 24, Lynx 17) pass with transferred SDKs and fresh external dependencies. Both include the generated default startup. Changed/missing CI inputs are rejected without local repacking.
 
 [Evidence](../docs/evidence/retained-ci-transfer-android-2026-09-11.json) records SDK/artifact/producer integrity and the separate initial bundle failures. The earlier runtime export is reused; required retained CI at one revision, Linux/x86_64 execution and final lifecycle/device/adopter acceptance remain open.
+
+## Required retained CI wiring — 2026-09-11
+
+The validation workflow now requires `retained-producer`, `retained-ios` and
+`retained-android` alongside the existing producer/native jobs. The retained
+producer consumes the same packed CLI, runs both desktop contracts, prepares
+ordinary apps and exports Release runtimes, verifies cache/failure recovery and
+deletes the mobile producers. Receiving jobs execute the transferred ordinary
+app, retained native client, RN, Expo CNG and Lynx. Android also requires both
+renderers' recreation, fresh-permission and pending-permission scenarios.
+
+Final receipts bind native reports and successful UI results to the source
+commit, upstream package producer, retained archive and exact package/export
+hashes. Failed, cancelled, missing or stale jobs cannot produce a candidate.
+[Validation commands](../docs/validation.md#running-the-gates) document transfer
+and execution. This implements the workflow; a complete hosted retained run
+remains required. Local preparation/consumption evidence is recorded separately
+in [the workflow evidence](../docs/evidence/retained-ci-workflow-android-2026-09-11.json).
+Linux/x86_64, iOS/Expo transfer execution and remaining lifecycle/device/adopter
+acceptance are not inferred from wiring or receipt tests.
 
 ## Scope and constraints
 

@@ -69,6 +69,14 @@ test('publication rejects failed validation, stale commits and changed packed by
     assert.throws(() => readReleaseCandidate(root, commit, [{ ...pkg, version: '1.0.0' }]), /Packed version/);
     save({ ...candidate, checks: { ...candidate.checks, 'native-ios': 'failure' } });
     assert.throws(() => readReleaseCandidate(root, commit, [pkg]), /native-ios did not pass/);
+    for (const check of ['retained-producer', 'retained-ios', 'retained-android']) {
+      for (const status of ['failure', 'skipped', 'cancelled']) {
+        save({ ...candidate, checks: { ...candidate.checks, [check]: status } });
+        assert.throws(() => readReleaseCandidate(root, commit, [pkg]), /did not pass/);
+      }
+      const checks = { ...candidate.checks }; delete checks[check]; save({ ...candidate, checks });
+      assert.throws(() => readReleaseCandidate(root, commit, [pkg]), /Missing required/);
+    }
     save({ ...candidate, checks: { producer: 'success' } });
     assert.throws(() => readReleaseCandidate(root, commit, [pkg]), /Missing required/);
     save(candidate);

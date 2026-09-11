@@ -139,8 +139,129 @@ jobs:
             target/export-android/native-result.json
           retention-days: 14
 
+  retained-producer:
+    needs: producer
+    runs-on: macos-26
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: ./.github/actions/native-tools
+        with:
+          producer: 'true'
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: retained-xcode-26.4.1-ndk-27.1
+          cache-on-failure: true
+      - run: nub ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: producer-input
+          path: target/ci/input
+      - run: node scripts/ci/retained-producer.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: retained-input
+          path: target/ci/retained-input/
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: retained-producer-evidence
+          path: |
+            target/ci/logs/
+            target/ci/retained-export/*/*.log
+            target/ci/retained-export/*/export-report.json
+            target/ci/retained-export/tauri-mobile-plugins/*/*.log
+            target/tauri-mobile-plugins/standalone-desktop/desktop-report.json
+            target/retained-runtime/report.json
+          retention-days: 14
+
+  retained-ios:
+    needs: [producer, retained-producer]
+    runs-on: macos-26
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: ./.github/actions/native-tools
+      - uses: actions/download-artifact@v4
+        with:
+          name: producer-input
+          path: target/ci/input
+      - uses: actions/download-artifact@v4
+        with:
+          name: retained-input
+          path: target/ci/retained-input
+      - run: node scripts/ci/prepare-retained-hosts.ts
+      - run: node scripts/ci/retained-native.ts ios
+      - uses: actions/upload-artifact@v4
+        with:
+          name: retained-ios-receipt
+          path: target/ci/retained-ios.json
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: retained-ios-evidence
+          path: |
+            target/ci/logs/
+            target/ci/retained-evidence-ios/
+          retention-days: 14
+
+  retained-android:
+    needs: [producer, retained-producer]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: ./.github/actions/native-tools
+      - uses: actions/download-artifact@v4
+        with:
+          name: producer-input
+          path: target/ci/input
+      - uses: actions/download-artifact@v4
+        with:
+          name: retained-input
+          path: target/ci/retained-input
+      - run: node scripts/ci/prepare-retained-hosts.ts
+      - name: Allow the job-owned emulator to use KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2.38.0
+        with:
+          api-level: 36
+          target: google_apis_ps16k
+          arch: x86_64
+          profile: pixel_7
+          disk-size: 6G
+          ram-size: 4096M
+          disable-animations: true
+          emulator-options: -no-window -gpu software -no-snapshot -noaudio -no-boot-anim
+          script: ANDROID_SERIAL=emulator-5554 node --experimental-strip-types scripts/ci/retained-native.ts android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: retained-android-receipt
+          path: target/ci/retained-android.json
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: retained-android-evidence
+          path: |
+            target/ci/logs/
+            target/ci/retained-evidence-android/
+          retention-days: 14
+
   candidate:
-    needs: [producer, native-ios, native-android]
+    needs: [producer, native-ios, native-android, retained-producer, retained-ios, retained-android]
     if: always()
     runs-on: ubuntu-24.04
     steps:
@@ -156,12 +277,16 @@ jobs:
           path: target/ci/input
       - uses: actions/download-artifact@v4
         with:
-          pattern: native-*-receipt
+          name: retained-input
+          path: target/ci/retained-input
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: '*-receipt'
           merge-multiple: true
           path: target/ci
       - run: node scripts/ci/aggregate.ts
         env:
-          VALIDATION_RESULTS: '{"producer":"${{ needs.producer.result }}","native-ios":"${{ needs.native-ios.result }}","native-android":"${{ needs.native-android.result }}"}'
+          VALIDATION_RESULTS: '{"producer":"${{ needs.producer.result }}","native-ios":"${{ needs.native-ios.result }}","native-android":"${{ needs.native-android.result }}","retained-producer":"${{ needs.retained-producer.result }}","retained-ios":"${{ needs.retained-ios.result }}","retained-android":"${{ needs.retained-android.result }}"}'
       - uses: actions/upload-artifact@v4
         with:
           name: release-candidate

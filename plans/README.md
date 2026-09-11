@@ -84,7 +84,7 @@ No due dates or assignees are invented. M0 is a go/no-go gate. A failed proof bl
 | [020](020-runtime-portable-artifacts.md) | [#44 — [M7] Export portable Tauri runtime and plugin artifacts](https://github.com/gronxb/tauri-native/issues/44) | P1 | L | 018, 019 | IN PROGRESS · Android ABI 3 source-free native execution passes |
 | [021](021-react-native-tauri-composition.md) | [#45 — [M8] Compose React Native and Expo with retained Tauri Mobile](https://github.com/gronxb/tauri-native/issues/45) | P1 | L | 017, 020 | TODO |
 | [022](022-lynx-tauri-composition.md) | [#46 — [M8] Compose Lynx with retained Tauri Mobile](https://github.com/gronxb/tauri-native/issues/46) | P1 | L | 017, 020 | TODO |
-| [023](023-tauri-mobile-composition-acceptance.md) | [#47 — [M8] Gate release on standalone and composed Tauri Mobile parity](https://github.com/gronxb/tauri-native/issues/47) | P1 | L | 019, 021, 022 | TODO |
+| [023](023-tauri-mobile-composition-acceptance.md) | [#47 — [M8] Gate release on standalone and composed Tauri Mobile parity](https://github.com/gronxb/tauri-native/issues/47) | P1 | L | 019, 021, 022 | IN PROGRESS |
 
 M1 follows the M0 decision. M2 requires portable artifacts. M3 builds real command behavior on working host integrations. M4 can overlap later M2/M3 work where issue dependencies allow. The reference feature integrates these capabilities; native/package evidence and independent onboarding gate 1.0.
 

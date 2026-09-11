@@ -165,7 +165,9 @@ try {
   assert.deepEqual(packedReader(copied), manifest);
   assert.deepEqual(readRetainedArtifacts(artifact), manifest);
   assert(!existsSync(path.join(consumer, 'src-tauri')));
-  writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform: 'ios', profile: 'release', formatVersion: 2, abiVersion: 3,
+  const architectures = run('binary-architectures', 'lipo', ['-archs', path.join(app, info.CFBundleExecutable)]).split(/\s+/);
+  assert.deepEqual(architectures, ['arm64']);
+  writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform: 'ios', profile: 'release', formatVersion: 2, abiVersion: 3, architectures,
     renderer: 'Lynx 4.0.1 / PrimJS 4.0.0', sourceFree: true, sourceFreeBuild: 'PATH=/usr/bin:/bin:/usr/sbin:/sbin xcodebuild -configuration release -sdk iphonesimulator',
     packageSha256: packed.sha256, packageSource: packed.source, artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
     binarySha256: acceptanceBinarySha256, composition: receipt, podIntegration, defaultIntegration, bundleSha256: sha256(readFileSync(bundle)), baseline, denied, permissionRetired, saved, remounted, closed, notes, view,

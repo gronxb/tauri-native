@@ -1,0 +1,371 @@
+{
+  "passed": true,
+  "recordedAt": "2026-09-11T02:41:54.340012+00:00",
+  "baseCommit": "4eeabcfce72768772cdad77cf87b3208fb8815a4",
+  "scope": "Local macOS/arm64 preparation and source-free receiving Android execution; required retained workflow wiring is not a hosted CI result",
+  "verification": {
+    "receiptAndTransferTests": 9,
+    "ciCommandTests": 2,
+    "scriptsTypecheck": true,
+    "cliTypecheck": true,
+    "workflowYamlParse": true,
+    "diffCheck": true
+  },
+  "freshExport": {
+    "schemaVersion": 1,
+    "passed": true,
+    "platform": "android",
+    "profile": "release",
+    "targets": "aarch64",
+    "cliPackageSha256": "6363fe5afec7a581bbc48378b0df62a5346dc09618d8028fe4b00d251deb90a0",
+    "producerDeleted": true,
+    "producerUnchanged": true,
+    "sourceHashes": {
+      "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+      "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+      "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+      "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+      "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+      "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+      "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+      "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+      "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+      "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+      "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+      "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+      "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+      "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+    },
+    "originalFixtureHashes": {
+      "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+      "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+      "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+      "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+      "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+      "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+      "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+      "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+      "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+      "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+      "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+      "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+      "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+      "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+    },
+    "artifactSha256": "45c1ed75a270485e8b4a0ba478f649263bfe603dfc9b8a0015bfb0e6d6e60691",
+    "formatVersion": 2,
+    "abiVersion": 3,
+    "native": [
+      {
+        "abi": "arm64-v8a",
+        "path": "android/app/src/main/jniLibs/arm64-v8a/libordinary_tauri_mobile_fieldnotes_lib.so"
+      }
+    ],
+    "incrementalAcceptance": {
+      "unchangedHit": true,
+      "invalidCapabilityRejected": true,
+      "previousArtifactPreserved": true
+    }
+  },
+  "ordinaryPrepared": {
+    "schemaVersion": 1,
+    "passed": true,
+    "platform": "android",
+    "target": "aarch64",
+    "binary": "standalone.apk",
+    "executable": "standalone.apk",
+    "binarySha256": "a41b32a13bad7f2e475a53a61b3334e4108173c3501a74357b3b8d0792b456de",
+    "files": [
+      {
+        "path": "standalone.apk",
+        "sha256": "a41b32a13bad7f2e475a53a61b3334e4108173c3501a74357b3b8d0792b456de",
+        "size": 139220854
+      }
+    ],
+    "producerDeleted": true,
+    "producerUnchanged": true,
+    "sourceHashes": {
+      "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+      "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+      "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+      "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+      "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+      "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+      "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+      "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+      "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+      "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+      "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+      "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+      "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+      "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+    }
+  },
+  "results": [
+    {
+      "gate": "standalone",
+      "file": "target/retained-ci-workflow/consume-reboot-diagnostics/tauri-mobile-plugins/standalone-android/report.json",
+      "sha256": "d125b6c8ea9cf50a121095a58f86b122de0f5e7220b89238d2c8890783c133da",
+      "run": {
+        "command": [
+          "node",
+          "--experimental-strip-types",
+          "packages/cli/test/runtime/plugins.ts",
+          "android",
+          "--consume"
+        ],
+        "exitCode": 0,
+        "cargoOnPath": false,
+        "cliSha256": "6363fe5afec7a581bbc48378b0df62a5346dc09618d8028fe4b00d251deb90a0"
+      },
+      "summary": {
+        "platform": "android",
+        "producerDeleted": true,
+        "producerUnchanged": true,
+        "baseline": {
+          "directory": "/data/user/0/dev.taurinative.mobilefieldnotes",
+          "passed": true,
+          "reloaded": true,
+          "scenarios": [
+            "setup",
+            "state",
+            "app-handle",
+            "async",
+            "rust-event",
+            "plugin-setup",
+            "plugin-allowed",
+            "plugin-denied",
+            "domain-error",
+            "reload"
+          ],
+          "state": {
+            "appIdentifier": "dev.taurinative.mobilefieldnotes",
+            "pluginSetupCount": 1,
+            "setupCount": 1,
+            "value": 45
+          }
+        },
+        "transferredBinarySha256": "a41b32a13bad7f2e475a53a61b3334e4108173c3501a74357b3b8d0792b456de",
+        "bootId": "2cd97714-aa25-47d8-89ea-99db458e8574",
+        "backgroundPid": "5312"
+      },
+      "flows": [
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/tauri-mobile-plugins/standalone-android/background.xml",
+          "sha256": "ba73286a7bfbfa1940d7f887add532e8aeca457d14841a97545199d98f6e616f",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/tauri-mobile-plugins/standalone-android/denied-position.xml",
+          "sha256": "b0d944553533b698311adb216909f90b5a079fe4f8405ccdf4b85e1378aa61a3",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/tauri-mobile-plugins/standalone-android/deny-permission.xml",
+          "sha256": "46cbbe93b8fa7f466b3a3adf0dd286d2b85f3d582f2602bbf5c17987a3507ced",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/tauri-mobile-plugins/standalone-android/grant-permission.xml",
+          "sha256": "accf33faea5aa201691879558524ce35abc786d967398562f3d69ee19cbadd8a",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/tauri-mobile-plugins/standalone-android/initial.xml",
+          "sha256": "0f553f44fa50e4461ce09194c65f17f3115264e25a1b09d9cbb3718d1a8dc5c4",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/tauri-mobile-plugins/standalone-android/link-ui.xml",
+          "sha256": "93416f0030c626cc883a4e5f811589e00ab6fcc66800774610c0bd9142d17af3",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/tauri-mobile-plugins/standalone-android/persistence-ui.xml",
+          "sha256": "388f9846200e0f5acfdac0ed17352be1d0dd49e94ca16fd042536887cd0c594a",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/tauri-mobile-plugins/standalone-android/save.xml",
+          "sha256": "e218647424b2bcf7ad2cc419cc625a07214d1b53df92fe3d26eb105d1d832e4d",
+          "tests": 1
+        }
+      ]
+    },
+    {
+      "gate": "retained",
+      "file": "target/retained-ci-workflow/consume-reboot-diagnostics/retained-portability/report.json",
+      "sha256": "2a5459631080f73bfd4f07b15e187cb0ed669f28ae1603720de786898df3212b",
+      "run": {
+        "command": [
+          "node",
+          "--experimental-strip-types",
+          "packages/cli/test/runtime/portable.ts",
+          "android",
+          "--consume",
+          "--release"
+        ],
+        "exitCode": 0,
+        "cargoOnPath": false,
+        "cliSha256": "6363fe5afec7a581bbc48378b0df62a5346dc09618d8028fe4b00d251deb90a0"
+      },
+      "summary": {
+        "platform": "android",
+        "producerDeleted": true,
+        "producerUnchanged": true,
+        "baseline": {
+          "directory": "/data/user/0/dev.taurinative.mobilefieldnotes",
+          "passed": true,
+          "reloaded": true,
+          "scenarios": [
+            "setup",
+            "state",
+            "app-handle",
+            "async",
+            "rust-event",
+            "plugin-setup",
+            "plugin-allowed",
+            "plugin-denied",
+            "domain-error",
+            "reload"
+          ],
+          "state": {
+            "appIdentifier": "dev.taurinative.mobilefieldnotes",
+            "pluginSetupCount": 1,
+            "setupCount": 1,
+            "value": 45
+          }
+        },
+        "profile": "release",
+        "deviceAbi": "arm64-v8a",
+        "pageSize": 16384,
+        "artifactSha256": "45c1ed75a270485e8b4a0ba478f649263bfe603dfc9b8a0015bfb0e6d6e60691",
+        "binarySha256": "48ec4f7d656d3512a369c7d04979ab422bdc84da8b7a3230f807646a1e147eae",
+        "sourceFreeBuild": "./gradlew --no-daemon assembleRelease; PATH=/usr/bin:/bin:/usr/sbin:/sbin; relocated path has spaces",
+        "testOnlySigning": "Release/R8 with debug test key and android:debuggable for run-as telemetry; exported project unchanged"
+      },
+      "flows": [
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/retained-portability/deny-native-permission.xml",
+          "sha256": "2df89d93a04abf971ea2bfdd5f014a97ab8a9c8bd2597117b389c4efab2767e4",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/retained-portability/grant-retired-permission.xml",
+          "sha256": "60a7301450e768e727ba0d043b5c976c7f49ba9a403c581b11a4f5870854b722",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/retained-portability/initial-native.xml",
+          "sha256": "b9443c1c5f842fb5239725fceaa61aa7184b319e7e750e1e8147273336adefed",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/retained-portability/native-background.xml",
+          "sha256": "ac7223239a14d6153ef2b6c24146e26945e954c675550818679247255bc9848d",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/retained-portability/native-denied-position.xml",
+          "sha256": "97982fd929ce815fc289ef2754a1a9b98a466caeb4754ae6a6ccaa4b39c2fd87",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/retained-portability/native-link.xml",
+          "sha256": "75ba51a6603bc9052a119c21bb302d002373e9572ee7cdfaa323bf892b3e3f90",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/retained-portability/native-no-denied-save.xml",
+          "sha256": "c8d8823239c037b6dbfe751d2d276d1698d122138c5d6b8cebe262e053e7ba6b",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/retained-portability/native-persistence.xml",
+          "sha256": "98c2cf99d4ef5dfc41ef5675018827fad512de9416af80b3c94bd3d9322fc49d",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/retained-portability/native-remount.xml",
+          "sha256": "dc62532316e9469014ddbb9dd2911bb3b5f46a058815186844f42719c8b0ace3",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/retained-portability/native-remounted-event.xml",
+          "sha256": "aff48f4ba6137587886cff87e5efa901384a7b3a71cd3f61f6dc2f4339ed1120",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/retained-portability/native-save.xml",
+          "sha256": "5d2a813240ad9319ea586660ad5bbd3a84174a621b4c7933c0866c23796a6fd2",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow/consume-reboot-diagnostics/retained-portability/retire-native-permission.xml",
+          "sha256": "1d9cf4e905c5468ef80a397282ceae6d5c4e8b62324a875f98326119a348faf6",
+          "tests": 1
+        }
+      ]
+    }
+  ],
+  "nativeUiFlows": 20,
+  "failedFlowsInSuccessfulRuns": 0,
+  "skippedFlows": 0,
+  "integrity": {
+    "ordinarySourceFiles": 14,
+    "ordinarySourceUnchanged": true,
+    "transferredOrdinaryAppUnchanged": true,
+    "transferredRetainedArtifactUnchanged": true,
+    "mobileProducersDeletedBeforeConsumption": true
+  },
+  "failedAttempts": [
+    {
+      "stage": "First ordinary Android consumption, background deep link",
+      "exitCode": 1,
+      "nativeAcceptance": false,
+      "log": {
+        "file": "target/retained-ci-workflow/standalone-consume-android.log",
+        "sha256": "3ef33a91638fe184c1be4953d71c2b21b849bf89181a23907bd96be7cc0e01d4"
+      },
+      "systemLog": {
+        "file": "target/retained-ci-workflow/standalone-failure-system.log",
+        "sha256": "97f131eff9c2741db875045cf4f59cece8db0a9daab25894e271a0bc343bfff8"
+      },
+      "fullLog": {
+        "file": "target/retained-ci-workflow/standalone-failure-full.log",
+        "sha256": "ced2bc15e0bcac201ef21b6d8bcad749e69f74157ebe9747d586fcc69de72dcf"
+      },
+      "observations": [
+        "Save UI passed at 11:24:09 KST; Android framework boot logs begin at 11:24:12.",
+        "The deep-link launch was COLD and started a new process (3983).",
+        "Original Tauri setup aborted while reading notes with EOF while parsing a value at line 1 column 0.",
+        "Subsequent kernel uptime and boot reason reboot establish an intervening guest restart; its trigger and the data-loss cause are not established."
+      ],
+      "followUp": "Preserved the failure, added boot-ID/same-process checks around ordinary warm deep links, then reran the exact transferred APK successfully. No producer or runtime fix was made; earlier separate standalone failures remain unresolved."
+    }
+  ],
+  "sourceSha256": {
+    ".github/workflows/validate.yml": "eb894fa3744b4f95648b854ff92fbf7e2fff61f9b0605747da0c40055ba96b2f",
+    "packages/cli/test/runtime/plugins.ts": "259d047137bf4abbc790e94749127cc582b295a0d02b70f853be7277f8769634",
+    "packages/cli/test/runtime/portable.ts": "87e43719200afc49f6766f4423132b00fb9208a67524ca29008c2c1a2e479b91",
+    "packages/lynx/test/retained-ios.ts": "4f53da57805276e0474aa21906152bbbcbad78e84759cb1272a3909b69fd8602",
+    "scripts/ci/aggregate.ts": "8270e2def76f5f822116ce04e03e20f969a1ba25f19d7b064dce09f94f5fce17",
+    "scripts/ci/producer.ts": "162a24d44d7cbb61e7992c1cdcd9fbc831b33826ec1b093ff543fe46893791d8",
+    "scripts/release-candidate.ts": "0fd0554f65b7ba40182a9eaf13cc699feef600bec12901c093cc73cf75784c55",
+    "scripts/test/release-candidate.test.ts": "07ef695d394c8a32427f28abaeca5714f0029a1e4c658b41401de5c028927068",
+    "scripts/validation-types.ts": "e2da0892095fc825d51fd85baf6ce54d4ad9bfdfd6c8554530600ec3e21c8a89",
+    "scripts/ci/prepare-retained-hosts.ts": "e87f236d6b56c5c9afe8840ce793eeb665029c96ff5ae6a11f9b54f18a5b9496",
+    "scripts/ci/retained-common.ts": "49bff9a810b1f51eb2f19e07f5e9d0d455264031c8a44f2fab1d00181c34d1df",
+    "scripts/ci/retained-native.ts": "792f81e714ddd68039c3bdc24d2d3e5475b9afded650b0c7634c3b239121d215",
+    "scripts/ci/retained-producer.ts": "044d1f973ce8bca58d976a7b2483c390ac3e4597f4f6071676b3a121902cffe9",
+    "scripts/retained-validation.ts": "cbb94e8ac54befc4bdc3d41a0f063f31929c0f4ee895bb664077ea474d6ee43a",
+    "scripts/test/retained-validation.test.ts": "ba90e650477f373c846ccdd27d0234276fdfc60e78a222f77bce5840a66394e8"
+  },
+  "limits": [
+    "Not a GitHub Actions run or a release candidate; no full retained producer/native/aggregate certification.",
+    "This record executes Android arm64/API 37 with 16 KB pages on macOS; hosted Linux/x86_64 and iOS are not executed here.",
+    "RN, Expo CNG, Lynx and recreation workflow commands are wired and typechecked; those native SDK gates are not rerun in this record.",
+    "The original app is a normal Tauri Debug build. The retained native client uses Release/R8 with consumer-only debug telemetry and test signing.",
+    "Physical-device acceptance, two independent adopters and remaining lifecycle/navigation/channel/source-form parity stay open."
+  ]
+}

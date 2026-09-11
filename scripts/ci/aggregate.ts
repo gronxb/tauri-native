@@ -3,6 +3,8 @@ import { cpSync, mkdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { readReleaseCandidate, requiredChecks, validateNativeReceipt } from '../release-candidate.ts';
 import { digest, json, output, readInput, record, root } from './common.ts';
+import { readRetainedInput, retainedInput } from './retained-common.ts';
+import { validateRetainedNative } from '../retained-validation.ts';
 
 const input = path.join(output, 'input');
 const producer = readInput(input);
@@ -10,8 +12,10 @@ const checks = JSON.parse(process.env.VALIDATION_RESULTS!);
 assert.deepEqual(Object.keys(checks).sort(), [...requiredChecks].sort());
 for (const check of requiredChecks) assert.equal(checks[check], 'success', `${check} failed, was cancelled, or did not run`);
 const producerSha256 = digest(path.join(input, 'producer.json'));
-for (const platform of ['ios', 'android']) {
+const retained = readRetainedInput();
+for (const platform of ['ios', 'android'] as const) {
   validateNativeReceipt(json(path.join(output, `native-${platform}.json`)), platform, producer, producerSha256);
+  validateRetainedNative(json(path.join(output, `retained-${platform}.json`)), platform, retained, digest(path.join(retainedInput, 'retained-producer.json')));
 }
 const destination = path.join(output, 'release-candidate');
 rmSync(destination, { recursive: true, force: true }); mkdirSync(destination);

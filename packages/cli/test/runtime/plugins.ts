@@ -1,20 +1,32 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout } from 'node:timers/promises';
 import { snapshot } from '../native-export/source-integrity.ts';
 import { acquireMobileTest } from './mobile-lock.ts';
+import { retainedEvidence } from '../../../../scripts/retained-test-inputs.ts';
+import { inventory, sha256 } from '../../src/artifacts/files.ts';
+import type { StandalonePrepared } from '../../../../scripts/validation-types.ts';
 
-const platform = process.argv[2];
-assert(platform === 'ios' || platform === 'android', 'Select ios or android');
+const requested = process.argv[2];
+assert(requested === 'ios' || requested === 'android', 'Select ios or android');
+const platform: 'ios' | 'android' = requested;
+const flags = new Set(process.argv.slice(3));
+assert([...flags].every(flag => ['--build-only', '--consume'].includes(flag)), 'Use --build-only or --consume');
+const buildOnly = flags.has('--build-only'), consume = flags.has('--consume');
+assert(!(buildOnly && consume), 'Build and consumption are separate stages');
+const target = process.env.RETAINED_EXPORT_TARGETS ?? (platform === 'ios' ? 'aarch64-sim' : 'aarch64');
+assert(platform === 'ios' ? target === 'aarch64-sim' : ['aarch64', 'x86_64'].includes(target), 'Select a verified CI simulator/emulator target');
 const device = platform === 'ios' ? process.env.IOS_SIMULATOR_UDID : process.env.ANDROID_SERIAL;
-assert(device, 'Select an IOS_SIMULATOR_UDID or ANDROID_SERIAL');
 const root = fileURLToPath(new URL('../../../..', import.meta.url));
 const fixture = path.join(root, 'packages/cli/test/fixtures/mobile-plugin-tauri');
-const evidence = path.join(root, `target/tauri-mobile-plugins/standalone-${platform}`);
+const evidence = retainedEvidence(root, `tauri-mobile-plugins/standalone-${platform}`);
+const preparedDirectory = path.resolve(process.env.RETAINED_STANDALONE_INPUT ?? path.join(evidence, 'prepared'));
+assert(!process.env.RETAINED_STANDALONE_INPUT || consume, 'An external baseline is only accepted with --consume');
 const producer = path.join(evidence, 'producer');
+let commandCwd = producer;
 const appId = 'dev.taurinative.mobilefieldnotes';
 const original = snapshot(fixture);
 const releaseMobileTest = acquireMobileTest(root);
@@ -26,7 +38,7 @@ rmSync(path.join(evidence, 'report.json'), { force: true });
 
 function run(label: string, command: string, args: string[]) {
   console.log(`> plugins-${platform}: ${label}`);
-  const result = spawnSync(command, args, { cwd: producer, env, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,
+  const result = spawnSync(command, args, { cwd: commandCwd, env, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,
     timeout: command === 'maestro' ? 180000 : ['adb', 'xcrun'].includes(command) ? 120000 : undefined });
   writeFileSync(path.join(evidence, `${label}.log`), `${result.stdout ?? ''}\n${result.stderr ?? ''}`);
   assert.equal(result.status, 0, `${label}: ${result.error ?? ''}\n${result.stdout}\n${result.stderr}`);
@@ -74,35 +86,58 @@ function stop(label: string) {
 }
 
 let installed = false;
-try {
-  rmSync(producer, { recursive: true, force: true });
-  cpSync(fixture, producer, { recursive: true });
-  if (platform === 'android') assert.equal(run('emulator', 'adb', ['-s', device, 'shell', 'getprop', 'ro.kernel.qemu']), '1');
+function prepareNative(): StandalonePrepared {
+  rmSync(producer, { recursive: true, force: true }); cpSync(fixture, producer, { recursive: true });
+  rmSync(preparedDirectory, { recursive: true, force: true }); mkdirSync(preparedDirectory, { recursive: true });
   run('dependencies', 'npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund']);
   const before = snapshot(producer);
+  assert.deepEqual(before, original);
   run('init', 'npm', ['run', 'tauri', '--', platform, 'init', '--ci', '--skip-targets-install']);
-  // Fresh scaffolds need the native build-script side effects again. Upstream
-  // deep-link does not invalidate its cache when an existing Info.plist is regenerated.
+  // Refresh native build-script side effects after ordinary scaffold generation.
   run('refresh-native-codegen', 'cargo', ['clean', '--package', 'tauri', '--package', 'tauri-plugin-geolocation',
-    '--package', 'tauri-plugin-deep-link', '--target', platform === 'ios' ? 'aarch64-apple-ios-sim' : 'aarch64-linux-android',
+    '--package', 'tauri-plugin-deep-link', '--target', platform === 'ios' ? 'aarch64-apple-ios-sim' : `${target === 'aarch64' ? 'aarch64' : 'x86_64'}-linux-android`,
     '--manifest-path', 'src-tauri/Cargo.toml']);
+  let binary: string, executable: string;
   if (platform === 'ios') {
-    run('build', 'npm', ['run', 'tauri', '--', 'ios', 'build', '--ci', '--debug', '--target', 'aarch64-sim', '--no-sign']);
+    run('build', 'npm', ['run', 'tauri', '--', 'ios', 'build', '--ci', '--debug', '--target', target, '--no-sign']);
     const app = artifact(path.join(producer, 'src-tauri/gen/apple/build'), file => file.endsWith('.app') && path.basename(path.dirname(file)) === 'arm64-sim');
     const info = JSON.parse(run('app-info', 'plutil', ['-convert', 'json', '-o', '-', path.join(app, 'Info.plist')]));
     assert.equal(info.NSLocationWhenInUseUsageDescription, 'Attach your current location to a note when you request it.');
     assert(info.CFBundleURLTypes?.some((type: { CFBundleURLSchemes: string[] }) => type.CFBundleURLSchemes.includes('tauri-fieldnotes')),
       'Native plugin build must preserve the configured deep-link URL scheme after scaffold regeneration');
-    run('install', 'xcrun', ['simctl', 'install', device, app]); installed = true;
+    binary = 'standalone.app'; executable = `${binary}/${info.CFBundleExecutable}`;
+    cpSync(app, path.join(preparedDirectory, binary), { recursive: true, dereference: true });
+  } else {
+    run('build', 'npm', ['run', 'tauri', '--', 'android', 'build', '--ci', '--debug', '--target', target, '--apk']);
+    const apk = artifact(path.join(producer, 'src-tauri/gen/android/app/build/outputs/apk'), file => file.endsWith('-debug.apk'));
+    binary = executable = 'standalone.apk'; cpSync(apk, path.join(preparedDirectory, binary));
+  }
+  assert.deepEqual(snapshot(producer), before);
+  rmSync(producer, { recursive: true });
+  const prepared = { schemaVersion: 1, passed: true, platform, target, binary, executable,
+    binarySha256: sha256(readFileSync(path.join(preparedDirectory, executable))), files: inventory(preparedDirectory),
+    producerDeleted: !existsSync(producer), producerUnchanged: true, sourceHashes: before };
+  writeFileSync(path.join(preparedDirectory, 'prepared.json'), JSON.stringify(prepared, null, 2) + '\n');
+  return prepared;
+}
+
+async function acceptNative(prepared: StandalonePrepared, verify: () => void) {
+  assert(device, 'Select an IOS_SIMULATOR_UDID or ANDROID_SERIAL');
+  const binary = path.join(preparedDirectory, prepared.binary);
+  let bootId: string | undefined;
+  if (platform === 'ios') {
+    run('install', 'xcrun', ['simctl', 'install', device, binary]); installed = true;
     const container = run('container', 'xcrun', ['simctl', 'get_app_container', device, appId, 'data']);
     dataDirectory = path.join(container, 'Library/Application Support', appId);
     for (const file of ['runtime-report.json', 'plugins-report.json']) rmSync(path.join(dataDirectory, file), { force: true });
     run('privacy-reset', 'xcrun', ['simctl', 'privacy', device, 'reset', 'location', appId]);
     run('gps', 'xcrun', ['simctl', 'location', device, 'set', '37.5665,126.9780']);
   } else {
-    run('build', 'npm', ['run', 'tauri', '--', 'android', 'build', '--ci', '--debug', '--target', 'aarch64', '--apk']);
-    const apk = artifact(path.join(producer, 'src-tauri/gen/android/app/build/outputs/apk'), file => file.endsWith('-debug.apk'));
-    run('install', 'adb', ['-s', device, 'install', apk]); installed = true;
+    assert.equal(run('emulator', 'adb', ['-s', device, 'shell', 'getprop', 'ro.kernel.qemu']), '1');
+    assert.equal(run('abi', 'adb', ['-s', device, 'shell', 'getprop', 'ro.product.cpu.abi']), prepared.target === 'aarch64' ? 'arm64-v8a' : 'x86_64');
+    assert.equal(run('page-size', 'adb', ['-s', device, 'shell', 'getconf', 'PAGE_SIZE']), '16384');
+    bootId = run('boot-id', 'adb', ['-s', device, 'shell', 'cat', '/proc/sys/kernel/random/boot_id']);
+    run('install', 'adb', ['-s', device, 'install', binary]); installed = true;
     run('gps', 'adb', ['-s', device, 'emu', 'geo', 'fix', '126.9780', '37.5665']);
   }
   launch('launch');
@@ -138,7 +173,12 @@ try {
   const note = saved.snapshot.notes[0];
   assert.equal(note.text, 'A place to remember');
   assert(Math.abs(note.latitude - 37.5665) < 0.01 && Math.abs(note.longitude - 126.978) < 0.01, JSON.stringify(note));
+  const backgroundPid = platform === 'android' ? run('pid-before-background', 'adb', ['-s', device, 'shell', 'pidof', appId]) : undefined;
   flow('background', '- pressKey: Home');
+  if (platform === 'android') {
+    assert.equal(run('boot-after-background', 'adb', ['-s', device, 'shell', 'cat', '/proc/sys/kernel/random/boot_id']), bootId, 'Emulator rebooted during the warm deep-link scenario');
+    assert.equal(run('pid-after-background', 'adb', ['-s', device, 'shell', 'pidof', appId]), backgroundPid, 'Warm deep link requires the same background process');
+  }
   const link = 'tauri-fieldnotes://notes/1';
   if (platform === 'ios') run('deep-link', 'xcrun', ['simctl', 'openurl', device, link]);
   else run('deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', link, '-p', appId]);
@@ -146,6 +186,7 @@ try {
     '- assertVisible: "Links received 1"\n- tapOn: "Refresh notes and links"');
   await until(() => report().snapshot.links.length === 1);
   const linked = report();
+  if (platform === 'android') assert.equal(run('pid-after-link', 'adb', ['-s', device, 'shell', 'pidof', appId]), backgroundPid, 'Deep link must resume the original process');
   assert.deepEqual(linked.snapshot.links, [link]);
   assert.equal(linked.snapshot.setupCount, 1); assert.equal(linked.snapshot.pluginSetupCount, 1);
   stop('stop'); launch('relaunch');
@@ -154,19 +195,37 @@ try {
   const relaunched = report();
   assert.deepEqual(relaunched.snapshot.notes, saved.snapshot.notes);
   assert.equal(relaunched.snapshot.setupCount, 1); assert.equal(relaunched.snapshot.pluginSetupCount, 1);
-  assert.deepEqual(snapshot(producer), before);
+  verify();
+  assert(!existsSync(producer));
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform, mode: 'standalone Tauri Mobile',
     runtime: 'Tauri 2.11.5 / Wry', plugins: { geolocation: '2.3.3', deepLink: '2.4.10' },
-    build: 'Debug arm64 simulator/emulator, standard Tauri CLI', producerUnchanged: true, sourceHashes: original,
+    build: `Debug ${prepared.target}, standard Tauri CLI`, producerUnchanged: true, producerDeleted: true, sourceHashes: original,
+    transferredBinarySha256: prepared.binarySha256, bootId, backgroundPid,
     scenarios: ['ordinary-runtime-baseline', 'tauri-capability-denial', 'os-permission-denial', 'denied-position-no-save',
       'os-permission-grant', 'native-position-callback', 'persist-location-note', 'background-deep-link-once', 'process-relaunch-persistence'],
     baseline, acl, denied, deniedPosition, granted, saved, linked, relaunched,
   }, null, 2) + '\n');
   console.log(`PASS: standalone ${platform} native plugins, OS permission callbacks, deep link and persistence. ${evidence}/report.json`);
+}
+
+try {
+  const prepared = consume ? JSON.parse(readFileSync(path.join(preparedDirectory, 'prepared.json'), 'utf8')) as StandalonePrepared : prepareNative();
+  assert.equal(prepared.schemaVersion, 1); assert.equal(prepared.passed, true); assert.equal(prepared.platform, platform);
+  assert.equal(prepared.producerUnchanged, true); assert.equal(prepared.producerDeleted, true);
+  assert.deepEqual(prepared.sourceHashes, original, 'Transferred baseline must use the current ordinary producer');
+  assert.equal(prepared.binary, platform === 'ios' ? 'standalone.app' : 'standalone.apk');
+  assert(prepared.files.some(file => file.path === prepared.executable), 'Executable must belong to the prepared app inventory');
+  const verify = () => assert.deepEqual(inventory(preparedDirectory).filter(file => file.path !== 'prepared.json'), prepared.files);
+  verify();
+  assert.equal(sha256(readFileSync(path.join(preparedDirectory, prepared.executable))), prepared.binarySha256);
+  commandCwd = evidence;
+  if (buildOnly) console.log(`PASS: ordinary ${platform} app prepared and producer deleted; native execution remains separate`);
+  else await acceptNative(prepared, verify);
+
 } finally {
   if (installed) {
-    if (platform === 'ios') run('uninstall', 'xcrun', ['simctl', 'uninstall', device, appId]);
-    else run('uninstall', 'adb', ['-s', device, 'uninstall', appId]);
+    if (platform === 'ios') run('uninstall', 'xcrun', ['simctl', 'uninstall', device!, appId]);
+    else run('uninstall', 'adb', ['-s', device!, 'uninstall', appId]);
   }
   assert.deepEqual(snapshot(fixture), original, 'Ordinary producer remains unchanged even on failure');
   releaseMobileTest();

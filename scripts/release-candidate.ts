@@ -6,7 +6,7 @@ import path from 'node:path';
 
 import type { CandidateReceipt, NativeReceipt, PackageManifest, ProducerReceipt } from './validation-types.ts';
 
-export const requiredChecks = ['producer', 'native-ios', 'native-android'];
+export const requiredChecks = ['producer', 'native-ios', 'native-android', 'retained-producer', 'retained-ios', 'retained-android'];
 
 export function validateNativeReceipt(input: unknown, platform: string, producerInput: unknown, producerSha256: string) {
   const report = input as NativeReceipt;
