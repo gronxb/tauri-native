@@ -71,7 +71,8 @@ async function until(condition: () => boolean) {
 function flow(label: string, steps: string) {
   const yaml = path.join(evidence, `${label}.yaml`);
   writeFileSync(yaml, `appId: ${appId}\n---\n${steps}\n`);
-  run(label, 'maestro', ['--udid', device!, 'test', '--format', 'junit', '--output', path.join(evidence, `${label}.xml`), yaml]);
+  run(label, 'maestro', ['--udid', device!, 'test', '--format', 'junit', '--output', path.join(evidence, `${label}.xml`),
+    '--debug-output', path.join(evidence, `${label}-maestro`), '--flatten-debug-output', yaml]);
 }
 
 function launch(label: string) {
@@ -222,6 +223,14 @@ try {
   if (buildOnly) console.log(`PASS: ordinary ${platform} app prepared and producer deleted; native execution remains separate`);
   else await acceptNative(prepared, verify);
 
+} catch (error) {
+  // Preserve the original app's last report before uninstalling a failed run.
+  // This distinguishes an undelivered native event from a UI assertion failure.
+  if (installed) for (const file of ['runtime-report.json', 'plugins-report.json']) {
+    try { writeFileSync(path.join(evidence, `failure-${file}`), JSON.stringify(report(file), null, 2) + '\n'); }
+    catch (diagnosticError) { console.error(`Could not preserve ${file}: ${diagnosticError}`); }
+  }
+  throw error;
 } finally {
   if (installed) {
     if (platform === 'ios') run('uninstall', 'xcrun', ['simctl', 'uninstall', device!, appId]);

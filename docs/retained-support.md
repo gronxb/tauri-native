@@ -22,6 +22,17 @@ packages.
 | `tauri-plugin-deep-link` 2.4.10 | Original Tauri application URL lifecycle | Original Tauri Activity and Kotlin plugin | Configured custom scheme, current URL, background/resume delivery and an original Rust event. Associated-domain Universal Links and Android verified App Links remain separate acceptance. |
 | Fixture's Rust `runtime-probe` plugin | Original Tauri Builder registration | Original Tauri Builder registration | Setup once, an allowed command and capability denial before its side effect. This is application-owned Rust plugin evidence, not arbitrary external native plugin support. |
 
+[Bare RN and actual CNG recreation](evidence/retained-bare-rn-cng-recreation-2026-09-11.json)
+add 21 Android Release/R8 UI flows. Bare RN performs two recreations with its
+location request pending; replacement camera requests after real AppState active
+receive only their own OS denial/grant. The APK contains no Expo native core.
+Normal Expo CNG performs two recreations with actual prebuild/config-plugin
+metadata, module lifecycle and file persistence. Both retain Tauri State/setup
+45/1/1, forward back/deep links and finish renderer destruction while original
+Tauri IPC remains usable. Input source/artifact/package bytes stay unchanged.
+Additional CNG permission modes are wired and being executed; this evidence
+does not claim those modes or complete hosted/device/adopter acceptance.
+
 The original local WebView's Tauri authority remains in force. A direct native
 session additionally needs an exact grant in `callers.json`; delegation does not
 grant the corresponding Tauri permission or the OS location permission. Denial

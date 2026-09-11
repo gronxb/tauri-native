@@ -10,6 +10,7 @@ import { sha256 } from '../../src/artifacts/files.ts';
 import { snapshot } from '../native-export/source-integrity.ts';
 import { acquireMobileTest } from './mobile-lock.ts';
 import { prepareRendererPermissions, rendererPermissionActivity } from './renderer-permission-recreation.ts';
+import { configureCng } from '../../../react-native/test/retained/cng-scenarios.ts';
 import { prepareRetainedPackage, retainedDependencies, retainedEvidence } from '../../../../scripts/retained-test-inputs.ts';
 
 const root = fileURLToPath(new URL('../../../..', import.meta.url));
@@ -19,10 +20,12 @@ const expo = mode === 'expo';
 const react = mode === 'react' || expo;
 const options = process.argv.slice(3);
 assert(options.filter(option => !option.startsWith('--')).length <= 1 &&
-  options.every(option => !option.startsWith('--') || ['--fresh-permission', '--pending-permission', '--rn-permission', '--expo-permission'].includes(option)), 'Use [artifact] [--fresh-permission | --pending-permission | --rn-permission | --expo-permission]');
+  options.every(option => !option.startsWith('--') || ['--cng', '--fresh-permission', '--pending-permission', '--rn-permission', '--expo-permission'].includes(option)), 'Use [artifact] [--cng] [--fresh-permission | --pending-permission | --rn-permission | --expo-permission]');
+const cng = options.includes('--cng'); assert(!cng || expo, 'CNG requires expo mode');
 const freshPermission = options.includes('--fresh-permission');
 const rendererOwner = options.includes('--rn-permission') ? 'rn' : options.includes('--expo-permission') ? 'expo' : undefined;
-assert(!rendererOwner || (expo && !options.includes('--pending-permission') && !(options.includes('--rn-permission') && options.includes('--expo-permission'))), 'Renderer permission scenarios require expo mode and exactly one owner flag');
+assert(!rendererOwner || (react && (rendererOwner !== 'expo' || expo) && !options.includes('--pending-permission') && !(options.includes('--rn-permission') && options.includes('--expo-permission'))), 'Select one supported renderer permission owner');
+const closeRenderer = expo || !!rendererOwner;
 const pendingPermission = options.includes('--pending-permission') || !!rendererOwner;
 assert(!(freshPermission && pendingPermission), 'Run fresh and pending permission scenarios separately');
 const composed = mode !== 'standalone';
@@ -30,7 +33,7 @@ assert(!pendingPermission || composed, 'Pending renderer continuation checks req
 const initiallyUnpermitted = freshPermission || pendingPermission;
 const name = react ? 'RN' : 'Lynx';
 const device = process.env.ANDROID_SERIAL; assert(device, 'Select an ANDROID_SERIAL emulator matching the exported slices');
-const evidence = path.join(retainedEvidence(root, 'retained-activity-recreation'), ...(rendererOwner ? [`${rendererOwner}-permission`] : pendingPermission ? ['pending-permission'] : freshPermission ? ['fresh-permission'] : []), mode);
+const evidence = path.join(retainedEvidence(root, 'retained-activity-recreation'), ...(cng ? ['cng'] : []), ...(rendererOwner ? [`${rendererOwner}-permission`] : pendingPermission ? ['pending-permission'] : freshPermission ? ['fresh-permission'] : []), mode);
 const producer = path.join(evidence, 'ordinary producer');
 const consumer = path.join(evidence, 'source free consumer');
 const artifact = path.resolve(options.find(option => !option.startsWith('--')) ?? path.join(root, 'target/retained-portability/exported-runtime'));
@@ -52,6 +55,7 @@ let inputReceipt: ReturnType<typeof readRetainedArtifacts> | undefined;
 let packageSha256: string | undefined;
 let packageSource: string | undefined;
 let bundleSha256: string | undefined;
+let cngCompositionSha256: string | undefined;
 
 function run(label: string, command: string, args: string[], cwd = evidence, environment = env) {
   console.log(`> recreation-${mode}: ${label}`);
@@ -135,7 +139,7 @@ function addProbe(android: string, activity: string) {
     val layout = android.widget.LinearLayout(this).apply { orientation = android.widget.LinearLayout.VERTICAL; setPadding(0, 80, 0, 60) }
     layout.addView(webView, android.widget.LinearLayout.LayoutParams(-1, 0, 1f))
     val container = android.widget.FrameLayout(this)
-    ${expo ? `val close = android.widget.Button(this).apply {
+    ${closeRenderer ? `val close = android.widget.Button(this).apply {
       text = "Close RN"
       setOnClickListener { tauriReactHost!!.close(); layout.removeView(container); layout.removeView(this) }
     }
@@ -146,11 +150,14 @@ function addProbe(android: string, activity: string) {
   }
   override fun on${host}HostAttached() { super.on${host}HostAttached(); record("attached") }
 ` : '';
-  const probe = readFileSync(new URL('./composition/android/RecreationActivity.kt.fixture', import.meta.url), 'utf8')
-    .replace('__BASE_ACTIVITY__', composed ? 'TauriNativeActivity' : 'MainActivity')
+  let probe = readFileSync(new URL('./composition/android/RecreationActivity.kt.fixture', import.meta.url), 'utf8')
+    .replace('__BASE_ACTIVITY__', composed && !cng ? 'TauriNativeActivity' : 'MainActivity')
     .replace('__RUNTIME_TELEMETRY__', (composed ? 'report.put("runtime", dev.taurinative.runtime.RuntimeSession.status())' : '') +
-      (expo ? '\n    report.put("expo", JSONObject(dev.taurinative.expoprobe.ProbeState.snapshot()))\n    report.put("expoApplicationHasHost", (application as TauriNativeApplication).reactHost != null)' : ''))
+      (closeRenderer ? '\n    report.put("rendererDestroyed", tauriReactHost?.destroyed ?: false)' : '') +
+      (expo ? `\n    report.put("expo", JSONObject(dev.taurinative.expoprobe.ProbeState.snapshot()))\n    report.put("expoApplicationHasHost", (application as ${cng ? 'MainApplication' : 'TauriNativeApplication'}).reactHost != null)` : '') +
+      (cng ? '\n    report.put("cngProbe", packageManager.getApplicationInfo(packageName, android.content.pm.PackageManager.GET_META_DATA).metaData.getString("dev.taurinative.CNG_PROBE"))' : ''))
     .replace('__HOST_LAYOUT__', layout + (rendererOwner ? rendererPermissionActivity : ''));
+  if (rendererOwner && !expo) probe = probe.replace('    super.onCreate(state)', '    intent.putExtra("tauri.recreation.recreated", state != null)\n    super.onCreate(state)');
   writeFileSync(path.join(android, 'app/src/main/java/dev/taurinative/mobilefieldnotes/RecreationActivity.kt'), probe);
   const file = path.join(android, 'app/src/main/AndroidManifest.xml');
   const text = readFileSync(file, 'utf8'); assert(text.includes(`android:name="${activity}"`));
@@ -189,7 +196,7 @@ try {
     const sdk = packed.directory;
     const renderer = path.join(consumer, 'renderer'); mkdirSync(renderer);
     const dependenciesRoot = retainedDependencies(root, packageName);
-    const expoDependencies = { '@tauri-native/react-native': '1.0.0-rc.0', expo: '57.0.19', react: '19.2.3', 'react-native': '0.86.3', 'react-native-safe-area-context': '5.7.0', 'expo-file-system': '57.0.6', 'expo-constants': '57.0.17', 'expo-modules-core': '57.0.15' };
+    const expoDependencies = { '@tauri-native/react-native': '1.0.0-rc.0', expo: '57.0.19', react: '19.2.3', 'react-native': '0.86.3', 'react-native-safe-area-context': '5.7.0', 'expo-file-system': '57.0.6', 'expo-constants': '57.0.17', 'expo-modules-core': '57.0.15', ...(cng ? { 'expo-location': '57.0.15' } : {}) };
     if (expo) {
       const exampleRequire = createRequire(path.join(dependenciesRoot, 'package.json'));
       const expoRequire = createRequire(realpathSync(exampleRequire.resolve('expo/package.json')));
@@ -214,7 +221,7 @@ try {
         cpSync(path.join(root, 'packages/react-native/test/retained/expo-probe'), path.join(renderer, 'modules/retained-expo-probe'), { recursive: true });
         writeFileSync(path.join(renderer, 'app.json'), JSON.stringify({ expo: { name: 'Retained Expo Fieldnotes', slug: 'retained-expo-fieldnotes', android: { package: appId } } }));
       }
-      if (rendererOwner) prepareRendererPermissions(renderer, sdk, rendererOwner);
+      if (rendererOwner) prepareRendererPermissions(renderer, sdk, rendererOwner, expo);
       cpSync(path.join(root, 'packages/react-native/test/retained/build.cjs.fixture'), path.join(renderer, 'build.cjs'));
       writeFileSync(path.join(renderer, 'babel.config.json'), '{"presets":["babel-preset-expo"]}\n');
       run('renderer-build', process.execPath, ['build.cjs', 'android'], renderer, { ...env, PROOF_REPOSITORY: root, RETAINED_DEPENDENCIES: dependenciesRoot, RETAINED_SDK_DIR: sdk });
@@ -229,12 +236,19 @@ try {
       bundle = path.join(renderer, 'dist/main.lynx.bundle');
     }
     bundleSha256 = sha256(readFileSync(bundle));
-    const generated = path.join(expo ? renderer : consumer, 'composed application');
-    const android = path.join(generated, 'android');
+    const generated = cng ? path.join(renderer, 'android') : path.join(expo ? renderer : consumer, 'composed application');
+    const android = cng ? generated : path.join(generated, 'android');
     const { composeAndroid } = createRequire(import.meta.url)(path.join(sdk, react ? 'compose.js' : 'compose.cjs'));
-    const composition = composeAndroid({ artifactsDir: copied, outputDir: generated, bundleFile: bundle,
+    let composition;
+    if (cng) {
+      configureCng(renderer, copied, 'android', bundle);
+      const { prebuildRetainedExpo } = createRequire(path.join(renderer, 'package.json'))('@tauri-native/react-native/prebuild');
+      composition = await prebuildRetainedExpo({ projectRoot: renderer, platform: 'android', clean: true });
+      writeFileSync(path.join(evidence, 'cng-prebuild.log'), composition.log);
+      cngCompositionSha256 = sha256(readFileSync(path.join(generated, 'tauri-native-composition.json')));
+    } else composition = composeAndroid({ artifactsDir: copied, outputDir: generated, bundleFile: bundle,
       ...(react ? { rendererDir: renderer, moduleName: expo ? 'main' : 'RetainedFieldnotes', expo } : {}) });
-    addProbe(android, composition.activity);
+    addProbe(android, cng ? '.MainActivity' : composition.activity);
     const gradle = path.join(android, 'app/build.gradle.kts');
     writeFileSync(gradle, readFileSync(gradle, 'utf8').replace('getByName("release") {', 'getByName("release") {\n            signingConfig = signingConfigs.getByName("debug")'));
     run('source-free-build', './gradlew', ['--no-daemon', 'assembleRelease'], android, { ...env, PATH: sourceFreePath });
@@ -263,6 +277,7 @@ try {
     : '- tapOn: "Request location permission"\n- tapOn: "(?i)While using the app"\n- assertVisible: "Location permission granted"\n- tapOn: "Save location note"\n- assertVisible: "Saved location note 1"');
   if (expo) expoModules(0);
   const initial = await inspect('before');
+  if (cng) assert.equal(initial.cngProbe, 'actual config plugin');
   if (expo) assertExpo(initial, 0);
   assert.equal(initial.result.baseline.passed, true);
   assert.equal(initial.result.snapshot.value, 45); assert.equal(initial.result.snapshot.setupCount, 1); assert.equal(initial.result.snapshot.pluginSetupCount, 1);
@@ -291,8 +306,8 @@ try {
         assert.equal(rendererResults('listener-result').length, index - 1, 'The retired renderer must not receive the old OS result');
         const old = rendererResults('os-result').at(-1)!;
         assert.equal(old.activity, recreated.activity);
-        // RN mount effects run after resume; observe the real next request instead
-        // of forcing a resumed lifecycle while the prior OS dialog is still open.
+        // Observe a request after real resume. Bare RN gates its mount effect
+        // with AppState; no resumed lifecycle is forced over the prior OS dialog.
         await until(() => rendererResults('request').filter(row => row.permissions.includes('android.permission.CAMERA')).length === index);
         const nextRequest = rendererResults('request').at(-1)!;
         assert.equal(nextRequest.activity, recreated.activity);
@@ -320,6 +335,7 @@ try {
       : `- tapOn: "Check location permission"\n- assertVisible: "Location permission ${permission}"\n- tapOn: "Refresh notes and links"`);
     if (expo) expoModules(index);
     const after = await inspect(`after-${index}`);
+    if (cng) assert.equal(after.cngProbe, 'actual config plugin');
     if (expo) {
       assertExpo(after, index);
       assert(after.expo.resumes > initial.expo.resumes && after.expo.pauses > initial.expo.pauses);
@@ -349,7 +365,7 @@ try {
     : `- tapOn: "Save location note"\n- assertVisible: "Saved location note ${noteCount}"`);
   const beforeLink = expo ? await inspect('before-link') : undefined;
   run('deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', 'tauri-fieldnotes://notes/2', '-p', appId]);
-  flow('post-recreation-link', composed ? `- assertVisible: "${name} events 2"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes ${noteCount} setup 1 plugins 1"`
+  flow('post-recreation-link', composed ? `- assertVisible: "${name} events 2"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes ${noteCount} setup 1 plugins 1"${rendererOwner && !expo ? '\n- assertVisible: "RN links 1 back 0"\n- pressKey: Back\n- assertVisible: "RN links 1 back 1"' : ''}`
     : '- assertVisible: "Links received 1"\n- tapOn: "Refresh notes and links"');
   const final = await inspect('final');
   assert.equal(final.result.plugins.notes.length, noteCount); assert.deepEqual(final.result.plugins.links, ['tauri-fieldnotes://notes/2']);
@@ -357,24 +373,34 @@ try {
     assert.equal(note.text, composed ? `A ${name} place to remember` : 'A place to remember');
     assert(Math.abs(note.latitude - 37.5665) < 0.01 && Math.abs(note.longitude - 126.978) < 0.01);
   }
-  let expoClosed: any;
+  let rendererClosed: any;
   if (expo) {
     assertExpo(final, 2);
     // Each telemetry inspect also passes through the original onNewIntent.
     assert.equal(final.expo.intents - beforeLink.expo.intents, 2, 'One deep link plus the final inspect reach Expo exactly once');
-    flow('expo-close', '- tapOn: "Close RN"\n- tapOn: "Refresh notes and links"\n- assertVisible: "Links received 1"');
+  }
+  if (closeRenderer) {
+    const closed = expo ? 'expo-closed' : 'react-closed';
+    flow(expo ? 'expo-close' : 'react-close', '- tapOn: "Close RN"\n- tapOn: "Refresh notes and links"\n- assertVisible: "Links received 1"');
     await until(() => {
-      action('expo-closed');
-      expoClosed = events().filter(row => row.stage === 'expo-closed').at(-1);
-      return expoClosed?.expo.created === 3 && expoClosed.expo.destroyed === 3 && expoClosed.expoApplicationHasHost === false;
+      action(closed);
+      rendererClosed = events().filter(row => row.stage === closed).at(-1);
+      return rendererClosed?.rendererDestroyed === true && (!expo ||
+        (rendererClosed.expo.created === 3 && rendererClosed.expo.destroyed === 3 && rendererClosed.expoApplicationHasHost === false));
     });
-    assert.equal(expoClosed.runtime.listeners, 0);
-    assert.deepEqual(expoClosed.result.snapshot, initial.result.snapshot);
-    assert.deepEqual(expoClosed.result.plugins, final.result.plugins);
+    assert.equal(rendererClosed.runtime.listeners, 0);
+    assert.deepEqual(rendererClosed.result.snapshot, initial.result.snapshot);
+    assert.deepEqual(rendererClosed.result.plugins, final.result.plugins);
+    if (cng) assert.equal(rendererClosed.cngProbe, 'actual config plugin');
   }
   const observed = events();
   if (pendingPermission) assert.equal(permissionResults().length, rendererOwner ? 0 : 2, 'Only Tauri-owned OS results reach the original Tauri callback');
   const created = observed.filter(row => row.stage === 'create');
+  if (rendererOwner && !expo) {
+    const props = rendererResults('props');
+    assert.deepEqual(props.map(row => row.recreated), [false, true, true]);
+    assert.deepEqual(props.map(row => row.activity), created.map(row => row.activity));
+  }
   assert.equal(new Set(created.map(row => row.instance)).size, 3);
   assert.equal(new Set(observed.filter(row => row.stage === 'webview').map(row => row.webView)).size, 3);
   const closed = observed.filter(row => row.stage === 'destroy-after' && row.changingConfigurations);
@@ -390,11 +416,14 @@ try {
     testSigning: 'Debug test key; composed Release/R8 remains non-debuggable', apkSha256: sha256(readFileSync(apk)),
     ...(composed ? { artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))), packageSha256, packageSource, deviceAbi, pageSize: 16384, bundleSha256, sourceFreeBuild: `PATH=${sourceFreePath}`, artifactUnchanged: true }
       : { sourceHashes: producerBefore, producerUnchanged: true }),
-    baseline: initial.result.baseline, freshPermission, pendingPermission, recreations: 2, nativeUiFlows: (pendingPermission ? 9 : freshPermission ? 7 : 5) + (expo ? 4 : 0) + (rendererOwner ? 2 : 0), events: observed,
-    ...(expo ? { expo: { initial: initial.expo, final: final.expo, closed: expoClosed.expo, permissionOwner: rendererOwner ?? 'tauri', configuration: 'package-owned composition; Expo CNG is a separate gate' } } : {}),
+    baseline: initial.result.baseline, freshPermission, pendingPermission, recreations: 2, nativeUiFlows: (pendingPermission ? 9 : freshPermission ? 7 : 5) + (expo ? 4 : 0) + (rendererOwner ? 2 : 0) + (rendererOwner && !expo ? 1 : 0), events: observed,
+    ...(closeRenderer ? { rendererClosed: { destroyed: rendererClosed.rendererDestroyed, listeners: rendererClosed.runtime.listeners } } : {}),
+    cng: cng ? { nativeProbe: initial.cngProbe, compositionSha256: cngCompositionSha256 } : false,
+    ...(expo ? { expo: { initial: initial.expo, final: final.expo, closed: rendererClosed.expo, permissionOwner: rendererOwner ?? 'tauri', configuration: cng ? 'Actual Expo prebuild with retained template and config plugins' : 'package-owned composition' } } : {}),
     ...(rendererOwner ? { rendererPermissionOwner: rendererOwner, rendererRequests: rendererResults('request'), rendererListenerResults: rendererResults('listener-result'), rendererOsResults: rendererResults('os-result') } : {}),
+    ...(rendererOwner && !expo ? { rendererInitialProps: rendererResults('props'), bareInstrumentation: 'The copied host forwards the probe Activity saved-state observation as a standard RN initial prop. JS waits for real AppState active before its replacement camera request; no Activity lifecycle callback is synthesized.' } : {}),
     ...(pendingPermission ? { permissionResults: permissionResults(), instrumentation: rendererOwner ? 'Test-only broadcast triggers real recreation. The replacement JS renderer automatically requests camera through the real RN/Expo API after resume. The prior OS location result must not reach the replacement camera listener. The copied SDK logs its unchanged AndroidX callback; the Activity logs before forwarding to the actual module listener. Only the disposable consumer declares camera permission.' : 'Test-only broadcast receiver triggers real recreation without foregrounding the Activity. Copied PluginManager logs after the unchanged original permission callback returns; no OS result or native routing is substituted.' } : {}),
-    limits: `${rendererOwner ? 'RN/Expo location permission remains pending during real recreation. The replacement renderer automatically requests camera when its mount effect runs after resume; only its own camera result may reach its new listener. Retired location continuations must not save. Both requests use actual OS denial/grant dialogs.' : pendingPermission ? 'Both recreations occur while actual OS permission dialogs remain pending. Denial and grant each reach the original Tauri callback on the replacement Activity; retired renderer continuations save no sentinel note.' : freshPermission ? 'First permission request after recreation is denied through OS UI; a second recreation preserves the rationale state, and a later OS grant allows location save. Pending OS callbacks are a separate gate.' : 'Location permission granted before recreation; fresh/pending permissions are separate gates.'} Process death is a separate gate. The original fixture startup self-test expects initial State 40; the recreated document keeps State 45, verified directly through original IPC.`,
+    limits: `${rendererOwner ? 'RN/Expo location permission remains pending during real recreation. The replacement renderer requests camera after actual resume; bare RN explicitly waits for AppState active. Only its own camera result may reach its new listener. Retired location continuations must not save. Both requests use actual OS denial/grant dialogs.' : pendingPermission ? 'Both recreations occur while actual OS permission dialogs remain pending. Denial and grant each reach the original Tauri callback on the replacement Activity; retired renderer continuations save no sentinel note.' : freshPermission ? 'First permission request after recreation is denied through OS UI; a second recreation preserves the rationale state, and a later OS grant allows location save. Pending OS callbacks are a separate gate.' : 'Location permission granted before recreation; fresh/pending permissions are separate gates.'} Process death is a separate gate. The original fixture startup self-test expects initial State 40; the recreated document keeps State 45, verified directly through original IPC.`,
   }, null, 2) + '\n');
 } catch (error) {
   if (pid) {

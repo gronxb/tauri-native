@@ -39,6 +39,7 @@ function gate(name: string, args: string[], directory: string, extra: NodeJS.Pro
     const saved = path.join(output, `retained-evidence-${platform}`, name); mkdirSync(saved, { recursive: true });
     if (existsSync(directory)) for (const file of readdirSync(directory, { withFileTypes: true })) {
       if (file.isFile() && /\.(json|log|xml|yaml)$/.test(file.name)) cpSync(path.join(directory, file.name), path.join(saved, file.name));
+      if (file.isDirectory() && file.name.endsWith('-maestro')) cpSync(path.join(directory, file.name), path.join(saved, file.name), { recursive: true });
     }
   }
   const files = readdirSync(directory);
@@ -65,9 +66,11 @@ for (const name of ['react-native', 'expo', 'lynx'] as const) {
     path.join(evidence, name === 'expo' ? `react-retained-expo-${platform}-cng` : `${sdk === 'lynx' ? 'lynx' : 'react'}-retained-${platform}`), sdkEnv);
   if (platform === 'android') {
     const renderer = name === 'expo' ? 'expo' : sdk === 'lynx' ? 'lynx' : 'react';
-    for (const mode of ['recreation', 'fresh-permission', 'pending-permission', ...(name === 'expo' ? ['rn-permission', 'expo-permission'] : [])]) {
-      gate(`${renderer}-${mode}`, ['packages/cli/test/runtime/recreation-android.ts', renderer, artifacts, ...(mode === 'recreation' ? [] : [`--${mode}`])],
-        path.join(evidence, 'retained-activity-recreation', ...(mode === 'recreation' ? [] : [mode]), renderer), sdkEnv);
+    for (const cng of name === 'expo' ? [false, true] : [false]) {
+      for (const mode of ['recreation', 'fresh-permission', 'pending-permission', ...(name !== 'lynx' ? ['rn-permission'] : []), ...(name === 'expo' ? ['expo-permission'] : [])]) {
+        gate(`${renderer}-${cng ? 'cng-' : ''}${mode}`, ['packages/cli/test/runtime/recreation-android.ts', renderer, artifacts, ...(cng ? ['--cng'] : []), ...(mode === 'recreation' ? [] : [`--${mode}`])],
+          path.join(evidence, 'retained-activity-recreation', ...(cng ? ['cng'] : []), ...(mode === 'recreation' ? [] : [mode]), renderer), sdkEnv);
+      }
     }
   }
 }

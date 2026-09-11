@@ -39,12 +39,14 @@ function native(platform: Platform): RetainedNativeReceipt {
     const extra = sdk === 'expo' ? 4 : 0;
     rows.push([`${sdk}-recreation`, 5 + extra], [`${sdk}-fresh-permission`, 7 + extra], [`${sdk}-pending-permission`, 9 + extra]);
   }
-  if (platform === 'android') rows.push(['expo-rn-permission', 15], ['expo-expo-permission', 15]);
+  if (platform === 'android') rows.push(['react-rn-permission', 12], ['expo-rn-permission', 15], ['expo-expo-permission', 15],
+    ['expo-cng-recreation', 9], ['expo-cng-fresh-permission', 11], ['expo-cng-pending-permission', 13], ['expo-cng-rn-permission', 15], ['expo-cng-expo-permission', 15]);
   return { schemaVersion: 1, passed: true, commit: producer.commit, platform, packages: producer.packages,
     producerReceiptSha256: sha(producer), retainedProducerSha256: sha(retained),
     gates: rows.map(([name, count]) => {
       const sdk = name.startsWith('lynx') ? 'lynx' : 'react-native';
-      const owner = name === 'expo-rn-permission' ? 'rn' : name === 'expo-expo-permission' ? 'expo' : undefined;
+      const scenario = name.replace('-cng-', '-');
+      const owner = ['react-rn-permission', 'expo-rn-permission'].includes(scenario) ? 'rn' : scenario === 'expo-expo-permission' ? 'expo' : undefined;
       const location = ['android.permission.ACCESS_FINE_LOCATION', 'android.permission.ACCESS_COARSE_LOCATION'];
       const camera = ['android.permission.CAMERA'];
       const report = { passed: true, platform, profile: 'release', formatVersion: 2, abiVersion: 3,
@@ -56,7 +58,8 @@ function native(platform: Platform): RetainedNativeReceipt {
           initial: { applicationCreates: 1, created: 1, destroyed: 0, activityCreates: 1, backs: 1, callbacks: 0 },
           final: { applicationCreates: 1, created: 3, destroyed: 2, activityCreates: 3, backs: 3, callbacks: owner === 'expo' ? 2 : 0 },
           closed: { applicationCreates: 1, created: 3, destroyed: 3, activityCreates: 3, backs: 3, callbacks: owner === 'expo' ? 2 : 0 },
-        } : name === 'expo', cng: name === 'expo' ? { nativeProbe: 'executed' } : false,
+        } : name === 'expo', cng: name.includes('-cng-') ? { nativeProbe: 'actual config plugin', compositionSha256: sha('CNG composition') } : name === 'expo' ? { nativeProbe: 'executed' } : false,
+        rendererClosed: { destroyed: true, listeners: 0 },
         mode: name === 'standalone' ? 'standalone Tauri Mobile' : name.split('-')[0],
         producerDeleted: true, producerUnchanged: true, sourceHashes, transferredBinarySha256: retained.standalone[platform].binarySha256,
         recreations: 2, nativeUiFlows: count, pendingPermission: !!owner || name.endsWith('pending-permission'), freshPermission: name.endsWith('fresh-permission'),
@@ -133,8 +136,7 @@ test('Expo recreation certification rejects missing scenarios and incomplete nat
 
 test('renderer permission certification rejects stale listeners, mixed results and missing owner gates', () => {
   const validate = (input: unknown) => validateRetainedNative(input, 'android', retained, sha(retained));
-  for (const owner of ['rn', 'expo']) {
-    const name = `expo-${owner}-permission`;
+  for (const name of ['react-rn-permission', 'expo-rn-permission', 'expo-expo-permission', 'expo-cng-rn-permission', 'expo-cng-expo-permission']) {
     const missing = native('android'); missing.gates = missing.gates.filter(gate => gate.name !== name);
     assert.throws(() => validate(missing), /Missing retained native gate/);
     for (const mutate of [
@@ -145,9 +147,24 @@ test('renderer permission certification rejects stale listeners, mixed results a
       (report: any) => { report.rendererListenerResults[0].permissions = ['android.permission.ACCESS_FINE_LOCATION']; },
       (report: any) => { report.rendererListenerResults[1].grants = [-1]; },
       (report: any) => { report.permissionResults = report.rendererOsResults; },
-      (report: any) => { report.expo.closed.callbacks = owner === 'expo' ? 3 : 1; },
+      (report: any) => { report.rendererClosed.destroyed = false; },
     ]) assert.throws(() => validate(changeReport(native('android'), name, mutate)));
   }
+});
+
+test('native recreation certification distinguishes bare RN and actual Expo CNG with cleanup', () => {
+  const validate = (input: unknown) => validateRetainedNative(input, 'android', retained, sha(retained));
+  assert.throws(() => validate(changeReport(native('android'), 'react-rn-permission', report => { report.expo = true; })), /must not use Expo/);
+  for (const name of ['expo-cng-recreation', 'expo-cng-fresh-permission', 'expo-cng-pending-permission', 'expo-cng-rn-permission', 'expo-cng-expo-permission']) {
+    const missing = native('android'); missing.gates = missing.gates.filter(gate => gate.name !== name);
+    assert.throws(() => validate(missing), /Missing retained native gate/);
+    assert.throws(() => validate(changeReport(native('android'), name, report => { report.cng = false; })), /actual config plugins/);
+    assert.throws(() => validate(changeReport(native('android'), name, report => { report.cng = { nativeProbe: 'actual config plugin' }; })));
+    assert.throws(() => validate(changeReport(native('android'), name, report => { report.rendererClosed = { destroyed: true, listeners: 1 }; })), /native destruction/);
+  }
+  assert.throws(() => validate(changeReport(native('android'), 'expo-cng-expo-permission', report => {
+    (report.expo as { closed: Record<string, number> }).closed.callbacks = 3;
+  })));
 });
 
 test('the workflow makes both retained platforms and their producer mandatory for the candidate', () => {

@@ -204,6 +204,13 @@ passes and later local lifecycle work do not replace that gate.
 
 ## Scope and constraints
 
+[Bare RN and CNG recreation evidence](../docs/evidence/retained-bare-rn-cng-recreation-2026-09-11.json)
+now adds 21 successful Release/R8 UI flows and four real recreations. Bare RN
+permission ownership and normal actual-CNG lifecycle/cleanup pass with unchanged
+producer/input bytes. The remaining four CNG permission modes are required in
+Android CI and still being executed locally. Six receipt tests and typechecks
+pass; these results do not certify the failed hosted revision or close #47.
+
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.
 
 Implementation is authorized directly on `main` in incremental commits, without PRs. Do not publish packages as part of this task.

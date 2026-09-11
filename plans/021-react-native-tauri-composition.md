@@ -538,3 +538,19 @@ the corrected full runs. No production permission fix is inferred. Five receipt
 tests and CLI/scripts typechecks pass; CI requires both new owner scenarios.
 Bare-RN and Expo CNG recreation, process death, broader navigation/channel/source
 forms, full hosted parity and device/adopter evidence remain open.
+
+## Bare RN and actual CNG recreation — 2026-09-11
+
+[Native evidence](../docs/evidence/retained-bare-rn-cng-recreation-2026-09-11.json)
+adds 12 bare-RN permission flows and 9 normal CNG flows, with four actual
+recreations. Bare RN waits for real AppState active before its replacement
+camera request; previous OS location results do not reach the new listener.
+The CNG app consumes actual prebuild/config plugins and follows native module
+creation/destruction and persistent files. Both finish renderer removal with
+listeners zero and original Tauri State/setup 45/1/1 intact. Failed mount-timing
+and fresh Expo CLI version assumptions remain separate from passing runs.
+
+CI pins the supported Expo tools without loosening its version guard. Six
+receipt tests and CLI/scripts typechecks pass. CNG fresh/pending Tauri and
+RN/Expo-owned permission modes are required by CI but still being executed
+locally. No production runtime change or complete acceptance is claimed.

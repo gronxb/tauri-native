@@ -4,7 +4,9 @@ import type { Platform, ProducerReceipt, RetainedNativeReceipt, RetainedProducer
 
 const hash = (value: string) => assert.match(value, /^[a-f0-9]{64}$/);
 export const retainedGates = (platform: Platform) => ['standalone', 'native', 'react-native', 'expo', 'lynx',
-  ...(platform === 'android' ? [...['react', 'expo', 'lynx'].flatMap(sdk => ['recreation', 'fresh-permission', 'pending-permission'].map(mode => `${sdk}-${mode}`)), 'expo-rn-permission', 'expo-expo-permission'] : [])];
+  ...(platform === 'android' ? [...['react', 'expo', 'lynx'].flatMap(sdk => ['recreation', 'fresh-permission', 'pending-permission'].map(mode => `${sdk}-${mode}`)),
+    'react-rn-permission', 'expo-rn-permission', 'expo-expo-permission',
+    ...['recreation', 'fresh-permission', 'pending-permission', 'rn-permission', 'expo-permission'].map(mode => `expo-cng-${mode}`)] : [])];
 
 export function validateRetainedProducer(input: unknown, producer: ProducerReceipt, producerSha256: string) {
   const receipt = input as RetainedProducerReceipt;
@@ -93,13 +95,20 @@ export function validateRetainedNative(input: unknown, platform: Platform, produ
     }
     if (recreation) {
       const expo = gate.name.startsWith('expo-');
-      const owner = gate.name === 'expo-rn-permission' ? 'rn' : gate.name === 'expo-expo-permission' ? 'expo' : undefined;
+      const scenario = gate.name.replace('-cng-', '-'), cng = scenario !== gate.name;
+      const owner = ['react-rn-permission', 'expo-rn-permission'].includes(scenario) ? 'rn' : scenario === 'expo-expo-permission' ? 'expo' : undefined;
       assert.equal(report.mode, gate.name.split('-')[0]);
       assert.equal(report.recreations, 2);
       assert.equal(gate.flows.length, report.nativeUiFlows);
-      assert.equal(report.nativeUiFlows, owner ? 15 : (gate.name.endsWith('pending-permission') ? 9 : gate.name.endsWith('fresh-permission') ? 7 : 5) + (expo ? 4 : 0));
+      assert.equal(report.nativeUiFlows, owner ? expo ? 15 : 12 : (gate.name.endsWith('pending-permission') ? 9 : gate.name.endsWith('fresh-permission') ? 7 : 5) + (expo ? 4 : 0));
       assert.equal(report.pendingPermission, !!owner || gate.name.endsWith('pending-permission'));
       assert.equal(report.freshPermission, gate.name.endsWith('fresh-permission'));
+      if (expo || owner) assert.deepEqual(report.rendererClosed, { destroyed: true, listeners: 0 }, 'Renderer must finish native destruction');
+      if (cng) {
+        const result = report.cng as { nativeProbe: string; compositionSha256: string };
+        assert.equal(result?.nativeProbe, 'actual config plugin', 'CNG recreation must consume actual config plugins');
+        hash(result.compositionSha256);
+      } else assert.equal(report.cng, false);
       if (expo) {
         const modules = report.expo as { initial: Record<string, number>; final: Record<string, number>; closed: Record<string, number>; permissionOwner: string };
         assert(modules && typeof modules === 'object', 'Expo recreation needs native module lifecycle evidence');
@@ -113,6 +122,7 @@ export function validateRetainedNative(input: unknown, platform: Platform, produ
         }
       }
       if (owner) {
+        if (!expo) assert(!report.expo, 'Bare RN permission acceptance must not use Expo composition');
         assert.equal(report.rendererPermissionOwner, owner);
         assert.deepEqual(report.permissionResults, [], 'Renderer results must not reach the Tauri permission callback');
         const { rendererRequests: requests, rendererListenerResults: listeners, rendererOsResults: results } = report;
