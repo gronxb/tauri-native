@@ -54,6 +54,9 @@ function gate(name: string, args: string[], directory: string, extra: NodeJS.Pro
   });
   assert.deepEqual(flows.map(flow => flow.name), files.filter(file => file.endsWith('.yaml')).map(file => file.slice(0, -5)).sort(), 'Every UI flow needs a result');
   gates.push({ name, report: json(reportFile), reportSha256: digest(reportFile), flows });
+  // The archived reports/logs above and receipt retain the result. Release only
+  // this completed gate's disposable builds before the next native host build.
+  rmSync(directory, { recursive: true, force: true });
 }
 gate('standalone', ['packages/cli/test/runtime/plugins.ts', platform, '--consume'], path.join(evidence, `tauri-mobile-plugins/standalone-${platform}`),
   { RETAINED_STANDALONE_INPUT: path.join(retainedPayload, 'standalone', platform) });
