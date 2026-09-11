@@ -37,6 +37,18 @@ Native execution is required for lifecycle/plugin claims. Compilation, generated
 - [ ] Ordinary standalone Tauri Mobile remains independently runnable.
 - [ ] Existing limited-adapter users have an explicit migration path.
 
+## Android Activity recreation — 2026-09-11
+
+The paired [Android recreation gate](../docs/evidence/retained-activity-recreation-2026-09-11.json)
+now executes two actual Activity recreations under the packed RN composer's
+startup, after ordinary Tauri location permission grant. Five non-debuggable
+Release/R8 UI flows preserve Tauri state/setup and notes while replacing the
+Activity, WebView and renderer. Old native listeners reach zero; new location
+save/deep-link events arrive once. Original Tauri and Lynx run the same scenario.
+Fresh/pending permissions, Expo recreation, full navigation/rotation and retained
+CI remain open; the evidence separately retains unresolved standalone
+permission-response and post-recreation link UI failures.
+
 ## Scope and constraints
 
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.

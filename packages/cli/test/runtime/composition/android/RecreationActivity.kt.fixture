@@ -1,0 +1,73 @@
+package dev.taurinative.mobilefieldnotes
+
+import android.content.Intent
+import android.os.Bundle
+import android.webkit.WebView
+import org.json.JSONObject
+
+// Probe only: all native startup and Activity recreation remain upstream.
+class RecreationActivity : __BASE_ACTIVITY__() {
+  private val instance = java.util.UUID.randomUUID().toString()
+  private var observed: WebView? = null
+  private var destroyed = false
+
+  private fun record(stage: String, result: JSONObject? = null) {
+    val report = JSONObject().put("stage", stage).put("instance", instance)
+      .put("pid", android.os.Process.myPid()).put("wryActivityId", id)
+      .put("webView", observed?.let { System.identityHashCode(it) } ?: JSONObject.NULL)
+      .put("changingConfigurations", isChangingConfigurations)
+      .put("result", result ?: JSONObject.NULL)
+    __RUNTIME_TELEMETRY__
+    android.util.Log.i("TauriRecreation", report.toString())
+  }
+  override fun onCreate(state: Bundle?) {
+    super.onCreate(state)
+    record("create", JSONObject().put("savedState", state != null).put("savedWryId", state?.getInt("__wryActivityId") ?: JSONObject.NULL))
+  }
+  override fun onWebViewCreate(webView: WebView) {
+    super.onWebViewCreate(webView)
+    observed = webView
+    record("webview")
+  }
+  override fun onSaveInstanceState(state: Bundle) {
+    super.onSaveInstanceState(state)
+    record("save", JSONObject().put("savedWryId", state.getInt("__wryActivityId")))
+  }
+  override fun onDestroy() {
+    destroyed = true
+    record("destroy-before")
+    super.onDestroy()
+    record("destroy-after")
+  }
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    when (val action = intent.getStringExtra("tauri.recreation.probe")) {
+      "recreate" -> { record("requested"); recreate() }
+      null -> Unit
+      else -> snapshot(action)
+    }
+  }
+  private fun snapshot(label: String) {
+    val webView = checkNotNull(observed)
+    val token = java.util.UUID.randomUUID().toString()
+    webView.evaluateJavascript("""
+      void (async () => {
+        try {
+          const invoke = window.__TAURI_INTERNALS__.invoke;
+          globalThis.__recreationProbe = { token: '$token', snapshot: await invoke('snapshot'),
+            plugins: await invoke('plugin_snapshot'), permission: await invoke('plugin:geolocation|check_permissions'),
+            timeOrigin: performance.timeOrigin, url: location.href };
+        } catch (error) { globalThis.__recreationProbe = { token: '$token', error: String(error) }; }
+      })()
+    """.trimIndent(), null)
+    val poll = object : Runnable { override fun run() {
+      if (destroyed) return
+      webView.evaluateJavascript("globalThis.__recreationProbe ?? null") { result ->
+        if (result != "null" && JSONObject(result).optString("token") == token) record(label, JSONObject(result).put("baseline", JSONObject(java.io.File(applicationInfo.dataDir, "runtime-report.json").readText())))
+        else webView.postDelayed(this, 100)
+      }
+    } }
+    webView.post(poll)
+  }
+  __HOST_LAYOUT__
+}

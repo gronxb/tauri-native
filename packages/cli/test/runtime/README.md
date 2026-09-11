@@ -29,6 +29,42 @@ dependencies and differing slices. They do not establish native compatibility;
 the [native evidence](../../../../docs/evidence/retained-target-dependencies-2026-09-11.json)
 records that separately. Unsupported active plugins still fail before export.
 
+## Android Activity recreation
+
+With the Android environment below, run these from the repository root, serially:
+
+```sh
+node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts standalone
+node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts react /path/to/retained-android
+node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts lynx /path/to/retained-android
+```
+
+The standalone runner builds the ordinary fixture with the Tauri CLI. Its probe
+inherits the generated MainActivity, including its original `onCreate`; only
+the disposable generated class is opened for subclassing. The composed runners
+pack the current SDK, build the existing renderer fixture and call its public
+composer with a complete arm64 Release artifact. Their consumer builds omit
+Rust from PATH and keep Release/R8 non-debuggable, with a debug test signing key.
+
+Each runner obtains location permission through the OS UI, saves a note and
+calls the real `Activity.recreate()` twice. Five native UI flows require three
+distinct Activity/WebView objects, the same process and Wry window ID, State 45,
+single setup/plugin initialization, preserved notes, a new location save and
+deep-link delivery. Composed apps also require zero old native listeners and
+one new listener, with exactly two new renderer events after the final recreation.
+Native telemetry streams to a file before launch so logcat ring eviction cannot
+remove the initial identity records. Results are written under
+`target/retained-activity-recreation/{standalone,react,lynx}`.
+
+The ordinary fixture's ten startup scenarios run before recreation. Its
+one-time initial-state assertion expects 40 in a fresh JS document; recreated
+documents keep State 45. The gate records that fixture assertion failure and
+checks preserved state and operational plugins directly through original IPC.
+It does not claim that the initial self-test passed again. Fresh permission
+dialogs, pending OS requests, process death and Expo recreation need separate
+gates. See the [scoped evidence](../../../../docs/evidence/retained-activity-recreation-2026-09-11.json),
+including the separately retained unsuccessful attempts.
+
 ## Android Lynx
 
 Install workspace dependencies first (`nub ci`). On macOS with an arm64 emulator booted:

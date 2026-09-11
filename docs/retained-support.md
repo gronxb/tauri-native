@@ -59,6 +59,23 @@ the subsequent retirement/grant/background/removal sequence preserves one
 process. The evidence does not count callbacks into an already destroyed JS
 runtime. See the [permission-retirement record](evidence/retained-sdk-permission-retirement-2026-09-11.json).
 
+The [Android recreation comparison](evidence/retained-activity-recreation-2026-09-11.json)
+adds two actual `Activity.recreate()` transitions each in standalone Tauri and
+packed RN/Lynx apps, after location permission has been granted. Fifteen native
+UI flows verify new Activity/WebView objects with the same process, Wry window
+ID, State 45 and setup/plugin counts of one. Original notes survive; location
+save and deep links still work. Each composed renderer's old native listeners
+reach zero before its new listener and events are established. This uses the
+existing retained artifact and introduces no production bootstrap change.
+
+The fixture's initial ten-scenario self-test assumes State 40 for a fresh JS
+document. On recreation its state remains 45, so the gate explicitly records
+that self-test's initial-state assertion failure and checks the preserved runtime
+through original IPC. Separate standalone attempts did not observe the expected
+initial permission-grant response and, in another run, the post-recreation
+deep-link UI update. The record preserves both unresolved failures; later
+passing runs do not establish their cause or a fix.
+
 ## Native ownership and dependencies
 
 | Layer | Required contract |
@@ -100,7 +117,8 @@ conflicting startup owners and edited generated files are rejected. Adding a
 new native plugin requires exporter/dependency support and actual mobile
 execution; editing the allowlist alone is insufficient.
 
-Activity recreation, full navigation/history/rotation behavior, native channel
+Fresh permission requests and pending OS callbacks across Activity recreation,
+Expo recreation, full navigation/history/rotation behavior, native channel
 streaming and broader source/owner forms remain open. Expo config plugins are
 supported within the [documented native configuration/resource boundary](../packages/react-native/RETAINED.md#expo-config-plugins-and-native-regeneration).
 Required retained CI, transferred-package parity, physical devices and two

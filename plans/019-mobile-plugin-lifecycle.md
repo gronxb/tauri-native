@@ -61,6 +61,20 @@ Android export exposed a pinned CLI feature-forwarding omission, now corrected
 without producer edits. This does not add native opener support or complete
 Activity recreation and the broader lifecycle acceptance.
 
+## Android Activity recreation — 2026-09-11
+
+The [Android recreation gate](../docs/evidence/retained-activity-recreation-2026-09-11.json)
+now compares original Tauri with packed RN/Lynx after OS location grant. Each
+executes two actual Activity recreations; fifteen native UI flows preserve the
+process, Wry window ID, State/setup and notes while replacing Activity/WebView
+objects. Composed native listeners retire to zero and new saves/deep links
+produce fresh events. The shared gate retains original startup and source bytes.
+Fresh/pending permission requests, Expo recreation and broader lifecycle cases
+remain open. Standalone initial permission-response and post-recreation link UI
+failures remain separately recorded and unresolved; they are not erased by
+the passing scoped executions. The original fixture's one-time initial-state
+self-test is distinguished from direct post-recreation state verification.
+
 ## Scope and constraints
 
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.

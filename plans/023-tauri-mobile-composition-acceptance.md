@@ -51,6 +51,19 @@ transferred-package CI at one validated revision, physical devices and two
 independent adopters remain required. The [migration guide](../docs/migration.md#moving-to-retained-tauri-mobile)
 documents format 2 composition and removing the addon without producer edits.
 
+## Android Activity recreation — 2026-09-11
+
+[Android recreation evidence](../docs/evidence/retained-activity-recreation-2026-09-11.json)
+adds a paired ordinary Tauri / packed RN / packed Lynx comparison: fifteen
+native UI flows and six actual Activity recreations after location grant,
+preserving process/state/setup and note data with new Activity/WebView objects.
+Composed listeners retire and new events arrive once. This reuses an existing
+retained artifact; it is not another export or completed cross-platform parity.
+Fresh/pending permissions, Expo recreation, navigation/rotation, retained CI,
+physical devices and adopters remain open. Earlier failed attempts remain
+explicit, including unresolved standalone initial permission-response and
+post-recreation link UI failures.
+
 ## Scope and constraints
 
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.
