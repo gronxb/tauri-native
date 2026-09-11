@@ -178,3 +178,21 @@ Linux/x86_64 execution, broader lifecycle/channel parity, devices and independen
 adopters remain open. Receipt tests do not certify pending native execution.
 See [local workflow evidence](evidence/retained-ci-workflow-android-2026-09-11.json)
 for the fresh Android preparation and receiving-device checks.
+
+
+## iOS transfer acceptance and first hosted run — 2026-09-11
+
+[New iOS evidence](evidence/retained-ci-workflow-ios-2026-09-11.json) records a
+fresh ordinary Tauri app and retained Release export, producer deletion and
+20 receiving-device UI flows (8 ordinary, 12 native retained). Both execute
+without Rust or producer source. All original source and received artifact
+bytes remain unchanged. This covers native Tauri permissions, callback
+retirement, events, deep links and persistence on an owned iOS 26.4.1 simulator.
+
+The [first hosted retained workflow](https://github.com/gronxb/tauri-native/actions/runs/34555941668)
+failed in the CLI typecheck before native execution: the independent mobile
+fixture's two plugin dependencies had not been installed. The producer now
+installs that fixture's locked dependencies before its existing checks. Local
+installation/typechecks pass; the corrected full hosted run is still required.
+The earlier ABI 2 candidate does not certify these new retained jobs. Physical
+devices and independent evaluations remain pending, as confirmed by the maintainer.

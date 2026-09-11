@@ -117,6 +117,22 @@ in [the workflow evidence](../docs/evidence/retained-ci-workflow-android-2026-09
 Linux/x86_64, iOS/Expo transfer execution and remaining lifecycle/device/adopter
 acceptance are not inferred from wiring or receipt tests.
 
+## iOS transfer and hosted verification — 2026-09-11
+
+[Fresh iOS evidence](../docs/evidence/retained-ci-workflow-ios-2026-09-11.json)
+adds ordinary/native retained preparation and 20 source-free receiving UI flows.
+The original fourteen files and every transferred app/artifact byte are unchanged.
+The first complete workflow attempt at `396e3c9` failed in the CLI typecheck
+because the independent fixture's native-plugin JS packages were not installed.
+Locked fixture installation now precedes the existing checks; local typechecks
+pass. The failed run and skipped native jobs remain explicit, and a successful
+corrected hosted run is still required. RN/Expo/Lynx iOS transfer checks remain
+separate from this native-client evidence.
+
+The maintainer confirmed that physical devices and two independent project
+evaluations are not yet prepared. Those final acceptance items remain open;
+implementation and hosted validation continue.
+
 ## Scope and constraints
 
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.

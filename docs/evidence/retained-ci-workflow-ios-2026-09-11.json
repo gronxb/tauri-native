@@ -1,0 +1,357 @@
+{
+  "passed": true,
+  "recordedAt": "2026-09-11T03:03:46.685853+00:00",
+  "baseCommit": "396e3c9b088ac5f091d7c0f431f6b4d05761f51c",
+  "scope": "Local fresh iOS preparation and source-free receiving native execution; the separate hosted workflow failed before native acceptance",
+  "freshExport": {
+    "schemaVersion": 1,
+    "passed": true,
+    "platform": "ios",
+    "profile": "release",
+    "targets": "aarch64-sim",
+    "cliPackageSha256": "6363fe5afec7a581bbc48378b0df62a5346dc09618d8028fe4b00d251deb90a0",
+    "producerDeleted": true,
+    "producerUnchanged": true,
+    "sourceHashes": {
+      "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+      "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+      "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+      "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+      "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+      "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+      "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+      "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+      "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+      "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+      "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+      "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+      "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+      "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+    },
+    "originalFixtureHashes": {
+      "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+      "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+      "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+      "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+      "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+      "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+      "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+      "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+      "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+      "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+      "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+      "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+      "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+      "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+    },
+    "artifactSha256": "d2cb5cd0d73419dc228f44f9c265e2e130855dceb35d002e38636c8a3444565a",
+    "formatVersion": 2,
+    "abiVersion": 3,
+    "native": [
+      {
+        "path": "ios/TauriNativeRuntime.xcframework/ios-arm64-simulator/libapp.a",
+        "architectures": [
+          "arm64"
+        ],
+        "variant": "simulator"
+      }
+    ],
+    "incrementalAcceptance": {
+      "unchangedHit": true,
+      "invalidCapabilityRejected": true,
+      "previousArtifactPreserved": true
+    }
+  },
+  "ordinaryPrepared": {
+    "file": "target/retained-ci-workflow-ios/received/standalone/prepared.json",
+    "sha256": "f61007d8abeff7310826b54482cc191dad28f4d1cda511936e4bf4fc274eb191",
+    "binarySha256": "67814f1ba10ab518b02c682050add29189d974a7f1b0ad54f5450023290d8904",
+    "target": "aarch64-sim",
+    "files": 9,
+    "producerDeleted": true,
+    "producerUnchanged": true
+  },
+  "results": [
+    {
+      "gate": "standalone",
+      "file": "target/retained-ci-workflow-ios/consume/tauri-mobile-plugins/standalone-ios/report.json",
+      "sha256": "a8cbc2ce89a5a145f3a546303efb4df4fff2cd1147ef06e779a9cef7e007fb0b",
+      "run": {
+        "command": [
+          "node",
+          "--experimental-strip-types",
+          "packages/cli/test/runtime/plugins.ts",
+          "ios",
+          "--consume"
+        ],
+        "exitCode": 0,
+        "cargoOnPath": false,
+        "cliSha256": "6363fe5afec7a581bbc48378b0df62a5346dc09618d8028fe4b00d251deb90a0"
+      },
+      "summary": {
+        "platform": "ios",
+        "producerDeleted": true,
+        "producerUnchanged": true,
+        "baseline": {
+          "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/3A109FC7-D402-4CD7-8C07-DA1388814F84/data/Containers/Data/Application/37B4F09B-7465-4A2B-B9CF-458D42030ECB/Library/Application Support/dev.taurinative.mobilefieldnotes",
+          "passed": true,
+          "reloaded": true,
+          "scenarios": [
+            "setup",
+            "state",
+            "app-handle",
+            "async",
+            "rust-event",
+            "plugin-setup",
+            "plugin-allowed",
+            "plugin-denied",
+            "domain-error",
+            "reload"
+          ],
+          "state": {
+            "appIdentifier": "dev.taurinative.mobilefieldnotes",
+            "pluginSetupCount": 1,
+            "setupCount": 1,
+            "value": 45
+          }
+        },
+        "transferredBinarySha256": "67814f1ba10ab518b02c682050add29189d974a7f1b0ad54f5450023290d8904"
+      },
+      "flows": [
+        {
+          "file": "target/retained-ci-workflow-ios/consume/tauri-mobile-plugins/standalone-ios/background.xml",
+          "sha256": "fe62cbb5f5a3ab3c0bf06d92961bc7b9eb3b373ce1478b08997510479c51ea0a",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/tauri-mobile-plugins/standalone-ios/denied-position.xml",
+          "sha256": "86eb8ca9b3a9d792b3d1517b9962e07fd8ce3de14ed6e5933f4e0c15701f1c53",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/tauri-mobile-plugins/standalone-ios/deny-permission.xml",
+          "sha256": "0deaad1ca7f7eda991c52c17cc0e6ce8edefeac5a1b5d9858c5d3dd4cc7e4ab0",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/tauri-mobile-plugins/standalone-ios/grant-permission.xml",
+          "sha256": "59274932a87e1380593cc873dea88f6559412792c91af458132e71f3d81faf9f",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/tauri-mobile-plugins/standalone-ios/initial.xml",
+          "sha256": "759543b15c8d399b7edd98577c6428ab9722beefe1549b91485e823cb973e057",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/tauri-mobile-plugins/standalone-ios/link-ui.xml",
+          "sha256": "5d9ccd31bfa7ea5c2ac0f58c8fc599e536f910a2a0927bb6f0120c746bb554bc",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/tauri-mobile-plugins/standalone-ios/persistence-ui.xml",
+          "sha256": "1dc2baa9202a1bb6af6b77bfac9f7cf00a06d8132dd434ee4e6266a2642554c2",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/tauri-mobile-plugins/standalone-ios/save.xml",
+          "sha256": "c457f719f427ea646b8718df168ab13b4303e9dfc9ac7af206427e53df408555",
+          "tests": 1
+        }
+      ]
+    },
+    {
+      "gate": "retained",
+      "file": "target/retained-ci-workflow-ios/consume/retained-ios-portability/report.json",
+      "sha256": "1ec30760f1469363a7e2c0516ac8b4565a8f6ea439d1bf210a70e26bb278a5a8",
+      "run": {
+        "command": [
+          "node",
+          "--experimental-strip-types",
+          "packages/cli/test/runtime/portable.ts",
+          "ios",
+          "--consume",
+          "--release"
+        ],
+        "exitCode": 0,
+        "cargoOnPath": false,
+        "cliSha256": "6363fe5afec7a581bbc48378b0df62a5346dc09618d8028fe4b00d251deb90a0"
+      },
+      "summary": {
+        "platform": "ios",
+        "producerDeleted": true,
+        "producerUnchanged": true,
+        "baseline": {
+          "directory": "/Users/gronxb/Library/Developer/CoreSimulator/Devices/3A109FC7-D402-4CD7-8C07-DA1388814F84/data/Containers/Data/Application/65C7A777-A1A1-4457-BBAC-A0E2BA2D815B/Library/Application Support/dev.taurinative.mobilefieldnotes",
+          "passed": true,
+          "reloaded": true,
+          "scenarios": [
+            "setup",
+            "state",
+            "app-handle",
+            "async",
+            "rust-event",
+            "plugin-setup",
+            "plugin-allowed",
+            "plugin-denied",
+            "domain-error",
+            "reload"
+          ],
+          "state": {
+            "appIdentifier": "dev.taurinative.mobilefieldnotes",
+            "pluginSetupCount": 1,
+            "setupCount": 1,
+            "value": 45
+          }
+        },
+        "profile": "release",
+        "target": "arm64 simulator",
+        "artifactSha256": "d2cb5cd0d73419dc228f44f9c265e2e130855dceb35d002e38636c8a3444565a",
+        "binarySha256": "3672c33187c0edd53ffb034345e84f8676d5b956dae8318ddb3588e245619ded",
+        "sourceFreeBuild": "xcodebuild -configuration release -sdk iphonesimulator; PATH=/usr/bin:/bin:/usr/sbin:/sbin; relocated path has spaces"
+      },
+      "flows": [
+        {
+          "file": "target/retained-ci-workflow-ios/consume/retained-ios-portability/deny-native-permission.xml",
+          "sha256": "9502b2d5891e9d25d1a7640df36e0c6c95424119faca5d85d98a99dc5e40c045",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/retained-ios-portability/grant-retired-permission.xml",
+          "sha256": "72f6455a1868cb98798f2b5a806c80e0fc0604cc86360b86374dad58e40bfc57",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/retained-ios-portability/initial-native.xml",
+          "sha256": "e964d5a7d3c08872c20a3323630cc4f69a2b2cc19c6a4126f72a9b12ec186990",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/retained-ios-portability/native-background.xml",
+          "sha256": "150a0dc3dbe11c14ee4ca8ad030e811b26239d2849f68cf626972d1983440003",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/retained-ios-portability/native-denied-position.xml",
+          "sha256": "c1aa6466aeb2c4b55709cd72472d8277adda04fc24f659fd627412df8a3695d8",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/retained-ios-portability/native-link.xml",
+          "sha256": "4b3aaf68fdad57b028ac33fc7080fc9f7868282432938dcfa9b88eef48bb889d",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/retained-ios-portability/native-no-denied-save.xml",
+          "sha256": "bb8d086c88ce36d73991b13c00c73e26fd3ceed3245a5aeeb720c2810f2521c5",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/retained-ios-portability/native-persistence.xml",
+          "sha256": "6f4080c230ac7c51c77f417aa77b0601a212369efee87abf420697770495bb25",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/retained-ios-portability/native-remount.xml",
+          "sha256": "289028fbe7755d1eba8bac6b18e1e26fe88809e8b53dbb5dc12c5027900bc4b8",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/retained-ios-portability/native-remounted-event.xml",
+          "sha256": "2f717740791c8eb9dc39b84c47e517601449646c4d90534727c5d43a0c267dc6",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/retained-ios-portability/native-save.xml",
+          "sha256": "0a9aae15458b35f5dba2ff8022b949ba0fa92cdcb93a33e92f1dc66dfce6e4ce",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-workflow-ios/consume/retained-ios-portability/retire-native-permission.xml",
+          "sha256": "fe16b45fda6964c71cc6eb0bcecb58acdfd42a9e8edf0c84057f71be16e08592",
+          "tests": 1
+        }
+      ]
+    }
+  ],
+  "nativeUiFlows": 20,
+  "failedFlows": 0,
+  "skippedFlows": 0,
+  "simulator": {
+    "udid": "3A109FC7-D402-4CD7-8C07-DA1388814F84",
+    "createdFor": "retained CI transfer verification",
+    "runtime": "iOS 26.4.1",
+    "shutdownAndDeleted": true
+  },
+  "integrity": {
+    "ordinarySourceFiles": 14,
+    "ordinarySourceUnchanged": true,
+    "allReceivedOrdinaryFilesUnchanged": true,
+    "allReceivedRetainedFilesUnchanged": true,
+    "mobileProducersDeletedBeforeConsumption": true
+  },
+  "hosted": {
+    "url": "https://github.com/gronxb/tauri-native/actions/runs/34555941668",
+    "headSha": "396e3c9b088ac5f091d7c0f431f6b4d05761f51c",
+    "status": "completed",
+    "conclusion": "failure",
+    "jobs": [
+      {
+        "name": "producer",
+        "conclusion": "failure"
+      },
+      {
+        "name": "candidate",
+        "conclusion": "failure"
+      },
+      {
+        "name": "retained-producer",
+        "conclusion": "skipped"
+      },
+      {
+        "name": "native-android",
+        "conclusion": "skipped"
+      },
+      {
+        "name": "native-ios",
+        "conclusion": "skipped"
+      },
+      {
+        "name": "retained-android",
+        "conclusion": "skipped"
+      },
+      {
+        "name": "retained-ios",
+        "conclusion": "skipped"
+      }
+    ],
+    "log": {
+      "file": "target/retained-ci-workflow-ios/hosted-failure.log",
+      "sha256": "3289e70e8d0fcc8eb03862d60c77d7658c1747c69b7d1d285deb0f7aa3677494"
+    },
+    "cause": "The CLI typecheck includes the ordinary mobile-plugin-tauri fixture, which is outside the workspace install; @tauri-apps/plugin-geolocation and @tauri-apps/plugin-deep-link were missing in the clean checkout.",
+    "correction": "Run npm ci --ignore-scripts --no-audit --no-fund in that fixture before existing typechecks. No typecheck/fixture exclusion or root plugin dependency was added.",
+    "localCorrectionVerification": {
+      "npmCi": {
+        "file": "target/retained-ci-workflow-ios/fixture-dependencies.log",
+        "sha256": "a223d8572dc90213ef054c389efe2a7db29825b7d5f896410bf309a8413cf732"
+      },
+      "cliTypecheck": true,
+      "scriptsTypecheck": true,
+      "ordinarySourceUnchanged": true
+    },
+    "correctedHostedRun": "Pending at recording time; not certified by local success"
+  },
+  "externalAcceptance": {
+    "maintainerReportedAt": "2026-09-11",
+    "physicalDevices": "not yet prepared",
+    "twoIndependentProjects": "not yet prepared"
+  },
+  "limits": [
+    "Only ordinary Tauri and the native retained iOS client execute in this local record; transferred RN/Expo/Lynx iOS gates remain separate.",
+    "The received CLI tarball is reused from the prior 396e3c9 Android workflow evidence; it is unchanged and production CLI sources are unchanged.",
+    "The hosted failure produced no passing native or candidate receipt. A corrected full workflow still has to pass.",
+    "No PR or package publication. The verification branch contains the source commit; remote main remains unchanged.",
+    "Remaining lifecycle/channel/source-form, physical-device and independent-adopter requirements remain open."
+  ]
+}

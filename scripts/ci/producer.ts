@@ -10,6 +10,8 @@ mkdirSync(candidate, { recursive: true });
 for (const manifest of ['Cargo.toml', 'packages/cli/native/Cargo.toml', 'packages/cli/test/fixtures/standard-tauri/src-tauri/Cargo.toml', 'examples/ordinary-tauri-feature/src-tauri/Cargo.toml']) {
   run(`fetch-${manifest.replaceAll('/', '-')}`, 'cargo', ['fetch', '--locked', '--manifest-path', manifest]);
 }
+// This independently runnable fixture is outside the package-manager workspace.
+run('mobile-fixture-dependencies', 'npm', ['ci', '--ignore-scripts', '--no-audit', '--no-fund'], path.join(root, 'packages/cli/test/fixtures/mobile-plugin-tauri'));
 run('scripts-typecheck', 'nub', ['run', 'typecheck:scripts']);
 run('rust-workspace', 'cargo', ['test', '--workspace', '--locked']);
 for (const sdk of ['cli', 'react-native', 'lynx']) {

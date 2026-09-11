@@ -52,11 +52,14 @@ For physical-device RC evidence, use the host's normal Release signing and distr
 
 A reviewable candidate contains matching CLI/host packages, changesets and migration notes, the bounded support matrix, and linked validation for that exact candidate. Required CI jobs, physical-device RC checks and independent onboarding records must be complete before a stable 1.0 release is represented as ready.
 
+On 2026-09-11, the maintainer confirmed that physical test devices and two independent project evaluations were not yet prepared. Those acceptance items remain pending external inputs.
+
 The release checklist is intentionally incomplete until evidence exists:
 
 - [ ] First independent documentation-only integration and producer diff reviewed.
 - [ ] Second independent documentation-only integration and producer diff reviewed.
-- [x] Required package, source-integrity, compatibility and native jobs passed for the candidate.
+- [x] Required package, source-integrity, compatibility and native jobs passed for the earlier ABI 2 candidate at `eb1fab8`.
+- [ ] The retained ABI 3 candidate passes all required producer/native jobs at one commit with matching transferred inputs.
 - [ ] Physical iOS and Android RC checks recorded, including platform signing/distribution conditions.
 - [x] Unsupported APIs and migration guidance reflect the candidate's actual behavior.
 - [ ] Maintainer has authorized stable publication through the documented release process.
