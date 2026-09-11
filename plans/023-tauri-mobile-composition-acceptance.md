@@ -64,6 +64,16 @@ physical devices and adopters remain open. Earlier failed attempts remain
 explicit, including unresolved standalone initial permission-response and
 post-recreation link UI failures.
 
+## Android permission requests after recreation — 2026-09-11
+
+[Native evidence](../docs/evidence/retained-recreation-permissions-2026-09-11.json) records the original Tauri/RN/Lynx stale launcher failure
+and its correction in the exported dependency copy. A fresh source-free Release
+export passes twelve UI flows; packed RN/Lynx add fourteen covering denial,
+recreation, grant, save and deep link. All fourteen producer hashes, cache/failure
+recovery and packaged ELF/APK alignment checks pass. This is scoped Android
+evidence; pending callbacks across recreation, Expo recreation, full retained
+CI/parity and physical-device/adopter acceptance remain open.
+
 ## Scope and constraints
 
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.

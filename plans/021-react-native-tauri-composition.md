@@ -49,6 +49,15 @@ Fresh/pending permissions, Expo recreation, full navigation/rotation and retaine
 CI remain open; the evidence separately retains unresolved standalone
 permission-response and post-recreation link UI failures.
 
+## Android permission requests after recreation — 2026-09-11
+
+[Native evidence](../docs/evidence/retained-recreation-permissions-2026-09-11.json) records seven packed RN Release/R8 UI flows after a new
+export corrects the copied Tauri ActivityResult registrations. The first request
+after recreation reaches the OS; denial survives a second recreation, then grant,
+location save and deep link pass. State/setup stay 45/1/1, retired listeners reach
+zero and the producer stays unchanged. Pending OS callbacks across recreation,
+Expo recreation, broader navigation/rotation and retained CI remain open.
+
 ## Scope and constraints
 
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.

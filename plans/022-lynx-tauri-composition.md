@@ -49,6 +49,15 @@ The first final identity check lost initial logcat records; streaming before
 launch fixes the test's evidence collection, and the complete rerun passes.
 Fresh/pending permissions, navigation/rotation and retained CI remain open.
 
+## Android permission requests after recreation — 2026-09-11
+
+[Native evidence](../docs/evidence/retained-recreation-permissions-2026-09-11.json) records seven packed Lynx Release/R8 UI flows after a new
+export corrects the copied Tauri ActivityResult registrations. OS denial after
+the first recreation, another recreation retaining the rationale state, then OS
+grant, save and deep link pass. State/setup stay 45/1/1 with zero old listeners
+and one current listener. Producer source stays unchanged. Pending OS callbacks
+across recreation, broader navigation/rotation and retained CI remain open.
+
 ## Scope and constraints
 
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.

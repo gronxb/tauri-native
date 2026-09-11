@@ -37,6 +37,9 @@ With the Android environment below, run these from the repository root, serially
 node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts standalone
 node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts react /path/to/retained-android
 node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts lynx /path/to/retained-android
+# First request after recreation, OS denial, another recreation, then OS grant:
+node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts react /path/to/retained-android --fresh-permission
+node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts lynx /path/to/retained-android --fresh-permission
 ```
 
 The standalone runner builds the ordinary fixture with the Tauri CLI. Its probe
@@ -56,12 +59,21 @@ Native telemetry streams to a file before launch so logcat ring eviction cannot
 remove the initial identity records. Results are written under
 `target/retained-activity-recreation/{standalone,react,lynx}`.
 
+`--fresh-permission` instead starts without a location grant or saved note.
+After the first recreation it requests and denies permission through the OS UI.
+The second recreation must retain `prompt-with-rationale`; a new request and
+OS grant must then allow a location save and deep-link event. Its seven UI flows
+and separate reports live under `target/retained-activity-recreation/fresh-permission`.
+This requires a new export containing the ActivityResult registration correction.
+The original Tauri 2.11.5 launcher fails after recreation; the same correction
+is applied only to the exported dependency copy, preserving the producer.
+
 The ordinary fixture's ten startup scenarios run before recreation. Its
 one-time initial-state assertion expects 40 in a fresh JS document; recreated
 documents keep State 45. The gate records that fixture assertion failure and
 checks preserved state and operational plugins directly through original IPC.
-It does not claim that the initial self-test passed again. Fresh permission
-dialogs, pending OS requests, process death and Expo recreation need separate
+It does not claim that the initial self-test passed again. Pending OS requests,
+process death and Expo recreation need separate
 gates. See the [scoped evidence](../../../../docs/evidence/retained-activity-recreation-2026-09-11.json),
 including the separately retained unsuccessful attempts.
 

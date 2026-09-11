@@ -13,13 +13,17 @@ import { acquireMobileTest } from './mobile-lock.ts';
 const root = fileURLToPath(new URL('../../../..', import.meta.url));
 const mode = process.argv[2];
 assert(mode === 'standalone' || mode === 'react' || mode === 'lynx', 'Select standalone, react or lynx');
+const options = process.argv.slice(3);
+assert(options.filter(option => !option.startsWith('--')).length <= 1 &&
+  options.every(option => !option.startsWith('--') || option === '--fresh-permission'), 'Use [artifact] [--fresh-permission]');
+const freshPermission = options.includes('--fresh-permission');
 const composed = mode !== 'standalone';
 const name = mode === 'react' ? 'RN' : 'Lynx';
 const device = process.env.ANDROID_SERIAL; assert(device, 'Select an arm64 ANDROID_SERIAL emulator');
-const evidence = path.join(root, 'target/retained-activity-recreation', mode);
+const evidence = path.join(root, 'target/retained-activity-recreation', ...(freshPermission ? ['fresh-permission'] : []), mode);
 const producer = path.join(evidence, 'ordinary producer');
 const consumer = path.join(evidence, 'source free consumer');
-const artifact = path.resolve(process.argv[3] ?? path.join(root, 'target/retained-portability/exported-runtime'));
+const artifact = path.resolve(options.find(option => !option.startsWith('--')) ?? path.join(root, 'target/retained-portability/exported-runtime'));
 const fixture = path.join(root, 'packages/cli/test/fixtures/mobile-plugin-tauri');
 const original = snapshot(fixture);
 const appId = 'dev.taurinative.mobilefieldnotes';
@@ -175,38 +179,54 @@ try {
     const result = spawnSync('adb', ['-s', device, 'exec-out', 'run-as', appId, 'cat', 'runtime-report.json'], { env, encoding: 'utf8', timeout: 10000 });
     return result.status === 0 && JSON.parse(result.stdout).passed === true;
   });
-  flow('initial-plugin', composed
+  if (freshPermission) flow('initial-permission', composed
+    ? '- assertVisible: "Tauri 45 setup 1 plugins 1"\n- tapOn: "Check permission"\n- assertVisible: "Permission prompt"'
+    : '- tapOn: "Check location permission"\n- assertVisible: "Location permission prompt"');
+  else flow('initial-plugin', composed
     ? `- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "${name} events 0"\n- tapOn: "Request permission"\n- tapOn: "(?i)While using the app"\n- assertVisible: "Permission granted"\n- tapOn: "Save location"\n- assertVisible: "${name} note 1"\n- assertVisible: "${name} events 1"`
     : '- tapOn: "Request location permission"\n- tapOn: "(?i)While using the app"\n- assertVisible: "Location permission granted"\n- tapOn: "Save location note"\n- assertVisible: "Saved location note 1"');
   const initial = await inspect('before');
   assert.equal(initial.result.baseline.passed, true);
   assert.equal(initial.result.snapshot.value, 45); assert.equal(initial.result.snapshot.setupCount, 1); assert.equal(initial.result.snapshot.pluginSetupCount, 1);
-  assert.equal(initial.result.plugins.notes.length, 1);
+  assert.equal(initial.result.plugins.notes.length, freshPermission ? 0 : 1);
+  assert.equal(initial.result.permission.location, freshPermission ? 'prompt' : 'granted');
   if (composed) assert.equal(initial.runtime.listeners, 1);
   for (let index = 1; index <= 2; index++) {
+    const permission = freshPermission ? index === 1 ? 'prompt' : 'prompt-with-rationale' : 'granted';
     action('recreate');
     await until(() => events().filter(row => row.stage === 'create').length === index + 1 && events().filter(row => row.stage === 'webview').length === index + 1);
     flow(`recreated-ui-${index}`, composed
-      ? `- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "${name} events 0"\n- tapOn: "Check permission"\n- assertVisible: "Permission granted"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 0 notes 1 setup 1 plugins 1"`
-      : '- tapOn: "Check location permission"\n- assertVisible: "Location permission granted"\n- tapOn: "Refresh notes and links"');
+      ? `- assertVisible: "Tauri 45 setup 1 plugins 1"\n- assertVisible: "${name} events 0"\n- tapOn: "Check permission"\n- assertVisible: "Permission ${permission}"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 0 notes ${freshPermission ? 0 : 1} setup 1 plugins 1"`
+      : `- tapOn: "Check location permission"\n- assertVisible: "Location permission ${permission}"\n- tapOn: "Refresh notes and links"`);
     const after = await inspect(`after-${index}`);
     assert.equal(after.pid, initial.pid); assert.equal(after.wryActivityId, initial.wryActivityId);
     assert.notEqual(after.result.timeOrigin, initial.result.timeOrigin);
     assert.deepEqual(after.result.snapshot, initial.result.snapshot);
     assert.deepEqual(after.result.plugins.notes, initial.result.plugins.notes);
-    assert.equal(after.result.permission.location, 'granted');
+    assert.equal(after.result.permission.location, permission);
     if (composed) assert.equal(after.runtime.listeners, 1);
     // The original fixture's startup self-test assumes State 40 for a fresh JS
     // document. Recreation keeps State 45; verify that state directly above.
     assert.deepEqual(after.result.baseline, { passed: false, error: 'Error: Setup initializes the state' });
+    if (freshPermission) {
+      const granted = index === 2;
+      const expected = granted ? 'granted' : 'prompt-with-rationale';
+      flow(`permission-${granted ? 'grant' : 'deny'}`, `- tapOn: "${composed ? 'Request permission' : 'Request location permission'}"\n- tapOn: "${granted ? '(?i)While using the app' : '(?i)Don.t allow'}"\n- assertVisible: "${composed ? 'Permission' : 'Location permission'} ${expected}"`);
+      const result = await inspect(`permission-result-${index}`);
+      assert.equal(result.result.permission.location, expected);
+      assert.equal(result.result.plugins.notes.length, 0);
+      assert.deepEqual(result.result.snapshot, initial.result.snapshot);
+      assert.equal(result.instance, after.instance);
+    }
   }
-  flow('post-recreation-save', composed ? `- tapOn: "Save location"\n- assertVisible: "${name} note 2"\n- assertVisible: "${name} events 1"`
-    : '- tapOn: "Save location note"\n- assertVisible: "Saved location note 2"');
+  const noteCount = freshPermission ? 1 : 2;
+  flow('post-recreation-save', composed ? `- tapOn: "Save location"\n- assertVisible: "${name} note ${noteCount}"\n- assertVisible: "${name} events 1"`
+    : `- tapOn: "Save location note"\n- assertVisible: "Saved location note ${noteCount}"`);
   run('deep-link', 'adb', ['-s', device, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', 'tauri-fieldnotes://notes/2', '-p', appId]);
-  flow('post-recreation-link', composed ? `- assertVisible: "${name} events 2"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes 2 setup 1 plugins 1"`
+  flow('post-recreation-link', composed ? `- assertVisible: "${name} events 2"\n- tapOn: "Refresh Tauri"\n- assertVisible: "Links 1 notes ${noteCount} setup 1 plugins 1"`
     : '- assertVisible: "Links received 1"\n- tapOn: "Refresh notes and links"');
   const final = await inspect('final');
-  assert.equal(final.result.plugins.notes.length, 2); assert.deepEqual(final.result.plugins.links, ['tauri-fieldnotes://notes/2']);
+  assert.equal(final.result.plugins.notes.length, noteCount); assert.deepEqual(final.result.plugins.links, ['tauri-fieldnotes://notes/2']);
   for (const note of final.result.plugins.notes) {
     assert.equal(note.text, composed ? `A ${name} place to remember` : 'A place to remember');
     assert(Math.abs(note.latitude - 37.5665) < 0.01 && Math.abs(note.longitude - 126.978) < 0.01);
@@ -228,8 +248,8 @@ try {
     testSigning: 'Debug test key; composed Release/R8 remains non-debuggable', apkSha256: sha256(readFileSync(apk)),
     ...(composed ? { artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))), packageSha256, bundleSha256, sourceFreeBuild: 'PATH=/usr/bin:/bin:/usr/sbin:/sbin', artifactUnchanged: true }
       : { sourceHashes: producerBefore, producerUnchanged: true }),
-    baseline: initial.result.baseline, recreations: 2, nativeUiFlows: 5, events: observed,
-    limits: 'Location permission granted before recreation. Fresh permission dialogs, pending OS callbacks and process death are separate gates. The original fixture startup self-test expects initial State 40; the recreated document keeps State 45, verified directly through original IPC.',
+    baseline: initial.result.baseline, freshPermission, recreations: 2, nativeUiFlows: freshPermission ? 7 : 5, events: observed,
+    limits: `${freshPermission ? 'First permission request after recreation is denied through OS UI; a second recreation preserves the rationale state, and a later OS grant allows location save.' : 'Location permission granted before recreation; fresh permission dialogs are a separate gate.'} Pending OS callbacks and process death are separate gates. The original fixture startup self-test expects initial State 40; the recreated document keeps State 45, verified directly through original IPC.`,
   }, null, 2) + '\n');
 } catch (error) {
   if (pid) {

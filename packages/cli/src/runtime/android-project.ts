@@ -55,6 +55,15 @@ export function copyAndroidRuntimeProject(native: string, destination: string) {
       filter: source => !omitted.has(path.relative(module.directory, source).split(path.sep).join('/')) &&
         !['src/test', 'src/androidTest'].includes(path.relative(module.directory, source).split(path.sep).join('/')) });
   }
+  // Android unregisters ActivityResult launchers when their Activity is destroyed.
+  // Tauri 2.11.5 retains its plugins across recreation, but skips registering the
+  // new Activity. Rebind in the original order, keeping plugin instances and any
+  // pending callbacks. Only the exported dependency copy receives this change.
+  const manager = path.join(dependencies, 'tauri-android/src/main/java/app/tauri/plugin/PluginManager.kt');
+  writeFileSync(manager, replaceOnce(readFileSync(manager, 'utf8'),
+    /^    \/\/ TODO: on destroy, we should change to a different activity\n    if \(::activity\.isInitialized\) \{$/m,
+    '    // Retained export: register launchers for each new Activity.\n    if (::activity.isInitialized && this.activity === activity) {',
+    'Tauri 2.11.5 ActivityResult registration guard'));
   writeFileSync(path.join(destination, 'tauri.settings.gradle'), modules.map(module =>
     `include ':${module.name}'\nproject(':${module.name}').projectDir = new File(rootDir, "native-dependencies/${module.name}")\n`).join(''));
   const libraries = path.join(destination, 'app/src/main/jniLibs');

@@ -76,6 +76,23 @@ initial permission-grant response and, in another run, the post-recreation
 deep-link UI update. The record preserves both unresolved failures; later
 passing runs do not establish their cause or a fix.
 
+The [fresh permission gate](evidence/retained-recreation-permissions-2026-09-11.json) reproduces
+an upstream Android boundary: Tauri 2.11.5 keeps the first Activity's result
+launchers after that Activity is destroyed. The exported dependency now registers
+them for each new Activity in the original order, as required by the
+[Android Activity Result contract](https://developer.android.com/training/basics/intents/result).
+The producer and original standalone dependency stay unchanged; plugin instances,
+callback storage and Tauri initialization are retained.
+
+A new source-free arm64 Release export passes twelve native UI flows. Packed
+RN and Lynx each pass seven further flows: a first permission request after
+recreation, OS denial, another recreation retaining `prompt-with-rationale`,
+then OS grant, location save and deep link. State/setup stay 45/1/1 and retired
+listeners reach zero. Both composed APKs are non-debuggable Release/R8; the
+native-only export gate uses test debuggability. These executions preserve all
+fourteen producer files. They do not resolve the separately recorded standalone
+initial permission-response or post-recreation link UI failures.
+
 ## Native ownership and dependencies
 
 | Layer | Required contract |
@@ -117,7 +134,7 @@ conflicting startup owners and edited generated files are rejected. Adding a
 new native plugin requires exporter/dependency support and actual mobile
 execution; editing the allowlist alone is insufficient.
 
-Fresh permission requests and pending OS callbacks across Activity recreation,
+Pending OS callbacks across Activity recreation,
 Expo recreation, full navigation/history/rotation behavior, native channel
 streaming and broader source/owner forms remain open. Expo config plugins are
 supported within the [documented native configuration/resource boundary](../packages/react-native/RETAINED.md#expo-config-plugins-and-native-regeneration).

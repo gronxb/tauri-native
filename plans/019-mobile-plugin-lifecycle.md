@@ -75,6 +75,30 @@ failures remain separately recorded and unresolved; they are not erased by
 the passing scoped executions. The original fixture's one-time initial-state
 self-test is distinguished from direct post-recreation state verification.
 
+## Android permission requests after recreation — 2026-09-11
+
+[Fresh export and native evidence](../docs/evidence/retained-recreation-permissions-2026-09-11.json)
+reproduces the unregistered ActivityResultLauncher error in original Tauri and
+both packed SDKs when the first OS permission request follows Activity recreation.
+The exporter now re-registers the original Tauri launchers for each new Activity,
+in the original order, only in the copied dependency. Producer code, plugin
+instances, pending callback storage and the original Tauri bootstrap stay intact.
+
+A fresh arm64 Release export passes twelve source-free native UI flows, including
+ACL/OS denial, callback retirement, events, persistence and cache/failure recovery.
+Packed RN and Lynx each pass seven more UI flows: first recreation, OS denial,
+second recreation preserving `prompt-with-rationale`, OS grant, location save and
+deep link. Both retain State 45/setup1/plugin1 with new Activity/WebView objects,
+zero retired listeners and one current listener. Composed APKs remain
+non-debuggable Release/R8; the native-only export gate uses test debuggability.
+All fourteen producer hashes and packaged ELF/APK alignment checks pass.
+
+This corrects the exported runtime; the standalone upstream dependency stays
+unchanged and its reproduced failure is recorded. Pending OS callbacks across
+Activity recreation, Expo recreation, broader navigation/rotation, retained CI,
+physical devices and independent adopters remain open. The earlier standalone
+initial permission-response and link UI failures are not claimed fixed.
+
 ## Scope and constraints
 
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.
