@@ -244,3 +244,12 @@ Fieldnotes in RN/Expo/Lynx and RN/Lynx async/view behavior; the standalone ABI 2
 native result matches its transferred APK on hosted Linux/API 36 x86_64/16 KB.
 This is existing-path regression evidence. Retained ABI 3 jobs, the later Expo
 recreation gates and the complete candidate still require their own success.
+
+The [retained producer has also completed](evidence/retained-hosted-producer-complete-2026-09-11.json)
+at `002ee3a`. Its downloaded ABI 3 archive contains 39 iOS export files and 100
+Android export files, plus the separately prepared ordinary apps. Every listed
+file size/hash and both standalone binary hashes match their receipts. The
+producer checks desktop execution, unchanged fourteen-file source, cache reuse,
+rejected invalid capabilities, preserved previous output and producer deletion.
+Receiving native jobs are running separately; these prepared files do not
+establish their runtime results or certify the later lifecycle gates.

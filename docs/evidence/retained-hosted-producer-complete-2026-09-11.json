@@ -1,0 +1,270 @@
+{
+  "passed": true,
+  "recordedAt": "2026-09-11T04:57:51.523214+00:00",
+  "run": 34557120185,
+  "commit": "002ee3a3bf051656ba9ec41692b9317242942c65",
+  "jobUrl": "https://github.com/gronxb/tauri-native/actions/runs/34557120185/job/103140514650",
+  "receiptSha256": "f0e7fc70edc2ca363631a337ed03fe3b90ba713dd4ba478c27a39e7b16c1254f",
+  "archiveSha256": "1905ec520d749400352f3067776c9dc0a3990eaf851dc88e41f984f38081c146",
+  "producerReceiptSha256": "60238cfd38cc18dfcb5d587313d953cf37cdf6faa3b056811b2a8994cd852739",
+  "jobLogSha256": "8a93d10c9859988b50bbbad072675a6193615add888e305d9b7bca6b3583110e",
+  "packages": [
+    {
+      "sdk": "cli",
+      "name": "@tauri-native/cli",
+      "version": "1.0.0-rc.0",
+      "file": "tauri-native-cli-1.0.0-rc.0.tgz",
+      "sha256": "6363fe5afec7a581bbc48378b0df62a5346dc09618d8028fe4b00d251deb90a0"
+    },
+    {
+      "sdk": "react-native",
+      "name": "@tauri-native/react-native",
+      "version": "1.0.0-rc.0",
+      "file": "tauri-native-react-native-1.0.0-rc.0.tgz",
+      "sha256": "16ffe7509d23158b2d5b30f553a1fcd0d28589edc6480c3fe5c04995a1222d52"
+    },
+    {
+      "sdk": "lynx",
+      "name": "@tauri-native/lynx",
+      "version": "1.0.0-rc.0",
+      "file": "tauri-native-lynx-1.0.0-rc.0.tgz",
+      "sha256": "c2a80c66a6397dcdf2632a83d80dfc14c89ef120068ab210904677ab862d8e9e"
+    }
+  ],
+  "desktop": {
+    "ordinary": {
+      "passed": true,
+      "runtime": "real Tauri 2.11.5 / Wry",
+      "target": "darwin-arm64",
+      "rust": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+      "sourceHashes": {
+        "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+        "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+        "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+        "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+        "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+        "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+        "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+        "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+        "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+        "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+        "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+        "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+        "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+        "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+      },
+      "producerUnchanged": true,
+      "result": {
+        "directory": "/Users/runner/Library/Application Support/dev.taurinative.mobilefieldnotes",
+        "passed": true,
+        "reloaded": true,
+        "scenarios": [
+          "setup",
+          "state",
+          "app-handle",
+          "async",
+          "rust-event",
+          "plugin-setup",
+          "plugin-allowed",
+          "plugin-denied",
+          "domain-error",
+          "reload"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.mobilefieldnotes",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 45
+        }
+      },
+      "mobileComposition": "Desktop independence only; native geolocation/permission callbacks require iOS/Android execution in #43"
+    },
+    "retained": {
+      "passed": true,
+      "runtime": "real Tauri 2.11.5 / Wry",
+      "result": {
+        "baseline": {
+          "directory": "/Users/runner/Library/Application Support/dev.taurinative.runtimeproof",
+          "passed": true,
+          "reloaded": true,
+          "scenarios": [
+            "setup",
+            "state",
+            "app-handle",
+            "async",
+            "rust-event",
+            "plugin-setup",
+            "plugin-allowed",
+            "plugin-denied",
+            "domain-error",
+            "reload"
+          ],
+          "state": {
+            "appIdentifier": "dev.taurinative.runtimeproof",
+            "pluginSetupCount": 1,
+            "setupCount": 1,
+            "value": 45
+          }
+        },
+        "passed": true,
+        "scenarios": [
+          "readiness",
+          "declared-callers",
+          "caller-denial",
+          "real-tauri-acl",
+          "denied-side-effects",
+          "registered-commands",
+          "original-errors",
+          "async-state",
+          "embedded-shared-state",
+          "cancel-running",
+          "retired-session",
+          "single-initialization",
+          "event-caller-and-real-acl",
+          "event-name-validation",
+          "original-tauri-events",
+          "event-window-target",
+          "event-session-isolation",
+          "event-count-and-byte-overflow-recovery",
+          "event-invalid-payload-recovery",
+          "native-unlisten-and-queue-cleanup",
+          "cancel-unread-native-listener",
+          "event-close-remount-no-duplicates",
+          "event-listener-limit",
+          "event-live-origin-recheck-and-cleanup"
+        ],
+        "state": {
+          "appIdentifier": "dev.taurinative.runtimeproof",
+          "pluginSetupCount": 1,
+          "setupCount": 1,
+          "value": 55
+        }
+      },
+      "fixtureHashes": {
+        "README.md": "e442b942588c194c8b3b921ccb592fe5e52e19173bf514c8d77309d1b6643e3b",
+        "index.html": "9b1253436400db0fd038e328a3bf8ba7af0d75a5ed87f73aaca732ec3f2927b8",
+        "package.json": "c9a5624d63896d82c6a01cd152973539521d5acec495f7c83f547d6384e19100",
+        "src/main.ts": "b3cb69c8647cc0514e9f6d5473be115489a198c891e944e2955704fde9618acb",
+        "src-tauri/Cargo.lock": "0d80ade1ff2351afc3bb2e90d11416e5b860c6de16acbd11668155a6683cfcf5",
+        "src-tauri/Cargo.toml": "ab12b3239f44fa7ce1415191ad1510593305c5992dc723d503660eb5a7fe74d5",
+        "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+        "src-tauri/capabilities/main.json": "aa63268ca63387604eb9b7cf0566c9458851faa12fa47683aee464e9431b3df4",
+        "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+        "src-tauri/src/lib.rs": "60a9aa174031e82df15011926ba6655c22a3b656030ea1d29664c85b823f32c7",
+        "src-tauri/src/main.rs": "0a34746ecc02bce8814e4c14b3f3ab1a967ad350a77f4e82edca1cb260f7684e",
+        "src-tauri/tauri.conf.json": "1a4ce5412f4983f769235bcc85e6deed601113776aabb31c6f03187d9c97cb88"
+      },
+      "scenarioProducerHashes": {
+        "README.md": "e442b942588c194c8b3b921ccb592fe5e52e19173bf514c8d77309d1b6643e3b",
+        "index.html": "9b1253436400db0fd038e328a3bf8ba7af0d75a5ed87f73aaca732ec3f2927b8",
+        "package-lock.json": "9e1cc1f3c5ca7c343b9e2e56f75b51c4d67c2f949d1cb62187c844ad455f0530",
+        "package.json": "c9a5624d63896d82c6a01cd152973539521d5acec495f7c83f547d6384e19100",
+        "public/empty.html": "405466a5e25f4367f8d494aae986f9a74a6e4b96b9ac9a41f5abe8f1dad48a4e",
+        "src/main.ts": "b3cb69c8647cc0514e9f6d5473be115489a198c891e944e2955704fde9618acb",
+        "src-tauri/Cargo.lock": "0d80ade1ff2351afc3bb2e90d11416e5b860c6de16acbd11668155a6683cfcf5",
+        "src-tauri/Cargo.toml": "ab12b3239f44fa7ce1415191ad1510593305c5992dc723d503660eb5a7fe74d5",
+        "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+        "src-tauri/capabilities/main.json": "aa63268ca63387604eb9b7cf0566c9458851faa12fa47683aee464e9431b3df4",
+        "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+        "src-tauri/src/lib.rs": "b69c08c13bc03e1c1bde152f03ed1472e1f1374a6cf4a15535644883cc9a420a",
+        "src-tauri/src/main.rs": "0a34746ecc02bce8814e4c14b3f3ab1a967ad350a77f4e82edca1cb260f7684e",
+        "src-tauri/tauri.conf.json": "8d65e2bac167337cd4cca2c2bd39270fdeb516106fa67459b8e8952d7f80e93d"
+      },
+      "producerUnchanged": true,
+      "setupFailureObserved": true,
+      "nativePolicy": {
+        "version": 1,
+        "callers": {
+          "reader": {
+            "webview": "main",
+            "commands": [
+              "snapshot",
+              "embedded_observation",
+              "pending_started"
+            ]
+          },
+          "writer": {
+            "webview": "main",
+            "commands": [
+              "snapshot",
+              "increment",
+              "increment_async",
+              "plugin:runtime-probe|read",
+              "plugin:runtime-probe|forbidden",
+              "unregistered",
+              "observe_from_webview",
+              "held_increment",
+              "release_pending",
+              "plugin:event|listen",
+              "emit_native_events",
+              "emit_large_event",
+              "emit_invalid_event",
+              "navigate_native_context"
+            ]
+          },
+          "denied": {
+            "webview": "denied",
+            "commands": [
+              "plugin:event|listen"
+            ]
+          }
+        }
+      },
+      "command": "nub --cwd packages/cli run test:runtime:retained",
+      "scope": "macOS arm64; mobile execution remains required"
+    }
+  },
+  "exports": {
+    "ios": {
+      "target": "aarch64-sim",
+      "manifestSha256": "9f6eff169515a4569bf44ba7741c945c11b0eccf2db88ff2a4824c396a4cab53",
+      "exportFilesVerified": 39,
+      "native": [
+        {
+          "path": "ios/TauriNativeRuntime.xcframework/ios-arm64-simulator/libapp.a",
+          "architectures": [
+            "arm64"
+          ],
+          "variant": "simulator"
+        }
+      ],
+      "standaloneFilesVerified": 9,
+      "standaloneBinarySha256": "b6f1e6842946fcdda131d71c48895e3f6adbe5bb9c5ddd949142ade3cd103ec5",
+      "producerDeleted": true,
+      "producerUnchanged": true,
+      "sourceFiles": 14,
+      "incrementalAcceptance": {
+        "unchangedHit": true,
+        "invalidCapabilityRejected": true,
+        "previousArtifactPreserved": true
+      }
+    },
+    "android": {
+      "target": "x86_64",
+      "manifestSha256": "8cefc8d35c5d97ee5807589d46b96d09f2324003335b2a3ec08f969ce29ae444",
+      "exportFilesVerified": 100,
+      "native": [
+        {
+          "abi": "x86_64",
+          "path": "android/app/src/main/jniLibs/x86_64/libordinary_tauri_mobile_fieldnotes_lib.so"
+        }
+      ],
+      "standaloneFilesVerified": 1,
+      "standaloneBinarySha256": "8621082da97d8a3b5e1917c3135bc030cf377fd1969705b2491994eed8ba7c84",
+      "producerDeleted": true,
+      "producerUnchanged": true,
+      "sourceFiles": 14,
+      "incrementalAcceptance": {
+        "unchangedHit": true,
+        "invalidCapabilityRejected": true,
+        "previousArtifactPreserved": true
+      }
+    }
+  },
+  "verification": "Validated the actual retained producer receipt against the downloaded upstream producer; checked the complete tar export inventories, every listed size/hash, standalone binaries and current ordinary fixture hashes without extracting over any workspace.",
+  "limits": [
+    "This proves the completed retained producer and transferred preparation. Receiving iOS/Android native jobs are still required.",
+    "The run uses 002ee3a and predates later Expo and renderer-owned recreation gates.",
+    "No completed candidate, physical-device or independent-project evaluation is claimed."
+  ]
+}

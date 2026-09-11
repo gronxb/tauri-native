@@ -141,6 +141,13 @@ feature reports and standalone ABI 2 execution match the producer receipt and
 package hashes. This verifies the existing path on Linux/x86_64/16 KB. Retained
 ABI 3 and later lifecycle gates remain separate; no candidate is certified yet.
 
+The [retained producer receipt and archive](../docs/evidence/retained-hosted-producer-complete-2026-09-11.json)
+now also pass verification at `002ee3a`: all 139 listed iOS/Android export files,
+ordinary app binaries, source integrity and cache/failure-recovery receipts match.
+Both desktop contracts passed in that job and mobile producers were deleted.
+The receiving retained jobs are still required to establish native execution;
+this is preparation evidence, not final parity or later-revision acceptance.
+
 ## Expo Activity recreation — 2026-09-11
 
 [Native evidence](../docs/evidence/retained-expo-recreation-2026-09-11.json) records
