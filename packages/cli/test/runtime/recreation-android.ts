@@ -9,6 +9,7 @@ import { readRetainedArtifacts } from '../../../../scripts/retained-artifacts.ts
 import { sha256 } from '../../src/artifacts/files.ts';
 import { snapshot } from '../native-export/source-integrity.ts';
 import { acquireMobileTest } from './mobile-lock.ts';
+import { prepareRetainedPackage, retainedDependencies, retainedEvidence } from '../../../../scripts/retained-test-inputs.ts';
 
 const root = fileURLToPath(new URL('../../../..', import.meta.url));
 const mode = process.argv[2];
@@ -23,8 +24,8 @@ const composed = mode !== 'standalone';
 assert(!pendingPermission || composed, 'Pending renderer continuation checks require react or lynx');
 const initiallyUnpermitted = freshPermission || pendingPermission;
 const name = mode === 'react' ? 'RN' : 'Lynx';
-const device = process.env.ANDROID_SERIAL; assert(device, 'Select an arm64 ANDROID_SERIAL emulator');
-const evidence = path.join(root, 'target/retained-activity-recreation', ...(pendingPermission ? ['pending-permission'] : freshPermission ? ['fresh-permission'] : []), mode);
+const device = process.env.ANDROID_SERIAL; assert(device, 'Select an ANDROID_SERIAL emulator matching the exported slices');
+const evidence = path.join(retainedEvidence(root, 'retained-activity-recreation'), ...(pendingPermission ? ['pending-permission'] : freshPermission ? ['fresh-permission'] : []), mode);
 const producer = path.join(evidence, 'ordinary producer');
 const consumer = path.join(evidence, 'source free consumer');
 const artifact = path.resolve(options.find(option => !option.startsWith('--')) ?? path.join(root, 'target/retained-portability/exported-runtime'));
@@ -43,6 +44,7 @@ const lifecycleLog = path.join(evidence, 'recreation.log');
 let producerBefore: ReturnType<typeof snapshot> | undefined;
 let inputReceipt: ReturnType<typeof readRetainedArtifacts> | undefined;
 let packageSha256: string | undefined;
+let packageSource: string | undefined;
 let bundleSha256: string | undefined;
 
 function run(label: string, command: string, args: string[], cwd = evidence, environment = env) {
@@ -125,7 +127,9 @@ function addProbe(android: string, activity: string) {
 
 try {
   assert.equal(run('emulator', 'adb', ['-s', device, 'shell', 'getprop', 'ro.kernel.qemu']), '1');
-  assert.equal(run('abi', 'adb', ['-s', device, 'shell', 'getprop', 'ro.product.cpu.abi']), 'arm64-v8a');
+  const deviceAbi = run('abi', 'adb', ['-s', device, 'shell', 'getprop', 'ro.product.cpu.abi']);
+  assert.equal(run('page-size', 'adb', ['-s', device, 'shell', 'getconf', 'PAGE_SIZE']), '16384');
+  if (!composed) assert.equal(deviceAbi, 'arm64-v8a', 'Standalone source build selects arm64');
   let apk: string;
   if (!composed) {
     rmSync(producer, { recursive: true, force: true }); cpSync(fixture, producer, { recursive: true });
@@ -144,23 +148,23 @@ try {
     inputReceipt = readRetainedArtifacts(artifact);
     assert(inputReceipt.platform === 'android' && inputReceipt.profile === 'release');
     assert.equal(inputReceipt.bootstrap.applicationId, appId);
+    assert(inputReceipt.native.some(slice => slice.abi === deviceAbi), `Export has no slice for emulator ABI ${deviceAbi}`);
     rmSync(consumer, { recursive: true, force: true }); mkdirSync(consumer, { recursive: true });
     const copied = path.join(consumer, 'copied runtime'); cpSync(artifact, copied, { recursive: true });
     const packageName = mode === 'react' ? 'react-native' : 'lynx';
-    run('package', 'npm', ['pack', '--pack-destination', consumer], path.join(root, 'packages', packageName));
-    const tarball = `tauri-native-${packageName}-1.0.0-rc.0.tgz`;
-    packageSha256 = sha256(readFileSync(path.join(consumer, tarball)));
-    run('unpack', 'tar', ['-xzf', tarball], consumer);
-    const sdk = path.join(consumer, 'package');
+    const packed = prepareRetainedPackage(root, packageName, consumer, run);
+    packageSha256 = packed.sha256; packageSource = packed.source;
+    const sdk = packed.directory;
     const renderer = path.join(consumer, 'renderer'); mkdirSync(renderer);
-    symlinkSync(path.join(root, 'examples', packageName, 'node_modules'), path.join(renderer, 'node_modules'), 'dir');
+    const dependenciesRoot = retainedDependencies(root, packageName);
+    symlinkSync(path.join(dependenciesRoot, 'node_modules'), path.join(renderer, 'node_modules'), 'dir');
     writeFileSync(path.join(renderer, 'package.json'), '{"name":"retained-recreation-consumer","private":true,"type":"module"}\n');
     let bundle: string;
     if (mode === 'react') {
       cpSync(path.join(root, 'packages/react-native/test/retained/index.tsx.fixture'), path.join(renderer, 'index.tsx'));
       cpSync(path.join(root, 'packages/react-native/test/retained/build.cjs.fixture'), path.join(renderer, 'build.cjs'));
       writeFileSync(path.join(renderer, 'babel.config.json'), '{"presets":["babel-preset-expo"]}\n');
-      run('renderer-build', process.execPath, ['build.cjs', 'android'], renderer, { ...env, PROOF_REPOSITORY: root, RETAINED_SDK_DIR: sdk });
+      run('renderer-build', process.execPath, ['build.cjs', 'android'], renderer, { ...env, PROOF_REPOSITORY: root, RETAINED_DEPENDENCIES: dependenciesRoot, RETAINED_SDK_DIR: sdk });
       bundle = path.join(renderer, 'index.bundle.js');
     } else {
       mkdirSync(path.join(renderer, 'src'));
@@ -282,7 +286,7 @@ try {
   }
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, mode, profile: composed ? 'release' : 'debug',
     testSigning: 'Debug test key; composed Release/R8 remains non-debuggable', apkSha256: sha256(readFileSync(apk)),
-    ...(composed ? { artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))), packageSha256, bundleSha256, sourceFreeBuild: 'PATH=/usr/bin:/bin:/usr/sbin:/sbin', artifactUnchanged: true }
+    ...(composed ? { artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))), packageSha256, packageSource, deviceAbi, pageSize: 16384, bundleSha256, sourceFreeBuild: 'PATH=/usr/bin:/bin:/usr/sbin:/sbin', artifactUnchanged: true }
       : { sourceHashes: producerBefore, producerUnchanged: true }),
     baseline: initial.result.baseline, freshPermission, pendingPermission, recreations: 2, nativeUiFlows: pendingPermission ? 9 : freshPermission ? 7 : 5, events: observed,
     ...(pendingPermission ? { permissionResults: permissionResults(), instrumentation: 'Test-only broadcast receiver triggers real recreation without foregrounding the Activity. Copied PluginManager logs after the unchanged original permission callback returns; no OS result or native routing is substituted.' } : {}),

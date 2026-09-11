@@ -90,6 +90,13 @@ separate from successful acceptance. RN-owned permissions, Expo recreation,
 process death, broader navigation/channel behavior, retained CI and device/adopter
 gates remain open; this does not close the issue or establish full release parity.
 
+
+## Transferred SDK acceptance — 2026-09-11
+
+Forty-one Android Release UI flows (RN 24, Lynx 17) pass with transferred SDKs and fresh external dependencies. Both include the generated default startup. Changed/missing CI inputs are rejected without local repacking.
+
+[Evidence](../docs/evidence/retained-ci-transfer-android-2026-09-11.json) records SDK/artifact/producer integrity and the separate initial bundle failures. The earlier runtime export is reused; required retained CI at one revision, Linux/x86_64 execution and final lifecycle/device/adopter acceptance remain open.
+
 ## Scope and constraints
 
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.

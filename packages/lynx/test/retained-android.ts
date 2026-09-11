@@ -6,18 +6,20 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { setTimeout } from 'node:timers/promises';
 import { readRetainedArtifacts } from '../../../scripts/retained-artifacts.ts';
+import { prepareRetainedPackage, retainedDependencies, retainedEvidence } from '../../../scripts/retained-test-inputs.ts';
 import { sha256 } from '../../cli/src/artifacts/files.ts';
 import { acquireMobileTest } from '../../cli/test/runtime/mobile-lock.ts';
 import { assertOriginalDocument, verifyRetainedView } from './retained/view-scenarios.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
+const dependenciesRoot = retainedDependencies(root, 'lynx');
 const artifact = path.resolve(process.argv[2] ?? path.join(root, 'target/retained-portability/exported-runtime'));
 const manifest = readRetainedArtifacts(artifact);
 assert(manifest.platform === 'android' && manifest.profile === 'release');
 assert.equal(manifest.bootstrap.applicationId, 'dev.taurinative.mobilefieldnotes');
 const device = process.env.ANDROID_SERIAL;
-assert(device, 'Choose an arm64 ANDROID_SERIAL emulator');
-const evidence = path.join(root, 'target/lynx-retained-android');
+assert(device, 'Choose an ANDROID_SERIAL emulator matching the exported slices');
+const evidence = retainedEvidence(root, 'lynx-retained-android');
 const consumer = path.join(evidence, 'source free consumer');
 const renderer = path.join(consumer, 'renderer');
 const generated = path.join(consumer, 'composed application');
@@ -63,13 +65,14 @@ try {
   const copied = path.join(consumer, 'copied runtime'); cpSync(artifact, copied, { recursive: true });
   assert.deepEqual(readRetainedArtifacts(copied), manifest);
   assert.equal(run('emulator', 'adb', ['-s', device, 'shell', 'getprop', 'ro.kernel.qemu']), '1');
-  assert.equal(run('abi', 'adb', ['-s', device, 'shell', 'getprop', 'ro.product.cpu.abi']), 'arm64-v8a');
+  const deviceAbi = run('abi', 'adb', ['-s', device, 'shell', 'getprop', 'ro.product.cpu.abi']);
+  assert(manifest.native.some(slice => slice.abi === deviceAbi), `Export has no slice for emulator ABI ${deviceAbi}`);
+  assert.equal(run('page-size', 'adb', ['-s', device, 'shell', 'getconf', 'PAGE_SIZE']), '16384');
   // The consumer uses the actual npm tarball. No workspace source alias supplies the module.
-  run('package', 'npm', ['pack', '--pack-destination', consumer], path.join(root, 'packages/lynx'));
-  run('unpack', 'tar', ['-xzf', 'tauri-native-lynx-1.0.0-rc.0.tgz']);
-  const sdk = path.join(consumer, 'package');
+  const packed = prepareRetainedPackage(root, 'lynx', consumer, run);
+  const sdk = packed.directory;
   mkdirSync(path.join(renderer, 'src'), { recursive: true });
-  symlinkSync(path.join(root, 'examples/lynx/node_modules'), path.join(renderer, 'node_modules'), 'dir');
+  symlinkSync(path.join(dependenciesRoot, 'node_modules'), path.join(renderer, 'node_modules'), 'dir');
   cpSync(new URL('./retained/App.tsx.fixture', import.meta.url), path.join(renderer, 'src/App.tsx'));
   cpSync(path.join(root, 'packages/cli/test/runtime/composition/lynx/index.tsx.fixture'), path.join(renderer, 'src/index.tsx'));
   writeFileSync(path.join(renderer, 'package.json'), '{"name":"packed-retained-lynx-consumer","private":true,"type":"module"}\n');
@@ -102,7 +105,7 @@ try {
   for (const library of libraries) {
     const label = library.replaceAll('/', '-');
     run(`extract-${label}`, 'unzip', ['-o', apk, library, '-d', elf]);
-    const headers = run(`elf-${label}`, path.join(process.env.NDK_HOME!, 'toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-readelf'), ['-lW', path.join(elf, library)]);
+    const headers = run(`elf-${label}`, path.join(process.env.NDK_HOME!, `toolchains/llvm/prebuilt/${process.platform === 'darwin' ? 'darwin' : 'linux'}-x86_64/bin/llvm-readelf`), ['-lW', path.join(elf, library)]);
     const loads = headers.split('\n').filter(line => line.trim().startsWith('LOAD '));
     assert(loads.length && loads.every(line => BigInt(line.trim().split(/\s+/).at(-1)!) >= 16384n), `${library} must be 16 KB aligned`);
   }
@@ -176,8 +179,8 @@ try {
   assert(!existsSync(path.join(consumer, 'src-tauri')), 'Consumer has no Rust producer');
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform: 'android', profile: 'release', formatVersion: 2, abiVersion: 3,
     renderer: 'Lynx 4.0.1 / PrimJS 4.0.0', sourceFree: true, sourceFreeBuild: 'PATH=/usr/bin:/bin:/usr/sbin:/sbin ./gradlew --no-daemon assembleRelease',
-    nonDebuggable: true, libraries, elfAlignment: 'All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed',
-    packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-lynx-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
+    nonDebuggable: true, deviceAbi, pageSize: 16384, libraries, elfAlignment: 'All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed',
+    packageSha256: packed.sha256, packageSource: packed.source, artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
     apkSha256: sha256(readFileSync(acceptanceApk)), bundleSha256: sha256(readFileSync(bundle)), baseline, initial, permissionRetired, remounted, closed, notes, view,
     composition: receipt, defaultActivity: { activity: composition.activity, pid, apkSha256: sha256(readFileSync(apk)), overriddenHooks: false, identicalNativeLibraries: libraries.length },
     uiScenarios: ['shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'renderer retirement during pending OS permission prevents the old continuation save', 'undeclared session preserves original caller_denied code/message', 'save and event', 'background deep link and event', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'remove Lynx and keep original Tauri frontend', 'unmodified generated Activity/default layout', 'default SDK composition retains original Tauri ACL/state/deep-link events'],

@@ -29,6 +29,25 @@ dependencies and differing slices. They do not establish native compatibility;
 the [native evidence](../../../../docs/evidence/retained-target-dependencies-2026-09-11.json)
 records that separately. Unsupported active plugins still fail before export.
 
+## Transferred renderer packages
+
+The RN/Expo and Lynx `retained-ios.ts` / `retained-android.ts` gates, and the
+composed Android recreation gate, accept these environment variables:
+
+- `TAURI_NATIVE_SDK_TARBALL`: the matching SDK tarball received from the producer job.
+- `TAURI_NATIVE_SDK_SHA256`: its expected SHA-256 from that job's receipt.
+- `RETAINED_DEPENDENCIES`: a separate installed renderer dependency project.
+- `RETAINED_TEST_OUTPUT`: the parent directory for this run's evidence.
+
+A transferred SDK is hashed before extraction and checked for the requested
+package name. The consumer does not run npm pack or the SDK's source build.
+Missing or changed inputs fail; GitHub Actions cannot fall back to local
+repacking. Local runs without a transfer continue to pack the current SDK and
+use the example's dependencies. Android checks the actual emulator ABI against
+the receipt, requires 16 KB pages and verifies the APK's packaged slices and
+alignment. Linux selects its own NDK host tools. Adding these input paths does
+not establish a completed CI run or x86_64 native execution.
+
 ## Android Activity recreation
 
 With the Android environment below, run these from the repository root, serially:
@@ -48,8 +67,8 @@ node --experimental-strip-types packages/cli/test/runtime/recreation-android.ts 
 The standalone runner builds the ordinary fixture with the Tauri CLI. Its probe
 inherits the generated MainActivity, including its original `onCreate`; only
 the disposable generated class is opened for subclassing. The composed runners
-pack the current SDK, build the existing renderer fixture and call its public
-composer with a complete arm64 Release artifact. Their consumer builds omit
+receive or pack the SDK, build the existing renderer fixture and call its public
+composer with a complete Release artifact matching the emulator. Their consumer builds omit
 Rust from PATH and keep Release/R8 non-debuggable, with a debug test signing key.
 
 Each runner obtains location permission through the OS UI, saves a note and

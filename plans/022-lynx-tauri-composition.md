@@ -68,6 +68,13 @@ replacement Activity. Retired renderers save no sentinel note, state/setup remai
 covers Tauri geolocation; RN-owned permissions, Expo recreation, process death,
 broader navigation/channel behavior and full retained CI remain separate work.
 
+
+## Transferred SDK acceptance — 2026-09-11
+
+Seventeen Lynx Android Release UI flows pass with a transferred SDK and fresh external dependencies, including Tauri permissions, view teardown and generated default startup. iOS transfer execution remains separate.
+
+[Evidence](../docs/evidence/retained-ci-transfer-android-2026-09-11.json) records SDK/artifact/producer integrity and the separate initial bundle failures. The earlier runtime export is reused; required retained CI at one revision, Linux/x86_64 execution and final lifecycle/device/adopter acceptance remain open.
+
 ## Scope and constraints
 
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.

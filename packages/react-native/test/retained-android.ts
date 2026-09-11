@@ -6,12 +6,14 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { setTimeout } from 'node:timers/promises';
 import { readRetainedArtifacts } from '../../../scripts/retained-artifacts.ts';
+import { prepareRetainedPackage, retainedDependencies, retainedEvidence } from '../../../scripts/retained-test-inputs.ts';
 import { sha256 } from '../../cli/src/artifacts/files.ts';
 import { assertOriginalDocument, verifyRetainedView } from './retained/view-scenarios.ts';
 import { acquireMobileTest } from '../../cli/test/runtime/mobile-lock.ts';
 import { configureCng, verifyCng } from './retained/cng-scenarios.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
+const dependenciesRoot = retainedDependencies(root, 'react-native');
 const flags = new Set(process.argv.slice(3));
 assert([...flags].every(flag => ['--expo', '--native-project', '--cng'].includes(flag)), 'Unknown native gate option');
 const cng = flags.has('--cng');
@@ -22,8 +24,8 @@ const manifest = readRetainedArtifacts(artifact);
 assert(manifest.platform === 'android' && manifest.profile === 'release');
 assert.equal(manifest.bootstrap.applicationId, 'dev.taurinative.mobilefieldnotes');
 const device = process.env.ANDROID_SERIAL;
-assert(device, 'Choose an arm64 ANDROID_SERIAL emulator');
-const evidence = path.join(root, (expo ? 'target/react-retained-expo-android' : 'target/react-retained-android') + (cng ? '-cng' : nativeProject ? '-native-project' : ''));
+assert(device, 'Choose an ANDROID_SERIAL emulator matching the exported slices');
+const evidence = retainedEvidence(root, (expo ? 'react-retained-expo-android' : 'react-retained-android') + (cng ? '-cng' : nativeProject ? '-native-project' : ''));
 const consumer = path.join(evidence, 'source free consumer');
 const renderer = path.join(consumer, 'renderer');
 const generated = nativeProject ? path.join(renderer, 'android') : path.join(expo ? renderer : consumer, 'composed application');
@@ -73,15 +75,16 @@ try {
   const copied = path.join(consumer, 'copied runtime'); cpSync(artifact, copied, { recursive: true });
   assert.deepEqual(readRetainedArtifacts(copied), manifest);
   assert.equal(run('emulator', 'adb', ['-s', device, 'shell', 'getprop', 'ro.kernel.qemu']), '1');
-  assert.equal(run('abi', 'adb', ['-s', device, 'shell', 'getprop', 'ro.product.cpu.abi']), 'arm64-v8a');
+  const deviceAbi = run('abi', 'adb', ['-s', device, 'shell', 'getprop', 'ro.product.cpu.abi']);
+  assert(manifest.native.some(slice => slice.abi === deviceAbi), `Export has no slice for emulator ABI ${deviceAbi}`);
+  assert.equal(run('page-size', 'adb', ['-s', device, 'shell', 'getconf', 'PAGE_SIZE']), '16384');
   // The consumer uses the actual npm tarball. No workspace source alias supplies the module.
-  run('package', 'npm', ['pack', '--pack-destination', consumer], path.join(root, 'packages/react-native'));
-  run('unpack', 'tar', ['-xzf', 'tauri-native-react-native-1.0.0-rc.0.tgz']);
-  const sdk = path.join(consumer, 'package');
+  const packed = prepareRetainedPackage(root, 'react-native', consumer, run);
+  const sdk = packed.directory;
   mkdirSync(renderer, { recursive: true });
   const expoDependencies = { '@tauri-native/react-native': '1.0.0-rc.0', expo: '57.0.19', react: '19.2.3', 'react-native': '0.86.3', 'react-native-safe-area-context': '5.7.0', 'expo-file-system': '57.0.6', 'expo-constants': '57.0.17', 'expo-modules-core': '57.0.15', ...(cng ? { 'expo-location': '57.0.15' } : {}) };
   if (expo) {
-    const exampleRequire = createRequire(path.join(root, 'examples/react-native/package.json'));
+    const exampleRequire = createRequire(path.join(dependenciesRoot, 'package.json'));
     const expoRequire = createRequire(realpathSync(exampleRequire.resolve('expo/package.json')));
     const location = path.join(renderer, 'installed-expo-location');
     if (cng) {
@@ -98,7 +101,7 @@ try {
       const directory = name === '@tauri-native/react-native' ? sdk : name === 'expo-location' ? location : path.dirname(realpathSync((name.startsWith('expo-') ? expoRequire : exampleRequire).resolve(`${name}/package.json`)));
       symlinkSync(directory, file, 'dir');
     }
-  } else symlinkSync(path.join(root, 'examples/react-native/node_modules'), path.join(renderer, 'node_modules'), 'dir');
+  } else symlinkSync(path.join(dependenciesRoot, 'node_modules'), path.join(renderer, 'node_modules'), 'dir');
   cpSync(new URL('./retained/index.tsx.fixture', import.meta.url), path.join(renderer, 'index.tsx'));
   if (expo) {
     cpSync(new URL('./retained/index.tsx.fixture', import.meta.url), path.join(renderer, 'fieldnotes.tsx'));
@@ -109,7 +112,7 @@ try {
   cpSync(new URL('./retained/build.cjs.fixture', import.meta.url), path.join(renderer, 'build.cjs'));
   writeFileSync(path.join(renderer, 'package.json'), JSON.stringify({ name: 'packed-retained-rn-consumer', private: true, ...(expo ? { dependencies: expoDependencies } : {}) }));
   writeFileSync(path.join(renderer, 'babel.config.json'), '{"presets":["babel-preset-expo"]}\n');
-  run('renderer-build', process.execPath, ['build.cjs', 'android'], renderer, { ...env, PROOF_REPOSITORY: root, RETAINED_SDK_DIR: sdk });
+  run('renderer-build', process.execPath, ['build.cjs', 'android'], renderer, { ...env, PROOF_REPOSITORY: root, RETAINED_DEPENDENCIES: dependenciesRoot, RETAINED_SDK_DIR: sdk });
   const bundle = path.join(renderer, 'index.bundle.js');
   const { composeAndroid } = createRequire(path.join(consumer, 'consumer.cjs'))(path.join(sdk, 'compose.js'));
   const { readRetainedArtifacts: packedReader } = createRequire(path.join(consumer, 'consumer.cjs'))(path.join(sdk, 'retained-artifacts.js'));
@@ -144,7 +147,7 @@ try {
   for (const library of libraries) {
     const label = library.replaceAll('/', '-');
     run(`extract-${label}`, 'unzip', ['-o', apk, library, '-d', elf]);
-    const headers = run(`elf-${label}`, path.join(process.env.NDK_HOME!, 'toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-readelf'), ['-lW', path.join(elf, library)]);
+    const headers = run(`elf-${label}`, path.join(process.env.NDK_HOME!, `toolchains/llvm/prebuilt/${process.platform === 'darwin' ? 'darwin' : 'linux'}-x86_64/bin/llvm-readelf`), ['-lW', path.join(elf, library)]);
     const loads = headers.split('\n').filter(line => line.trim().startsWith('LOAD '));
     assert(loads.length && loads.every(line => BigInt(line.trim().split(/\s+/).at(-1)!) >= 16384n), `${library} must be 16 KB aligned`);
   }
@@ -271,8 +274,8 @@ try {
   assert(!existsSync(path.join(consumer, 'src-tauri')), 'Consumer has no Rust producer');
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform: 'android', profile: 'release', formatVersion: 2, abiVersion: 3,
     renderer: 'React Native 0.86.3 / Hermes 250829098.0.17 / generated TurboModule and Fabric', expo, cng: cngResult ? { scenarios: cngResult.generationScenarios, files: cngResult.files, nativeProbe: initial.cngProbe } : false, layout: nativeProject ? 'native-project' : 'container', sourceFree: true, sourceFreeBuild: `PATH=${buildEnv.PATH} ./gradlew --no-daemon assembleRelease`,
-    nonDebuggable: true, libraries, elfAlignment: 'All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed',
-    packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-react-native-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
+    nonDebuggable: true, deviceAbi, pageSize: 16384, libraries, elfAlignment: 'All packaged LOAD segments >= 16 KB; zipalign -c -P 16 -v 4 passed',
+    packageSha256: packed.sha256, packageSource: packed.source, artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
     apkSha256: sha256(readFileSync(acceptanceApk)), defaultActivity: { activity: composition.activity, pid, apkSha256: sha256(readFileSync(apk)), overriddenHooks: false },
     bundleSha256: sha256(readFileSync(bundle)), baseline, initial, permissionRetired, remounted, viewIntegration, closed, notes,
     rnPermissions, rnPermissionQueue, rnPermissionPending, rnPermissionRetired, expoPermissions,

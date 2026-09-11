@@ -347,3 +347,14 @@ difference between the two native SDK runs; both versions produce the same
 43 generated iOS files. This completes the scoped CNG stage of #45. Broader
 lifecycle/source forms, full parity/CI/migration, physical devices and independent
 adopters remain required. #45 and release gates remain open.
+
+
+## Transferred retained SDK inputs — 2026-09-11
+
+[Local Android evidence](../docs/evidence/retained-ci-transfer-android-2026-09-11.json)
+records 24 RN and 17 Lynx Release UI flows with transferred SDKs and fresh external
+renderer dependencies. SDK digest/name checks reject changed or missing CI inputs;
+local repacking is forbidden in Actions. Producer/artifact/SDK source integrity
+passes. These reuse the earlier runtime export. Required retained CI at one
+revision, iOS/Expo transfer execution, Linux/x86_64, full lifecycle/channel parity
+and physical-device/adopter acceptance remain open; #45–#47 stay in progress.

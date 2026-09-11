@@ -6,18 +6,20 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { setTimeout } from 'node:timers/promises';
 import { readRetainedArtifacts } from '../../../scripts/retained-artifacts.ts';
+import { prepareRetainedPackage, retainedDependencies, retainedEvidence } from '../../../scripts/retained-test-inputs.ts';
 import { sha256 } from '../../cli/src/artifacts/files.ts';
 import { acquireMobileTest } from '../../cli/test/runtime/mobile-lock.ts';
 import { assertOriginalDocument, verifyRetainedView } from './retained/view-scenarios.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
+const dependenciesRoot = retainedDependencies(root, 'lynx');
 const artifact = path.resolve(process.argv[2] ?? path.join(root, 'target/retained-ios-portability/exported-runtime'));
 const manifest = readRetainedArtifacts(artifact);
 assert(manifest.platform === 'ios' && manifest.profile === 'release');
 assert.equal(manifest.bootstrap.applicationId, 'dev.taurinative.mobilefieldnotes');
 const device = process.env.IOS_SIMULATOR_UDID;
 assert(device, 'Choose an arm64 IOS_SIMULATOR_UDID');
-const evidence = path.join(root, 'target/lynx-retained-ios');
+const evidence = retainedEvidence(root, 'lynx-retained-ios');
 const consumer = path.join(evidence, 'source free consumer');
 const renderer = path.join(consumer, 'renderer');
 const generated = path.join(consumer, 'composed application');
@@ -64,11 +66,10 @@ try {
   rmSync(consumer, { recursive: true, force: true }); mkdirSync(consumer, { recursive: true });
   const copied = path.join(consumer, 'copied runtime'); cpSync(artifact, copied, { recursive: true });
   assert.deepEqual(readRetainedArtifacts(copied), manifest);
-  run('package', 'npm', ['pack', '--pack-destination', consumer], path.join(root, 'packages/lynx'));
-  run('unpack', 'tar', ['-xzf', 'tauri-native-lynx-1.0.0-rc.0.tgz']);
-  const sdk = path.join(consumer, 'package');
+  const packed = prepareRetainedPackage(root, 'lynx', consumer, run);
+  const sdk = packed.directory;
   mkdirSync(path.join(renderer, 'src'), { recursive: true });
-  symlinkSync(path.join(root, 'examples/lynx/node_modules'), path.join(renderer, 'node_modules'), 'dir');
+  symlinkSync(path.join(dependenciesRoot, 'node_modules'), path.join(renderer, 'node_modules'), 'dir');
   cpSync(new URL('./retained/App.tsx.fixture', import.meta.url), path.join(renderer, 'src/App.tsx'));
   cpSync(path.join(root, 'packages/cli/test/runtime/composition/lynx/index.tsx.fixture'), path.join(renderer, 'src/index.tsx'));
   writeFileSync(path.join(renderer, 'package.json'), '{"name":"packed-retained-lynx-consumer","private":true,"type":"module"}\n');
@@ -166,7 +167,7 @@ try {
   assert(!existsSync(path.join(consumer, 'src-tauri')));
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform: 'ios', profile: 'release', formatVersion: 2, abiVersion: 3,
     renderer: 'Lynx 4.0.1 / PrimJS 4.0.0', sourceFree: true, sourceFreeBuild: 'PATH=/usr/bin:/bin:/usr/sbin:/sbin xcodebuild -configuration release -sdk iphonesimulator',
-    packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-lynx-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
+    packageSha256: packed.sha256, packageSource: packed.source, artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
     binarySha256: acceptanceBinarySha256, composition: receipt, podIntegration, defaultIntegration, bundleSha256: sha256(readFileSync(bundle)), baseline, denied, permissionRetired, saved, remounted, closed, notes, view,
     uiScenarios: ['shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'renderer retirement during pending OS permission prevents the old continuation save', 'undeclared session preserves original caller_denied code/message', 'save and event', 'background deep link and event', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'removing Lynx preserves the independent original Tauri frontend', 'unmodified generated iOS startup/default layout', 'default SDK composition receives original Tauri deep-link events'],
     testOnlyIntegration: 'Acceptance subclass supplies layout, baseline readiness and telemetry; the packed composer/SDK own startup, notification observation, readiness and attachment. A second Release app executes the unmodified generated startup/default layout and retained TauriView with no acceptance subclass. Original Tauri UIApplication delegate preserved. Third-party autolinking and broader navigation/lifecycle forms remain open.',

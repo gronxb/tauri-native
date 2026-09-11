@@ -151,3 +151,26 @@ streaming and broader source/owner forms remain open. Expo config plugins are
 supported within the [documented native configuration/resource boundary](../packages/react-native/RETAINED.md#expo-config-plugins-and-native-regeneration).
 Required retained CI, transferred-package parity, physical devices and two
 independent adopters remain release work in [plan 023](../plans/023-tauri-mobile-composition-acceptance.md).
+
+
+## Transferred SDK acceptance — 2026-09-11
+
+[Local native evidence](evidence/retained-ci-transfer-android-2026-09-11.json)
+adds 24 RN and 17 Lynx Android UI flows using received SDK tarballs and fresh
+renderer dependencies installed outside the checkout. Both Release/R8 apps run
+the acceptance UI and unmodified generated startup. The harness verifies the
+producer-provided SDK digest before extraction, records transferred package
+identity, and rejects missing CI input instead of repacking locally. Android
+checks the emulator ABI against the artifact and requires 16 KB pages.
+
+The original fourteen-file Tauri producer, copied artifacts and extracted SDK
+files remain unchanged. The existing producer-deleted artifact is reused; this
+is not a fresh export or a same-commit GitHub Actions result. Initial RN Metro
+path-alias and Lynx missing-TypeScript failures occurred before native build
+and remain separate from acceptance. Their corrected external dependency runs
+pass. Three transfer-input scenarios and CLI/script typechecks also pass.
+
+Required retained producer/native/aggregate CI wiring, iOS/Expo transfer runs,
+Linux/x86_64 execution, broader lifecycle/channel parity, devices and independent
+adopters remain open. The CI producer now runs the input rejection tests; that
+does not certify the pending retained native jobs.

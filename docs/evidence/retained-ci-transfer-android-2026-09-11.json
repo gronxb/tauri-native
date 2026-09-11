@@ -1,0 +1,353 @@
+{
+  "passed": true,
+  "recordedAt": "2026-09-11T01:56:12.742816+00:00",
+  "baseCommit": "41d239b8ea7bad92f00416c2b98d261cd07b4d9a",
+  "verification": {
+    "inputScenarios": 3,
+    "scriptsTypecheck": true,
+    "cliTypecheck": true
+  },
+  "scope": "Local transferred SDK inputs with fresh external dependencies; Android RN and Lynx Release native execution",
+  "runtime": {
+    "artifact": "target/retained-recreation-permissions/fresh-export/exported-runtime",
+    "manifestSha256": "f036a9cadd93f0e0c7c7be6eebdc76549e244b5c31ec4b43cd5af5034a77fbef",
+    "reused": true,
+    "newExport": false,
+    "producerDeletionEvidence": "docs/evidence/retained-recreation-permissions-2026-09-11.json"
+  },
+  "originalFixtureHashes": {
+    "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+    "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+    "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+    "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+    "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+    "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+    "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+    "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+    "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+    "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+    "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+    "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+    "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+    "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+  },
+  "results": [
+    {
+      "sdk": "react-native",
+      "report": "target/retained-ci-transfer/native/react-retained-android/report.json",
+      "reportSha256": "0df152b20c14f976c5a649eeeea754d726c133c5e6c1144a016efcfb3207f7f2",
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "packages/react-native/test/retained-android.ts",
+        "target/retained-recreation-permissions/fresh-export/exported-runtime"
+      ],
+      "exitCode": 0,
+      "packageSha256": "16ffe7509d23158b2d5b30f553a1fcd0d28589edc6480c3fe5c04995a1222d52",
+      "packageSource": "transferred",
+      "artifactSha256": "f036a9cadd93f0e0c7c7be6eebdc76549e244b5c31ec4b43cd5af5034a77fbef",
+      "apkSha256": "02288e88ff3cb326fc7e2c5e9cc3fc2ec648d307a29fa6238f4bb9abe7768071",
+      "bundleSha256": "7cced5feb0b2e7005216ff5f556c03168c5a214d284082277c211873bc0f3d11",
+      "sourceFree": true,
+      "nonDebuggable": true,
+      "deviceAbi": "arm64-v8a",
+      "pageSize": 16384,
+      "freshDependencyVersions": {
+        "expo": "57.0.19",
+        "react": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-safe-area-context": "5.7.0",
+        "expo-file-system": "57.0.6",
+        "expo-constants": "57.0.17",
+        "expo-modules-core": "57.0.15",
+        "expo-location": "57.0.15",
+        "babel-preset-expo": "57.0.10"
+      },
+      "dependencyLockSha256": "f865ec4185a6debb88f1ed785c779816a0f9204383974e1b56a8d4daacef9d23",
+      "unchangedExtractedPackageFiles": true,
+      "copiedArtifactUnchanged": true,
+      "flows": [
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/attach-before-close.xml",
+          "sha256": "f5f794450384ee14accb768df0453550f7fe730990013e0b1eaefc584e56c943",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/back.xml",
+          "sha256": "c21cc25bacdc840ac8efd2874fa8df4fe2d66b053f3f93729f214b3074ccefa3",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/background.xml",
+          "sha256": "2877c8206efca5cc419383f68891591bbbc30164a9722af00ab7abf4d962fafa",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/competing-view.xml",
+          "sha256": "bc45f9a43f8f16df8033bc9b07929e144b37ba077b14c5d5f82749500ec8c2e9",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/default-integration.xml",
+          "sha256": "d1911f037db8dc1412132d02a29cb0b1610b63bf4342425ea8e86c1ce6c7123c",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/default-link.xml",
+          "sha256": "deaf88341588c4bd07f67c75e0c21940be52afdb9c9f5bd81d37fd834d486995",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/default-rn-permissions.xml",
+          "sha256": "0428f72fed0cdb075b57b1c324857f2be296cf899efbbb6e1fdd6ee34d0e0bbe",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/default-view.xml",
+          "sha256": "e5649f64cb1f5f23a7c7d7f545f4eb7087eb7910e9c3fab45356cc69d42cf28f",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/deny-permission.xml",
+          "sha256": "53918c609efe945be49ff34ba6260273507c547bf5b4d4d5d42654dd8a5baaa5",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/detach-view.xml",
+          "sha256": "3518fffc22134ea23e25c4f2758fbe4265abcd6da2fe1573fa07186f45e2b241",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/embedded-frontend.xml",
+          "sha256": "39d17a76f98bf591e1d56612925fd7c6551e5826a7a83f026e94d3f835d071a9",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/fresh-events.xml",
+          "sha256": "99ba78435c4495fc19500e55c6fe298da633c9edf3963ced62f60881765cbf0a",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/grant-permission.xml",
+          "sha256": "c09e7bb44aaeab533cedf1990301d35421c1cd8b0a868b5491ceffdea645edcc",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/initial.xml",
+          "sha256": "4489dfbf7417a7951d6dbd91f9be2dc2e62c5965c3a56881c9b4166f444d3afc",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/remount-view.xml",
+          "sha256": "7224190a9f8d919e032ffcc02caa75ee6976017cbeb146f81c1117c9687806a4",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/remove-renderer.xml",
+          "sha256": "111a4383deca631400b23f15b232afb5b1f0e912cbe1cbde265c2f5f0b1a3fdd",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/replace-renderer-with-view.xml",
+          "sha256": "9d125864dcd5dfa08f6facc2709e53803615721cde94773a256a1e29b8a2b172",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/resume.xml",
+          "sha256": "40a72cae457c43fe6056710140711b2804e56799bd0cef4f88fe324308644d61",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/retire-permission.xml",
+          "sha256": "567f8a25d1760462d1b9337380d9b04b8d353e9187fa1f75dd7566270ac1c1d4",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/rn-deny-permission.xml",
+          "sha256": "f3e75cf5fd3e223bafc8f4729aa5c2d13005d226991e3300a3af8fcf71b784a5",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/rn-grant-permissions.xml",
+          "sha256": "79d7f92e95d7edc4543a2b8837ad87705cccdd3ac219f7a60d13f8338d6fbd31",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/rn-grant-retired-permission.xml",
+          "sha256": "aa22d8230ae9479ac1153d6dd20fbf5761cb523a2c6b3a0a32081e58ab3938a9",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/rn-queued-permissions.xml",
+          "sha256": "9aeaa557ecdd1549937a32c8b4cba0f45cf5ccb45226fd85545f69e4c7f1fc67",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/react-retained-android/rn-retire-permission.xml",
+          "sha256": "3f1769044c6bfd45f74b7b5c35c3d23bcc1ec81895e436d7e4e3ca0b3afb571e",
+          "tests": 1
+        }
+      ]
+    },
+    {
+      "sdk": "lynx",
+      "report": "target/retained-ci-transfer/native/lynx-retained-android/report.json",
+      "reportSha256": "91d6fb0e77c014788bce84afd84caae0bca70e674e021578b21f332ed7081ca8",
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "packages/lynx/test/retained-android.ts",
+        "target/retained-recreation-permissions/fresh-export/exported-runtime"
+      ],
+      "exitCode": 0,
+      "packageSha256": "c2a80c66a6397dcdf2632a83d80dfc14c89ef120068ab210904677ab862d8e9e",
+      "packageSource": "transferred",
+      "artifactSha256": "f036a9cadd93f0e0c7c7be6eebdc76549e244b5c31ec4b43cd5af5034a77fbef",
+      "apkSha256": "cac9213fdcb1a91b522e052e71ce95d4010f04ebef78fbb719dca3ba35b0c1d2",
+      "bundleSha256": "f1f0731457be4d390d00859301f748f2601a64892d6ece910e640c737aaf704d",
+      "sourceFree": true,
+      "nonDebuggable": true,
+      "deviceAbi": "arm64-v8a",
+      "pageSize": 16384,
+      "freshDependencyVersions": {
+        "@lynx-js/react": "0.125.0",
+        "@lynx-js/react-rsbuild-plugin": "0.19.1",
+        "@lynx-js/rspeedy": "0.16.5",
+        "@lynx-js/types": "4.1.0",
+        "typescript": "6.0.3"
+      },
+      "dependencyLockSha256": "854875238959ec7385f0429f12676a71a63186ed347ee55d4b438a397b1a73e3",
+      "unchangedExtractedPackageFiles": true,
+      "copiedArtifactUnchanged": true,
+      "flows": [
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/attach-before-close.xml",
+          "sha256": "e0bb69a204341bb4a98dfc017940a02d2484431173beb0f37d7920a66a21cc1c",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/background.xml",
+          "sha256": "2877c8206efca5cc419383f68891591bbbc30164a9722af00ab7abf4d962fafa",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/competing-view.xml",
+          "sha256": "bc45f9a43f8f16df8033bc9b07929e144b37ba077b14c5d5f82749500ec8c2e9",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/default-integration.xml",
+          "sha256": "16fde3042f8c2073992a3d252fafbb5d5769172d75080125d1dea071cca316a0",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/default-link.xml",
+          "sha256": "deaf88341588c4bd07f67c75e0c21940be52afdb9c9f5bd81d37fd834d486995",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/default-view.xml",
+          "sha256": "e5649f64cb1f5f23a7c7d7f545f4eb7087eb7910e9c3fab45356cc69d42cf28f",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/deny-permission.xml",
+          "sha256": "53918c609efe945be49ff34ba6260273507c547bf5b4d4d5d42654dd8a5baaa5",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/detach-view.xml",
+          "sha256": "f038d89b9b272d9ee3aa4f44228d85296476103dd2d6375f726f3a5a129442b0",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/embedded-frontend.xml",
+          "sha256": "39b764bce2116ba6b0e6d9d027897aab8717c15f5e9a55f68dd0b99227b965fe",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/fresh-events.xml",
+          "sha256": "99ba78435c4495fc19500e55c6fe298da633c9edf3963ced62f60881765cbf0a",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/grant-permission.xml",
+          "sha256": "e9bf611cdfea1b8f50135e4bd4d9eb456d05587ce2615f4fb0c2dfc1a76d8d80",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/initial.xml",
+          "sha256": "da5e5efc4062d9ac9060c8df6a39003c8a9c403a7304bd2163b01c7d86a30423",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/remount-view.xml",
+          "sha256": "4e7666adffed9b04cb7d0b0317ec22c2803236a475ad8ac404c33580365ba115",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/remove-renderer.xml",
+          "sha256": "111a4383deca631400b23f15b232afb5b1f0e912cbe1cbde265c2f5f0b1a3fdd",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/replace-renderer-with-view.xml",
+          "sha256": "9d125864dcd5dfa08f6facc2709e53803615721cde94773a256a1e29b8a2b172",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/resume.xml",
+          "sha256": "40a72cae457c43fe6056710140711b2804e56799bd0cef4f88fe324308644d61",
+          "tests": 1
+        },
+        {
+          "file": "target/retained-ci-transfer/native/lynx-retained-android/retire-permission.xml",
+          "sha256": "aeb030e1db4227842e0c6b52a0d2143c4afe022c82fc30e0c111b298370fcf6f",
+          "tests": 1
+        }
+      ]
+    }
+  ],
+  "nativeUiFlows": 41,
+  "skippedFlows": 0,
+  "failedAttempts": [
+    {
+      "stage": "RN renderer bundle, before native build/install",
+      "exitCode": 1,
+      "log": "target/retained-ci-transfer/react-native-metro-alias-failure/renderer-build.log",
+      "logSha256": "8eff2fda86017c90c3252acbb0b366be687326a487487435c16070786f4c735c",
+      "cause": "Metro watches /var temporary dependency path while resolved modules use /private/var",
+      "correction": "Canonicalize the installed dependency root before supplying renderer symlinks/watch folders",
+      "nativeAcceptance": false
+    },
+    {
+      "stage": "Lynx renderer bundle, before native build/install",
+      "exitCode": 1,
+      "log": "target/retained-ci-transfer/lynx-missing-typescript-failure/renderer-build.log",
+      "logSha256": "7e714de9d3e6d0c6e1195a1cca83cfbf6a0f917b5d5e98dad54d56fb9b522973",
+      "cause": "The fresh renderer dependency project omitted the TypeScript build dependency required by Rspeedy",
+      "correction": "Install the example-pinned TypeScript 6.0.3 in the external dependency project",
+      "nativeAcceptance": false
+    }
+  ],
+  "sourceSha256": {
+    ".github/actions/native-tools/action.yml": "1dcf882e03afe5f21866554b529a748a74cff6e5aef16ec3deb82564cc91ad49",
+    "scripts/ci/producer.ts": "cef895e93850c7679b572f661578d470d5c65eb2a61294c6398f8b9dcec6c7b3",
+    "scripts/retained-test-inputs.ts": "8427855d48f7b5c7bb7328b9119772edc250d63788b102fbb003317d944d32fe",
+    "scripts/test/retained-inputs.test.ts": "ecb6457a40bb913bb245647e39a09fd826878c2a8d211f22e7377bb011ee4369",
+    "scripts/tsconfig.json": "e49b92097a667e8e8ede20185bd34d629fbb3a75cd21e2b4e7fcb51feae331f5",
+    "packages/react-native/test/retained/build.cjs.fixture": "1638484a17fd10b333267e0f22044a6aa2fd3e8b15a6b64fff18bb72b311c096",
+    "packages/cli/test/runtime/recreation-android.ts": "d96a5cc7cd93d0654d749a0cb0a287924ec11124e9c9afdf0e40e1aca73dab7e",
+    "packages/react-native/test/retained-ios.ts": "0f3280bcd2bdb3ed8ca2cd62d7cf4b869f71401a86538c51a3a73cfdb5c3c5fb",
+    "packages/react-native/test/retained-android.ts": "f55dcb05c736aa7da9e4b562c3931074355271864f9bbfb407081bf366b95fa7",
+    "packages/lynx/test/retained-ios.ts": "8fd8ebb655adff20aaba51cbae89900c315580a820f61abcc91932e977c185a4",
+    "packages/lynx/test/retained-android.ts": "70f7d4d16719298d706e7354651b96520d425c8b981546e1f42f0eadb87440d5"
+  },
+  "limits": [
+    "Not a GitHub Actions execution, same-commit export/package run or completed required CI gate.",
+    "The existing producer-deleted e43050f artifact is reused; no new exporter/runtime correction is claimed.",
+    "iOS/Expo transferred-package routes and Android recreation input changes are typechecked, not re-executed in this record.",
+    "Android Linux NDK tool selection and x86_64 receipt matching are implemented; this record executes macOS/arm64 only.",
+    "Physical devices, independent adopters and remaining lifecycle/channel/full parity acceptance remain open."
+  ]
+}

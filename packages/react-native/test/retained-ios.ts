@@ -6,12 +6,14 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { setTimeout } from 'node:timers/promises';
 import { readRetainedArtifacts } from '../../../scripts/retained-artifacts.ts';
+import { prepareRetainedPackage, retainedDependencies, retainedEvidence } from '../../../scripts/retained-test-inputs.ts';
 import { sha256 } from '../../cli/src/artifacts/files.ts';
 import { assertOriginalDocument, verifyRetainedView } from './retained/view-scenarios.ts';
 import { acquireMobileTest } from '../../cli/test/runtime/mobile-lock.ts';
 import { cngPurpose, configureCng, verifyCng } from './retained/cng-scenarios.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
+const dependenciesRoot = retainedDependencies(root, 'react-native');
 const flags = new Set(process.argv.slice(3));
 assert([...flags].every(flag => ['--expo', '--native-project', '--cng'].includes(flag)), 'Unknown native gate option');
 const cng = flags.has('--cng');
@@ -24,7 +26,7 @@ assert.equal(manifest.bootstrap.applicationId, 'dev.taurinative.mobilefieldnotes
 assert(manifest.native.some(slice => slice.variant === 'simulator' && slice.architectures.includes('arm64')), 'This gate requires an arm64 Simulator slice');
 const device = process.env.IOS_SIMULATOR_UDID;
 assert(device, 'Choose an arm64 IOS_SIMULATOR_UDID');
-const evidence = path.join(root, (expo ? 'target/react-retained-expo-ios' : 'target/react-retained-ios') + (cng ? '-cng' : nativeProject ? '-native-project' : ''));
+const evidence = retainedEvidence(root, (expo ? 'react-retained-expo-ios' : 'react-retained-ios') + (cng ? '-cng' : nativeProject ? '-native-project' : ''));
 const consumer = path.join(evidence, 'source free consumer');
 const renderer = path.join(consumer, 'renderer');
 const generated = nativeProject ? path.join(renderer, 'ios') : path.join(expo ? renderer : consumer, 'composed application');
@@ -93,13 +95,12 @@ try {
   rmSync(consumer, { recursive: true, force: true }); mkdirSync(consumer, { recursive: true });
   const copied = path.join(consumer, 'copied runtime'); cpSync(artifact, copied, { recursive: true });
   assert.deepEqual(readRetainedArtifacts(copied), manifest);
-  run('package', 'npm', ['pack', '--pack-destination', consumer], path.join(root, 'packages/react-native'));
-  run('unpack', 'tar', ['-xzf', 'tauri-native-react-native-1.0.0-rc.0.tgz']);
-  const sdk = path.join(consumer, 'package');
+  const packed = prepareRetainedPackage(root, 'react-native', consumer, run);
+  const sdk = packed.directory;
   mkdirSync(renderer, { recursive: true });
   const dependencies = { '@tauri-native/react-native': '1.0.0-rc.0', expo: '57.0.19', react: '19.2.3', 'react-native': '0.86.3', 'react-native-safe-area-context': '5.7.0', 'expo-file-system': '57.0.6', 'expo-constants': '57.0.17', 'expo-modules-core': '57.0.15', 'expo-location': '57.0.15' };
   if (expo) {
-    const exampleRequire = createRequire(path.join(root, 'examples/react-native/package.json'));
+    const exampleRequire = createRequire(path.join(dependenciesRoot, 'package.json'));
     const expoRequire = createRequire(realpathSync(exampleRequire.resolve('expo/package.json')));
     const location = path.join(renderer, 'installed-expo-location'); mkdirSync(location);
     run('location-package', 'npm', ['pack', 'expo-location@57.0.15', '--ignore-scripts', '--pack-destination', location]);
@@ -114,7 +115,7 @@ try {
       const directory = name === '@tauri-native/react-native' ? sdk : name === 'expo-location' ? location : path.dirname(realpathSync((name.startsWith('expo-') ? expoRequire : exampleRequire).resolve(`${name}/package.json`)));
       symlinkSync(directory, destination, 'dir');
     }
-  } else symlinkSync(path.join(root, 'examples/react-native/node_modules'), path.join(renderer, 'node_modules'), 'dir');
+  } else symlinkSync(path.join(dependenciesRoot, 'node_modules'), path.join(renderer, 'node_modules'), 'dir');
   cpSync(new URL('./retained/index.tsx.fixture', import.meta.url), path.join(renderer, 'index.tsx'));
   cpSync(new URL('./retained/build.cjs.fixture', import.meta.url), path.join(renderer, 'build.cjs'));
   if (expo) {
@@ -125,7 +126,7 @@ try {
   }
   writeFileSync(path.join(renderer, 'package.json'), JSON.stringify({ name: 'packed-retained-rn-consumer', private: true, ...(expo ? { dependencies } : {}) }));
   writeFileSync(path.join(renderer, 'babel.config.json'), '{"presets":["babel-preset-expo"]}\n');
-  run('renderer-build', process.execPath, ['build.cjs', 'ios'], renderer, { ...env, PROOF_REPOSITORY: root, RETAINED_SDK_DIR: sdk });
+  run('renderer-build', process.execPath, ['build.cjs', 'ios'], renderer, { ...env, PROOF_REPOSITORY: root, RETAINED_DEPENDENCIES: dependenciesRoot, RETAINED_SDK_DIR: sdk });
   const bundle = path.join(renderer, 'index.bundle.js');
   const { composeIos } = createRequire(path.join(consumer, 'consumer.cjs'))(path.join(sdk, 'compose.js'));
   const { readRetainedArtifacts: packedReader } = createRequire(path.join(consumer, 'consumer.cjs'))(path.join(sdk, 'retained-artifacts.js'));
@@ -300,7 +301,7 @@ try {
   assert(!existsSync(path.join(consumer, 'src-tauri')));
   writeFileSync(path.join(evidence, 'report.json'), JSON.stringify({ passed: true, platform: 'ios', profile: 'release', formatVersion: 2, abiVersion: 3,
     renderer: 'React Native/codegen 0.86.3 / Hermes / generated TurboModule and Fabric', architectures: ['arm64'], expo, cng: cngResult ? { scenarios: cngResult.generationScenarios, files: cngResult.files, nativeProbe: cngNativeProbe } : false, layout: nativeProject ? 'native-project' : 'container', sourceFree: true, sourceFreeBuild: `PATH=${buildEnv.PATH} xcodebuild -configuration ${configuration} -sdk iphonesimulator`,
-    packageSha256: sha256(readFileSync(path.join(consumer, 'tauri-native-react-native-1.0.0-rc.0.tgz'))), artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
+    packageSha256: packed.sha256, packageSource: packed.source, artifactSha256: sha256(readFileSync(path.join(artifact, 'manifest.json'))),
     binarySha256: acceptanceBinarySha256, composition: receipt, podIntegration, defaultIntegration, coldIntegration, coldRemount, coldRemounted, delayedStartup, activityRouting, bundleSha256: sha256(readFileSync(bundle)), baseline, denied, permissionRetired, saved, remounted, viewIntegration, closed, notes, expoPermissions, expoDefaultPermissions,
     uiScenarios: ['original Tauri document embedded without replacement or reload', 'original frontend and RN share real notes/events/ACL', 'competing view rejected without detaching the first', 'component remount and engine replacement restore the original WebView and native clients', 'shared original state/setup', 'Tauri ACL and native caller denial', 'OS permission denial/grant', 'renderer retirement during pending OS permission prevents the old continuation save', 'undeclared session preserves original caller_denied code/message', 'save and event', 'background deep link and event', 'RN Linking exact URL once per invocation including repeated identical URLs', 'URL during delayed renderer startup stays an event and does not become the initial URL', 'injected native browsing/unrelated activity preserves Tauri return values and does not duplicate restoration callbacks', 'cold URL reaches getInitialURL across renderer replacement and a later foreground URL event', 'original AppDelegate URL callbacks restored after RN removal', 'renderer replacement retires native subscriptions', 'fresh renderer receives only fresh events', 'removing RN terminates its JS thread and preserves the independent original Tauri frontend'],
     testOnlyIntegration: 'Acceptance subclass supplies layout, baseline readiness and telemetry; the packed composer/SDK own startup, notification observation, readiness and attachment. A second Release app executes the unmodified generated startup/default layout with no acceptance subclass. Original Tauri UIApplication delegate preserved. Optional Expo execution uses installed native modules and an autolinked local subscriber probe; memory-warning/background-fetch callbacks are injected through the original delegate, while location permissions use the OS. CNG, broader third-party modules and OS universal-link association remain open. Cold-start URL proof also uses the default generated app without a launchApp step.',
