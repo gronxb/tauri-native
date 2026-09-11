@@ -1,0 +1,47 @@
+{
+  "run": 34557120185,
+  "commit": "002ee3a3bf051656ba9ec41692b9317242942c65",
+  "producerReceiptSha256": "60238cfd38cc18dfcb5d587313d953cf37cdf6faa3b056811b2a8994cd852739",
+  "exportsSha256": "78615248a5ef33145d170e3d0e6e01bc0269d16247710eaa9cad1b2f9a73381d",
+  "packages": [
+    {
+      "sdk": "cli",
+      "name": "@tauri-native/cli",
+      "version": "1.0.0-rc.0",
+      "file": "tauri-native-cli-1.0.0-rc.0.tgz",
+      "sha256": "6363fe5afec7a581bbc48378b0df62a5346dc09618d8028fe4b00d251deb90a0"
+    },
+    {
+      "sdk": "react-native",
+      "name": "@tauri-native/react-native",
+      "version": "1.0.0-rc.0",
+      "file": "tauri-native-react-native-1.0.0-rc.0.tgz",
+      "sha256": "16ffe7509d23158b2d5b30f553a1fcd0d28589edc6480c3fe5c04995a1222d52"
+    },
+    {
+      "sdk": "lynx",
+      "name": "@tauri-native/lynx",
+      "version": "1.0.0-rc.0",
+      "file": "tauri-native-lynx-1.0.0-rc.0.tgz",
+      "sha256": "c2a80c66a6397dcdf2632a83d80dfc14c89ef120068ab210904677ab862d8e9e"
+    }
+  ],
+  "inputHashesAndEmbeddedIdentitiesVerified": true,
+  "sdkBytesMatchExistingLocalTransferredInputs": true,
+  "scope": "Completed package producer only; retained-producer and all receiving native jobs are separate required evidence.",
+  "recordedAt": "2026-09-11T04:19:40.550823+00:00",
+  "runUrl": "https://github.com/gronxb/tauri-native/actions/runs/34557120185",
+  "producerJobUrl": "https://github.com/gronxb/tauri-native/actions/runs/34557120185/job/103132023764",
+  "producerLogSha256": "07ce4922751d23c27adeeedad7c104d03914cde9f285612ce5a103f5d60a0b75",
+  "fixtureDependencyCorrection": {
+    "command": "npm ci --ignore-scripts --no-audit --no-fund",
+    "followedBy": "existing scripts/CLI/package typechecks and producer export gates",
+    "passed": true,
+    "dependencyLogSha256": "a786805e292bdfafb821a7a5f96a28b26caa93d105e429e3eba2a854ec60f37e"
+  },
+  "limits": [
+    "This certifies the downloaded completed package producer inputs at 002ee3a, not the complete workflow or a later commit.",
+    "The producer archive contains the existing ABI 2 path. The retained ABI 3 producer and receiving jobs require their own receipts.",
+    "No physical-device or independent-project evaluation was performed."
+  ]
+}

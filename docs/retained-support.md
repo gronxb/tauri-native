@@ -211,7 +211,11 @@ retirement, events, deep links and persistence on an owned iOS 26.4.1 simulator.
 The [first hosted retained workflow](https://github.com/gronxb/tauri-native/actions/runs/34555941668)
 failed in the CLI typecheck before native execution: the independent mobile
 fixture's two plugin dependencies had not been installed. The producer now
-installs that fixture's locked dependencies before its existing checks. Local
-installation/typechecks pass; the corrected full hosted run is still required.
+installs that fixture's locked dependencies before its existing checks. The corrected
+[hosted producer at `002ee3a`](evidence/retained-hosted-producer-2026-09-11.json)
+passes the locked installation, existing checks and exports. Its downloaded
+archive and all three package hashes/embedded identities are verified; the
+SDK bytes match the local transferred inputs. Retained producer and receiving
+platform jobs still need separate success; the full hosted run remains required.
 The earlier ABI 2 candidate does not certify these new retained jobs. Physical
 devices and independent evaluations remain pending, as confirmed by the maintainer.

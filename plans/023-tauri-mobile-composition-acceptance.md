@@ -124,9 +124,11 @@ adds ordinary/native retained preparation and 20 source-free receiving UI flows.
 The original fourteen files and every transferred app/artifact byte are unchanged.
 The first complete workflow attempt at `396e3c9` failed in the CLI typecheck
 because the independent fixture's native-plugin JS packages were not installed.
-Locked fixture installation now precedes the existing checks; local typechecks
-pass. The failed run and skipped native jobs remain explicit, and a successful
-corrected hosted run is still required. RN/Expo/Lynx iOS transfer checks remain
+Locked fixture installation now precedes the existing checks. The corrected
+hosted package producer passes, and [downloaded inputs are verified](../docs/evidence/retained-hosted-producer-2026-09-11.json)
+against its commit, archive hash and three package identities/hashes. The failed
+run and skipped native jobs remain explicit. Retained producer and receiving
+jobs still need their own success; a complete corrected run remains required. RN/Expo/Lynx iOS transfer checks remain
 separate from this native-client evidence.
 
 The maintainer confirmed that physical devices and two independent project
