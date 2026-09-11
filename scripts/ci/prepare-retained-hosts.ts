@@ -16,7 +16,10 @@ const dependencies = {
 };
 for (const [sdk, packages] of Object.entries(dependencies)) {
   const host = path.join(work, sdk); mkdirSync(host);
-  record(path.join(host, 'package.json'), { name: `retained-ci-${sdk}`, private: true, dependencies: packages });
+  record(path.join(host, 'package.json'), { name: `retained-ci-${sdk}`, private: true, dependencies: packages,
+    // Expo's own semver ranges can resolve tooling outside the SDK's CNG contract.
+    ...(sdk === 'react-native' ? { overrides: { '@expo/cli': '57.0.21', '@expo/config': '57.0.9', '@expo/config-plugins': '57.0.9',
+      '@expo/prebuild-config': '57.0.15', 'expo-modules-autolinking': '57.0.12' } } : {}) });
   run(`retained-install-${sdk}`, 'npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], host, { ...process.env, PATH: nativePath });
 }
 record(path.join(output, 'retained-hosts.json'), { work, nativePath });
