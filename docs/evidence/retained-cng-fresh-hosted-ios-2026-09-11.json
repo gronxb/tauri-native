@@ -1,0 +1,250 @@
+{
+  "recordedAt": "2026-09-11T05:39:09.701930+00:00",
+  "scope": "Additional fresh CNG permissions and local reproduction using the exact failed hosted ordinary iOS app. These are independent executions, not a successful hosted candidate.",
+  "nativeUiFlows": 19,
+  "cngFresh": {
+    "passed": true,
+    "report": {
+      "path": "target/retained-recreation-layouts/native/retained-activity-recreation/cng/fresh-permission/expo/report.json",
+      "sha256": "e6b5c39e0ea09312698a659861a94de145020784777707a9a53dddab28d47dff"
+    },
+    "uiFlows": [
+      {
+        "path": "target/retained-recreation-layouts/native/retained-activity-recreation/cng/fresh-permission/expo/expo-close.xml",
+        "sha256": "75e1872f26456c9b6051b5ae648ffc282f909745b212adf901e5f6b91256341a"
+      },
+      {
+        "path": "target/retained-recreation-layouts/native/retained-activity-recreation/cng/fresh-permission/expo/expo-modules-0.xml",
+        "sha256": "9b25b82e779dcdc4dfdd940ad97d653fb0fd6b28e9eec86140db01a884ea57a2"
+      },
+      {
+        "path": "target/retained-recreation-layouts/native/retained-activity-recreation/cng/fresh-permission/expo/expo-modules-1.xml",
+        "sha256": "946fe339f45c653dd19d521e6b21c4b936f1d33453253debd87d0b1e72a6f96d"
+      },
+      {
+        "path": "target/retained-recreation-layouts/native/retained-activity-recreation/cng/fresh-permission/expo/expo-modules-2.xml",
+        "sha256": "b8364fc38c60474d6ddc6d110afffbbfc1e0bb879de8c4941d0c898643ec8947"
+      },
+      {
+        "path": "target/retained-recreation-layouts/native/retained-activity-recreation/cng/fresh-permission/expo/initial-permission.xml",
+        "sha256": "4aedc3ed4b0078dab6ea529f9de75b4fbdaca5e5f100c370753929a763e6e752"
+      },
+      {
+        "path": "target/retained-recreation-layouts/native/retained-activity-recreation/cng/fresh-permission/expo/permission-deny.xml",
+        "sha256": "4668a25712c75e557b2789f3430d2efa69b6124ebb90a27f07203314b7a08822"
+      },
+      {
+        "path": "target/retained-recreation-layouts/native/retained-activity-recreation/cng/fresh-permission/expo/permission-grant.xml",
+        "sha256": "4564377f44acc2bea60982cdfb3976e20ae7f72d4c42960403532311d7a3e87d"
+      },
+      {
+        "path": "target/retained-recreation-layouts/native/retained-activity-recreation/cng/fresh-permission/expo/post-recreation-link.xml",
+        "sha256": "cf8784901aa150b2c52ca9a20393f6bf036205bc44a661bfb57b109514021f70"
+      },
+      {
+        "path": "target/retained-recreation-layouts/native/retained-activity-recreation/cng/fresh-permission/expo/post-recreation-save.xml",
+        "sha256": "cb42b9e9d4248d120b8c8931fa890bdec869f72ddb38331852e12598ec1578a1"
+      },
+      {
+        "path": "target/retained-recreation-layouts/native/retained-activity-recreation/cng/fresh-permission/expo/recreated-ui-1.xml",
+        "sha256": "999e7ac75f9fd678a9455cf7ddc1fe907800d703279da1370f0a59816520dbd3"
+      },
+      {
+        "path": "target/retained-recreation-layouts/native/retained-activity-recreation/cng/fresh-permission/expo/recreated-ui-2.xml",
+        "sha256": "0fd96651bc628afdd4eb67b66d3404fb5f37e6ba9bd2b5f965d8433493a56421"
+      }
+    ],
+    "inputsAtStart": {
+      "head": "eff2ec7c8d18daa8343e22c19dabfba43efe8bf1",
+      "testSources": {
+        "packages/cli/test/runtime/recreation-android.ts": "98af34259d5f94187ee5ab9b5f0d75a228664367b594fa7c55483f285d7ee82a",
+        "packages/cli/test/runtime/renderer-permission-recreation.ts": "7a7d2fb532cdaebfec2d3d109046b1555de1ac935f79b9a939af574f6702b2b1"
+      },
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "packages/cli/test/runtime/recreation-android.ts",
+        "expo",
+        "/Users/gronxb/workspace/react-native-tauri/target/retained-ci-workflow/received/retained",
+        "--cng",
+        "--fresh-permission"
+      ]
+    },
+    "apkSha256": "7342b3e1fbbb6cc2a6c11c88ee95fe06839dea964fcbafbd48b8facb2f69ab42",
+    "artifactSha256": "45c1ed75a270485e8b4a0ba478f649263bfe603dfc9b8a0015bfb0e6d6e60691",
+    "packageSha256": "16ffe7509d23158b2d5b30f553a1fcd0d28589edc6480c3fe5c04995a1222d52",
+    "actualRecreations": 2,
+    "cng": {
+      "nativeProbe": "actual config plugin",
+      "compositionSha256": "c8f7bdf06729ad3ec99bcf8b744a46c524321ac71b8fddea644d7d5e7ee90280"
+    },
+    "rendererClosed": {
+      "destroyed": true,
+      "listeners": 0
+    },
+    "expo": {
+      "initial": {
+        "created": 1,
+        "destroyed": 0,
+        "callbacks": 0,
+        "applicationCreates": 1,
+        "activityCreates": 1,
+        "resumes": 2,
+        "pauses": 1,
+        "intents": 1,
+        "backs": 1
+      },
+      "final": {
+        "created": 3,
+        "destroyed": 2,
+        "callbacks": 0,
+        "applicationCreates": 1,
+        "activityCreates": 3,
+        "resumes": 15,
+        "pauses": 14,
+        "intents": 10,
+        "backs": 3
+      },
+      "closed": {
+        "created": 3,
+        "destroyed": 3,
+        "callbacks": 0,
+        "applicationCreates": 1,
+        "activityCreates": 3,
+        "resumes": 16,
+        "pauses": 15,
+        "intents": 11,
+        "backs": 3
+      },
+      "permissionOwner": "tauri",
+      "configuration": "Actual Expo prebuild with retained template and config plugins"
+    },
+    "observed": "The first real Tauri location request after recreation is denied through the OS. Another recreation preserves permission state; OS grant, real location save, back/deep link, native module/file lifecycle and final removal all pass with State/setup 45/1/1."
+  },
+  "exactHostedIosReproduction": {
+    "passed": true,
+    "upstreamRun": "https://github.com/gronxb/tauri-native/actions/runs/34557120185",
+    "upstreamCommit": "002ee3a3bf051656ba9ec41692b9317242942c65",
+    "report": {
+      "path": "target/retained-recreation-layouts/hosted-ios-reproduction/tauri-mobile-plugins/standalone-ios/report.json",
+      "sha256": "c5ff1dcaaae27b10308a700de58508882666ddba7b6ff2fd6d7cbe7da6447600"
+    },
+    "uiFlows": [
+      {
+        "path": "target/retained-recreation-layouts/hosted-ios-reproduction/tauri-mobile-plugins/standalone-ios/background.xml",
+        "sha256": "27deb72518a5b93695c697ac6aea01b35d979a2994b92ccae3efa3cf76449131"
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-ios-reproduction/tauri-mobile-plugins/standalone-ios/denied-position.xml",
+        "sha256": "f160a7560207bd197f3febe7adad4c8754762d58ecada600f2deb9b9380fb962"
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-ios-reproduction/tauri-mobile-plugins/standalone-ios/deny-permission.xml",
+        "sha256": "c00530df0a64429094bd68e9d569a19180f6f53ca1eae6cdbd82053f692a0c65"
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-ios-reproduction/tauri-mobile-plugins/standalone-ios/grant-permission.xml",
+        "sha256": "860fde143b36e9eb3d86a7d56fa4eb07722bc654c5546b6ffe15b613b6112395"
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-ios-reproduction/tauri-mobile-plugins/standalone-ios/initial.xml",
+        "sha256": "ce6edbfa56ea6d6ed65540f5867c87e7dbfac051cea9d2c94e921ed3beb68d56"
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-ios-reproduction/tauri-mobile-plugins/standalone-ios/link-ui.xml",
+        "sha256": "f019a9d5b8cacfa9c3d731f4e409314c9f1171e0a68969042262e257c8061f17"
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-ios-reproduction/tauri-mobile-plugins/standalone-ios/persistence-ui.xml",
+        "sha256": "caa5e9e622594b8e638552f2c72ade0cc01dfecdf84288a0ab137bd7a6e593fc"
+      },
+      {
+        "path": "target/retained-recreation-layouts/hosted-ios-reproduction/tauri-mobile-plugins/standalone-ios/save.xml",
+        "sha256": "b95e60e503766238a6af4c4038b18963be48ec7af7861da38a4f315bd60e9417"
+      }
+    ],
+    "execution": {
+      "exitCode": 0,
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "packages/cli/test/runtime/plugins.ts",
+        "ios",
+        "--consume"
+      ],
+      "udid": "B32C1DD3-7D27-41E2-8477-56D896205CCA",
+      "head": "74d6f3f2d1670b0744616354c58f69f1c6094082",
+      "runnerSha256": "8998659c388fc68fb48efef50998a88f0edb57aac2476a96ccab967d916b3b1e",
+      "cargoOnPath": false,
+      "rustcOnPath": false
+    },
+    "binarySha256": "b6f1e6842946fcdda131d71c48895e3f6adbe5bb9c5ddd949142ade3cd103ec5",
+    "verifiedOriginalAppFiles": 9,
+    "sourceHashes": {
+      "README.md": "153e3e497609a612134c7f5223f7b556a38eebb9a064c9073de190852c9b3a55",
+      "index.html": "1cfaaf3f1cdb0c5ef0bf6b7c20c73588d6cb2de9f8900a1af9ddb36ea7ebf7da",
+      "package-lock.json": "6e116d6c9dcc5bd24eb7add4ce9233e5dbb5b294a7de2a326aa346cc5aa5f852",
+      "package.json": "c2235666a5fbd6bd006381f666e88cd303b2877754f7ff149697420a067de0d2",
+      "src/main.ts": "6b073e729747e014ff5a181e9f28b1d47687f374eecbc6184a1b390bdd1ee372",
+      "src-tauri/Cargo.lock": "bbb28cc346cffee0ae4c108224658c89e411b9717ca79700abea8f26cf46a72e",
+      "src-tauri/Cargo.toml": "6ebd31d1b9fc71474adc21d005c893a2522873f57a58c3fc086155f9371d2ac0",
+      "src-tauri/Info.plist": "25b41f1baeea6b46cae2c38c74f3df8c05e1f91ac166088f0cec67870771b3cc",
+      "src-tauri/build.rs": "1a27383a5492961cdeb9dd0ae0741bf56a80f4c85a69dccf336ee276a9e5d8fa",
+      "src-tauri/capabilities/main.json": "fa3df9265ab4c12cba42c1c8327de8b972e72d78dce52e11664769c5512122ea",
+      "src-tauri/icons/icon.png": "1a7e308e7d16120c6ecb236319af05e51b0bf25eb04add3eb64df41359899625",
+      "src-tauri/src/lib.rs": "de9bca50c8a6f74406006be2a64656bdcd43cf05d5700419dbc2338a3ebe2b10",
+      "src-tauri/src/main.rs": "874f550cb4d5ff486b7c9d724a5cf99a79102b7c56a65704dfb067c7346618a1",
+      "src-tauri/tauri.conf.json": "702d41db185e5c4e1ebe22ced0ae636d010858fd73d954ae971dad684df05786"
+    },
+    "producerUnchanged": true,
+    "producerDeleted": true,
+    "linked": {
+      "action": "#refresh",
+      "kind": "plugins",
+      "ok": true,
+      "result": "Current links [\"tauri-fieldnotes://notes/1\"]",
+      "snapshot": {
+        "links": [
+          "tauri-fieldnotes://notes/1"
+        ],
+        "notes": [
+          {
+            "id": 1,
+            "latitude": 37.5665,
+            "longitude": 126.978,
+            "text": "A place to remember"
+          }
+        ],
+        "platform": "ios",
+        "pluginSetupCount": 1,
+        "setupCount": 1
+      }
+    },
+    "relaunched": {
+      "action": "#refresh",
+      "kind": "plugins",
+      "ok": true,
+      "result": "Current links null",
+      "snapshot": {
+        "links": [],
+        "notes": [
+          {
+            "id": 1,
+            "latitude": 37.5665,
+            "longitude": 126.978,
+            "text": "A place to remember"
+          }
+        ],
+        "platform": "ios",
+        "pluginSetupCount": 1,
+        "setupCount": 1
+      }
+    },
+    "scope": "No rebuild or production change. The identical hosted app passed all eight flows locally, including warm deep-link once and process-relaunch persistence. The runner changes only retain diagnostics. This does not resolve the hosted failure or justify weakening its assertions."
+  },
+  "limits": [
+    "CNG pending Tauri and RN/Expo-owned permissions are still being executed; this record covers only the completed fresh-permission mode.",
+    "The hosted Android ordinary failure and changed-Rust RN iOS startup failure are not covered by the local iOS pass.",
+    "A corrected hosted run remains mandatory. Physical-device and independent-adopter acceptance remain unavailable/open."
+  ]
+}

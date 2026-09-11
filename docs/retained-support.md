@@ -33,6 +33,14 @@ Tauri IPC remains usable. Input source/artifact/package bytes stay unchanged.
 Additional CNG permission modes are wired and being executed; this evidence
 does not claim those modes or complete hosted/device/adopter acceptance.
 
+[Fresh CNG and hosted-binary follow-up](evidence/retained-cng-fresh-hosted-ios-2026-09-11.json)
+adds 11 CNG flows for first permission requests after recreation, including OS
+denial/grant, save and final cleanup. The exact failed hosted ordinary iOS app
+also passes all eight flows locally, including warm deep link and relaunch
+persistence, without rebuilding it. That local pass does not resolve the hosted
+failure. CNG pending Tauri/RN/Expo permissions and corrected hosted execution
+remain in progress.
+
 The original local WebView's Tauri authority remains in force. A direct native
 session additionally needs an exact grant in `callers.json`; delegation does not
 grant the corresponding Tauri permission or the OS location permission. Denial

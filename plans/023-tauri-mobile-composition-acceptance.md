@@ -211,6 +211,15 @@ producer/input bytes. The remaining four CNG permission modes are required in
 Android CI and still being executed locally. Six receipt tests and typechecks
 pass; these results do not certify the failed hosted revision or close #47.
 
+[A follow-up execution](../docs/evidence/retained-cng-fresh-hosted-ios-2026-09-11.json)
+passes 11 fresh-permission CNG flows and eight ordinary iOS flows using the
+identical hosted binary. The latter does not reproduce the hosted deep-link
+failure locally; it is not a correction or replacement for hosted acceptance.
+The remaining three CNG permission modes are still running. Completed CI gate
+reports and logs are archived before disposable builds are removed to keep
+the expanded native matrix within runner disk limits; failed gates keep their
+diagnostics and cannot produce a candidate.
+
 Change only the CLI/runtime integration, package-owned native hosts, fixtures, verification and documentation needed for this outcome. Desktop-only APIs retain upstream platform restrictions. Unsupported source forms or third-party plugins require diagnostics and explicit support evidence. A failed experiment must not silently weaken the Tauri Mobile requirement or remove rejection checks.
 
 Implementation is authorized directly on `main` in incremental commits, without PRs. Do not publish packages as part of this task.
